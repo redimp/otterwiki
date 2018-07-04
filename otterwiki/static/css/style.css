@@ -1,0 +1,169 @@
+/* vim: set et sts=4 sw=4 ai: */
+
+body {
+    color: #222;
+    font-family: 'Open Sans', sans-serif;
+}
+
+#menu input {
+    background: #fff;
+    border: 1px solid #999;
+    padding: .5em .6em;
+    display: inline-block;
+    box-shadow: inset 0 1px 3px #eee;
+    border-radius: 4px;
+    /*box-sizing: border-box;*/
+    width: 125px;
+    padding: 0.2em 0.2em;
+    margin: 1em 0 0 .5em;
+    color: #333;
+    font-size: 75%;
+}
+
+#main div.content {
+    margin-top: 2em;
+}
+
+#main a {
+    color: #1f8dd6;
+    text-decoration: none;
+}
+
+#main a.notfound {
+    color: #1f8dd6;
+    text-decoration-line: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: rgb(202, 60, 60);
+}
+
+
+#main a:hover {
+    text-decoration: underline;
+}
+
+#main code, #main pre {
+    padding: 2px 5px;
+    overflow: auto;
+    font-size: 100%;
+    line-height: 1.45;
+    font-family: 'Roboto Mono', monospace;
+    background-color: #f6f8fa;
+    border-radius: 3px;
+    border: 1px solid #cccccc;
+}
+
+#main pre code {
+    border: none; /* no double border in code blocks */
+    padding: 0;
+}
+
+#main a.pure-button {
+    color: #444;
+    text-decoration: none;
+}
+
+#main a.pure-button:hover {
+    text-decoration: none;
+}
+
+/* Table */
+#main table {
+}
+
+    #main th, #main td {
+        padding: .4em;
+        border: 1px solid #333;
+    }
+
+    #main th {
+        background-color: #ccc;
+    }
+
+div.metadata {
+    font-size: 75%;
+    border-top: 1px solid #eee;
+    padding-top: 2em;
+    padding-left: 2em;
+    padding-right: 2em;
+}
+
+#log-table td {
+    font-size: 85%;
+    padding: 0 2px;
+}
+
+#log-table th {
+    font-size: 85%;
+    padding: 2px;
+}
+
+#diff-table table {
+    border-bottom: border: 1px solid #cbcbcb;
+}
+
+#diff-table td {
+    font-family: 'Roboto Mono', monospace;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 105%;
+    border: none;
+}
+
+#diff-table td.filename {
+    background-color: #ccc;
+    line-height: 120%;
+    font-size: 100%;
+}
+
+#diff-table td.hunk {
+    border-top: 1px solid #cbcbcb;
+    border-bottom: 1px solid #cbcbcb;
+    background-color: #f1f8ff;
+}
+
+#diff-table tr.add {
+    background-color: #e6ffed;
+}
+
+#diff-table tr.del {
+    background-color: #ffeef0;
+}
+
+/* ffeef0 */
+
+legend.auth-form {
+    font-size: 125%;
+    font-weight: bold;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+div.auth-form {
+    margin: 0 auto 2em auto;
+    padding: 1em;
+    border: #dedede 1px solid;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.flash {
+    margin: 1em 0;
+    padding: 1em 1em;
+    border-radius: 3px;
+    color: #fff;
+    margin: 1em 2em 1em 2em;
+    background: #1f8dd6;
+}
+.flash-message {
+    background: #1f8dd6;
+}
+.flash-warning {
+    background: rgb(223, 117, 20);
+}
+.flash-success {
+    background: rgb(28, 184, 65);
+}
+.button-danger,
+.flash-error {
+    color: #fff;
+    background: rgb(202, 60, 60);
+}

@@ -1,0 +1,44 @@
+{# vim: set et ts=8 sts=2 sw=2 ai: #}
+{% extends "wiki.html" %}
+{% block content %}
+
+<div class="pure-g">
+  <div class="pure-u-1">
+  <form class="pure-form" method="POST" action="{{ url_for('.search') }}">
+  <fieldset>
+      <input class="pure-input-1-2" id="needle" type="text" name="needle" value="{{ needle or '' }}" required>
+      <button type="submit" class="pure-button pure-button-primary">Search</button>
+  </fieldset>
+  <label for="re"> <input id="re" type="checkbox" name="re" {{ 'checked' if re_on }}> Regular expression
+  </label>
+  <label for="mc"> <input id="mc" type="checkbox" name="mc" {{ 'checked' if mc_on }}> Match case  </label>
+  </form>
+  </div>
+</div>
+
+{% if result %}
+<table class="pure-table" style="width:100%;margin-top:2em;">
+{% for pn, matches in result.items() %}
+<tr>
+  <td>
+    <a href="{{ url_for(".view", pagename=pn) }}">{{pn}}</a>
+  </td>
+  <td>
+  {% for m in matches %}
+  {% if m[0] %}
+  <tt>{{m[0]}} {{m[3]|safe}}</tt><br>
+  {% else %}
+  Name matches {{m[3]|safe}}.<br>
+  {% endif %}
+  {% endfor %}
+  </td>
+{% endfor %}
+</table>
+{% else %}
+  {% if needle %}
+  <br>
+  No match found.
+  {% endif %}
+{% endif %}
+
+{% endblock %}

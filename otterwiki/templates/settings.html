@@ -1,0 +1,74 @@
+{# vim: set et ts=8 sts=2 sw=2 ai: #}
+{% extends "wiki.html" %}
+{% block content %}
+<div class="pure-g">
+    <div class="pure-u-1" style="margin-left:auto; margin-right:auto;">
+    <form class="pure-form pure-form-aligned" method="POST" action="{{ url_for('.change_password') }}">
+    <fieldset>
+        <div class="pure-control-group">
+                <legend>Change your password</legend>
+        </div>
+
+        <div class="pure-control-group">
+            <label for="password">New password:</label>
+            <input id="password" type="password" name="password">
+        </div>
+        <div class="pure-control-group">
+            <label for="confirm">Confirm password:</label>
+            <input id="confirm" type="password" name="confirm">
+        </div>
+
+        <div class="pure-controls">
+            <button type="submit" class="pure-button pure-button-primary">Update Password</button>
+        </div>
+    </fieldset>
+    </form>
+    </div>
+{% if has_admin_access() %}
+    <div class="pure-u-1" style="margin-left:auto; margin-right:auto; margin-top: 1em;">
+      <div class="pure-form">
+        <legend>Permission Settings</legend>
+      </div>
+      <em>Please note: These settings can be only be modified in the <tt>settings.ini</tt>.</em> 
+    <table class="pure-table pure-table-bordered">
+      <tbody>
+        <tr><th>READ_ACCESS</th><td>{{config.READ_ACCESS}}</td></tr>
+        <tr><th>WRITE_ACCESS</th><td>{{config.WRITE_ACCESS}}</td></tr>
+        <tr><th>ATTACHMENT_ACCESS</th><td>{{config.ATTACHMENT_ACCESS}}</td></tr>
+        <tr><th>AUTO_APPROVAL</th><td>{{config.AUTO_APPROVAL}}</td></tr>
+      </tbody>
+    </table>
+    </div>
+{% endif %}
+{% if user_list %}
+    <div class="pure-u-1" style="margin-left:auto; margin-right:auto; margin-top: 1em;">
+    <form class="pure-form" method="POST" action="{{ url_for('.user_management') }}">
+        <div class="pure-control-group">
+            <legend>User Management</legend>
+        </div>
+        <br/>
+    <table class="pure-table pure-table-bordered">
+      <thead>
+        <tr>
+          <th>eMail Adress</th><th>Name</th><th>Approved</th><th>Admin</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in user_list %}
+        <tr>
+          <td>{{u.email}}</td><td>{{u.name}}</td>
+          <td><input name="is_approved" value="{{u.id}}" type="checkbox" {%if u.is_approved %}checked{%endif%}></td>
+          <td><input name="is_admin" value="{{u.id}}" type="checkbox" {%if u.is_admin %}checked{%endif%}></td>
+        </tr>
+        {% endfor%}
+      </tbody>
+    </table>
+    <br>
+        <div class="pure-controls">
+            <button type="submit" class="pure-button pure-button-primary">Update User Permissions</button>
+        </div>
+    </form>
+    </div>
+{% endif %}
+</div>
+{% endblock %}

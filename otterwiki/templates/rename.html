@@ -1,0 +1,20 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "page.html" %}
+{% block content %}
+<div class="pure-g">
+    <div class="pure-u-1" style="margin-left:auto; margin-right:auto;">
+<form class="pure-form pure-form-aligned" method="POST" action="{{ url_for('.rename', pagename=pagename) }}">
+    <fieldset>
+        <div class="pure-control-group">
+            <label for="pagename">Rename <strong>{{pagename}}</strong> to </label>
+            <input id="pagename" type="text" name="newname" value="{%if newname %}{{newname}}{%endif%}" required>
+        </div>
+        <em>Hint: Avoid abbreviations. Try to limit your name to three simple words or fewer. </em>
+        <div class="pure-controls">
+            <button type="submit" class="pure-button pure-button-primary">Submit</button>
+        </div>
+    </fieldset>
+</form>
+    </div>
+</div>
+{% endblock %}

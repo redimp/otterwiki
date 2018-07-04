@@ -1,0 +1,21 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% if pagename %}
+{% extends "page.html" %}
+{% else %}
+{% extends "wiki.html" %}
+{% endif %}
+{% block content %}
+<div class="pure-g">
+    <div class="pure-u-1" style="margin-left:auto; margin-right:auto;">
+<form class="pure-form pure-form-aligned" method="POST" action="{{ url_for('.revert', revision=revision) }}">
+    <fieldset>
+        <em>Do you want to revert commit</em> <strong>{{revision}}</strong>?<br><br>
+        <button type="submit" class="button-danger pure-button">Revert</button>
+
+        <input type="text" value="Commit message: Reverted {{revision}}." name="message"  class="pure-input-1-2"> 
+    </fieldset>
+</form>
+    </div>
+</div>
+{% endblock %}
+

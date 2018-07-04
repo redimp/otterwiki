@@ -1,0 +1,44 @@
+# App Settings
+DEBUG             = False
+SECRET_KEY        = 'CHANGE ME'
+SITE_NAME         = 'CHANGE ME'
+# Configure the path to the repository:
+REPOSITORY        = '/path/to/the/repository/root'
+
+# The Logo can be the url of any image, even an attachment. e.g.:
+# SITE_LOGO       = '//Home/a/logo.png'
+
+# Permissions
+# 'ANONYMOUS' or 'REGISTERED' or 'APPROVED'
+
+READ_ACCESS       = 'ANONYMOUS'
+WRITE_ACCESS      = 'REGISTERED'
+ATTACHMENT_ACCESS = 'REGISTERED'
+
+# Database Configuration
+# e.g. SQLALCHEMY_DATABASE_URI='sqlite:///path/to/the/sqlite/database/file'
+SQLALCHEMY_DATABASE_URI = ''
+
+# # Flask-Mail configuration
+# # See https://pythonhosted.org/Flask-Mail/ for configuration.
+
+# MAIL_DEFAULT_SENDER='no-reply@otterwiki.YOUR-ORGANISATION.TLD'
+
+# # Flask-Mail gmail
+# MAIL_SERVER = 'smtp.googlemail.com'
+# MAIL_PORT = 465
+# MAIL_USE_TLS = False
+# MAIL_USE_SSL = True
+# MAIL_USERNAME = 'MAIL_USERNAME'
+# MAIL_PASSWORD = 'MAIL_PASSWORD'
+
+# # Flask-Mail Debug Configuration
+# # run dummy stmp server via
+# #
+# #   python -m smtpd -n -c DebuggingServer localhost:1025
+# #
+# MAIL_SERVER = 'localhost'
+# MAIL_PORT = 1025
+# MAIL_USERNAME = None
+# MAIL_PASSWORD = None
+

@@ -1,0 +1,84 @@
+{# vim: set et ts=8 sts=2 sw=2 ai: #}
+{% extends "page.html" %}
+{% block content %}
+
+<div class="pure-g">
+  {% if has_attachment_access() %}
+  <div class="pure-u-1-1" style="margin-bottom:1em; padding: 5px; background:#eee;">
+    <form class="pure-form" enctype="multipart/form-data" method="POST" action="{{ url_for('.attachments', pagename=pagename) }}">
+      <div class="pure-u-1-1" id="filearea">
+        <input class="pure-input-1" type="file" name="file" multiple="">
+      </div>
+      <div class="pure-u-1">
+        <input class="pure-input-1" type="text" name="message" placeholder="Commit message">
+        <button type="submit" class="pure-button pure-button-primary">Upload</button>
+        <a title="Add another upload field" class="pure-button addfile" href="#" onclick="addFields()">+</a>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+  <div class="pure-u-1-1">
+  <table id="log-table" class="pure-table" style="width:100%;">
+    <thead>
+      <tr>
+        <th>Thumbnail</th>
+        <th>Filename</th>
+        <th>Size</th>
+        <th>Revision</th>
+        <th>Date</th>
+        <th>Author</th>
+      </tr>
+    </thead>
+    <tbody>
+  {% for entry in attachments %}
+      <tr class="{{ loop.cycle('pure-table-odd', '') }}">
+        <td>
+          {% if entry.thumbnail %}
+          <img src="{{ url_for('.get_attachment_thumbnail', pagename=pagename, filename=entry.filename) }}">
+          {% endif %}
+        </td>
+        <td><a href="{{ url_for('.get_attachment', pagename=pagename, filename=entry.filename) }}">{{entry.filename}}</a>
+{% if has_attachment_access() %}
+          <br>
+          [<a href="{{ url_for('.edit_attachment', pagename=pagename, filename=entry.filename) }}">edit</a>]
+{% endif %}
+        </td>
+        <td>{{entry.size}}</td>
+        <td><tt>[<a href="{{ url_for('.edit_attachment', pagename=pagename, filename=entry.filename) }}">{{entry.meta.revision}}</a>]</tt>
+</td>
+        <td>{{entry.mtime|format_datetime}}</td>
+        <td>{%if not entry.meta.author_email%}{{entry.meta.author_name}}{%else%}<a href="mailto:{{entry.meta.author_email}}">{{entry.meta.author_name}}</a>{%endif%}</td>
+        {#<td>{{entry.message}}</td>#}
+      </tr>
+      {% if entry.thumbnail %}
+      <tr class="{{ loop.cycle('pure-table-odd', '') }}">
+        <td colspan="6">
+          Image: <code>![]({{entry.url}})</code></br>
+          Thumbnail: <code>[![]({{entry.thumbnail}})]({{entry.url}})</code>
+        </td>
+      </tr>
+      {% endif %}
+  {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{# https://stackoverflow.com/a/14853880/212768 #}
+<script type='text/javascript'>
+    function addFields(){
+      // Number of inputs to create
+      var number = 1;
+      // Container <div> where dynamic content will be placed
+      var container = document.getElementById("filearea");
+      for (i=0;i<number;i++){
+        // Create an <input> element, set its type and name attributes
+        var input = document.createElement("input");
+        input.type = "file";
+        input.name = "file";
+        input.classList.add("pure-input-1");
+        container.appendChild(input);
+      }
+    }
+</script>
+
+{% endblock %}

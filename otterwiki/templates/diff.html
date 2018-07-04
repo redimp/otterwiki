@@ -1,0 +1,52 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "page.html" %}
+{% block content %}
+<table id="diff-table" class="pure-table" style="width:100%;line-height:1;margin: 1em 0;">
+{% if patchset %}
+{% for file in patchset %}
+{# file.path #}
+{# file.added #}
+{# file.removed #}
+<tr>
+    <td class="filename" colspan="4">{{file.path}}</td>
+</tr>
+{% for hunk in file %}
+<tr>
+    <td class="hunk" colspan="4">@@ {{hunk.source_start}},{{hunk.source_length}} {{hunk.target_start}},{{hunk.target_length}}@@ </td>
+</tr>
+{% for i,lines in hunk_helper[(file.source_file, file.target_file, hunk.source_start, hunk.source_length)].items() -%}
+{% for l in lines -%}
+<tr class="{{l.style}}">
+    <td class="diff-decoration">{{l.source}}</td>
+    <td class="diff-decoration">{{l.target}}</td>
+    <td class="diff-decoration">{{l.type}}</td>
+    <td>{{l.value}}</td>
+</tr>
+{%- endfor %}{# l in lines #}
+{%- endfor %}{# lines in hunk_helper #}
+
+{#
+{% for l in hunk.source_lines()-%}
+<tr style="background-color:#a00;">
+    <td style="width:1%;">{{l.source_line_no}}</td>
+    <td style="width:1%;">{{l.target_line_no}}</td>
+    <td style="width:1%;">{{l.line_type}}</td>
+    <td>{{l.value}}</td>
+</tr>
+{% endfor %}
+{% for l in hunk.target_lines()-%}
+<tr style="background-color:#0a0;">
+    <td style="width:1%;">{{l.source_line_no}}</td>
+    <td style="width:1%;">{{l.target_line_no}}</td>
+    <td style="width:1%;">{{l.line_type}}</td>
+    <td>{{l.value}}</td>
+</tr>
+{% endfor %}
+#}
+
+{% endfor %}{# hunk in file #}
+{% endfor %}{# file in patchset #}
+</table>
+{% endif %}
+{% endblock %}
+

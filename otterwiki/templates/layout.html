@@ -1,0 +1,65 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+<!doctype html>
+<html lang="en">
+<head>
+{% block head %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example with a side menu that hides on mobile, just like the Pure website.">
+    <title> {%if title%}{{title}} &ndash;{%endif%} An Otter Wiki</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/otter-favicon2.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pure-min.css') }}">
+        <!--[if lte IE 8]>
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/layout-old-ie.css') }}">
+        <![endif]-->
+        <!--[if gt IE 8]><!-->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') | debug_append_unixtime }}">
+        <!--<![endif]-->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto+Mono" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') | debug_append_unixtime }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pygments.css') | debug_append_unixtime }}">
+{% endblock %}
+</head>
+<body>
+
+<div id="layout">
+    <!-- Menu toggle -->
+    <a href="#menu" id="menuLink" class="menu-link">
+        <!-- Hamburger icon -->
+        <span></span>
+    </a>
+
+    <div id="menu">
+        <div class="pure-menu">
+{% if config.SITE_LOGO %}
+        <div class="site-logo">
+        <img class="site-logo" src="{{ config.SITE_LOGO }}">
+        </div>
+{% endif %}
+           <a class="pure-menu-heading" href="{{ url_for('.index') }}">{{ config.SITE_NAME }}</a>
+        {% block menu %}
+        {% endblock %}
+        </div>
+        <div class="logo">
+            <a href="{{ url_for('.about') }}">
+            <div>
+          <img src="{{ url_for('static', filename='img/otter.png') }}">
+            </div>
+            An Otter Wiki
+            </a>
+        </div>
+    </div>
+
+    <div id="main">
+<!-- content start -->
+{% block main %}
+
+{% endblock %} 
+<!-- content end -->
+        </div>
+    </div>
+
+<script src="{{ url_for('static', filename='js/ui.js') | debug_append_unixtime }}"></script>
+
+</body>
+</html>

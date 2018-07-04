@@ -1,0 +1,28 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "wiki.html" %}
+{% block menu %}
+{{ super() }}
+  <ul class="pure-menu-list">
+      <li class="pure-menu-item menu-category">Page</li>
+      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.view',pagename=pagename) }}">View</a></li>
+{% if has_write_access() %}
+  {% if revision %}
+      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.edit',pagename=pagename, revision=revision) }}">Edit</a></li>
+  {% else %}
+      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.edit',pagename=pagename) }}">Edit</a></li>
+  {% endif %}
+{% endif %}
+      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.history',pagename=pagename) }}">History</a></li>
+      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.attachments',pagename=pagename) }}">Attachments</a></li>
+{% if has_write_access() %}
+      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.rename',pagename=pagename) }}">Rename</a></li>
+      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.delete',pagename=pagename) }}">Delete</a></li>
+{% endif %}
+  </ul>
+{% endblock %}
+{% block content %}
+{{content|safe}}
+{% endblock %}
+
+{% block footer %}
+{% endblock %}

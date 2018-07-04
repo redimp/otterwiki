@@ -1,0 +1,3 @@
+recursive-include otterwiki/templates *
+recursive-include otterwiki/static *
+recursive-include otterwiki/doc *

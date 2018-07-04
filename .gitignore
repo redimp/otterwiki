@@ -1,0 +1,11 @@
+venv/
+*.pyc
+*.egg-info/
+dist/
+settings.cfg
+*.log*
+otterwiki/__pycache__
+repository
+*.sqlite
+.coverage
+coverage_html

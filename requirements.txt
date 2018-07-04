@@ -1,0 +1,11 @@
+Flask
+Flask-Login
+Flask-Mail
+Flask-SQLAlchemy
+gitpython
+cython
+mistune
+pygments
+itsdangerous
+Pillow
+unidiff

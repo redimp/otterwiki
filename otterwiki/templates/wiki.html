@@ -1,0 +1,62 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "layout.html" %}
+{% block menu %}
+            <ul class="pure-menu-list">
+                    <form action="{{ url_for('.search') }}" method="post">
+                        <input type="text" name="needle" placeholder="Search...">
+                    </form>
+                </li>
+            </ul>
+
+            <ul class="pure-menu-list">
+                <li class="pure-menu-item menu-category">Wiki</li>
+                <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.index') }}">Home</a></li>
+                <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.pageindex') }}">A-Z</a></li>
+                <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.log') }}">Last Changes</a></li>
+{% if has_write_access() %}
+                <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.create') }}">Create Page</a></li>
+{% endif %}
+{% if current_user.is_authenticated %}
+                <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.settings') }}">Settings</a></li>
+                <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.logout') }}">Logout</a></li>
+{% else %}
+                <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.login') }}">Login/Register</a></li>
+{% endif %}
+            </ul>
+{#
+            <br/> <!-- TODO check that again -->
+            <ul class="pure-menu-list">
+                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Home</a></li>
+                <li class="pure-menu-item"><a href="#" class="pure-menu-link">About</a></li>
+                <li class="pure-menu-item"><a href="#" class="pure-menu-link menu-item-divided">About</a></li>
+                <li class="pure-menu-item menu-item-divided pure-menu-selected"><a href="#" class="pure-menu-link">Services</a></li>
+                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Contact</a></li>
+                <li class="pure-menu-item menu-category">No Link</li>
+            </ul>
+#}
+{% endblock %}
+{% block main %}
+        <div class="header">
+{% block header %}
+    <h1>{{title}}</h1>
+    {%if subtitle%}
+    <h2>{{subtitle}}</h2>
+    {%endif%}
+{% endblock %}
+        </div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+  {% for category, message in messages %}
+  <div class="flash flash-{{category}}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+{% endwith %}
+        <div class="content">
+{% block content %}
+{{htmlcontent|safe}}
+{{content}}
+{% endblock %}
+        </div>
+{% block footer %}
+{% endblock %}
+{% endblock %}

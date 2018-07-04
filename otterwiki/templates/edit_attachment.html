@@ -1,0 +1,58 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "page.html" %}
+{% block content %}
+<div class="pure-g">
+{% if has_attachment_access() %}
+    <div class="pure-u-1" style="margin-left:auto; margin-right:auto;">
+<form class="pure-form pure-form-aligned" method="POST" action="{{ url_for('.edit_attachment', pagename=pagename, filename=filename) }}">
+    <fieldset>
+        <div class="pure-control-group">
+            <label for="filename">Attachment</label>
+            <input id="filename" class="pure-input-1-2" type="text" name="newfilename" value="{%if newfilename %}{{newfilename}}{%else%}{{filename}}{%endif%}" required>
+        </div>
+        <div class="pure-controls">
+            <button type="submit" class="pure-button pure-button-primary" name="operation" value="rename">Rename</button>
+            <button type="submit" class="button-danger pure-button" name="operation" value="delete">Delete attachment</button>
+        </div>
+    </fieldset>
+</form>
+    </div>
+{# * #}
+  <div class="pure-u-1" style="margin-bottom:0em;">
+  <h2>Replace Attachment</h2>
+  </div>
+  <div class="pure-u-1" style="margin-bottom:1em; padding: 5px; background:#eee;">
+    <form class="pure-form" enctype="multipart/form-data" method="POST" action="{{ url_for('.attachments', pagename=pagename) }}">
+      <input type="hidden" name="filename" value="{{filename}}">
+      <div class="pure-u-1-1" id="filearea">
+        <input class="pure-input-1" type="file" name="file">
+      </div>
+      <div class="pure-u-1">
+        <input class="pure-input-1" type="text" name="message" placeholder="Commit message">
+        <button type="submit" class="pure-button pure-button-primary">Upload</button>
+      </div>
+    </form>
+  </div>
+{% endif %}
+<div class="pure-u-1">
+    <h2>History</h2>
+    </div>
+{% if log %}
+    <div class="pure-u-1" style="margin-left:auto; margin-right:auto;">
+    <table id="log-table" class="pure-table" style="width:100%;line-height:1;margin: 1em 0;">
+        <tbody>
+    {% for entry in log %}
+            <tr class="{{ loop.cycle('pure-table-odd', '') }}">
+                <td style="width:1%;white-space: nowrap;">{%if not entry.author_email%}{{entry.author_name}}{%else%}<a href="mailto:{{entry.author_email}}">{{entry.author_name}}</a>{%endif%}</td>
+                <td><tt>[<a href="{{ url_for('.get_attachment', pagename=pagename, filename=filename, revision=entry.revision) }}">{{entry.revision}}</a>]</tt> <span style="color:#888;">{{entry.datetime|format_datetime}}</span> {{entry.message}}</td>
+{% if has_attachment_access() %}
+                <td style="width:1%;"><tt>[<a style="color:rgb(202, 60, 60);" href="{{ url_for('.revert', revision=entry.revision, pagename=pagename) }}">revert</a>]</tt></td>
+{% endif %}
+            </tr>
+    {% endfor %}
+        </tbody>
+    </table>
+    </div>
+{% endif %}
+</div>
+{% endblock %}

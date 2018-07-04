@@ -1,0 +1,23 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "wiki.html" %}
+{% block content %}
+<table id="log-table" class="pure-table" style="width:100%;">
+    <tbody>
+{% for entry in log %}
+        <tr class="{{ loop.cycle('pure-table-odd', '') }}">
+            <td style="width:1%;white-space: nowrap;">{%if not entry.author_email%}{{entry.author_name}}{%else%}<a href="mailto:{{entry.author_email}}">{{entry.author_name}}</a>{%endif%}</td>
+            <td><tt>[{{entry.revision}}]</tt>  <span style="color:#888;">{{entry.datetime|format_datetime}}</span> {{entry.message}} <br>
+{% for fn,details in entry.files.items() %}
+{% if details.url %}
+<a href="{{details.url}}">{{details.name}}</a> (+{{details.insertions}}/-{{details.deletions}})
+{% else %}
+{{details.name}}
+{% endif %}
+{% endfor %}
+            </td>
+            <td style="width:1%;"><tt>[<a style="color:rgb(202, 60, 60);" href="{{ url_for('.revert', revision=entry.revision) }}">revert</a>]</tt></td>
+        </tr>
+{% endfor %}
+    </tbody>
+</table>
+{% endblock %}

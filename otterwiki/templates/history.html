@@ -1,0 +1,26 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "page.html" %}
+{% block content %}
+<form action="{{ url_for('.history', pagename=pagename) }}" method="post">
+<button type="submit" class="pure-button">Compare Revisions</button>
+<table id="log-table" class="pure-table" style="width:100%;line-height:1;margin: 1em 0;">
+    <tbody>
+{% for entry in log %}
+        <tr class="{{ loop.cycle('pure-table-odd', '') }}">
+            <td style="width:1%;"><input type="radio" name="rev_a" value="{{entry.revision}}" {% if entry.revision == rev_a %}checked{%endif%}
+}%>
+            </td><td style="width:1%;">
+                <input type="radio" name="rev_b" value="{{entry.revision}}" {% if entry.revision == rev_b %}checked{%endif%}
+}%></td>
+            <td style="width:1%;white-space: nowrap;">{%if not entry.author_email%}{{entry.author_name}}{%else%}<a href="mailto:{{entry.author_email}}">{{entry.author_name}}</a>{%endif%}</td>
+            <td><tt>[<a href="{{ url_for('.view', pagename=pagename, revision=entry.revision) }}">{{entry.revision}}</a>]</tt> <span style="color:#888;">{{entry.datetime|format_datetime}}</span> {{entry.message}}</td>
+            <td style="width:1%;"><tt>[<a style="color:rgb(202, 60, 60);" href="{{ url_for('.revert', revision=entry.revision, pagename=pagename) }}">revert</a>]</tt></td>
+    
+
+        </tr>
+{% endfor %}
+    </tbody>
+</table>
+<button type="submit" class="pure-button">Compare Revisions</button>
+</form>
+{% endblock %}

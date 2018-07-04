@@ -1,0 +1,122 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "page.html" %}
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fontawesome/fontawesome.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/simplemde.min.css') }}">
+{{ super() }}
+    <script src="{{ url_for('static', filename='js/simplemde.min.js') }} "></script>
+<style>
+.CodeMirror-fullscreen {
+    left: 150px;
+}
+#main pre.CodeMirror-line {
+    border: none;
+    background-color: transparent;
+}
+</style>
+{% endblock %}
+{% block content %}
+<form action="{{ url_for('.save', pagename=pagename ) }}" method="post">
+<textarea name="content" style="width:100%; min-height:200px;">{{content}}</textarea>
+
+<input class="pure-input-1" type="text" name="message" placeholder="Commit message: Updated {{pagename}}">
+<button type="submit" class="pure-button pure-button-primary">Save</button>
+<a href="{{url_for('.view', pagename=pagename)}}" class="pure-button">Cancel</a>
+</form>
+<script>
+var simplemde = new SimpleMDE({
+    renderingConfig: {
+        singleLineBreaks: false,
+        codeSyntaxHighlighting: true,
+    },
+    spellChecker: false,
+    toolbar:
+    [
+      {
+        "name": "bold",
+        "className": "fa fa-bold",
+        "title": "Bold",
+        "action": SimpleMDE.toggleBold,
+      },
+      {
+        "name": "italic",
+        "className": "fa fa-italic",
+        "title": "Italic",
+        "action": SimpleMDE.toggleItalic,
+      },
+      {
+        "name": "heading",
+        "className": "fa fa-header",
+        "title": "Heading",
+        "action": SimpleMDE.toggleHeadingSmaller,
+      },
+      "|",
+      {
+        "name": "quote",
+        "className": "fa fa-quote-left",
+        "title": "Quote",
+        "action": SimpleMDE.Blockquote,
+      },
+      {
+        "name": "unordered-list",
+        "className": "fa fa-list-ul",
+        "title": "Generic List",
+        "action": SimpleMDE.toggleUnorderedList,
+      },
+      {
+        "name": "ordered-list",
+        "className": "fa fa-list-ol",
+        "title": "Numbered List",
+        "action": SimpleMDE.toggleOrderedList,
+      },
+      "|",
+      {
+        "name": "link",
+        "className": "fa fa-link",
+        "title": "Create Link",
+        "action": SimpleMDE.drawLink,
+      },
+      {
+        "name": "image",
+        "className": "fa fa-picture-o",
+        "title": "Insert Image",
+        "action": SimpleMDE.drawImage,
+      },
+      {
+        "name": "table",
+        "className": "fa fa-table",
+        "title": "Insert Table",
+        "action": SimpleMDE.drawTable,
+      },
+      "|",
+      {
+        "name": "preview",
+        "className": "fa fa-eye no-disable",
+        "title": "Toggle Preview",
+        "action": SimpleMDE.togglePreview,
+      },
+      {
+        "name": "side-by-side",
+        "className": "fa fa-columns no-disable no-mobile",
+        "title": "Toggle Side by Side",
+        "action": SimpleMDE.toggleSideBySide,
+      },
+      {
+        "name": "fullscreen",
+        "className": "fa fa-arrows-alt no-disable no-mobile",
+        "title": "Toggle Fullscreen",
+        "action": SimpleMDE.toggleFullScreen,
+      },
+      "|",
+      {
+        "name": "guide",
+        "action": "{{ url_for('.syntax') }}", {# https://simplemde.com/markdown-guide #}
+        "className": "fa fa-question-circle",
+        "title": "Markdown Guide",
+        "default": true
+      },
+      "|"
+    ]
+});
+</script>
+{% endblock %}

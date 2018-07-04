@@ -1,0 +1,12 @@
+DEBUG = False  # make sure DEBUG is off unless enabled explicitly otherwise
+LOG_DIR = '.'  # create log files in current working directory
+REPOSITORY = None
+SECRET_KEY = 'CHANGE ME'
+SITE_NAME = 'An Otter Wiki'
+SITE_LOGO = None
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+READ_ACCESS = 'ANONYMOUS'
+WRITE_ACCESS = 'ANONYMOUS'
+ATTACHMENT_ACCESS = 'ANONYMOUS'
+AUTO_APPROVAL = True
+SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
