@@ -4,6 +4,7 @@
 import os
 import re
 import git
+from datetime import datetime
 
 class StorageError(Exception):
     pass
@@ -92,11 +93,54 @@ class GitStorage(object):
 
         return self._get_metadata_of_commit(commit)
 
+    def _get_metadata_of_log(self, logentry):
+        logentry = logentry.split('\n')
+        #from pprint import pprint
+        #pprint(logentry)
+        revision = re.findall("commit ([a-z0-9]*)", logentry[0])[0]
+        # Find author data
+        author_info = re.findall("Author: ([^\<]*) <([^\>]*)>", logentry[1])[0]
+        author_name = author_info[0]
+        author_email = author_info[1]
+        # Get and convert Datetime
+        datetime_str = re.findall("Date: (.*)", logentry[2])[0].strip()
+        datetime_obj = datetime.strptime(datetime_str, '%a %b %d %H:%M:%S %Y %z')
+        # Get commit msg
+        message = "\n".join([x.strip() for x in logentry[4:-2]])
+
+        files = logentry[-1].split("\x00")
+
+        metadata = {
+                'revision-full' : revision,
+                'revision' : revision[0:6],
+                'author_name' : author_name,
+                'author_email' : author_email,
+                'datetime' : datetime_obj,
+                'files' : files,
+                'message' : message,
+                }
+
+        return metadata
+
     def log(self, filename=None):
         # TODO
         # check if parsing
         #   repo.git.log("--name-only", "-z", filename).strip('\x00').split('\x00')
         # is faster ...
+        if filename is None:
+            try:
+                rawlog = self.repo.git.log("--name-only", "-z")
+            except (git.exc.GitCommandError):
+                return []
+        else:
+            try:
+                rawlog = self.repo.git.log("--name-only", "-z", "--follow", filename)
+            except (git.exc.GitCommandError):
+                raise StorageNotFound
+
+        rawlog = rawlog.strip('\x00').split('\x00\x00')
+        return [self._get_metadata_of_log(entry) for entry in rawlog]
+
         if filename is None:
             try:
                 commits = list(self.repo.iter_commits())

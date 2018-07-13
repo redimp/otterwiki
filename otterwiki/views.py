@@ -83,8 +83,12 @@ def log(filename=None):
     log = storage.log()
 
     log_filtered = []
-    for entry in log:
-        for key, value in entry['files'].items():
+    for orig_entry in log:
+        entry = dict(orig_entry)
+        entry['files'] = {}
+
+        for key in orig_entry['files']:
+            entry['files'][key] = {}
             # handle attachments and pages
             arr = key.split('/')
             if key.endswith(".md"):
