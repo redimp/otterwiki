@@ -76,4 +76,11 @@ if ! grep -q "^command=/usr/local/bin/uwsgi.*--wsgi-disable-file-wrapper" /etc/s
 	sed -i '/^command=\/usr\/local\/bin\/uwsgi/ s/$/ --wsgi-disable-file-wrapper/' /etc/supervisor/conf.d/supervisord.conf
 fi
 
+# enable threads, which are disabled by default
+# see https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html#a-note-on-python-threads
+if ! grep -q "^command=/usr/local/bin/uwsgi.*--enable-threads" /etc/supervisor/conf.d/supervisord.conf; then
+       sed -i '/^command=\/usr\/local\/bin\/uwsgi/ s/$/ --enable-threads/' /etc/supervisor/conf.d/supervisord.conf
+fi
+
+
 exec "$@"
