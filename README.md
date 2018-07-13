@@ -1,7 +1,10 @@
 # An Otter Wiki
 
-An Otter Wiki is a simple python based wiki. It is using markdown as markup,
-language and a git repository for storing the content.
+An Otter Wiki is a python based software for collaborative content management,
+called a [wiki](https://en.wikipedia.org/wiki/Wiki). The content is
+stored in a git repository, which keeps track of all changes.
+[Markdown](https://daringfireball.net/projects/markdown) is used as
+Markup language.
 
 ## Quick Start
 

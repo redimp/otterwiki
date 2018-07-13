@@ -1,4 +1,5 @@
-An Otter Wiki is a software for collaborative content management,
+An [Otter Wiki](https://github.com/redimp/otterwiki) is a software
+for collaborative content management,
 called a [wiki](https://en.wikipedia.org/wiki/Wiki). The content is
 stored in a git repository, which keeps track of all changes.
 [Markdown](https://daringfireball.net/projects/markdown) is used as
@@ -9,7 +10,6 @@ It is written in [python](https://www.python.org/) using the microframework
 used as CSS framework and [SimpleMDE](https://simplemde.com/) as editor.
 The template is based upon the
 [Responsive Side Menu Layout](https://purecss.io/layouts/).
-
 
 The [otter logo](https://thenounproject.com/term/otter/27035) is drawn by
 [Christy Presler](http://christypresler.com/) and is licensed under
