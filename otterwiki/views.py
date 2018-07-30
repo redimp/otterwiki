@@ -355,10 +355,10 @@ def syntax():
 @app.route('/<string:pagename>/view/<string:revision>')
 def view(pagename='Home', revision=None):
     if not has_read_access():
-        if not current_user:
-            flash('You lack the permissions to access this wiki. Please login.')
-        else:
+        if current_user.is_authenticated and not current_user.is_approved:
             flash('You lack the permissions to access this wiki. Please wait for approval.')
+        else:
+            flash('You lack the permissions to access this wiki. Please login.')
         return redirect(url_for('.login'))
     #app.logger.info('view {}'.format(name))
     filename = get_filename(pagename)
@@ -804,7 +804,7 @@ def revert(revision=None):
 def search():
     if not has_read_access():
         flash('You lack the permissions to access this wiki. Please login.')
-        return redirect(url_for('.login', pagename=pagename))
+        return redirect(url_for('.login'))
     needle = request.form.get('needle')
     re_on = request.form.get('re')
     # match case is on
