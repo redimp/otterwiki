@@ -194,7 +194,8 @@ Please login here: {url}
 
 Cheers!
 """
-                send_email(subject = "Account - An Otter Wiki",
+                send_email(
+                        subject = "Account - {} - An Otter Wiki".format(app.config['SITE_NAME']),
                         recipients = [email],
                         text_body  = text_body.format(name=name,
                             password=password,
@@ -316,7 +317,8 @@ To recover your password, please use the following link:
 
 Cheers!
 """
-        send_email(subject = "Lost Password - An Otter Wiki",
+        send_email(
+                subject = "Lost Password  - {} - An Otter Wiki".format(app.config['SITE_NAME']),
                 recipients = [email],
                 text_body  = text_body.format(name=user.name,
                     url=url_for('.lost_password', token=token, _external=True)),
