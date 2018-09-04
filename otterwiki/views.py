@@ -199,7 +199,7 @@ Cheers!
                         text_body  = text_body.format(name=name,
                             password=password,
                             url=url_for('.login', _external=True)),
-                        sender = 'test@test')
+                        )
                 flash("Your password was sent to {}. Please check your mailbox.".format(email))
             else:
                 flash("This eMail address is already registered.", "error")
@@ -320,7 +320,7 @@ Cheers!
                 recipients = [email],
                 text_body  = text_body.format(name=user.name,
                     url=url_for('.lost_password', token=token, _external=True)),
-                sender = 'no-reply@otterwiki')
+                )
 
     return render_template('lost_password.html', title="Lost password")
 

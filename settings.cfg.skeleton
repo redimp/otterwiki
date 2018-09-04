@@ -31,6 +31,7 @@ SQLALCHEMY_DATABASE_URI = ''
 # MAIL_USE_SSL = True
 # MAIL_USERNAME = 'MAIL_USERNAME'
 # MAIL_PASSWORD = 'MAIL_PASSWORD'
+# MAIL_DEFAULT_SENDER = 'no-reply@otterwiki'
 
 # # Flask-Mail Debug Configuration
 # # run dummy stmp server via
