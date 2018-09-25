@@ -316,6 +316,13 @@ Hides the menu at `48em`, but modify this based on your app's needs.
     }
 }
 
+@media print {
+    #menu, .logo { display: none; }
+    #layout { padding-left: 0; }
+    .content { padding-left: 1em; padding-right: 1em; }
+
+}
+
 .diff-decoration {
     -webkit-user-select: none; /* Safari 3.1+ */
     -moz-user-select: none; /* Firefox 2+ */
