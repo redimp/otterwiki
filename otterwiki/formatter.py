@@ -16,10 +16,13 @@ from flask import url_for
 from otterwiki.storage import storage
 from otterwiki.util import get_pagename
 
+from pprint import pprint
+
 # Please check https://github.com/lepture/mistune-contrib
 # for mistune extensions.
 
-class HighlightRenderer(mistune.Renderer):
+#class MyPygmentsMixin(object):
+class MyRenderer(mistune.Renderer):
     def block_code(self, code, lang):
         if not lang:
             return '\n<pre><code>%s</code></pre>\n' % \
@@ -32,42 +35,48 @@ class HighlightRenderer(mistune.Renderer):
         formatter = html.HtmlFormatter(classprefix=".highlight ")
         return highlight(code, lexer, formatter)
 
-def parse_wikilinks(md):
-    wlre = re.compile(
-        r'('
-        r'(?<=\[\[)'
-        r'[^\]]+?'
-        r'(?=\]\])'
-        r')'
+#class MyRenderer(mistune.Renderer, MyPygmentsMixin):
+#    def __init__(self, *args, **kwargs):
+#        super(MyRenderer, self).__init__(*args, **kwargs)
+
+class MyInlineLexer(mistune.InlineLexer):
+    def __init__(self, *args, **kwargs):
+        super(MyInlineLexer, self).__init__(*args, **kwargs)
+        self.enable_wiki_link()
+
+    def enable_wiki_link(self):
+        self.rules.wiki_link = re.compile(
+            r'\[\['                   # [[
+            r'([^\]]+)'               # ...
+            r'\]\]'                   # ]]
         )
-    matches = wlre.findall(md)
-    # test if there are any wiki links
-    if len(matches)<1:
-        return md
-    # compile re
-    iwlre = re.compile(
-            r'([^\|]+)\|?(.*)'
-            )
-    # fetch all existing pages
-    pages = [get_pagename(x).lower() for x in storage.list_files() if x.endswith(".md")]
-    # for every wikilink found ...
-    for iwl in matches:
+        self.default_rules.insert(0, 'wiki_link')
+        # inner regular expression
+        self.wiki_link_iwlre = re.compile(
+                r'([^\|]+)\|?(.*)'
+                )
+
+    def output_wiki_link(self, m):
+        # initial style
         style = ''
-        title, pagename = iwlre.findall(iwl)[0]
+        # parse for title and pagename
+        title, pagename = self.wiki_link_iwlre.findall(m.group(1))[0]
+        # fetch all existing pages
+        pages = [get_pagename(x).lower() for x in storage.list_files() if x.endswith(".md")]
+        # if the pagename is empty the title is the pagename
         if pagename == '': pagename = title
+        # check if page exists
         if pagename.lower() not in pages:
             style = ' class="notfound"'
-        url = url_for('.view', pagename=pagename)
+        # generate link
+        url = url_for('view', pagename=pagename)
         link = '<a href="{}"{}>{}</a>'.format(url,style,title)
-        md = md.replace("[[{}]]".format(iwl),link)
+        return link
 
-    return md
-
-
-_renderer = HighlightRenderer()
-_markdown = mistune.Markdown(renderer=_renderer)
+_renderer = MyRenderer()
+_inline = MyInlineLexer(_renderer)
+_markdown = mistune.Markdown(renderer=_renderer, inline=_inline)
 
 def render_markdown(text):
     md = _markdown(text)
-    md = parse_wikilinks(md)
     return md
