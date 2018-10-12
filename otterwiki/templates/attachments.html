@@ -57,6 +57,12 @@
           Thumbnail: <code>[![]({{entry.thumbnail}})]({{entry.url}})</code>
         </td>
       </tr>
+      {% else %}
+      <tr class="{{ loop.cycle('pure-table-odd', '') }}">
+        <td colspan="6">
+          Link: <code>[{{entry.filename}}]({{entry.url}})</code></br>
+        </td>
+      </tr>
       {% endif %}
   {% endfor %}
     </tbody>
