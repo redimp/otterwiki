@@ -206,14 +206,15 @@ class GitStorage(object):
             message = "Deleted {}.".format(filename)
         self.repo.index.commit(message, author=actor)
 
-    def rename(self, old_filename, new_filename, message=None, author=None):
+    def rename(self, old_filename, new_filename, message=None, author=None, no_commit=False):
         try:
             self.repo.git.mv(old_filename, new_filename)
         except Exception:
             raise StorageError("Renaming {} to {} failed.".format(old_filename, new_filename))
         if message is None:
             message = "{} renamed to {}.".format(old_filename, new_filename)
-        self.commit([new_filename], message, author)
+        if not no_commit:
+            self.commit([new_filename], message, author)
 
     def list_files(self, p=None):
         fullpath = self.path

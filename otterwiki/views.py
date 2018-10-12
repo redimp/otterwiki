@@ -667,7 +667,7 @@ def attachments(pagename):
         # debug help via curl -F "file=@./354.jpg" http://localhost:5000/Home/attachments
         to_commit = []
         filename = request.form.get('filename')
-        print(filename)
+        #print(filename)
         for file in request.files.getlist("file"):
             # if filename is not None (update a attachment), replace only that
             if filename:
@@ -748,8 +748,17 @@ def rename(pagename):
                 flash("Nothing to update.", "error")
             else:
                 try:
-                    storage.rename(get_filename(pagename), get_filename(newname), author=get_author())
-                except StorageError:
+                    dirname = get_filename(pagename)[:-3]
+                    files = storage.list_files(dirname)
+                    # take care of the attachments
+                    if len(files)>0:
+                        newdirname = get_filename(newname)[:-3]
+                        storage.rename(dirname, newdirname, author=get_author(),
+                            no_commit=True)
+                    # rename the file
+                    storage.rename(get_filename(pagename),
+                                   get_filename(newname), author=get_author())
+                except StorageError as e:
                     flash("Renaming failed.", "error")
                 else:
                     flash("{} renamed to {}.".format(pagename, newname), "success")
