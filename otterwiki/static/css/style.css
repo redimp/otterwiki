@@ -42,10 +42,10 @@ body {
 }
 
 #main code, #main pre {
-    padding: 2px 5px;
+    padding: 0px 2px;
     overflow: auto;
     font-size: 100%;
-    line-height: 1.45;
+    line-height: 1.6;
     font-family: 'Roboto Mono', monospace;
     background-color: #f6f8fa;
     border-radius: 3px;
