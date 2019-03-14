@@ -82,9 +82,5 @@ if ! grep -q "^command=/usr/local/bin/uwsgi.*--enable-threads" /etc/supervisor/c
        sed -i '/^command=\/usr\/local\/bin\/uwsgi/ s/$/ --enable-threads/' /etc/supervisor/conf.d/supervisord.conf
 fi
 
-# tell nginx not to start an instance on its own
-if ! grep -q "^command=/usr/sbin/nginx.*-g 'daemon off;'" /etc/supervisor/conf.d/supervisord.conf; then
-	sed -i "/^command=\/usr\/sbin\/nginx/ s/$/ -g 'daemon off;'/" /etc/supervisor/conf.d/supervisord.conf
-fi
 
 exec "$@"
