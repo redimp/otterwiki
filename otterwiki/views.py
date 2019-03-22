@@ -718,7 +718,7 @@ def attachments(pagename):
         d['size'] = sizeof_fmt(os.stat(d['full']).st_size)
         d['mtime'] = datetime.fromtimestamp(os.path.getmtime(d['full']))
         mimetype, encoding = mimetypes.guess_type(fn)
-        if mimetype.startswith('image'):
+        if mimetype is not None and mimetype.startswith('image'):
             d['thumbnail'] = url_for(".get_attachment_thumbnail", pagename=pagename, filename=f)
         attachments.append(d)
 
