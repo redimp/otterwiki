@@ -19,7 +19,7 @@ The [otter logo](https://thenounproject.com/term/otter/27035) is drawn by
 
 An Otter Wiki is released under the MIT license.
 
-Copyright (c) 2018 Ralph Thesen.
+Copyright (c) 2018-2019 Ralph Thesen.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

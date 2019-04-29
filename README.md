@@ -97,7 +97,7 @@ docker run -d --restart=always -p 80:80 otterwiki
 
 ## MIT License
 
-Copyright (c) 2018 Ralph Thesen <mail@redimp.de>
+Copyright (c) 2018-2019 Ralph Thesen <mail@redimp.de>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
