@@ -159,7 +159,13 @@ def login():
             # register account
             # first check if the user exists
             user = User.query.filter_by(email=email).first()
-            if user is None:
+            if user is not None:
+                flash("This eMail address is already registered.", "error")
+            elif email is None or len(email)<1:
+                flash("Please enter your email address.", "error")
+            elif name is None or len(name)<1:
+                flash("Please enter your name.", "error")
+            else:
                 # generate random password
                 password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))
                 # hash password
@@ -202,8 +208,6 @@ Cheers!
                             url=url_for('.login', _external=True)),
                         )
                 flash("Your password was sent to {}. Please check your mailbox.".format(email))
-            else:
-                flash("This eMail address is already registered.", "error")
 
     # login_user(user, remember=form.remember_me.data)
     # next_page = request.args.get('next')
@@ -682,7 +686,7 @@ def attachments(pagename):
             os.makedirs(fdn, mode=0o777, exist_ok=True)
             # store attachment
             file.save(ffn)
-            print(ffn)
+            #print(ffn)
             if filename is not None:
                 break
         if len(to_commit)>0:
