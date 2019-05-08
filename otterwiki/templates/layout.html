@@ -5,7 +5,7 @@
 {% block head %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A layout example with a side menu that hides on mobile, just like the Pure website.">
+    <meta name="description" content="{%if title%}{{title}} - {%endif%}An Otter Wiki">
     <title> {%if title%}{{title}} &ndash;{%endif%} An Otter Wiki</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/otter-favicon2.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pure-min.css') }}">
