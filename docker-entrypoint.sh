@@ -87,4 +87,9 @@ if ! grep -q "^command=/usr/sbin/nginx.*-g 'daemon off;'" /etc/supervisor/conf.d
 	sed -i "/^command=\/usr\/sbin\/nginx/ s/$/ -g 'daemon off;'/" /etc/supervisor/conf.d/supervisord.conf
 fi
 
+# and ake care that this is not duplicate in the /etc/nginx/nginx.conf
+if grep -q "^daemon off;" /etc/nginx/nginx.conf; then
+	sed -i "s/^daemon off;/# daemon off;/" /etc/nginx/nginx.conf
+fi
+
 exec "$@"
