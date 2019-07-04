@@ -671,8 +671,10 @@ def attachments(pagename):
         # debug help via curl -F "file=@./354.jpg" http://localhost:5000/Home/attachments
         to_commit = []
         filename = request.form.get('filename')
-        #print(filename)
         for file in request.files.getlist("file"):
+            if file.filename == '':
+                # no file selected
+                continue
             # if filename is not None (update a attachment), replace only that
             if filename:
                 fn = secure_filename(filename)
