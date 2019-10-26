@@ -57,7 +57,7 @@ class MyRenderer(mistune.Renderer):
             print("new anchor:", anchor)
             self.toc_anchors[anchor]=0
 
-        rv = '<h{level} id="toc-{count}"><a id="{anchor}" href="#{anchor}"><span class="anchor"></span>{text}</a></h{level}>\n'.format(
+        rv = '<h{level} id="toc-{count}"><a id="{anchor}" href="#{anchor}">{text}<span class="anchor">&nbsp;</span></a></h{level}>\n'.format(
             level = level, count = self.toc_count, text = text, anchor = anchor,
         )
         self.toc_tree.append((self.toc_count, text, level, raw))
