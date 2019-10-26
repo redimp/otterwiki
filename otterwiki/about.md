@@ -15,6 +15,9 @@ The [otter logo](https://thenounproject.com/term/otter/27035) is drawn by
 [Christy Presler](http://christypresler.com/) and is licensed under
 [Creative Commons CCBY](https://creativecommons.org/licenses/by/3.0/us/legalcode).
 
+Link icon made by [Freepik](https://www.flaticon.com/authors/freepik) from
+<https://www.flaticon.com/>.
+
 ## License
 
 An Otter Wiki is released under the MIT license.

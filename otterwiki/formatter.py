@@ -14,7 +14,7 @@ from pygments.util import ClassNotFound
 
 from flask import url_for
 from otterwiki.storage import storage
-from otterwiki.util import get_pagename
+from otterwiki.util import get_pagename, slugify
 
 from pprint import pprint
 
@@ -23,6 +23,15 @@ from pprint import pprint
 
 #class MyPygmentsMixin(object):
 class MyRenderer(mistune.Renderer):
+    toc_count = 0
+    toc_tree = []
+    toc_anchors = {}
+
+    def reset_toc(self):
+        self.toc_count = 0
+        self.toc_tree = []
+        self.toc_anchors = {}
+
     def block_code(self, code, lang):
         if not lang:
             return '\n<pre><code>%s</code></pre>\n' % \
@@ -34,6 +43,26 @@ class MyRenderer(mistune.Renderer):
                 (mistune.escape(lang.strip()), mistune.escape(code.strip()))
         formatter = html.HtmlFormatter(classprefix=".highlight ")
         return highlight(code, lexer, formatter)
+
+    def header(self, text, level, raw=None):
+        #rv = '<h%d id="toc-%d"><a id="">%s</h%d>\n' % (
+        #    level, self.toc_count, text, level
+        #)
+        anchor = slugify(text)
+        try:
+            self.toc_anchors[anchor]+=1
+            print(anchor)
+            anchor = "{}-{}".format(anchor,self.toc_anchors[anchor])
+        except KeyError:
+            print("new anchor:", anchor)
+            self.toc_anchors[anchor]=0
+
+        rv = '<h{level} id="toc-{count}"><a id="{anchor}" href="#{anchor}"><span class="anchor"></span>{text}</a></h{level}>\n'.format(
+            level = level, count = self.toc_count, text = text, anchor = anchor,
+        )
+        self.toc_tree.append((self.toc_count, text, level, raw))
+        self.toc_count += 1
+        return rv
 
 #class MyRenderer(mistune.Renderer, MyPygmentsMixin):
 #    def __init__(self, *args, **kwargs):
@@ -78,5 +107,6 @@ _inline = MyInlineLexer(_renderer)
 _markdown = mistune.Markdown(renderer=_renderer, inline=_inline)
 
 def render_markdown(text):
+    _renderer.reset_toc()
     md = _markdown(text)
     return md

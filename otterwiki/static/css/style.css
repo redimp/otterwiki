@@ -36,9 +36,52 @@ body {
     text-decoration-color: rgb(202, 60, 60);
 }
 
-
 #main a:hover {
     text-decoration: underline;
+}
+
+#main h1 > a,
+#main h2 > a,
+#main h3 > a,
+#main h4 > a,
+#main h5 > a,
+#main h6 > a
+{
+    color: #222;
+    text-decoration: none;
+}
+
+#main h1 > a:hover,
+#main h2 > a:hover,
+#main h3 > a:hover,
+#main h4 > a:hover,
+#main h5 > a:hover,
+#main h6 > a:hover {
+    text-decoration: none;
+}
+
+.anchor {
+    float:left;
+    padding-top:2px;
+    margin-left: -22px;
+    margin-bottom:0;
+    line-height: 1;
+    width:16px;
+    height:16px;
+    visibility: hidden;
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QAAKqNIzIAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfjChoHJgGYhsnhAAABIElEQVQoz23RsUubARQE8F+az2pFKA4FkVKXgjgoNN+QwaUULXQTqdCt/QNaVHQQOjiUOjgLQsZsLoKLVKJD0aVYoQURAnHp0oYEBQ2aoCYO5gtp4r3lHve443gx/6NDDyi71Ia3fqo15ti8oFledGPFG6FQ6KXPzmyIR3JS1VSL45CSj9GSstOeacmvu5TAC9sGvMOVnC0V8MNsgIQ1zx2qGMNjw/Le+45e/+h3Km1GUV/duNuqkhFxe1Kk7HngoQP7Bhvpm75JO/GMYx/AExlVWRkZkybUZIUE+p2AgnFJCQO4lseoIvz29Z6C0/5G9JOSoRb5qYIvdzQmbt0ry3ad1zskLTjyWjm6D8zJNb3pj0WdkRhr2HZ5BCoumtNuAQxEUNmJ+f7+AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE5LTEwLTI2VDA3OjM4OjAxKzAwOjAwZ+n0cwAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxOS0xMC0yNlQwNzozODowMSswMDowMBa0TM8AAAAZdEVYdFNvZnR3YXJlAHd3dy5pbmtzY2FwZS5vcmeb7jwaAAAAAElFTkSuQmCC')
+}
+
+#main h1 > a:hover .anchor,
+#main h2 > a:hover .anchor,
+#main h3 > a:hover .anchor,
+#main h4 > a:hover .anchor,
+#main h5 > a:hover .anchor,
+#main h6 > a:hover .anchor
+{
+    visibility: visible;
 }
 
 #main code, #main pre {

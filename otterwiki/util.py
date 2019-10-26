@@ -5,6 +5,8 @@ from threading import Thread
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, BadSignature, BadData, SignatureExpired
 from otterwiki import app, mail
+import unicodedata
+import re
 
 class SerializeError(ValueError):
     pass
@@ -57,3 +59,11 @@ def sizeof_fmt(num, suffix='B'):
             return "%3.1f%s%s" % (num, unit, suffix)
         num /= 1024.0
     return "%.1f%s%s" % (num, 'Yi', suffix)
+
+# from https://github.com/Python-Markdown/markdown/blob/master/markdown/extensions/toc.py
+def slugify(value, separator="-"):
+    """ Slugify a string, to make it URL friendly. """
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
+    value = re.sub(r'[^\w\s-]', '', value.decode('ascii')).strip().lower()
+    return re.sub(r'[%s\s]+' % separator, separator, value)
+
