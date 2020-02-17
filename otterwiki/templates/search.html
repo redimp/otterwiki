@@ -28,7 +28,7 @@
   {% if m[0] %}
   <tt>{{m[0]}} {{m[3]|safe}}</tt><br>
   {% else %}
-  Name matches {{m[3]|safe}}.<br>
+  Name "<strong>{{m[3]|safe}}</strong>" matches.<br>
   {% endif %}
   {% endfor %}
   </td>
