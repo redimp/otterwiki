@@ -865,19 +865,20 @@ def search():
                         hl = re.sub("({})".format(re.escape(html_escape(match[2]))),
                                    r"::o::w::1::\1::o::w::2::", html_escape(match[1]))
                         # shorten result line
-                        if True or len(match[1])>80:
+                        if len(match[1])>70:
                             #splitter = "(::o::w::1::"+re.escape(match[2])+"::o::w::2::)"
                             splitter = "(::o::w::1::"+match[2]+"::o::w::2::)"
                             blocks = re.split(splitter, hl, flags=re.IGNORECASE)
                             for num,block in enumerate(blocks):
                                 if len(block)<10 or re.match(splitter, block, flags=re.IGNORECASE):
                                     continue
-                                words = re.split(r"(\W)",block)
+                                words = re.split(r"(\S+)",block)
                                 placeholder = False
-                                while len(words)>10:
+                                while len(words)>12:
                                     placeholder = True
                                     del(words[int(len(words)/2)])
-                                if placeholder: words.insert(int(len(words)/2)," [...] ")
+                                if placeholder:
+                                    words.insert(int(len(words)/2)," [...] ")
                                 blocks[num] = "".join(words)
                             hl = "".join(blocks)
                         # replace marker with html spans
@@ -885,15 +886,13 @@ def search():
                         hl = hl.replace("::o::w::2::", "</span>")
                         result[get_pagename(fn)].append( match + [hl] )
             # "reorder" results
-            newresult = {}
+            newresult = [{},{}]
             # first all pagename matches
             for pagename in sorted(result.keys()):
                 if result[pagename][0][0] is None:
-                    print("prio", pagename)
-                    newresult[pagename] = result[pagename]
-            # no checking required overwrite all other results
-            for pagename in sorted(result.keys()):
-                    newresult[pagename] = result[pagename]
+                    newresult[0][pagename] = result[pagename]
+                else:
+                    newresult[1][pagename] = result[pagename]
             result = newresult
 
     return render_template('search.html',

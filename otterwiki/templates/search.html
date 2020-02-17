@@ -18,7 +18,8 @@
 
 {% if result %}
 <table class="pure-table" style="width:100%;margin-top:2em;">
-{% for pn, matches in result.items() %}
+{% for result_block in result %}
+{% for pn, matches in result_block.items() %}
 <tr>
   <td style="vertical-align:top;">
     <a href="{{ url_for(".view", pagename=pn) }}">{{pn}}</a>
@@ -32,6 +33,7 @@
   {% endif %}
   {% endfor %}
   </td>
+{% endfor %}
 {% endfor %}
 </table>
 {% else %}
