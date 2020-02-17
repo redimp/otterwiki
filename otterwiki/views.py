@@ -873,25 +873,28 @@ def search():
                                 if len(block)<10 or re.match(splitter, block, flags=re.IGNORECASE):
                                     continue
                                 words = re.split(r"(\W)",block)
+                                placeholder = False
                                 while len(words)>10:
+                                    placeholder = True
                                     del(words[int(len(words)/2)])
-                                words.insert(int(len(words)/2)," [...] ")
+                                if placeholder: words.insert(int(len(words)/2)," [...] ")
                                 blocks[num] = "".join(words)
                             hl = "".join(blocks)
                         # replace marker with html spans
                         hl = hl.replace("::o::w::1::", "<span class=\"match\">")
                         hl = hl.replace("::o::w::2::", "</span>")
                         result[get_pagename(fn)].append( match + [hl] )
-                # "reorder" results
-                newresult = {}
-                # first all pagename matches
-                for pagename in sorted(result.keys()):
-                    if result[pagename][0][0] is None:
-                        newresult[pagename] = result[pagename]
-                # no checking required overwrite all other results
-                for pagename in sorted(result.keys()):
-                        newresult[pagename] = result[pagename]
-                result = newresult
+            # "reorder" results
+            newresult = {}
+            # first all pagename matches
+            for pagename in sorted(result.keys()):
+                if result[pagename][0][0] is None:
+                    print("prio", pagename)
+                    newresult[pagename] = result[pagename]
+            # no checking required overwrite all other results
+            for pagename in sorted(result.keys()):
+                    newresult[pagename] = result[pagename]
+            result = newresult
 
     return render_template('search.html',
             title="Search",
