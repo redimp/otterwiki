@@ -20,7 +20,7 @@
 <table class="pure-table" style="width:100%;margin-top:2em;">
 {% for pn, matches in result.items() %}
 <tr>
-  <td>
+  <td style="vertical-align:top;">
     <a href="{{ url_for(".view", pagename=pn) }}">{{pn}}</a>
   </td>
   <td>

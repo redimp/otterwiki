@@ -840,8 +840,8 @@ def search():
             flash("Error in search term: {}".format(e.msg),"error")
         else:
             # find all markdown files
-            lsmd = [x for x in storage.list_files() if x.endswith(".md")]
-            for fn in lsmd:
+            md_files = [filename for filename in storage.list_files() if filename.endswith(".md")]
+            for fn in md_files:
                 r = []
                 # open file, read file
                 haystack = storage.load(fn)
@@ -849,22 +849,49 @@ def search():
                 if mc_on is None and m is None:
                     m  = sre_i.search(get_pagename(fn))
                 if m is not None:
+                    # page name matches
                     r.append([None,get_pagename(fn),m.group(0)])
-                for l, s in enumerate(haystack.splitlines()):
-                    m = sre.search(s)
+                for linernumber, line in enumerate(haystack.splitlines()):
+                    line = line.strip()
+                    m = sre.search(line)
                     if not m and mc_on is None:
                         # retry with ignore case
-                        m = sre_i.search(s)
+                        m = sre_i.search(line)
                     if m:
-                        r.append(["{:04d}".format(l+1),s,m.group(0)])
+                        r.append(["{:04d}".format(linernumber+1),line,m.group(0)])
                 if len(r)>0:
                     result[get_pagename(fn)] = []
                     for match in r:
                         hl = re.sub("({})".format(re.escape(html_escape(match[2]))),
                                    r"::o::w::1::\1::o::w::2::", html_escape(match[1]))
+                        # shorten result line
+                        if True or len(match[1])>80:
+                            #splitter = "(::o::w::1::"+re.escape(match[2])+"::o::w::2::)"
+                            splitter = "(::o::w::1::"+match[2]+"::o::w::2::)"
+                            blocks = re.split(splitter, hl, flags=re.IGNORECASE)
+                            for num,block in enumerate(blocks):
+                                if len(block)<10 or re.match(splitter, block, flags=re.IGNORECASE):
+                                    continue
+                                words = re.split(r"(\W)",block)
+                                while len(words)>10:
+                                    del(words[int(len(words)/2)])
+                                words.insert(int(len(words)/2)," [...] ")
+                                blocks[num] = "".join(words)
+                            hl = "".join(blocks)
+                        # replace marker with html spans
                         hl = hl.replace("::o::w::1::", "<span class=\"match\">")
                         hl = hl.replace("::o::w::2::", "</span>")
                         result[get_pagename(fn)].append( match + [hl] )
+                # "reorder" results
+                newresult = {}
+                # first all pagename matches
+                for pagename in sorted(result.keys()):
+                    if result[pagename][0][0] is None:
+                        newresult[pagename] = result[pagename]
+                # no checking required overwrite all other results
+                for pagename in sorted(result.keys()):
+                        newresult[pagename] = result[pagename]
+                result = newresult
 
     return render_template('search.html',
             title="Search",
