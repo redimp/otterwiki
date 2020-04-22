@@ -208,6 +208,7 @@ Cheers!
                             url=url_for('.login', _external=True)),
                         )
                 flash("Your password was sent to {}. Please check your mailbox.".format(email))
+                app.logger.warning('login(): new user registered: {}'.format(email))
 
     # login_user(user, remember=form.remember_me.data)
     # next_page = request.args.get('next')
@@ -298,10 +299,12 @@ def lost_password(token=None):
         try:
             email = deserialize(token, salt="lost-password-email", max_age=86400)
         except SerializeError:
+            app.logger.warning('lost_password() Invalid token.')
             flash("Invalid token.", "error")
             return render_template('lost_password.html', title="Lost password")
         user = User.query.filter_by(email=email).first()
         login_user(user, remember=True)
+        app.logger.warning('lost_password() recovery successful: {}'.format(email))
         flash("Welcome {}, please update your password.".format(user.name))
         return redirect( url_for(".settings") )
 
@@ -310,6 +313,7 @@ def lost_password(token=None):
         token = serialize(email, salt="lost-password-email")
         user = User.query.filter_by(email=email).first()
         if user is None:
+            app.logger.warning('lost_password() unknown email: {}'.format(email))
             flash("Unknown email address '{}'.".format(email), "error")
             return render_template('lost_password.html', title="Lost password")
         # User found. Build and send the email.
@@ -321,6 +325,7 @@ To recover your password, please use the following link:
 
 Cheers!
 """
+        app.logger.warning('lost_password() recovery started: {} ({})'.format(email, token))
         send_email(
                 subject = "Lost Password  - {} - An Otter Wiki".format(app.config['SITE_NAME']),
                 recipients = [email],

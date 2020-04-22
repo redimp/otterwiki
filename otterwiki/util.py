@@ -35,7 +35,10 @@ def get_pagename(filename):
 
 def send_async_email(app, msg):
     with app.app_context():
-        mail.send(msg)
+        try:
+            mail.send(msg)
+        except Exception as e:
+            app.logger.error('send_async_email(): Exception {}'.format(e))
 
 def send_email(subject, recipients, text_body, sender=None, html_body=None):
     """send_email
