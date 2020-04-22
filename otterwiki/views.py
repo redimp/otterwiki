@@ -299,7 +299,7 @@ def lost_password(token=None):
         try:
             email = deserialize(token, salt="lost-password-email", max_age=86400)
         except SerializeError:
-            app.logger.warning('lost_password() Invalid token.')
+            app.logger.warning('lost_password() Invalid token: {}'.format(token))
             flash("Invalid token.", "error")
             return render_template('lost_password.html', title="Lost password")
         user = User.query.filter_by(email=email).first()
