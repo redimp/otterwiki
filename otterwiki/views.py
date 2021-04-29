@@ -67,7 +67,7 @@ def load_user(user_id):
 def about():
     with open(os.path.join(app.root_path, 'about.md')) as f:
         content = f.read()
-    htmlcontent = render_markdown(content)
+    htmlcontent, _ = render_markdown(content)
     return render_template(
             'wiki.html',
             title="About an Otter Wiki",
@@ -383,18 +383,19 @@ def view(pagename='Home', revision=None):
                 subtitle='Page {} not found.'.format(pagename),
                 pagename=pagename)
     # render page using the formatter
-    page = render_markdown(content)
+    page, toc = render_markdown(content)
     subtitle = None
     if revision is not None:
         subtitle = "Revision {}".format(revision)
-
+    
     return render_template('view.html',
             title=pagename,
             subtitle=subtitle,
             pagename=pagename,
             metadata=metadata,
             revision=revision,
-            page=page)
+            page=page,
+            toc=toc)
 
 @app.route('/')
 def index():

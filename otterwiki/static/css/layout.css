@@ -45,6 +45,11 @@ The content `<div>` is where all your content goes.
     line-height: 1.6em;
 }
 
+.content-toc {
+    border: 1px solid black;
+    border-radius: .1em;
+}
+
 .header {
     margin: 0;
     color: #333;

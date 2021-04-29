@@ -2,6 +2,7 @@
 {% extends "page.html" %}
 {% block content %}
 {{ super() }}
+{{toc|safe}}
 {{page|safe}}
 {% endblock %}
 

@@ -64,6 +64,13 @@ class MyRenderer(mistune.Renderer):
         self.toc_count += 1
         return rv
 
+    def get_toc(self):
+        return {
+            "count": self.toc_count,
+            "tree": self.toc_tree,
+            "anchors": self.toc_anchors
+        }
+
 #class MyRenderer(mistune.Renderer, MyPygmentsMixin):
 #    def __init__(self, *args, **kwargs):
 #        super(MyRenderer, self).__init__(*args, **kwargs)
@@ -106,7 +113,21 @@ _renderer = MyRenderer()
 _inline = MyInlineLexer(_renderer)
 _markdown = mistune.Markdown(renderer=_renderer, inline=_inline)
 
+def parse_toc(raw_toc):
+    if raw_toc["count"] == 0:
+        return ""
+    print(raw_toc)
+    toc = """<div class="content-toc"><ul class="toc_list">"""
+    for entry in raw_toc['tree']:
+        _, name, layer, _ = entry
+        if layer > 2:
+            continue
+        anchor = slugify(name)
+        toc = toc + f"<li><a href='#{anchor}'>{' ' * layer}{name}</a></li>\n"
+    toc = toc + "</ul></div>"
+    return toc
+
 def render_markdown(text):
     _renderer.reset_toc()
     md = _markdown(text)
-    return md
+    return md, parse_toc(_renderer.get_toc())
