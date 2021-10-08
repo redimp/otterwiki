@@ -13,7 +13,7 @@
         </div>
         <div class="pure-control-group">
             <label for="email">eMail Address:</label>
-            <input id="email" type="email" name="email" value="{{email}}">
+            <input id="email" type="email" name="email" value="{{email if email is not none else ''}}">
         </div>
 
         <div class="pure-control-group">
