@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='otterwiki',
-    version='0.1',
+    version='1.0',
     long_description=__doc__,
     packages=find_packages(),
     include_package_data=True,

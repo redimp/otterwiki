@@ -22,7 +22,7 @@ Link icon made by [Freepik](https://www.flaticon.com/authors/freepik) from
 
 An Otter Wiki is released under the MIT license.
 
-Copyright (c) 2018-2019 Ralph Thesen.
+Copyright (c) 2018-2021 Ralph Thesen.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
