@@ -9,3 +9,6 @@ repository
 *.sqlite
 .coverage
 coverage_html
+app-data*
+settings.cfg
+tmp

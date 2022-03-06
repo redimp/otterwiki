@@ -1,0 +1,75 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "wiki.html" %}
+{% block content %}
+<div class="w-full mw-full p-0 clearfix">
+    <h2 class="float-left">Changelog</h2>
+{# pagination #}
+{% if pages|length > 0 %}
+<nav aria-label="Pagination" class="float-right">
+<div class="btn-group" role="group">
+  <!-- Previous page -->
+  {% if previous_page %}
+  <a class="btn btn-square" href="{{ url_for("changelog", revision=previous_page) }}">
+    <i class="fa fa-angle-left" aria-hidden="true"></i>
+    <span class="sr-only">Previous page</span> <!-- sr-only = only for screen readers -->
+  </a>
+  {% else %}
+  <span class="btn btn-square">
+    <i class="fa fa-angle-left" aria-hidden="true"></i>
+  </span>
+  {% endif %}
+  <!-- Pages -->
+  {% for page in pages %}
+  <a class="btn btn-square {{ "active" if page["active"] }}" href="{{url_for("changelog", revision=page["revision"])}}">{{page["i"]}}</a>
+  {% endfor %}
+  {% if next_page %}
+  <!-- Next page -->
+  <a class="btn btn-square" href="{{ url_for("changelog", revision=next_page) }}">
+    <i class="fa fa-angle-right" aria-hidden="true"></i>
+    <span class="sr-only">Next page</span> <!-- sr-only = only for screen readers -->
+  </a>
+  {% else %}
+  <span class="btn btn-square">
+    <i class="fa fa-angle-right" aria-hidden="true"></i>
+  </span>
+  {% endif %}
+</div>
+</nav>
+{% endif %}
+</div>
+{# log #}
+<div class="w-full mw-full p-0">
+    <div class="table-responsive table-striped">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Author</th>
+            <th>Files</th>
+            <th class="w-half">Comment</th>
+          </tr>
+        </thead>
+        <tbody>
+{% for entry in log %}
+          <tr class="align-top">
+            <td class="font-size-12">{{entry.datetime|format_datetime}}
+                <span class="btn revision-small">{{entry.revision}}</span> <a href="{{ url_for("revert", revision=entry.revision) }}"><i class="fas fa-undo" alt="revert" title="revert commit {{entry.revision}}"></i></a>
+            </td>
+{# author #}
+            <td>{%if not entry.author_email%}{{entry.author_name}}{%else%}<a href="mailto:{{entry.author_email}}">{{entry.author_name}}</a>{%endif%}</td>
+{# files #}
+            <td class="text-wrap">{% for fn,details in entry.files.items() %}
+{% if details.url %}
+<a href="{{details.url}}">{{details.name}}</a>
+{% else %}
+{{details.name}}
+{% endif %}
+{% endfor %}</td>
+            <td class="text-wrap">{{entry.message}}</td>
+          </tr>
+{% endfor %}
+        </tbody>
+      </table>
+    </div>
+</div>
+{% endblock %}

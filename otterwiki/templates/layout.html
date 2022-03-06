@@ -1,65 +1,203 @@
-{# vim: set et ts=8 sts=4 sw=4 ai: #}
-<!doctype html>
+{#- vim: set et ts=8 sts=4 sw=4 ai: -#}
+<!DOCTYPE html>
 <html lang="en">
 <head>
-{% block head %}
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{%if title%}{{title}} - {%endif%}An Otter Wiki">
-    <title> {%if title%}{{title}} &ndash;{%endif%} An Otter Wiki</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='img/otter-favicon2.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/pure-min.css') }}">
-        <!--[if lte IE 8]>
-            <link rel="stylesheet" href="{{ url_for('static', filename='css/layout-old-ie.css') }}">
-        <![endif]-->
-        <!--[if gt IE 8]><!-->
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') | debug_append_unixtime }}">
-        <!--<![endif]-->
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto+Mono" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') | debug_append_unixtime }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/pygments.css') | debug_append_unixtime }}">
+  <!-- Meta tags -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+  <meta name="viewport" content="width=device-width" />
+
+  <!-- Favicon and title -->
+  <link rel="icon" href="{{ url_for("static", filename="img/otter-favicon2.png") }}">
+
+{% block title %}
+  <title>{%if title%}{{title}} &ndash;{%endif%} An Otter Wiki</title>
 {% endblock %}
-</head>
-<body>
 
-<div id="layout">
-    <!-- Menu toggle -->
-    <a href="#menu" id="menuLink" class="menu-link">
-        <!-- Hamburger icon -->
-        <span></span>
-    </a>
-
-    <div id="menu">
-        <div class="pure-menu">
-{% if config.SITE_LOGO %}
-        <div class="site-logo">
-        <img class="site-logo" src="{{ config.SITE_LOGO }}">
-        </div>
+  <!-- Halfmoon CSS -->
+  <!--
+  <link href="css/halfmoon-variables.min.css" rel="stylesheet" />
+    Or,
+    Use the following (no variables, supports IE11):
+  -->
+    <link href="{{ url_for("static", filename="css/halfmoon.min.css") | debug_unixtime }}" rel="stylesheet" media="screen" />
+    <!-- Otterwiki CSS -->
+    <link href="{{ url_for("static", filename="css/otterwiki.css") | debug_unixtime }}" rel="stylesheet" media="screen" />
+    <!-- Otterwiki Print -->
+    <link href="{{ url_for("static", filename="css/print.css") | debug_unixtime }}" rel="stylesheet" media="print" />
+    <!-- Font awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <!-- pygments  -->
+    <link href="{{ url_for("static", filename="css/pygments.css") | debug_unixtime }}" rel="stylesheet" />
+    <!-- Roboto font (Used when Apple system fonts are not available) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Documentation styles -->
+{% block head %}
+{% endblock %}
+{% if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}
+{# Dark Mode Optimization #}
+    <!-- Chrome, Firefox OS and Opera mobile address bar theming -->
+    <meta name="theme-color" content="#000000">
+    <!-- Windows Phone mobile address bar theming -->
+    <meta name="msapplication-navbutton-color" content="#000000">
+    <!-- iOS Safari mobile address bar theming -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="#000000">
 {% endif %}
-           <a class="pure-menu-heading" href="{{ url_for('.index') }}">{{ config.SITE_NAME }}</a>
-        {% block menu %}
-        {% endblock %}
-        </div>
-        <div class="logo">
-            <a href="{{ url_for('.about') }}">
-            <div>
-          <img src="{{ url_for('static', filename='img/otter.png') }}">
+</head>
+<body class="{% if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}dark-mode{%endif%} with-custom-webkit-scrollbars with-custom-css-scrollbars">
+    {% block bodytop %}
+    {% endblock %}
+    <!-- Page wrapper start -->
+    <div id="page-wrapper" class="page-wrapper with-navbar with-sidebar" data-sidebar-type="overlayed-sm-and-down">
+
+        <!-- Sticky alerts -->
+        <div class="sticky-alerts"></div>
+
+        <!-- Navbar start -->
+        <nav class="navbar">
+            <div class="navbar-content">
+                <button id="toggle-sidebar-btn" class="btn btn-action" type="button" onclick="halfmoon.toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
-            An Otter Wiki
+            <a href="{{ url_for("index") }}" class="navbar-brand ml-10 ml-sm-20">
+                <img src="{{ url_for("static", filename="img/otterhead.png") }}" alt="">
+                <span class="d-none d-sm-flex">{{ config.SITE_NAME }}</span>
             </a>
+            <div class="navbar-content ml-auto">
+                <form action="{{ url_for("search") }}" method="post">
+                <input name="query" type="text" class="form-control mr-5" placeholder="Search">
+                </form>
+                <div class="dropdown">
+                  <button class="btn btn-action mr-5" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-btn-1">
+                    <i class="fas fa-ellipsis-v"></i>
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-right w-200" aria-labelledby="navbar-dropdown-toggle-btn-1"> <!-- w-200 = width: 20rem (200px) -->
+
+{% block navbardropdown %}
+{% if has_permission('READ') %}
+                    <div class="dropdown-divider mt-5 mb-5"></div>
+{% endif %}
+                    <a href="#" class="dropdown-item-with-icon" onclick="halfmoon.toggleDarkMode()">
+                        <span class="dropdown-icon">
+                            <i class="far fa-moon"></i>
+                        </span>
+                        Toggle dark mode
+                    </a>
+{#-
+                    <a href="{{ url_for("about") }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        About
+                    </a>
+-#}
+{% if not current_user.is_authenticated %}
+                    <a href="{{ url_for("login") }} " class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </span>
+                        Login
+                    </a>
+{% else %}
+                    <a href="{{ url_for("settings") }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="fas fa-cogs"></i>
+                        </span>
+                        Settings
+                    </a>
+                    <a href="{{ url_for("logout") }}"  class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </span>
+                        Logout
+                    </a>
+{% endif %}
+{% endblock %}
+                  </div> <!-- inner dropdown -->
+                </div> <!-- dropdown -->
+{% block navbar %}
+{% endblock %}
+            </div>
+        </nav>
+        <!-- Navbar end -->
+
+        <!-- Sidebar overlay -->
+        <div class="sidebar-overlay" onclick="halfmoon.toggleSidebar()"></div>
+
+        <!-- Sidebar start -->
+        <div class="sidebar d-flex flex-column">
+            <div class="sidebar-menu w-full flex-grow-1">
+                {% block menu %}
+                {% endblock %}
+            </div>
+            <div class="sidebar-menu text-center w-full" >
+                <a href=" {{ url_for("about") }}" class="sidebar-link">
+                <img src="{{ url_for("static", filename="img/otter.png") | debug_unixtime }}" alt="" style="max-width: 75%"/><br/>
+                An Otter Wiki
+                </a>
+            </div>
         </div>
-    </div>
+        <!-- Sidebar end -->
 
-    <div id="main">
-<!-- content start -->
-{% block main %}
+        <!-- Content wrapper start -->
+        <div class="content-wrapper">
 
-{% endblock %} 
-<!-- content end -->
+{% block content_wrapper %}
+            <div class="container-lg">
+                <!-- Simple Layouting and Elements Test -->
+                <div class="content">
+{% block breadcrumbs %}
+{% endblock %}
+{% block content %}
+{{content|safe}}
+{% endblock %}
+                </div> <!-- content -->
+            </div>
+{% endblock %}
         </div>
-    </div>
+        <!-- Content wrapper end -->
 
-<script src="{{ url_for('static', filename='js/ui.js') | debug_append_unixtime }}"></script>
+        <!-- Navbar fixed bottom start -->
+        <!--
+        <nav class="navbar navbar-fixed-bottom">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fa fa-question-circle-o mr-5" aria-hidden="true"></i>
+                        Help
+                    </a>
+                </li>
+            </ul>
+            <span class="navbar-text">
+                &copy; Copyright 2021, Brand
+            </span>
+        </nav>
+        -->
+        <!-- Navbar fixed bottom end -->
+
+    </div>
+    <!-- Page wrapper end -->
+  <!-- Halfmoon JS -->
+  <script src="{{ url_for("static", filename="js/halfmoon.min.js") }}"></script>
+{% block js %}
+{% endblock %}
+{#
+    Flashes
+#}
+<script type="text/javascript">
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    halfmoon.initStickyAlert({
+        content: "{{ message }}",
+        alertType: "{{category}}",
+      fillType: "filled",
+      hasDismissButton: true,
+    });
+  {% endfor %}
+{% endwith %}
+</script>
 
 </body>
 </html>

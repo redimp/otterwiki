@@ -1,60 +1,26 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
-{% extends "wiki.html" %}
-{% block content %}
-{% if current_user.is_authenticated %}
-{# change password #}
-{% else %}
-<div class="pure-g">
-    <div class="pure-u-1" style="margin-left:auto; margin-right:auto;">
-<form class="pure-form pure-form-aligned" method="POST" action="{{ url_for('.login') }}">
-    <fieldset>
-        <div class="pure-control-group">
-                <legend>What is your eMail address?</legend>
-        </div>
-        <div class="pure-control-group">
-            <label for="email">eMail Address:</label>
-            <input id="email" type="email" name="email" value="{{email if email is not none else ''}}">
-        </div>
-
-        <div class="pure-control-group">
-                <legend>Do you have a password?</legend>
-        </div>
-
-        <div class="pure-control-group">
-            <label for="option-one"><strong>Yes</strong>.</label>
-            <input id="option-one" type="radio" name="loginorregister" value="login" checked>
-        </div>
-
-        <div class="pure-control-group">
-            <label for="password">My password is:</label>
-            <input id="password" type="password" name="password">
-            <span class="pure-form-message-inline"><a href="{{ url_for('.lost_password') }}">Lost your password?</a></span>
-        </div>
-        <br/>
-
-        <div class="pure-control-group">
-            <label for="option-two"><strong>No</strong>, I'm new user.</label>
-            <input id="option-two" type="radio" name="loginorregister" value="signup">
-        </div>
-        <div class="pure-control-group">
-            <label for="name">My name is:</label>
-            <input id="name" type="text" name="name" placeholder="Firstname Lastname">
-            <span class="pure-form-message-inline">If you register a new account, you will receive an eMail with your password.</span>
-        </div>
-
-        <div class="pure-controls">
-            {#
-            <label for="cb" class="pure-checkbox">
-                <input id="cb" type="checkbox"> I've read the terms and conditions
-            </label>
-            #}
-
-            <button type="submit" class="pure-button pure-button-primary">Submit</button>
-        </div>
-    </fieldset>
-</form>
-            <em>This site uses cookies to track logged-in users.</em>
-    </div>
-</div>
+{% extends "form.html" %}
+{% block formcontent %}
+<form action="{{ url_for("login") }}" method="POST" class="form-inline">{# <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
+{% if next %}
+    <input type="hidden" name="next" value="{{next}}">
 {% endif %}
+  <div class="form-group">
+    <label for="email" class="required w-100">eMail Adress</label>
+    <input type="text" class="form-control" name="email" id="email" placeholder="you@example.com" value="{{email if email}}">
+  </div>
+  <div class="form-group">
+    <label for="password" class="required w-100">Password</label>
+    <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+  </div>
+  <div class="form-group">
+    <div class="custom-switch">
+        <input type="checkbox" id="remember-my-information" name="remember" {{"checked" if remember}}>
+      <label for="remember-my-information">Remember me</label>
+    </div>
+  </div>
+  <input class="btn btn-primary" type="submit" value="Login">
+  <a href="{{ url_for("register") }}" class="btn btn-link" role="button">Register</a>
+  <a href="{{ url_for("lost_password") }}" class="btn btn-link" role="button">Lost your password?</a>
+</form>
 {% endblock %}

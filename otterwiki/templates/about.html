@@ -1,0 +1,19 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "wiki.html" %}
+{% block title %}
+  <title>About An Otter Wiki</title>
+{% endblock %}
+{% block head %}
+{{ super() }}
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ url_for("index") }}">
+<meta property="og:title" content="About An Otterwiki">
+<meta property="og:description" content="An Otter Wiki is a tool for collaborative content management. Written in python using Flask.">
+<meta property="og:image" content="{{ url_for("static", filename="img/otter.png") }}">
+{% endblock %}
+{% block content %}
+<div class="page">
+{{htmlcontent|safe}}
+</div>
+{{content}}
+{% endblock %}

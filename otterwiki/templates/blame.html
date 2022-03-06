@@ -1,0 +1,19 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "page.html" %}
+{% block content %}
+<div class="w-full mw-full p-0 m-0 clearfix">
+    <h2>Blame {#{pagename}#}</h2>
+</div>
+<table class="blame">
+{% for line in blame %}
+<tr class="{{line[5]}}">
+    <td class="min">{% if line[0] %}<span class="revision-small btn">{{line[0]}}</span>{% endif %}</td>
+    <td class="min" style="white-space:nowrap">{{line[1]}}</td>
+    <td class="min" style="white-space:nowrap">{% if line[2] %}{{line[2]|format_datetime}}{% endif %}</td>
+    <td class="tt min" style="text-align:right;">{{line[3]}}</td>
+    <td class="tt"><div class="highlight">{{line[4]|safe}}</div></td>
+</tr>
+{%- endfor %}{# l in lines #}
+</table>
+{% endblock %}
+

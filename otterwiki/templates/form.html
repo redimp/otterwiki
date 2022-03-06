@@ -1,0 +1,11 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "wiki.html" %}
+{% block content %}
+<div class="w-600 mw-full">
+<div class="card">
+    <h2 class="card-title">{{title}}</h2>
+{% block formcontent %}
+{% endblock %}
+</div>{# card #}
+</div>{# w-600 container #}
+{% endblock %}

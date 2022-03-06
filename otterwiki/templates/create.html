@@ -1,26 +1,16 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
-{% extends "wiki.html" %}
-{% block content %}
-<div class="pure-g">
-    <div class="pure-u-1" style="margin-left:auto; margin-right:auto;">
-<form class="pure-form pure-form-aligned" method="POST" action="{{ url_for('.create') }}">
-    <fieldset>
-        {#
-        <div class="pure-control-group">
-                <legend>Create Page</legend>
-        </div>
-        #}
-
-        <div class="pure-control-group">
-            <label for="pagename">Name:</label>
-            <input id="pagename" type="text" name="pagename" value="{%if pagename %}{{pagename}}{%endif%}" required>
-        </div>
-        <em>Hint: Avoid abbreviations. Try to limit your name to three simple words or fewer. </em>
-        <div class="pure-controls">
-            <button type="submit" class="pure-button pure-button-primary">Submit</button>
-        </div>
-    </fieldset>
-</form>
+{% extends "form.html" %}
+{% block formcontent %}
+<form action="{{url_for("create")}}" method="POST" class="form-inline">{# class="w-400 mw-full" <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
+  <div class="form-group">
+    <label for="pagename" class="required">Page name</label>
+    <input type="text" class="form-control" name="pagename" id="pagename" placeholder="Page name" required="required" value="{{ pagename if pagename }}">
+  </div>
+  <div class="form-group">
+    <div class="form-text">
+        <strong>Hint:</strong>&nbsp;Avoid abbreviations. Try to limit your name to three simple words or fewer.
     </div>
-</div>
+  </div>
+  <input class="btn btn-primary" type="submit" value="Submit">
+</form>
 {% endblock %}

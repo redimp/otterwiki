@@ -1,24 +1,34 @@
 #! /usr/bin/env bash
-set -e -x
+# vim:set et ts=8 sts=4 sw=4 ai fenc=utf-8:
+
+set -e
 
 # take care of repository dictionary
 if [ ! -d ${OTTERWIKI_REPOSITORY} ]; then
-	mkdir -p ${OTTERWIKI_REPOSITORY}
+    mkdir -p ${OTTERWIKI_REPOSITORY}
 fi
 
 if [ ! -d ${OTTERWIKI_REPOSITORY}/.git ]; then
-	git init ${OTTERWIKI_REPOSITORY}
+    git init ${OTTERWIKI_REPOSITORY}
 fi
+
+RANDOM_SECRET_KEY=$(echo $RANDOM | md5sum | head -c 16)
 
 # take care of the otterwiki settings file
 if [ ! -f ${OTTERWIKI_SETTINGS} ]; then
-	# copy settings.cfg skeleton
-	sed -e "s#^DEBUG.*#DEBUG = False#" \
-		-e "s#^REPOSITORY.*#REPOSITORY = '/app-data/repository'#" \
-		-e "s#^SITE_NAME.*#SITE_NAME = 'Otter Wiki'#" \
-		-e "s#^SQLALCHEMY_DATABASE_URI.*#SQLALCHEMY_DATABASE_URI = 'sqlite:////app-data/db.sqlite'#" \
-	< /app/settings.cfg.skeleton > ${OTTERWIKI_SETTINGS}
-	#RUN sed -e "s#^LOG_DIR.*#LOG_DIR = '/app-data/log'#" -i $OTTERWIKI_SETTINGS
+    # copy settings.cfg skeleton
+    sed -e "s#^DEBUG.*#DEBUG = False#" \
+        -e "s#^REPOSITORY.*#REPOSITORY = '/app-data/repository'#" \
+        -e "s#^SECRET_KEY.*#SECRET_KEY = '${RANDOM_SECRET_KEY}'#" \
+        -e "s#^SITE_NAME.*#SITE_NAME = 'Otter Wiki'#" \
+        -e "s#^SQLALCHEMY_DATABASE_URI.*#SQLALCHEMY_DATABASE_URI = 'sqlite:////app-data/db.sqlite'#" \
+    < /app/settings.cfg.skeleton > ${OTTERWIKI_SETTINGS}
+fi
+
+# configure uwsgi
+if [ ! -f ${UWSGI_INI} ]; then
+    cp /app/otterwiki/uwsgi.ini ${UWSGI_INI}
+    echo -e "uid = www-data\ngid = www-data" >> ${UWSGI_INI}
 fi
 
 chown -R www-data:www-data /app-data
@@ -73,7 +83,7 @@ echo "}" >> /etc/nginx/conf.d/nginx.conf
 # in-memory bytes buffer (io.Bytesio) in Python 3.5.
 # see https://uwsgi-docs.readthedocs.io/en/latest/ThingsToKnow.html
 if ! grep -q "^command=/usr/local/bin/uwsgi.*--wsgi-disable-file-wrapper" /etc/supervisor/conf.d/supervisord.conf; then
-	sed -i '/^command=\/usr\/local\/bin\/uwsgi/ s/$/ --wsgi-disable-file-wrapper/' /etc/supervisor/conf.d/supervisord.conf
+    sed -i '/^command=\/usr\/local\/bin\/uwsgi/ s/$/ --wsgi-disable-file-wrapper/' /etc/supervisor/conf.d/supervisord.conf
 fi
 
 # enable threads, which are disabled by default
@@ -84,12 +94,12 @@ fi
 
 # tell nginx not to start an instance on its own
 if ! grep -q "^command=/usr/sbin/nginx.*-g 'daemon off;'" /etc/supervisor/conf.d/supervisord.conf; then
-	sed -i "/^command=\/usr\/sbin\/nginx/ s/$/ -g 'daemon off;'/" /etc/supervisor/conf.d/supervisord.conf
+    sed -i "/^command=\/usr\/sbin\/nginx/ s/$/ -g 'daemon off;'/" /etc/supervisor/conf.d/supervisord.conf
 fi
 
 # and take care that this is not duplicate in the /etc/nginx/nginx.conf
 if grep -q "^daemon off;" /etc/nginx/nginx.conf; then
-	sed -i "s/^daemon off;/# daemon off;/" /etc/nginx/nginx.conf
+    sed -i "s/^daemon off;/# daemon off;/" /etc/nginx/nginx.conf
 fi
 
 exec "$@"

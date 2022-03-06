@@ -1,122 +1,77 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
-{% extends "page.html" %}
+{% extends "preview.html" %}
+{#
+    Head
+#}
 {% block head %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/fontawesome/fontawesome.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/simplemde.min.css') }}">
-{{ super() }}
-    <script src="{{ url_for('static', filename='js/simplemde.min.js') }} "></script>
-<style>
-.CodeMirror-fullscreen {
-    left: 150px;
-}
-#main pre.CodeMirror-line {
-    border: none;
-    background-color: transparent;
-}
+<style type="text/css" media="screen">
 </style>
+<link href="{{ url_for("static", filename="css/codemirror.css") | debug_unixtime }}" rel="stylesheet" />
 {% endblock %}
-{% block content %}
-<form action="{{ url_for('.save', pagename=pagename ) }}" method="post">
-<textarea name="content" style="width:100%; min-height:200px;">{{content}}</textarea>
-
-<input class="pure-input-1" type="text" name="message" placeholder="Commit message: Updated {{pagename}}">
-<button type="submit" class="pure-button pure-button-primary">Save</button>
-<a href="{{url_for('.view', pagename=pagename)}}" class="pure-button">Cancel</a>
+{#
+    Navbar
+#}
+{% block navbar %}
+<a href="{{ url_for('view', path=pagepath) }}" class="btn btn-danger mr-5" role="button"><i class="fas fa-window-close"></i></a>
+<a href="#modal-commit" class="btn btn-success mr-5" role="button"><i class="fas fa-save"></i></a>
+<button type="submit" class="btn btn-primary" form="pagecontent"><i class="far fa-eye"></i></button>
+{% endblock %}
+{#
+    Content
+#}
+{% block content_wrapper %}
+<form id="pagecontent" action="{{ url_for('preview', path=pagepath) }}" method="post">
+<textarea id="content_editor" name="content_editor">{{ content_editor }}</textarea>
 </form>
-<script>
-var simplemde = new SimpleMDE({
-    renderingConfig: {
-        singleLineBreaks: false,
-        codeSyntaxHighlighting: true,
-    },
-    spellChecker: false,
-    toolbar:
-    [
-      {
-        "name": "bold",
-        "className": "fa fa-bold",
-        "title": "Bold",
-        "action": SimpleMDE.toggleBold,
-      },
-      {
-        "name": "italic",
-        "className": "fa fa-italic",
-        "title": "Italic",
-        "action": SimpleMDE.toggleItalic,
-      },
-      {
-        "name": "heading",
-        "className": "fa fa-header",
-        "title": "Heading",
-        "action": SimpleMDE.toggleHeadingSmaller,
-      },
-      "|",
-      {
-        "name": "quote",
-        "className": "fa fa-quote-left",
-        "title": "Quote",
-        "action": SimpleMDE.Blockquote,
-      },
-      {
-        "name": "unordered-list",
-        "className": "fa fa-list-ul",
-        "title": "Generic List",
-        "action": SimpleMDE.toggleUnorderedList,
-      },
-      {
-        "name": "ordered-list",
-        "className": "fa fa-list-ol",
-        "title": "Numbered List",
-        "action": SimpleMDE.toggleOrderedList,
-      },
-      "|",
-      {
-        "name": "link",
-        "className": "fa fa-link",
-        "title": "Create Link",
-        "action": SimpleMDE.drawLink,
-      },
-      {
-        "name": "image",
-        "className": "fa fa-picture-o",
-        "title": "Insert Image",
-        "action": SimpleMDE.drawImage,
-      },
-      {
-        "name": "table",
-        "className": "fa fa-table",
-        "title": "Insert Table",
-        "action": SimpleMDE.drawTable,
-      },
-      "|",
-      {
-        "name": "preview",
-        "className": "fa fa-eye no-disable",
-        "title": "Toggle Preview",
-        "action": SimpleMDE.togglePreview,
-      },
-      {
-        "name": "side-by-side",
-        "className": "fa fa-columns no-disable no-mobile",
-        "title": "Toggle Side by Side",
-        "action": SimpleMDE.toggleSideBySide,
-      },
-      {
-        "name": "fullscreen",
-        "className": "fa fa-arrows-alt no-disable no-mobile",
-        "title": "Toggle Fullscreen",
-        "action": SimpleMDE.toggleFullScreen,
-      },
-      "|",
-      {
-        "name": "guide",
-        "action": "{{ url_for('.syntax') }}", {# https://simplemde.com/markdown-guide #}
-        "className": "fa fa-question-circle",
-        "title": "Markdown Guide",
-        "default": true
-      },
-      "|"
-    ]
-});
+{% endblock %}
+{#
+    Javascript
+#}
+{% block js %}
+{# load the codemirror stuff #}
+<script src="{{ url_for("static", filename="js/codemirror.js") }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for("static", filename="js/cm-markdown.js") }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for("static", filename="js/cm-continuelist.js") }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for("static", filename="js/inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for("static", filename="js/codemirror-4.inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+    var cm_editor = CodeMirror.fromTextArea(document.getElementById("content_editor"), {
+        mode: 'markdown',
+        lineNumbers: true,
+        theme: "otterwiki",
+        lineWrapping: true,
+        indentWithTabs: false,
+        autofocus: true,
+        extraKeys: {"Enter": "newlineAndIndentContinueMarkdownList"},
+      });
+    document.getElementById('saveform').onsubmit = function() {
+        var content_editor = cm_editor.getValue();
+        document.getElementById('content_update').value = content_editor;
+    };
+{#
+thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuecomment-227075500
+#}
+    inlineAttachment.editors.codemirror4.attach(cm_editor, {
+        uploadUrl: '{{ url_for('inline_attachment', pagepath=pagepath) }}',
+        urlText: "![]({filename})",
+        onFileUploadResponse: function(xhr) {
+            var result = JSON.parse(xhr.responseText),
+            filename = result[this.settings.jsonFieldName];
+
+            if (result && filename) {
+                var newValue;
+                if (typeof this.settings.urlText === 'function') {
+                    newValue = this.settings.urlText.call(this, filename, result);
+                } else {
+                    newValue = this.settings.urlText.replace(this.filenameTag, filename);
+                }
+                var text = this.editor.getValue().replace(this.lastValue, newValue);
+                this.editor.setValue(text);
+                this.settings.onFileUploaded.call(this, filename);
+            }
+            return false;
+        }
+    });
+</script>
 </script>
 {% endblock %}

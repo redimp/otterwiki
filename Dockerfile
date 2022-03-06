@@ -1,4 +1,4 @@
-FROM tiangolo/uwsgi-nginx:python3.5
+FROM tiangolo/uwsgi-nginx:python3.8
 
 # By default, allow unlimited file sizes, modify it to limit the file sizes
 # To have a maximum of 1 MB (Nginx's default) change the line to:
@@ -11,50 +11,38 @@ ENV NGINX_MAX_UPLOAD 0
 ENV LISTEN_PORT 80
 
 # Which uWSGI .ini file should be used, to make it customizable
-ENV UWSGI_INI /app/uwsgi.ini
+ENV UWSGI_INI /app/otterwiki-uwsgi.ini
 
 # URL under which static (not modified by Python) files will be requested
 # They will be served by Nginx directly, without being handled by uWSGI
-
 ENV STATIC_URL /static
-# Absolute path in where the static files wil be
-ENV STATIC_PATH /app/static
+# Absolute path in where the static files wilk be
+ENV STATIC_PATH /app/otterwiki/static
 
-# Add otterwiki app
-COPY ./otterwiki /app
-WORKDIR /app
-
-# # upgrade pip
-# RUN pip install --upgrade pip
-
-# install packages
-ADD requirements.txt /requirements.txt
-RUN pip install -r /requirements.txt
-
-# RUN apt-get update
-# RUN apt-get install -y git
-
-# Make /app/* available to be imported by Python globally to
-# better support several use cases like Alembic migrations.
-ENV PYTHONPATH=/app
-
+# Absolute paths to otterwiki settings and repository
 ENV OTTERWIKI_SETTINGS=/app-data/settings.cfg
 ENV OTTERWIKI_REPOSITORY=/app-data/repository
 
-# add and install otterwiki
-ADD . /app
+# create directories
+RUN mkdir -p /app-data /app/otterwiki
 
-RUN mkdir -p /app-data
-RUN chown -R www-data:www-data /app-data
+# Add otterwiki app
+ADD setup.py settings.cfg.skeleton /app/
+ADD ./otterwiki /app/otterwiki
+WORKDIR /app
+
+# install packages
+RUN pip install --disable-pip-version-check --use-feature=in-tree-build .
 
 VOLUME /app-data
-WORKDIR /app-data
 
 # Copy the entrypoint that will generate Nginx additional configs
-COPY docker-entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
 # Start Supervisor, with Nginx and uWSGI
 CMD ["/usr/bin/supervisord"]
+
+# vim:set et ts=8 sts=2 sw=2 ai fenc=utf-8:

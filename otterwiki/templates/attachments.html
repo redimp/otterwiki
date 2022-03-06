@@ -1,90 +1,76 @@
-{# vim: set et ts=8 sts=2 sw=2 ai: #}
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "page.html" %}
 {% block content %}
-
-<div class="pure-g">
-  {% if has_attachment_access() %}
-  <div class="pure-u-1-1" style="margin-bottom:1em; padding: 5px; background:#eee;">
-    <form class="pure-form" enctype="multipart/form-data" method="POST" action="{{ url_for('.attachments', pagename=pagename) }}">
-      <div class="pure-u-1-1" id="filearea">
-        <input class="pure-input-1" type="file" name="file" multiple="">
-      </div>
-      <div class="pure-u-1">
-        <input class="pure-input-1" type="text" name="message" placeholder="Commit message">
-        <button type="submit" class="pure-button pure-button-primary">Upload</button>
-        <a title="Add another upload field" class="pure-button addfile" href="#" onclick="addFields()">+</a>
-      </div>
-    </form>
+<div class="w-full mw-full p-0 clearfix">
+    <h2 class="float-left">Attachments</h2>
+</div>
+{# upload form #}
+{% if has_permission("UPLOAD") %}
+<div class="card m-0 p-1">
+  <form action="{{ url_for("attachments" , pagepath=pagepath) }}" method="POST" class="form-inline" enctype=multipart/form-data>
+  <div class="custom-file">
+    <input name="file" type="file" id="file-upload" multiple="multiple">
+    <label for="file-upload">Choose files to upload</label>
   </div>
-  {% endif %}
-  <div class="pure-u-1-1">
-  <table id="log-table" class="pure-table" style="width:100%;">
-    <thead>
-      <tr>
-        <th>Thumbnail</th>
-        <th>Filename</th>
-        <th>Size</th>
-        <th>Revision</th>
-        <th>Date</th>
-        <th>Author</th>
-      </tr>
-    </thead>
-    <tbody>
-  {% for entry in attachments %}
-      <tr class="{{ loop.cycle('pure-table-odd', '') }}">
-        <td>
-          {% if entry.thumbnail %}
-          <img src="{{ url_for('.get_attachment_thumbnail', pagename=pagename, filename=entry.filename) }}">
-          {% endif %}
-        </td>
-        <td><a href="{{ url_for('.get_attachment', pagename=pagename, filename=entry.filename) }}">{{entry.filename}}</a>
-{% if has_attachment_access() %}
-          <br>
-          [<a href="{{ url_for('.edit_attachment', pagename=pagename, filename=entry.filename) }}">edit</a>]
+  <div class="form-group">
+      <input type="text" class="form-control" name="message" id="message" placeholder="Commit message" value="{{message}}">
+  </div>
+  <div class="form-group m-0">
+    <input class="btn btn-primary" type="submit" value="Upload">
+  </div>
+  </form>
+</div>
 {% endif %}
-        </td>
-        <td>{{entry.size}}</td>
-        <td><tt>[<a href="{{ url_for('.edit_attachment', pagename=pagename, filename=entry.filename) }}">{{entry.meta.revision}}</a>]</tt>
-</td>
-        <td>{{entry.mtime|format_datetime}}</td>
-        <td>{%if not entry.meta.author_email%}{{entry.meta.author_name}}{%else%}<a href="mailto:{{entry.meta.author_email}}">{{entry.meta.author_name}}</a>{%endif%}</td>
-        {#<td>{{entry.message}}</td>#}
-      </tr>
-      {% if entry.thumbnail %}
-      <tr class="{{ loop.cycle('pure-table-odd', '') }}">
-        <td colspan="6">
-          Image: <code>![]({{entry.url}})</code></br>
-          Thumbnail: <code>[![]({{entry.thumbnail}})]({{entry.url}})</code>
-        </td>
-      </tr>
-      {% else %}
-      <tr class="{{ loop.cycle('pure-table-odd', '') }}">
-        <td colspan="6">
-          Link: <code>[{{entry.filename}}]({{entry.url}})</code></br>
-        </td>
-      </tr>
-      {% endif %}
-  {% endfor %}
-    </tbody>
-  </table>
+{# file list #}
+<div class="w-full mw-full my-15">
+  <div class="table-striped">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Thumbail</th>
+          <th>Filename</th>
+          <th>Size</th>
+          <th>Date</th>
+          <th>Author</th>
+          <th class="w-half">Comment</th>
+        </tr>
+      </thead>
+      <tbody>
+{% for f in files %}
+        <tr class="align-top">
+            <td><a href="{{f.url}}">{% if f.thumbnail_url %}<img src="{{f.thumbnail_url}}"/>{%else%}{{f.thumbnail_icon|safe}}{%endif%}</a></td>
+            <td><a href="{{f.url}}">{{f.filename}}</a><br/>
+{# copy n paste optionen #}
+<div class="dropdown dropup">
+    <a href="#" data-toggle="dropdown" id="dropdown-toggle-btn-{{loop.index}}" aria-haspopup="true" aria-expanded="false">
+        <i class="fas fa-copy"></i>
+    </a>
+    <div class="dropdown-menu" aria-labelledby="dropdown-toggle-btn-{{loop.index}}">
+        <h6 class="dropdown-header">Markdown Shortcuts <span class="font-size-12">- Click to copy to clipboard</span></h6>
+{% if f.thumbnail_url %}
+    <a href="#" onclick="navigator.clipboard.writeText('![]({{f.url}})')" class="dropdown-item"><i class="fas fa-copy"></i> Inline Image:</a>
+    <div class="dropdown-item font-size-12">![]({{f.url}})</div>
+    <div class="dropdown-divider"></div>
+    <a href="#" onclick="navigator.clipboard.writeText('[![]({{f.thumbnail_url}})]({{f.url}})')" class="dropdown-item">Link with Thumbnail:</a>
+    <div class="dropdown-item font-size-12>">[![]({{f.thumbnail_url}})]({{f.url}})</div>
+    <div class="dropdown-divider"></div>
+{% endif %}
+        <a href="#" onclick="navigator.clipboard.writeText('[{{f.filename}}]({{f.url}})')" class="dropdown-item"><i class="fas fa-copy"></i> Link Attachment:</a>
+        <div class="dropdown-item font-size-12">[{{f.filename}}]({{f.url}})</div>
+    </div>
+</div>
+            </td>
+            <td>{{f.filesize}}
+{% if has_permission("READ") %}
+                <br/><a href="{{ url_for("edit_attachment", pagepath=pagepath, filename=f.filename) }}" class=""><i class="fas fa-edit"></i></a>
+{% endif %}
+            <td>{{f.datetime|format_datetime}}<br/><span class="btn revision-small">{{f.revision}}</span></td>
+            <td>{{f.author_name}}</td>
+            <td>{{f.message}}</pre></td>
+        </tr>
+{% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
-{# https://stackoverflow.com/a/14853880/212768 #}
-<script type='text/javascript'>
-    function addFields(){
-      // Number of inputs to create
-      var number = 1;
-      // Container <div> where dynamic content will be placed
-      var container = document.getElementById("filearea");
-      for (i=0;i<number;i++){
-        // Create an <input> element, set its type and name attributes
-        var input = document.createElement("input");
-        input.type = "file";
-        input.name = "file";
-        input.classList.add("pure-input-1");
-        container.appendChild(input);
-      }
-    }
-</script>
-
 {% endblock %}

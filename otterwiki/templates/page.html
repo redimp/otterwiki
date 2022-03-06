@@ -1,28 +1,95 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
+{% block js %}
+{{ super() }}
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [["\\(", "\\)"]],
+                displayMath: [ ['\\[', '\\]'], ],
+                processEscapes: true,
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+{% endblock %}
 {% block menu %}
 {{ super() }}
-  <ul class="pure-menu-list">
-      <li class="pure-menu-item menu-category">Page</li>
-      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.view',pagename=pagename) }}">View</a></li>
-{% if has_write_access() %}
-  {% if revision %}
-      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.edit',pagename=pagename, revision=revision) }}">Edit</a></li>
-  {% else %}
-      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.edit',pagename=pagename) }}">Edit</a></li>
-  {% endif %}
-{% endif %}
-      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.history',pagename=pagename) }}">History</a></li>
-      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.attachments',pagename=pagename) }}">Attachments</a></li>
-{% if has_write_access() %}
-      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.rename',pagename=pagename) }}">Rename</a></li>
-      <li class="pure-menu-item"><a class="pure-menu-link" href="{{ url_for('.delete',pagename=pagename) }}">Delete</a></li>
-{% endif %}
-  </ul>
 {% endblock %}
+{% block breadcrumbs %}
+{% if breadcrumbs %}
+<nav aria-label="Breadcrumb navigation example">
+  <ul class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="fas fa-home"></i></a></li>
+{% for bname, bpath in breadcrumbs %}
+{% if not loop.last %}
+{# TODO recheck when subdirectories are implemented #}
+<li class="breadcrumb-item"><a href="{{ url_for('view', path=bpath) }}">{{bname}}</a></li>
+{% else %}
+<li class="breadcrumb-item"><a href="{{ url_for('view', path=bpath) }}">{{bname}}</a></li>
+{% endif %}
+{% endfor %}
+{%if revision %}
+<li class="breadcrumb-item"><a href="{{ url_for('history', path=pagepath, revision=revision ) }}"><span class="revision-small">{{revision}}</span></a></li>
+{% endif %}
+</li>
+ </ul>
+</nav>
+{% endif %}
+{% endblock %}
+{#
+#}
+{% block navbardropdown %}
+                    <a href="{{ url_for('attachments', pagepath=pagepath) }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="fa fa-paperclip"></i>
+                        </span>
+                        Attachments
+                    </a>
+                    <a href="{{ url_for('history', path=pagepath) }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="far fa-file-alt"></i>
+                        </span>
+                        History
+                    </a>
+                    <a href="{{ url_for('blame', path=pagepath, revision=resivion) if revision else url_for('blame', path=pagepath) }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="fas fa-people-arrows"></i>
+                        </span>
+                        Blame
+                    </a>
+{% if has_permission('WRITE') %}
+                    <a href="{{ url_for('rename', path=pagepath) }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="far fa-edit"></i>
+                        </span>
+                        Rename
+                    </a>
+                    <a href="{{ url_for('delete', path=pagepath) }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="far fa-trash-alt"></i>
+                        </span>
+                        Delete
+                    </a>
+{% endif %}
+                    <div class="dropdown-divider mt-5 mb-5"></div>
+{{ super() }}
+{% endblock %}
+{#
+#}
+{% block navbar %}
+{% if has_permission('WRITE') %}
+<a href="{{ url_for('edit', path=pagepath) }}" class="btn btn-primary" role="button"><i class="fas fa-pencil-alt"></i></a>
+{% else %}
+<a href="{{ url_for('login') }}" class="btn" role="button"><i class="fas fa-sign-in-alt" title="Login"></i></a>
+{% endif %}
+{% endblock %}
+{#
+#}
 {% block content %}
-{{content|safe}}
-{% endblock %}
-
-{% block footer %}
+<div class="page">
+{{htmlcontent|safe}}
+</div>
+{{content}}
 {% endblock %}

@@ -1,46 +1,55 @@
-{# vim: set et ts=8 sts=2 sw=2 ai: #}
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
 {% block content %}
-
-<div class="pure-g">
-  <div class="pure-u-1">
-  <form class="pure-form" method="POST" action="{{ url_for('.search') }}">
-  <fieldset>
-      <input class="pure-input-1-2" id="needle" type="text" name="needle" value="{{ needle or '' }}" required>
-      <button type="submit" class="pure-button pure-button-primary">Search</button>
-  </fieldset>
-  <label for="re"> <input id="re" type="checkbox" name="re" {{ 'checked' if re_on }}> Regular expression
-  </label>
-  <label for="mc"> <input id="mc" type="checkbox" name="mc" {{ 'checked' if mc_on }}> Match case  </label>
-  </form>
+<div class="w-600 mw-full">
+<div class="card">
+  <h2 class="card-title">Search</h2>
+  <form action="{{url_for("search")}}" method="POST" class="form-inline">
+  <div class="form-group">
+    <input type="text" class="form-control" name="query" id="query" placeholder="Search term" value="{{query if query}}">
   </div>
-</div>
-
+{#
+  <div class="form-group">
+    <div class="form-text">
+        <strong>Hint:</strong>&nbsp;Avoid abbreviations. Try to limit your name to three simple words or fewer.
+    </div>
+  </div>
+#}
+  <div class="form-group">
+  <div class="custom-checkbox d-inline-block mr-10">
+    <input type="checkbox" id="is_casesensitive" name="is_casesensitive" value="y" {{"checked" if is_casesensitive}}>
+    <label for="is_casesensitive">Match case</label>
+  </div>
+  <div class="custom-checkbox d-inline-block mr-10">
+    <input type="checkbox" id="regexp" name="is_regexp" value="y" {{"checked" if is_regexp}}>
+    <label for="regexp">Regular expression</label>
+  </div>
+{#
+  <div class="custom-checkbox d-inline-block">
+    <input type="checkbox" id="in_history" name="in_history" value="y" {{"checked" if in_history}}>
+    <label for="in_history">Search in history</label>
+  </div>
+#}
+  </div>
+  <div class="form-group">
+    <input class="btn btn-primary" type="submit" value="Search">
+  </div>
+</form>
+</div>{# card #}
+</div>{# w-600 container #}
+{#
+#}
 {% if result %}
-<table class="pure-table" style="width:100%;margin-top:2em;">
-{% for result_block in result %}
-{% for pn, matches in result_block.items() %}
-<tr>
-  <td style="vertical-align:top;">
-    <a href="{{ url_for(".view", pagename=pn) }}">{{pn}}</a>
-  </td>
-  <td>
-  {% for m in matches %}
-  {% if m[0] %}
-  <tt>{{m[0]}} {{m[3]|safe}}</tt><br>
-  {% else %}
-  Name "<strong>{{m[3]|safe}}</strong>" matches.<br>
-  {% endif %}
-  {% endfor %}
-  </td>
+<div class="content">
+    <h1 class="content-title">Search matched {{keys | length}} page{%if keys | length >1%}s{%endif%}:</h1>
+</div>
+{% for key in keys %}
+<div class="content">
+    <h2 class="content-title"><a href="{{ url_for('view', path=key[3]) }}">{{key[3]}}</a> ({{key[1]}} match{%if key[1]!=1%}es{%endif%} found)</h2>
+{% for match in result[key] %}
+<p>{{match|safe}}</p>
 {% endfor %}
+</div>
 {% endfor %}
-</table>
-{% else %}
-  {% if needle %}
-  <br>
-  No match found.
-  {% endif %}
 {% endif %}
-
 {% endblock %}

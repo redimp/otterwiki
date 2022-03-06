@@ -1,15 +1,17 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
 {% block content %}
-{# This is not the perfect solution ...#}
-<div class="pure-g">
-{% for letter, pagelist in pageidx.items()|sort %}
-<div class="pure-u-1-4">
-<h2>{{letter}}</h2>
-    {% for pn in pagelist %}
-    <a href="{{ url_for('.view', pagename=pn) }}">{{pn}}</a><br>
-    {% endfor %}
+<div class="container-lg">
+<div class="row">
+{% for letter, pagelist in pages.items()|sort %}
+<div class="col-xl-2 col-lg-3 col-md-6"><h2 class="content-title">{{letter}}</h2>
+<p style="word-break: break-all;">
+{% for page in pagelist %}
+<a href="{{ url_for('view', path=page[1] ) }}">{{page[0]}}</a><br/>
+{% endfor %}
+</p>
 </div>
 {% endfor %}
+</div>
 </div>
 {% endblock %}

@@ -1,0 +1,64 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "page.html" %}
+{#
+    Head
+#}
+{% block head %}
+<style type="text/css" media="screen">
+div.content-wrapper {
+    background-image: url("{{ url_for("static", filename="img/preview.png") | debug_unixtime }}");
+}
+</style>
+{% endblock %}
+{#
+    Top of the Body. Used also in editor.html
+#}
+{% block bodytop %}
+<div class="modal" id="modal-commit" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <a href="#" class="btn close" role="button" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </a>
+      <h5 class="modal-title">Save {{pagename}}</h5>
+      <form id="saveform" action="{{ url_for('save', path=pagepath) }}" method="post" autocomplete="off">
+      <input id="content_update" type="hidden" name="content_update" value="">
+        <div class="form-group">
+          <label for="msg" class="required">Commit Message</label>
+          <input name="commit" id="commit" type="text" class="form-control" placeholder="You commit message here" required="required">
+        </div>
+        <input class="btn btn-primary btn-block" type="submit" value="Save">
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{#
+    Navbar
+#}
+{% block navbar %}
+<a href="{{ url_for('view', path=pagepath) }}" class="btn btn-danger mr-5" role="button"><i class="fas fa-window-close"></i></a>
+<a href="#modal-commit" class="btn btn-success mr-5" role="button"><i class="fas fa-save"></i></a>
+<button type="submit" class="btn btn-primary" form="pagecontent"><i class="fas fa-pencil-alt"></i></button>
+{% endblock %}
+{#
+    Content
+#}
+{% block content %}
+{{content_html|safe}}
+<form id="pagecontent" action="{{ url_for('edit', path=pagepath) }}" method="post">
+<input type="hidden" name="content_editor" value="{{ content_editor }}" id="content_editor"/>
+</form>
+{% endblock %}
+{#
+    Javascript
+#}
+{% block js %}
+{# this fetches the editor/preview content #}
+<script type="text/javascript">
+    document.getElementById('saveform').onsubmit = function() {
+        var content_editor = document.getElementById('content_editor').value;
+        document.getElementById('content_update').value = content_editor;
+    };
+</script>
+{% endblock %}

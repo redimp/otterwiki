@@ -1,8 +1,8 @@
 # An Otter Wiki
 
-An Otter Wiki is a python based software for collaborative content management,
-called a [wiki](https://en.wikipedia.org/wiki/Wiki). The content is
-stored in a git repository, which keeps track of all changes.
+An Otter Wiki is a python based software for collaborative content
+management, called a [wiki](https://en.wikipedia.org/wiki/Wiki). The
+content is stored in a git repository, which keeps track of all changes.
 [Markdown](https://daringfireball.net/projects/markdown) is used as
 Markup language.
 
@@ -21,7 +21,7 @@ or with debugging enabled
 
     make debug
 
-And open it in the browser at [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+And open your browser at [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
 
 ## Prerequisites
 
@@ -73,6 +73,20 @@ An Otter Wiki is build using multiple tools, frameworks and templates:
 
 ## Docker
 
+### Build and run using `docker-compose`
+
+Build the latest image using:
+```
+docker-compose build
+```
+
+Optional: configure port and volume storage via the `docker-compose.yml`.
+
+Start the container:
+```
+docker-compose up -d
+```
+
 ### Build and run the image manually
 
 First build the image
@@ -97,7 +111,7 @@ docker run -d --restart=always -p 80:80 otterwiki
 
 ## MIT License
 
-Copyright (c) 2018-2019 Ralph Thesen <mail@redimp.de>
+Copyright (c) 2018-2022 Ralph Thesen <mail@redimp.de>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

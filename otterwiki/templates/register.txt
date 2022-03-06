@@ -1,0 +1,9 @@
+Hello {{name}},
+
+thank you for registering your account at {{sitename}} (an Otter Wiki).
+
+The password generated for you is: {{password}}
+
+Please login here: {{url}}
+
+Cheers!

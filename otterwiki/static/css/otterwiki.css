@@ -1,0 +1,253 @@
+/* vim: set et sts=4 ts=4 ai: */
+.sidebar {
+    width: 20rem;
+    background: #e2e2e2;
+}
+
+.navbar {
+    background: #d2d2d2;
+}
+
+#toggle-sidebar-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.page-wrapper.with-sidebar > .content-wrapper
+{
+    left: 20rem;
+    width: calc(100% - 20rem);
+}
+
+.fake-content {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.025);
+}
+
+.page-wrapper.with-sidebar[data-sidebar-type~="full-height"] > .navbar:not(.navbar-fixed-bottom) {
+    left: 20rem;
+    width: calc(100% - 20rem);
+}
+
+.page-wrapper.with-sidebar[data-sidebar-type~="full-height"] > .navbar.navbar-fixed-bottom
+{
+    left: 20rem;
+    width: calc(100% - 20rem);
+}
+
+/* Headlines and anchors */
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    display:block;
+}
+
+a.anchor,
+a.anchor:hover {
+    text-decoration: none;
+    font-size:40%;
+    position: relative;
+    margin-left: 1rem;
+    bottom: 0.4rem;
+    opacity: 0;
+}
+
+h1:hover a.anchor,
+h2:hover a.anchor,
+h3:hover a.anchor,
+h4:hover a.anchor,
+h5:hover a.anchor {
+    opacity: 1;
+}
+
+/* pre and code */
+code,
+pre,
+.code {
+    padding: 0.2rem;
+    background-color: rgba(0, 0, 0, 0.05);
+    font-size: inherit;
+    line-height: 1.5;
+    padding: 0.1rem 0.5rem;
+    margin: 0 0.1rem;
+}
+.dark-mode code,
+.dark-mode pre,
+.dark-mode .code {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.revision-small {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    text-decoration: none;
+    padding: 0 0.5rem;
+    line-height: 2rem;
+    height: 2rem;
+}
+
+.dropdown-icon {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.6rem;
+    margin-right: 1rem;
+    color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.05);
+    border: 0 solid transparent;
+    border-radius: 0.4rem;
+}
+.dropdown-icon:hover {
+    color: rgba(0, 0, 0, 1.0);
+}
+.dark-mode .dropdown-icon {
+    color: rgba(255, 255, 255, 0.65);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: transparent;
+}
+.dark-mode .dropdown-icon:hover {
+    color: rgba(255, 255, 255, 1.0);
+}
+.dropdown-item-with-icon {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+    border: 0.4rem solid transparent;
+    color: rgba(0, 0, 0, 0.85);
+    border-color: transparent;
+}
+.dark-mode .dropdown-item-with-icon {
+    color: rgba(255, 255, 255, 0.8);
+    border-color: transparent;
+}
+.dropdown-item-with-icon:hover {
+    color: rgba(0, 0, 0, 1.0);
+    text-decoration: none;
+}
+.dark-mode .dropdown-item-with-icon:hover {
+    color: rgba(255, 255, 255, 1.0);
+}
+
+#editor {
+    background: transparent;
+    display: none;
+}
+/* history diff */
+table.diff {
+    overflow-x: auto;
+    width: 100%;
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+table.diff td {
+    padding: 0.1rem 1.5rem;
+}
+tr.removed {
+    color: rgba(0, 0, 0, 0.85);
+    background-color: #f8d0d9;
+    border-color: #ed586c;
+}
+tr.added {
+    color: rgba(0, 0, 0, 0.85);
+    background-color: #d5f9e5;
+    border-color: #0be881;
+}
+.dark-mode tr.removed {
+    color: #ff4d4f;
+    background-color: #301923;
+    border-color: #8c0e2e;
+}
+.dark-mode tr.added {
+    color: #0be881;
+    background-color: #17312a;
+    border-color: #0d8951;
+}
+.diff-decoration {
+    width: 0.5rem;
+}
+
+table .min {
+    width: 1%;
+}
+table.blame {
+    overflow-x: auto;
+    width: 100%;
+}
+table.blame td {
+    padding: 0.1rem 0.5rem;
+    /*border: 1px solid black;*/
+}
+table.blame .tt {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
+table.blame tr.odd {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode table.blame tr.odd {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.text-match {
+    background-color: #ffcf00 !important;
+    color: rgba(0,0,0,.85);
+}
+
+/* page tweaks */
+.page h1 { font-size: 3.6rem; }
+.page h2 { font-size: 3.2rem; }
+.page h3 { font-size: 2.8rem; }
+.page h4 { font-size: 2.4rem; }
+.page h5 { font-size: 2.0rem; }
+.page h6 { font-size: 1.6rem; }
+
+.page p,
+.page li {
+    font-size: 1.6rem;
+}
+
+.page blockquote {
+    border-left: 2px solid rgba(24,144,255,0.5);
+    padding-left: 1rem;
+    margin-inline-start: 2rem;
+    margin-inline-end: 0rem;
+    background-color: rgba(200,200,200,0.1);
+}
+/* table */
+.page table {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-collapse: collapse;
+}
+.page th {
+    background-color: rgba(0, 0, 0, 0.2);
+    text-align:center;
+    padding: 1.0rem 1.2rem;
+}
+.page td {
+    padding: 0.8rem 1.0rem;
+}
+
+.page table > thead > tr > th,
+.page table > thead > tr > td,
+.page table > tbody > tr > th,
+.page table > tbody > tr > td,
+.page table > tfoot > tr > th,
+.page table > tfoot > tr > td {
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+    border-right: 1px solid rgba(255,255,255,0.5);
+}
+
+.page table > thead > tr > :last-child,
+.page table > tbody > tr > :last-child,
+.page table > tfoot > tr > :last-child {
+    border-right: 0;
+}
+
+.page table > :last-child > tr:last-child > td,
+.page table > :last-child > tr:last-child > th {
+    border-bottom: 0;
+}
