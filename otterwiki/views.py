@@ -66,6 +66,13 @@ def about():
     )
 
 
+@app.route("/-/syntax")
+def syntax():
+    return render_template(
+        "syntax.html",
+    )
+
+
 @app.route("/-/settings", methods=["POST", "GET"])
 @login_required
 def settings():

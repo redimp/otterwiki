@@ -49,11 +49,12 @@
     {% block bodytop %}
     {% endblock %}
     <!-- Page wrapper start -->
-    <div id="page-wrapper" class="page-wrapper with-navbar with-sidebar" data-sidebar-type="overlayed-sm-and-down">
+    <div id="page-wrapper" class="page-wrapper {% block page_wrapper_config -%}with-navbar with-sidebar{%-endblock%}" data-sidebar-type="overlayed-sm-and-down">
 
         <!-- Sticky alerts -->
         <div class="sticky-alerts"></div>
 
+{% block navbarmain %}
         <!-- Navbar start -->
         <nav class="navbar">
             <div class="navbar-content">
@@ -122,7 +123,10 @@
             </div>
         </nav>
         <!-- Navbar end -->
+{% endblock %}
 
+
+{% block sidebaroverlay %}
         <!-- Sidebar overlay -->
         <div class="sidebar-overlay" onclick="halfmoon.toggleSidebar()"></div>
 
@@ -140,11 +144,12 @@
             </div>
         </div>
         <!-- Sidebar end -->
+{% endblock %}
 
+{% block content_wrapper %}
         <!-- Content wrapper start -->
         <div class="content-wrapper">
 
-{% block content_wrapper %}
             <div class="container-lg">
                 <!-- Simple Layouting and Elements Test -->
                 <div class="content">
@@ -155,9 +160,9 @@
 {% endblock %}
                 </div> <!-- content -->
             </div>
-{% endblock %}
         </div>
         <!-- Content wrapper end -->
+{% endblock %}
 
         <!-- Navbar fixed bottom start -->
         <!--

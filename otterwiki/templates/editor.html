@@ -17,12 +17,28 @@
 <button type="submit" class="btn btn-primary" form="pagecontent"><i class="far fa-eye"></i></button>
 {% endblock %}
 {#
+    Sidebar Menu
+#}
+{% block menu %}
+{{ super() }}
+                <a href="{{ url_for("syntax") }}" class="sidebar-link sidebar-link-with-icon" target="_blank">
+                    <span class="sidebar-icon">
+                        <i class="fab fa-markdown"></i>
+                    </span>
+                    Markdown Syntax
+                </a>
+{% endblock %}
+{#
     Content
 #}
 {% block content_wrapper %}
+        <!-- Content wrapper start -->
+        <div class="content-wrapper">
 <form id="pagecontent" action="{{ url_for('preview', path=pagepath) }}" method="post">
 <textarea id="content_editor" name="content_editor">{{ content_editor }}</textarea>
 </form>
+        </div>
+        <!-- Content wrapper end -->
 {% endblock %}
 {#
     Javascript
