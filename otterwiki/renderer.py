@@ -13,7 +13,6 @@ from pygments.formatters import html
 from pygments.util import ClassNotFound
 
 from flask import url_for
-from otterwiki.gitstorage import storage
 from otterwiki.util import slugify, empty
 
 # Please check https://github.com/lepture/mistune-contrib
@@ -83,38 +82,36 @@ class MyRenderer(mistune.Renderer):
 class MyInlineLexer(mistune.InlineLexer):
     def __init__(self, *args, **kwargs):
         super(MyInlineLexer, self).__init__(*args, **kwargs)
+        self.enable_wiki_link()
 
+    def enable_wiki_link(self):
+        self.rules.wiki_link = re.compile(
+            r'\[\['                   # [[
+            r'([^\]]+)'               # ...
+            r'\]\]'                   # ]]
+        )
+        self.default_rules.insert(0, 'wiki_link')
+        # inner regular expression
+        self.wiki_link_iwlre = re.compile(
+                r'([^\|]+)\|?(.*)'
+                )
 
-#        self.enable_wiki_link()
-#
-#    def enable_wiki_link(self):
-#        self.rules.wiki_link = re.compile(
-#            r'\[\['                   # [[
-#            r'([^\]]+)'               # ...
-#            r'\]\]'                   # ]]
-#        )
-#        self.default_rules.insert(0, 'wiki_link')
-#        # inner regular expression
-#        self.wiki_link_iwlre = re.compile(
-#                r'([^\|]+)\|?(.*)'
-#                )
-#
-#    def output_wiki_link(self, m):
-#        # initial style
-#        style = ''
-#        # parse for title and pagename
-#        title, pagename = self.wiki_link_iwlre.findall(m.group(1))[0]
-#        # fetch all existing pages
-#        pages = [get_pagename(x).lower() for x in storage.list_files() if x.endswith(".md")]
-#        # if the pagename is empty the title is the pagename
-#        if pagename == '': pagename = title
-#        # check if page exists
-#        if pagename.lower() not in pages:
-#            style = ' class="notfound"'
-#        # generate link
-#        url = url_for('view', pagename=pagename)
-#        link = '<a href="{}"{}>{}</a>'.format(url,style,title)
-#        return link
+    def output_wiki_link(self, m):
+        # initial style
+        style = ''
+        # parse for title and pagename
+        title, pagename = self.wiki_link_iwlre.findall(m.group(1))[0]
+        # fetch all existing pages
+        #pages = [get_pagename(x).lower() for x in storage.list_files() if x.endswith(".md")]
+        # if the pagename is empty the title is the pagename
+        if pagename == '': pagename = title
+        # check if page exists
+        #if pagename.lower() not in pages:
+        #style = ' class="notfound"'
+        # generate link
+        url = url_for('view', path=pagename)
+        link = '<a href="{}"{}>{}</a>'.format(url,style,title)
+        return link
 
 __renderer = MyRenderer()
 __inline = MyInlineLexer(__renderer)
