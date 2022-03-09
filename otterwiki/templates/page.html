@@ -2,7 +2,7 @@
 {% extends "wiki.html" %}
 {% block js %}
 {{ super() }}
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script src="{{ url_for("static", filename="js/polyfill.e6.min.js") | debug_unixtime }}"></script>
     <script>
         MathJax = {
             tex: {
@@ -12,7 +12,7 @@
             }
         };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script id="MathJax-script" async src="{{ url_for("static", filename="mathjax/tex-chtml.js") | debug_unixtime }}"></script>
 {% endblock %}
 {% block menu %}
 {{ super() }}
