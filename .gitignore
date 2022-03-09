@@ -12,3 +12,6 @@ coverage_html
 app-data*
 settings.cfg
 tmp
+docker-compose.override.yml
+.env
+.flaskenv
