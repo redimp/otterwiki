@@ -27,7 +27,7 @@
     <!-- Otterwiki Print -->
     <link href="{{ url_for("static", filename="css/print.css") | debug_unixtime }}" rel="stylesheet" media="print" />
     <!-- Font awesome -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <link rel="stylesheet" href="{{ url_for("static", filename="css/fontawesome-all.min.css") | debug_unixtime }}">
     <!-- pygments  -->
     <link href="{{ url_for("static", filename="css/pygments.css") | debug_unixtime }}" rel="stylesheet" />
     <!-- Roboto font (Used when Apple system fonts are not available) -->
