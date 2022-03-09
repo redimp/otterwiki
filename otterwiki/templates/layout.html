@@ -31,7 +31,7 @@
     <!-- pygments  -->
     <link href="{{ url_for("static", filename="css/pygments.css") | debug_unixtime }}" rel="stylesheet" />
     <!-- Roboto font (Used when Apple system fonts are not available) -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="{{ url_for("static", filename="css/roboto.css") | debug_unixtime }}" rel="stylesheet"/>
     <!-- Documentation styles -->
 {% block head %}
 {% endblock %}
