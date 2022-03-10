@@ -13,7 +13,7 @@
 #}
 {% block navbar %}
 <a href="{{ url_for('view', path=pagepath) }}" class="btn btn-danger mr-5" role="button"><i class="fas fa-window-close"></i></a>
-<a href="#modal-commit" class="btn btn-success mr-5" role="button"><i class="fas fa-save"></i></a>
+<button class="btn btn-success mr-5" onclick="otterwiki.toggleModal('modal-commit')"><i class="fas fa-save"></i></a>
 <button type="submit" class="btn btn-primary" form="pagecontent"><i class="far fa-eye"></i></button>
 {% endblock %}
 {#
@@ -44,7 +44,12 @@
     Javascript
 #}
 {% block js %}
+    document.getElementById('saveform').onsubmit = function() {
+        var content_editor = cm_editor.getValue();
+        document.getElementById('content_update').value = content_editor;
+    };
 {# load the codemirror stuff #}
+<script src="{{ url_for("static", filename="js/otterwiki.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/codemirror.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-markdown.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-continuelist.js") }}" type="text/javascript" charset="utf-8"></script>
@@ -60,10 +65,6 @@
         autofocus: true,
         extraKeys: {"Enter": "newlineAndIndentContinueMarkdownList"},
       });
-    document.getElementById('saveform').onsubmit = function() {
-        var content_editor = cm_editor.getValue();
-        document.getElementById('content_update').value = content_editor;
-    };
 {#
 thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuecomment-227075500
 #}
@@ -88,6 +89,5 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
             return false;
         }
     });
-</script>
 </script>
 {% endblock %}
