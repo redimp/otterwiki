@@ -60,6 +60,10 @@
         autofocus: true,
         extraKeys: {"Enter": "newlineAndIndentContinueMarkdownList"},
       });
+    document.getElementById('saveform').onsubmit = function() {
+        var content_editor = cm_editor.getValue();
+        document.getElementById('content_update').value = content_editor;
+    };
 {#
 thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuecomment-227075500
 #}
@@ -85,5 +89,5 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         }
     });
 </script>
-{{ super() }}
+</script>
 {% endblock %}
