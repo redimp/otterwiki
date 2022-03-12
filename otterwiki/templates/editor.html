@@ -44,10 +44,6 @@
     Javascript
 #}
 {% block js %}
-    document.getElementById('saveform').onsubmit = function() {
-        var content_editor = cm_editor.getValue();
-        document.getElementById('content_update').value = content_editor;
-    };
 {# load the codemirror stuff #}
 <script src="{{ url_for("static", filename="js/otterwiki.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/codemirror.js") }}" type="text/javascript" charset="utf-8"></script>
@@ -89,5 +85,9 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
             return false;
         }
     });
+    document.getElementById('saveform').onsubmit = function() {
+        var content_editor = cm_editor.getValue();
+        document.getElementById('content_update').value = content_editor;
+    };
 </script>
 {% endblock %}
