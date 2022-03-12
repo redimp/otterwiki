@@ -63,7 +63,11 @@
                 </button>
             </div>
             <a href="{{ url_for("index") }}" class="navbar-brand ml-10 ml-sm-20">
+{% if config.SITE_LOGO %}
+                <img src="{{ config.SITE_LOGO }}" alt=""/><br/>
+{% else %}
                 <img src="{{ url_for("static", filename="img/otterhead.png") }}" alt="">
+{% endif %}
                 <span class="d-none d-sm-flex">{{ config.SITE_NAME }}</span>
             </a>
             <div class="navbar-content ml-auto">
@@ -138,7 +142,7 @@
             </div>
             <div class="sidebar-menu text-center w-full" >
                 <a href=" {{ url_for("about") }}" class="sidebar-link">
-                <img src="{{ url_for("static", filename="img/otter.png") | debug_unixtime }}" alt="" style="max-width: 75%"/><br/>
+                <img class="sidebar-logo" src="{{ url_for("static", filename="img/otter.png") | debug_unixtime }}" alt=""/><br/>
                 An Otter Wiki
                 </a>
             </div>

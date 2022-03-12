@@ -4,6 +4,10 @@
     background: #e2e2e2;
 }
 
+img.sidebar-logo {
+    max-width: 75%;
+}
+
 .navbar {
     background: #d2d2d2;
 }
