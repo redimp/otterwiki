@@ -1,7 +1,9 @@
 # App Settings
 DEBUG             = False
+# The SECRET_KEY is used for signing the session cookie.
 SECRET_KEY        = 'CHANGE ME'
-SITE_NAME         = 'CHANGE ME'
+# The SITE_NAME is displayed on every page and email.
+SITE_NAME         = 'Otterwiki'
 # Configure the path to the repository:
 REPOSITORY        = '/path/to/the/repository/root'
 
@@ -16,7 +18,8 @@ WRITE_ACCESS      = 'REGISTERED'
 ATTACHMENT_ACCESS = 'REGISTERED'
 
 # Database Configuration
-# e.g. SQLALCHEMY_DATABASE_URI='sqlite:///path/to/the/sqlite/database/file'
+# e.g. SQLALCHEMY_DATABASE_URI='sqlite:////absolute/path/to/the/sqlite/database/file'
+# see https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/#connection-uri-format
 SQLALCHEMY_DATABASE_URI = ''
 
 # # Flask-Mail configuration
