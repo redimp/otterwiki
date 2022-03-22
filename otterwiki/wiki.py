@@ -746,8 +746,7 @@ class Attachment:
             if not storage.exists(self.filepath):
                 return abort(404)
             # headers are already set correctly by send_file
-            response = make_response(send_file(self.abspath))
-            metadata = storage.metadata(self.filepath)
+            return make_response(send_file(self.abspath))
         else:
             # revision is given
             try:
