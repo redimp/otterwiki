@@ -285,6 +285,7 @@ def edit_attachment(pagepath, filename):
         filename=filename,
         new_filename=request.form.get("new_filename"),
         message=request.form.get("message"),
+        delete=request.form.get("delete"),
         author=otterwiki.auth.get_author(),
     )
 

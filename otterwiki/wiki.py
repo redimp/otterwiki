@@ -591,14 +591,20 @@ class Page:
     def get_attachment_thumbnail(self, filename, size=80, revision=None):
         return Attachment(self.pagepath, filename, revision).get_thumbnail()
 
-    def edit_attachment(self, filename, author, new_filename=None, message=None):
+    def edit_attachment(self, filename, author, new_filename=None, message=None, delete=None):
         if not has_permission("READ"):
             abort(403)
         a = Attachment(self.pagepath, filename)
         if not a.exists():
             return abort(404)
+        if not empty(delete):
+            if not has_permission("WRITE"):
+                return abort(403)
+            return a.delete(message=message, author=author)
         # rename
         if not empty(new_filename):
+            if not has_permission("WRITE"):
+                return abort(403)
             if new_filename != filename:
                 return a.rename(new_filename, message=message, author=author)
         # show edit form
@@ -693,6 +699,20 @@ class Attachment:
         return redirect(
             url_for("edit_attachment", pagepath=self.pagepath, filename=new_filename)
         )
+
+    def delete(self, message, author):
+        if not has_permission("WRITE"):
+            abort(403)
+        toast_message = "Deleted {}".format(self.filename)
+        if empty(message):
+            message = toast_message
+        try:
+            storage.delete(self.filepath, message=message, author=author)
+            toast(toast_message)
+        except StorageError:
+            toast("Deleting failed", "error")
+        return redirect(url_for("attachments", pagepath=self.pagepath))
+
 
     def edit(self):
         if not has_permission("READ"):

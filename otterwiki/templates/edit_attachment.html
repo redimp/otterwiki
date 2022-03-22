@@ -17,7 +17,10 @@
     <label for="message" class="w-150">Commit message</label>
     <input type="text" class="form-control" name="message" id="message" placeholder="Renamed {{filename}} to {{new_filename if new_filename else "..."}}" value="{{ message if message }}">
   </div>
-  <input class="btn btn-primary" type="submit" value="Rename">
+  <div class="form-group position-relative m-0">
+    <input class="btn btn-primary" type="submit" value="Rename">
+    <input class="btn btn-danger position-absolute right-0" type="submit" name="delete" value="Delete">
+  </div>
 </form>
 </div>{# card #}
 {# replace #}
