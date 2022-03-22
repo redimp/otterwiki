@@ -636,7 +636,7 @@ class Attachment:
         return os.path.exists(self.abspath)
 
     def get_thumbnail_url(self):
-        if self.mimetype.startswith("image"):
+        if self.mimetype is not None and self.mimetype.startswith("image"):
             return url_for(
                 "get_attachment_thumbnail",
                 pagepath=self.pagepath,
