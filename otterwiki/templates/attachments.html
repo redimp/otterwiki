@@ -33,6 +33,9 @@
           <th>Date</th>
           <th>Author</th>
           <th class="w-half">Comment</th>
+{% if has_permission("READ") %}
+          <th></th>
+{% endif %}
         </tr>
       </thead>
       <tbody>
@@ -61,12 +64,12 @@
 </div>
             </td>
             <td>{{f.filesize}}
-{% if has_permission("READ") %}
-                <br/><a href="{{ url_for("edit_attachment", pagepath=pagepath, filename=f.filename) }}" class=""><i class="fas fa-edit"></i></a>
-{% endif %}
             <td>{{f.datetime|format_datetime}}<br/><span class="btn revision-small">{{f.revision}}</span></td>
             <td>{{f.author_name}}</td>
-            <td>{{f.message}}</pre></td>
+            <td>{{f.message}}</td>
+{% if has_permission("READ") %}
+            <td><a href="{{ url_for("edit_attachment", pagepath=pagepath, filename=f.filename) }}" class=""><i class="fas fa-edit"></i></a></td>
+{% endif %}
         </tr>
 {% endfor %}
       </tbody>
