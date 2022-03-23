@@ -269,6 +269,7 @@ class Page:
             pagename=self.pagename,
             pagepath=self.pagepath,
             content_html=content_html,
+            toc=toc,
             content_editor=content,
         )
 
