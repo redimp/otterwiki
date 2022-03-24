@@ -67,5 +67,11 @@ div.content-wrapper {
         var content_editor = document.getElementById('content_editor').value;
         document.getElementById('content_update').value = content_editor;
     };
+    (function () {
+        cursor = document.getElementById("cursor")
+        if (cursor) {
+            cursor.scrollIntoView();
+        }
+    })();
 </script>
 {% endblock %}

@@ -259,6 +259,18 @@ class Page:
             except StorageNotFound:
                 app.logger.warning("Not found {}".format(self.pagename))
                 return render_template("page404.html", pagename=self.pagename)
+        # add cursor position
+        if cursor_line is not None:
+            try:
+                line = max(0, int(cursor_line)-1)
+            except ValueError:
+                line = 0
+            if line > 0:
+                content = content.splitlines(True)
+               # add empty span bevor edited line
+                content[line] = content[line].strip()+"<span id=\"cursor\"></span>\n"
+                content = "".join(content)
+
         # render markdown
         content_html = markdown_render(content)
         # render toc
