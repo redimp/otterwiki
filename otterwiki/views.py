@@ -223,7 +223,11 @@ def blame(path, revision=None):
 @app.route("/<path:path>/edit/<string:revision>", methods=["GET"])
 def edit(path, revision=None):
     p = Page(path)
-    return p.editor(content=request.form.get("content_editor"))
+    return p.editor(
+            content=request.form.get("content_editor"),
+            cursor_line=request.form.get("cursor_line"),
+            cursor_ch=request.form.get("cursor_ch"),
+            )
 
 
 @app.route("/<path:path>/save", methods=["POST"])
@@ -243,7 +247,11 @@ def save(path):
 @app.route("/<path:path>/preview", methods=["POST", "GET"])
 def preview(path):
     p = Page(path)
-    return p.preview(content=request.form.get("content_editor"))
+    return p.preview(
+            content=request.form.get("content_editor"),
+            cursor_line=request.form.get("cursor_line"),
+            cursor_ch=request.form.get("cursor_ch"),
+            )
 
 
 @app.route("/-/revert/<string:revision>", methods=["POST", "GET"])

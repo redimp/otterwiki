@@ -252,7 +252,7 @@ class Page:
             breadcrumbs=self.breadcrumbs(),
         )
 
-    def preview(self, content=None):
+    def preview(self, content=None, cursor_line=None, cursor_ch=None):
         if content is None:
             try:
                 content, metadata = self.load(revision=None)
@@ -271,9 +271,11 @@ class Page:
             content_html=content_html,
             toc=toc,
             content_editor=content,
+            cursor_line=cursor_line,
+            cursor_ch=cursor_ch,
         )
 
-    def editor(self, revision=None, content=None):
+    def editor(self, revision=None, content=None, cursor_line=None, cursor_ch=None):
         if not has_permission("WRITE"):
             abort(403)
         if content is None:
@@ -287,6 +289,8 @@ class Page:
             pagename=self.pagename,
             pagepath=self.pagepath,
             content_editor=content,
+            cursor_line=cursor_line,
+            cursor_ch=cursor_ch,
         )
 
     def save(self, content, commit, author):

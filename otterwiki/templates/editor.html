@@ -35,6 +35,8 @@
         <!-- Content wrapper start -->
         <div class="content-wrapper">
 <form id="pagecontent" action="{{ url_for('preview', path=pagepath) }}" method="post">
+<input id="pc_cursor_line" type="hidden" name="cursor_line" value="" />
+<input id="pc_cursor_ch" type="hidden" name="cursor_ch" value="" />
 <textarea id="content_editor" name="content_editor">{{ content_editor }}</textarea>
 </form>
         </div>
@@ -61,6 +63,9 @@
         autofocus: true,
         extraKeys: {"Enter": "newlineAndIndentContinueMarkdownList"},
       });
+{% if cursor_line and cursor_ch %}
+    cm_editor.setCursor({ line: {{cursor_line}}, ch: {{cursor_ch}} } );
+{% endif %}
 {#
 thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuecomment-227075500
 #}
@@ -85,6 +90,12 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
             return false;
         }
     });
+    document.getElementById('pagecontent').onsubmit = function() {
+        var cm_cursor = cm_editor.getCursor();
+        document.getElementById('pc_cursor_line').value = cm_cursor.line;
+        document.getElementById('pc_cursor_ch').value = cm_cursor.ch;
+
+    }
     document.getElementById('saveform').onsubmit = function() {
         var content_editor = cm_editor.getValue();
         document.getElementById('content_update').value = content_editor;

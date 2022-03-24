@@ -52,6 +52,8 @@ div.content-wrapper {
 </div>
 <form id="pagecontent" action="{{ url_for('edit', path=pagepath) }}" method="post">
 <input type="hidden" name="content_editor" value="{{ content_editor }}" id="content_editor"/>
+<input type="hidden" name="cursor_line" value="{{cursor_line if cursor_line }}"/>
+<input type="hidden" name="cursor_ch" value="{{ cursor_ch if cursor_ch }}"/>
 </form>
 {% endblock %}
 {#
