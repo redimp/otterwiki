@@ -261,23 +261,33 @@ class Page:
                 return render_template("page404.html", pagename=self.pagename)
         # copy raw_content
         raw_content = content
+        magicword="MaG1CW0rD"
         # add cursor position
         if cursor_line is not None:
             try:
                 line = max(0, int(cursor_line)-1)
             except ValueError:
                 line = 0
+            content_arr = content.splitlines(True)
+            firstword = re.compile("([a-zA-Z_0-9]+)")
+            while line > 0 and len(content_arr[line].strip()) and \
+                    not len(firstword.findall(content_arr[line])) > 0:
+                line -= 1
             if line > 0:
-                content = content.splitlines(True)
                # add empty span bevor edited line
-                content[line] = content[line].strip()+"<span id=\"cursor\"></span>\n"
-                content = "".join(content)
+                content_arr[line] = firstword.sub(r"\1{}".format(magicword), content_arr[line], count=1)
+                content = "".join(content_arr)
 
         content_html = markdown_render(content)
+        content_html = content_html.replace(magicword,"<span id=\"cursor\"></span>")
 
         # render toc
         toc = markdown_get_toc()
-        # render template
+        # clean magicword out of toc
+        toc = [
+            (a, b.replace(magicword,""), c, d, e) for (a,b,c,d,e) in toc
+        ]
+
         return render_template(
             "preview.html",
             pagename=self.pagename,
