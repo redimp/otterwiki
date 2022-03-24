@@ -47,7 +47,9 @@ div.content-wrapper {
     Content
 #}
 {% block content %}
+<div class="page">
 {{content_html|safe}}
+</div>
 <form id="pagecontent" action="{{ url_for('edit', path=pagepath) }}" method="post">
 <input type="hidden" name="content_editor" value="{{ content_editor }}" id="content_editor"/>
 </form>
