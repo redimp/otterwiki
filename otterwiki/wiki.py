@@ -17,7 +17,7 @@ from flask import (
 )
 from otterwiki.gitstorage import StorageNotFound, StorageError
 from otterwiki.server import app, db, storage
-from otterwiki.renderer import markdown_render, markdown_get_toc, mistune_render
+from otterwiki.renderer import markdown_render, markdown_get_toc, pygments_render
 from otterwiki.util import (
     split_path,
     join_path,
@@ -356,7 +356,7 @@ class Page:
             content, _ = self.load(revision=revision)
         except StorageNotFound:
             return render_template("page404.html", pagename=self.pagename), 404
-        markup_lines = mistune_render(content, lang="markdown")
+        markup_lines = pygments_render(content, lang="markdown")
         # fix markup_lines
         markup_lines = markup_lines.replace(
             '<div class="highlight"><pre><span></span>', ""

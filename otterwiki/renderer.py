@@ -19,7 +19,7 @@ from otterwiki.util import slugify, empty
 # for mistune extensions.
 
 
-def mistune_render(code, lang):
+def pygments_render(code, lang):
     try:
         lexer = get_lexer_by_name(lang, stripall=True)
     except ClassNotFound:
@@ -58,7 +58,7 @@ class MyRenderer(mistune.Renderer):
             return "\\[{}\\]".format(code.strip())
         elif not lang:
             return '\n<pre class="code">%s</pre>\n' % mistune.escape(code.strip())
-        return mistune_render(code, lang)
+        return pygments_render(code, lang)
 
     def header(self, text, level, raw=None):
         anchor = slugify(text)
