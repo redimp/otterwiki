@@ -55,7 +55,7 @@ class MyRenderer(mistune.Renderer):
 
     def block_code(self, code, lang):
         if lang == "math":
-            return "\\[{}\\]".format(code.strip())
+            return "".join(["\\[{}\\]".format(line) for line in code.strip().splitlines()])
         elif not lang:
             return '\n<pre class="code">%s</pre>\n' % mistune.escape(code.strip())
         return pygments_render(code, lang)
