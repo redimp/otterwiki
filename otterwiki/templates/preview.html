@@ -60,6 +60,7 @@ div.content-wrapper {
     Javascript
 #}
 {% block js %}
+{{ super() }}
 {# this fetches the editor/preview content #}
 <script src="{{ url_for("static", filename="js/otterwiki.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
