@@ -50,6 +50,12 @@ def test_client(create_app):
     yield create_app.test_client()
 
 
+@pytest.fixture
+def req_ctx(create_app):
+    with create_app.test_request_context() as ctx:
+        yield ctx
+
+
 def test_html(test_client):
     result = test_client.get("/")
     assert "<!DOCTYPE html>" in result.data.decode()
