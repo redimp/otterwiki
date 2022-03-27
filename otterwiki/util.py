@@ -38,6 +38,8 @@ def sanitize_pagename(value, allow_unicode=True):
         )
     # remove slashes, question marks ...
     value = re.sub(r"[?|$|.|!|#|/|\\]", r"", value)
+    # remove leading -
+    value = value.lstrip("-")
     # remove leading and trailing whitespaces
     value = value.strip()
     return value

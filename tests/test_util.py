@@ -70,6 +70,8 @@ def test_empty():
 
 def test_sanitize_pagename():
     assert sanitize_pagename("abc") == "abc"
+    assert sanitize_pagename("-abc") == "abc"
+    assert sanitize_pagename("-") == ""
     assert sanitize_pagename("Abc Def") == "Abc Def"
     assert sanitize_pagename("////abc") == "abc"
     assert sanitize_pagename("////abc") == "abc"
