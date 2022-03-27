@@ -47,22 +47,24 @@ a^2+b^2=c^2
 [Example Link with text](http://example.com)
 """
 
-@pytest.mark.xfail
+"""
+<span class=".highlight nb">echo</span> <span class=".highlight s2">&quot;Hello </span><span class=".highlight nv">$WORLD</span><span class=".highlight s2">&quot;</span>
+"""
+
 def test_preview(create_app, req_ctx):
     html_example = markdown_render(markdown_example)
-    html_example_arr = html_example.splitlines()
+    html_example_arr = html_example.split("<")
     from otterwiki.wiki import Page
     p = Page("test")
     preview_html = p.preview(content=markdown_example)
-    for line in html_example_arr:
-        assert line in preview_html
+    for part in html_example_arr:
+        assert part in preview_html
     # check every cursor line
     for i,md_line in enumerate(markdown_example.splitlines(),start=1):
         preview_html = p.preview(content=markdown_example,cursor_line=i,cursor_ch=1) 
         preview_html = preview_html.replace("<span id=\"cursor\"></span>","")
-        for j,line in enumerate(html_example_arr):
-            print(f"i={i} j={j}")
+        for j,part in enumerate(html_example_arr):
             cursor_line='name="cursor_line" value="{}"'.format(i)
             assert cursor_line in preview_html
-            assert line in preview_html
+            assert part in preview_html
 

@@ -17,7 +17,7 @@ from flask import (
 )
 from otterwiki.gitstorage import StorageNotFound, StorageError
 from otterwiki.server import app, db, storage
-from otterwiki.renderer import markdown_render, markdown_get_toc, pygments_render
+from otterwiki.renderer import markdown_render, markdown_get_toc, pygments_render, cursormagicword 
 from otterwiki.util import (
     split_path,
     join_path,
@@ -261,7 +261,6 @@ class Page:
                 return render_template("page404.html", pagename=self.pagename)
         # copy raw_content
         raw_content = content
-        magicword="MaG1CW0rD"
         # add cursor position
         if cursor_line is not None:
             try:
@@ -275,17 +274,17 @@ class Page:
                 line -= 1
             if line > 0:
                # add empty span bevor edited line
-                content_arr[line] = firstword.sub(r"\1{}".format(magicword), content_arr[line], count=1)
+                content_arr[line] = firstword.sub(r"\1{}".format(cursormagicword), content_arr[line], count=1)
                 content = "".join(content_arr)
 
         content_html = markdown_render(content)
-        content_html = content_html.replace(magicword,"<span id=\"cursor\"></span>")
+        content_html = content_html.replace(cursormagicword,"<span id=\"cursor\"></span>")
 
         # render toc
         toc = markdown_get_toc()
         # clean magicword out of toc
         toc = [
-            (a, b.replace(magicword,""), c, d, e) for (a,b,c,d,e) in toc
+            (a, b.replace(cursormagicword,""), c, d, e) for (a,b,c,d,e) in toc
         ]
 
         return render_template(

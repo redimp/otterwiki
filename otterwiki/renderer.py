@@ -18,6 +18,8 @@ from otterwiki.util import slugify, empty
 # Please check https://github.com/lepture/mistune-contrib
 # for mistune extensions.
 
+# the cursor magic word which is ignored by the rendering
+cursormagicword = "CuRsoRm4g1cW0Rd"
 
 def pygments_render(code, lang):
     try:
@@ -30,6 +32,20 @@ def pygments_render(code, lang):
     formatter = html.HtmlFormatter(classprefix=".highlight ")
     return highlight(code, lexer, formatter)
 
+def hidemagicword(text):
+    arr = text.splitlines(True)
+    for n, line in enumerate(arr):
+        if cursormagicword in line:
+            arr[n] = line.replace(cursormagicword,"")
+            return n, "".join(arr)
+    return None, text
+
+def showmagicword(line, html):
+    if line is None:
+        return html
+    arr = html.splitlines(True)
+    arr[line]=cursormagicword+arr[line]
+    return "".join(arr)
 
 class MyRenderer(mistune.Renderer):
     toc_count = 0
@@ -54,11 +70,19 @@ class MyRenderer(mistune.Renderer):
         return "<code>" + mistune.escape(text) + "</code>"
 
     def block_code(self, code, lang):
+        prefix = ""
+        if not lang:
+            return '\n<pre class="code">{}</pre>\n'.format(mistune.escape(code.strip()))
+        if cursormagicword in lang:
+            lang = lang.replace(cursormagicword,"")
+            prefix = cursormagicword
+        cursorline, code = hidemagicword(code)
         if lang == "math":
-            return "".join(["\\[{}\\]".format(line) for line in code.strip().splitlines()])
-        elif not lang:
-            return '\n<pre class="code">%s</pre>\n' % mistune.escape(code.strip())
-        return pygments_render(code, lang)
+            html = "".join(["\\[{}\\]".format(line) for line in code.strip().splitlines()])
+        else:
+            html = prefix+pygments_render(code, lang)
+        html = showmagicword(cursorline, html)
+        return prefix+html
 
     def header(self, text, level, raw=None):
         anchor = slugify(text)
