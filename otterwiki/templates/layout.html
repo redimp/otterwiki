@@ -44,12 +44,14 @@
     <!-- iOS Safari mobile address bar theming -->
     <meta name="apple-mobile-web-app-status-bar-style" content="#000000">
 {% endif %}
+  <!-- Halfmoon JS -->
+  <script src="{{ url_for("static", filename="js/halfmoon.js") }}"></script>
 </head>
 <body class="{% if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}dark-mode{%endif%} with-custom-webkit-scrollbars with-custom-css-scrollbars">
     {% block bodytop %}
     {% endblock %}
     <!-- Page wrapper start -->
-    <div id="page-wrapper" class="page-wrapper {% block page_wrapper_config -%}with-navbar with-sidebar{%-endblock%}" data-sidebar-type="overlayed-sm-and-down">
+    <div id="page-wrapper" class="page-wrapper {% block page_wrapper_config -%}with-navbar with-sidebar{%-endblock%}" data-sidebar-type="overlayed-sm-and-down" {%-if request.cookies.get('halfmoon_sidebar') == "hidden" -%}data-sidebar-hidden="hidden"{%-endif-%}>
 
         <!-- Sticky alerts -->
         <div class="sticky-alerts"></div>
@@ -171,8 +173,6 @@
 {% endblock %}
     </div>
     <!-- Page wrapper end -->
-  <!-- Halfmoon JS -->
-  <script src="{{ url_for("static", filename="js/halfmoon.min.js") }}"></script>
 {% block js %}
 {% endblock %}
 {#-

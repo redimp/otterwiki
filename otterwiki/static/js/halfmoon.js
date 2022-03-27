@@ -106,8 +106,10 @@ var halfmoon = {
         if (this.pageWrapper) {
             if (this.pageWrapper.getAttribute("data-sidebar-hidden")) {
                 this.pageWrapper.removeAttribute("data-sidebar-hidden");
+                this.createCookie("halfmoon_sidebar", "visible", 365);
             } else {
                 this.pageWrapper.setAttribute("data-sidebar-hidden", "hidden");
+                this.createCookie("halfmoon_sidebar", "hidden", 365);
             }
         }
     },
