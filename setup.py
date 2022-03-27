@@ -26,6 +26,7 @@ setup(
         #        'itsdangerous',
         "Pillow",
         "unidiff",
+        "flask-htmlmin",
     ],
     extras_require={
         "dev": [

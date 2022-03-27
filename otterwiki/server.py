@@ -3,6 +3,7 @@
 import os
 import sys
 from flask import Flask
+from flask_htmlmin import HTMLMIN
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from otterwiki import fatal_error, __version__
@@ -12,6 +13,7 @@ app = Flask(__name__)
 # default configuration settings
 app.config.update(
     DEBUG=False,  # make sure DEBUG is off unless enabled explicitly otherwise
+    TESTING=False,
     REPOSITORY=None,
     SECRET_KEY="CHANGE ME",
     SITE_NAME="An Otter Wiki",
@@ -24,6 +26,7 @@ app.config.update(
     SQLALCHEMY_DATABASE_URI="sqlite:///:memory:",
     MAIL_DEFAULT_SENDER="otterwiki@YOUR.ORGANIZATION.TLD",
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    MINIFY_HTML=True,
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
@@ -32,6 +35,10 @@ mail = Mail(app)
 
 # setup database
 db = SQLAlchemy(app)
+
+# auto html minify
+if not app.config["TESTING"] and not app.config["DEBUG"]:
+    htmlmin = HTMLMIN(app)
 
 # setup storage
 if app.config["REPOSITORY"] is None:
