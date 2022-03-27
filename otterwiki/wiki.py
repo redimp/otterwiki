@@ -17,7 +17,7 @@ from flask import (
 )
 from otterwiki.gitstorage import StorageNotFound, StorageError
 from otterwiki.server import app, db, storage
-from otterwiki.renderer import markdown_render, markdown_get_toc, pygments_render, cursormagicword 
+from otterwiki.renderer import render, cursormagicword
 from otterwiki.util import (
     split_path,
     join_path,
@@ -238,8 +238,7 @@ class Page:
         if revision is not None:
             title = "{} ({})".format(self.pagename, revision)
         # render markdown
-        htmlcontent = markdown_render(content)
-        toc = markdown_get_toc()
+        htmlcontent, toc = render.markdown(content)
         # render template
         return render_template(
             "page.html",
@@ -259,33 +258,7 @@ class Page:
             except StorageNotFound:
                 app.logger.warning("Not found {}".format(self.pagename))
                 return render_template("page404.html", pagename=self.pagename)
-        # copy raw_content
-        raw_content = content
-        # add cursor position
-        if cursor_line is not None:
-            try:
-                line = max(0, int(cursor_line)-1)
-            except ValueError:
-                line = 0
-            content_arr = content.splitlines(True)
-            firstword = re.compile("([a-zA-Z_0-9]+)")
-            while line > 0 and len(content_arr[line].strip()) and \
-                    not len(firstword.findall(content_arr[line])) > 0:
-                line -= 1
-            if line > 0:
-               # add empty span bevor edited line
-                content_arr[line] = firstword.sub(r"\1{}".format(cursormagicword), content_arr[line], count=1)
-                content = "".join(content_arr)
-
-        content_html = markdown_render(content)
-        content_html = content_html.replace(cursormagicword,"<span id=\"cursor\"></span>")
-
-        # render toc
-        toc = markdown_get_toc()
-        # clean magicword out of toc
-        toc = [
-            (a, b.replace(cursormagicword,""), c, d, e) for (a,b,c,d,e) in toc
-        ]
+        content_html, toc = render.markdown(content, cursor=cursor_line)
 
         return render_template(
             "preview.html",
@@ -293,7 +266,7 @@ class Page:
             pagepath=self.pagepath,
             content_html=content_html,
             toc=toc,
-            content_editor=raw_content,
+            content_editor=content,
             cursor_line=cursor_line,
             cursor_ch=cursor_ch,
         )
@@ -355,7 +328,7 @@ class Page:
             content, _ = self.load(revision=revision)
         except StorageNotFound:
             return render_template("page404.html", pagename=self.pagename), 404
-        markup_lines = pygments_render(content, lang="markdown")
+        markup_lines = render.hilight(content, lang="markdown")
         # fix markup_lines
         markup_lines = markup_lines.replace(
             '<div class="highlight"><pre><span></span>', ""
@@ -367,7 +340,7 @@ class Page:
         # helper
         last = None
         oddeven = "odd"
-        # TODO: use highlighted lines
+        # use highlighted lines
         for row in data:
             line = markup_lines[int(row[3]) - 1]
             # line = row[4] # markup_lines[int(row[3])-1]

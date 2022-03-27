@@ -11,7 +11,7 @@ from flask import (
     make_response,
 )
 from otterwiki.server import app, db
-from otterwiki.wiki import Page, PageIndex, Changelog, Search, markdown_render
+from otterwiki.wiki import Page, PageIndex, Changelog, Search, render
 import otterwiki.auth
 from otterwiki.helper import toast
 from otterwiki.util import sanitize_pagename
@@ -59,7 +59,7 @@ def favicon():
 def about():
     with open(os.path.join(app.root_path, "about.md")) as f:
         content = f.read()
-    htmlcontent = markdown_render(content)
+    htmlcontent,_ = render.markdown(content)
     return render_template(
         "about.html",
         htmlcontent=htmlcontent,

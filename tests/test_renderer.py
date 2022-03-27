@@ -2,11 +2,11 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import pytest
-from otterwiki.renderer import markdown_render, markdown_get_toc
+from otterwiki.renderer import render
 
 
 def test_basic_markdown():
-    html = markdown_render("**bold** _italic_")
+    html, toc = render.markdown("**bold** _italic_")
     assert "<strong>bold</strong>" in html
     assert "<em>italic</em>" in html
 
@@ -20,8 +20,7 @@ text
 # head 2
 # head 2
     """
-    html = markdown_render(md)
-    toc = markdown_get_toc()
+    html, toc = render.markdown(md)
     # head 1
     assert "head 1" == toc[0][1]
     assert 1 == toc[0][2]
@@ -36,21 +35,21 @@ text
 
 
 def test_code():
-    html = markdown_render(
+    html, _ = render.markdown(
         """```
 abc
 ```"""
     )
     assert '<pre class="code">abc</pre>' in html
     # test highlight
-    html = markdown_render(
+    html, _ = render.markdown(
         """```python
 n = 0
 ```"""
     )
     assert '<div class="highlight">' in html
     # test missing lexer
-    html = markdown_render(
+    html, _ = render.markdown(
         """```non_existing_lexer
 n = 0
 ```"""
@@ -64,22 +63,22 @@ def test_latex_block():
 a^2+b^2=c^2
 ```
 """
-    html = markdown_render(text)
+    html, _ = render.markdown(text)
     assert "\\[a^2+b^2=c^2\\]" == html
 
 
 def test_latex_inline():
     text = "$`a`$"
-    html = markdown_render(text)
+    html, _ = render.markdown(text)
     assert "$<code>a</code>$" in html
 
 
 def test_img():
     text = "![](/path/to/img.png)"
-    html = markdown_render(text)
+    html, _ = render.markdown(text)
     assert 'src="/path/to/img.png"' in html
 
     text = '![](/path/to/img.png "title")'
-    html = markdown_render(text)
+    html, _ = render.markdown(text)
     assert 'src="/path/to/img.png"' in html
     assert 'title="title"' in html
