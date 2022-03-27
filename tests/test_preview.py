@@ -52,19 +52,27 @@ a^2+b^2=c^2
 """
 
 def test_preview(create_app, req_ctx):
+    from otterwiki.wiki import Page
+    p = Page("test")
+    preview_html = p.preview(content=markdown_example, cursor_line=1,cursor_ch=1)
+    assert "<span id=\"cursor\"></span>" in preview_html
+
+def test_preview_all(create_app, req_ctx):
     html_example = markdown_render(markdown_example)
     html_example_arr = html_example.split("<")
     from otterwiki.wiki import Page
     p = Page("test")
-    preview_html = p.preview(content=markdown_example)
+    preview_html = p.preview(content=markdown_example, cursor_line=1,cursor_ch=1)
     for part in html_example_arr:
         assert part in preview_html
+    assert "<span id=\"cursor\"></span>" in preview_html
     # check every cursor line
     for i,md_line in enumerate(markdown_example.splitlines(),start=1):
         preview_html = p.preview(content=markdown_example,cursor_line=i,cursor_ch=1) 
         preview_html = preview_html.replace("<span id=\"cursor\"></span>","")
+        assert "<span id=\"cursor\"></span>" in preview_html
+        cursor_line='name="cursor_line" value="{}"'.format(i)
+        assert cursor_line in preview_html
         for j,part in enumerate(html_example_arr):
-            cursor_line='name="cursor_line" value="{}"'.format(i)
-            assert cursor_line in preview_html
             assert part in preview_html
 
