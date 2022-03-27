@@ -10,17 +10,9 @@
 
   <!-- Favicon and title -->
   <link rel="icon" href="{{ url_for("static", filename="img/otter-favicon2.png") }}">
-
 {% block title %}
   <title>{%if title%}{{title}} &ndash;{%endif%} An Otter Wiki</title>
 {% endblock %}
-
-  <!-- Halfmoon CSS -->
-  <!--
-  <link href="css/halfmoon-variables.min.css" rel="stylesheet" />
-    Or,
-    Use the following (no variables, supports IE11):
-  -->
     <link href="{{ url_for("static", filename="css/halfmoon.min.css") | debug_unixtime }}" rel="stylesheet" media="screen" />
     <!-- Otterwiki CSS -->
     <link href="{{ url_for("static", filename="css/otterwiki.css") | debug_unixtime }}" rel="stylesheet" media="screen" />
@@ -33,25 +25,25 @@
     <!-- Roboto font (Used when Apple system fonts are not available) -->
     <link href="{{ url_for("static", filename="css/roboto.css") | debug_unixtime }}" rel="stylesheet"/>
     <!-- Documentation styles -->
-{% block head %}
-{% endblock %}
-{% if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}
-{# Dark Mode Optimization #}
+{%- block head %}
+{% endblock -%}
+{%- if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}
+{#- Dark Mode Optimization -#}
     <!-- Chrome, Firefox OS and Opera mobile address bar theming -->
     <meta name="theme-color" content="#000000">
     <!-- Windows Phone mobile address bar theming -->
     <meta name="msapplication-navbutton-color" content="#000000">
     <!-- iOS Safari mobile address bar theming -->
     <meta name="apple-mobile-web-app-status-bar-style" content="#000000">
-{% endif %}
+{% endif -%}
   <!-- Halfmoon JS -->
   <script src="{{ url_for("static", filename="js/halfmoon.js") }}"></script>
 </head>
-<body class="{% if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}dark-mode{%endif%} with-custom-webkit-scrollbars with-custom-css-scrollbars">
-    {% block bodytop %}
-    {% endblock %}
+<body class="{% if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}dark-mode {%endif%}with-custom-webkit-scrollbars with-custom-css-scrollbars">
+{%- block bodytop %}
+{% endblock -%}
     <!-- Page wrapper start -->
-    <div id="page-wrapper" class="page-wrapper {% block page_wrapper_config -%}with-navbar with-sidebar{%-endblock%}" data-sidebar-type="overlayed-sm-and-down" {%-if request.cookies.get('halfmoon_sidebar') == "hidden" -%}data-sidebar-hidden="hidden"{%-endif-%}>
+    <div id="page-wrapper" class="page-wrapper {% block page_wrapper_config -%}with-navbar with-sidebar{%-endblock%}" {%-if request.cookies.get('halfmoon_sidebar') == "hidden" -%}data-sidebar-hidden="hidden"{%-endif-%}>
 
         <!-- Sticky alerts -->
         <div class="sticky-alerts"></div>
@@ -179,7 +171,7 @@
     Flashes
 -#}
 {%- with messages = get_flashed_messages(with_categories=true) -%}
-{%- if message -%}
+{%- if messages -%}
 <script type="text/javascript">
   {% for category, message in messages %}
     halfmoon.initStickyAlert({
