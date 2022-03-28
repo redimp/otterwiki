@@ -167,12 +167,11 @@
     <!-- Page wrapper end -->
 {% block js %}
 {% endblock %}
-{#-
+{#
     Flashes
--#}
-{%- with messages = get_flashed_messages(with_categories=true) -%}
-{%- if messages -%}
+#}
 <script type="text/javascript">
+{% with messages = get_flashed_messages(with_categories=true) %}
   {% for category, message in messages %}
     halfmoon.initStickyAlert({
         content: "{{ message }}",
@@ -181,8 +180,8 @@
       hasDismissButton: true,
     });
   {% endfor %}
+{% endwith %}
 </script>
-{%- endif -%}
-{%- endwith -%}
+
 </body>
 </html>
