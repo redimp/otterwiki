@@ -36,8 +36,6 @@
     <!-- iOS Safari mobile address bar theming -->
     <meta name="apple-mobile-web-app-status-bar-style" content="#000000">
 {% endif -%}
-  <!-- Halfmoon JS -->
-  <script src="{{ url_for("static", filename="js/halfmoon.js") | debug_unixtime }}"></script>
 </head>
 <body class="{% if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}dark-mode {%endif%}with-custom-webkit-scrollbars with-custom-css-scrollbars">
 {%- block bodytop %}
@@ -165,14 +163,15 @@
 {% endblock %}
     </div>
     <!-- Page wrapper end -->
+  <!-- Halfmoon JS -->
+  <script src="{{ url_for("static", filename="js/halfmoon.js") | debug_unixtime }}"></script>
 {% block js %}
 {% endblock %}
-{#-
+{#
     Flashes
--#}
-{%- with messages = get_flashed_messages(with_categories=true) -%}
-{%- if messages -%}
+#}
 <script type="text/javascript">
+{% with messages = get_flashed_messages(with_categories=true) %}
   {% for category, message in messages %}
     halfmoon.initStickyAlert({
         content: "{{ message }}",
@@ -181,8 +180,7 @@
       hasDismissButton: true,
     });
   {% endfor %}
+{% endwith %}
 </script>
-{%- endif -%}
-{%- endwith -%}
 </body>
 </html>
