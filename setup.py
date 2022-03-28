@@ -18,7 +18,7 @@ setup(
         "Flask-Login==0.5.0",
         "Flask-Mail==0.9.1",
         "Flask-SQLAlchemy==2.5.1",
-        "Flask==2.1.0",
+        "Flask==2.0.3",
         "Jinja2>=2.9",
         "gitpython",
         "cython",
