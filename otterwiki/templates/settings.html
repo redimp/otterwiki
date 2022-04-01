@@ -1,11 +1,11 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
 {% block content %}
-<div class="w-600 mw-full">
 <h2>Settings</h2>
 {#
 #}
 <div class="card">
+<div class="mw-full w-400">
 <h2 class="card-title">Change Password</h2>
 <form action="{{url_for("settings")}}" method="POST">
   <div class="form-group">
@@ -21,6 +21,7 @@
   </div>
   <input class="btn btn-primary" type="submit" value="Update Password">
 </form>
+</div>
 </div>
 {#
 #}
@@ -85,6 +86,5 @@
 #}
 {#
 #}
-</div>
 
 {% endblock %}
