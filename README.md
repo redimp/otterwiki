@@ -61,16 +61,6 @@ with the application.  And, most likely, it will also run behind a
 [reverse
 proxy](http://flask.pocoo.org/docs/0.12/deploying/wsgi-standalone/#proxy-setups).
 
-## Notes
-
-An Otter Wiki is build using multiple tools, frameworks and templates:
-
- - [purecss.io](https://purecss.io) and the [Responsive Side Menu Layout](https://purecss.io/layouts/).
-
- - [SimpleMDE](https://simplemde.com/) a beautiful markdown editor.
-
- - [The flask minimal cookiecutter](https://github.com/candidtim/cookiecutter-flask-minimal).
-
 ## Docker
 
 ### Build and run using `docker-compose`
