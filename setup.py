@@ -24,7 +24,6 @@ setup(
         "cython",
         "mistune==0.8.4",
         "pygments",
-        #        'itsdangerous',
         "Pillow",
         "unidiff",
         "flask-htmlmin==2.2.0",
@@ -34,8 +33,6 @@ setup(
             "coverage",
             "pytest",
             "black",
-            "smtpdfix",
-            "filelock",
         ]
     },
 )

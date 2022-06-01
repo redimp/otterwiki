@@ -23,13 +23,17 @@ def create_app(tmpdir):
             [
                 "REPOSITORY = '{}'\n".format(str(tmpdir.join("repo"))),
                 "SITE_NAME = 'TEST WIKI'\n",
+                "DEBUG = True\n", # enable test and debug settings
+                "TESTING = True\n",
+                "MAIL_SUPPRESS_SEND = True\n",
             ]
         )
     # configure environment
     os.environ["OTTERWIKI_SETTINGS"] = settings_cfg
     # get app
-    from otterwiki.server import app
-
+    from otterwiki.server import app, mail
+    # store mail in app for testing
+    app.test_mail = mail
     # enable test and debug settings
     app.config["TESTING"] = True
     app.config["DEBUG"] = True
@@ -39,7 +43,6 @@ def create_app(tmpdir):
 @pytest.fixture
 def db():
     from otterwiki.auth import db
-
     yield db
 
 
@@ -456,23 +459,68 @@ def test_page_revert_permissions(app_with_permissions, test_client):
     html = test_client.get("/{}/view".format(pagename)).data.decode()
     assert old_content in html
 
-
-#     # try to edit anonymous (and fail)
-#     rv = test_client.post( url_for('save', path=pagename),
-#             data={
-#                 'content_update' : content,
-#                 'commit' : 'Home: initial test commit.',
-#                 },
-#             follow_redirects=True,
-#         )
-#     assert rv.status_code == 403
-
-
 #
 # lost_password
 #
-
-
 def test_lost_password_form(test_client):
     rv = test_client.get("/-/lost_password")
     assert rv.status_code == 200
+
+def test_lost_password_mail(app_with_user, test_client, req_ctx):
+    # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
+    app_with_user.test_mail.state.suppress = True
+    # record outbox
+    with app_with_user.test_mail.record_messages() as outbox:
+        assert len(outbox) == 0
+        rv = test_client.post(
+            "/-/lost_password",
+            data={
+                "email": "mail@example.org",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        assert len(outbox) == 1
+        assert "Password Recovery" in outbox[0].subject
+        assert "/-/recover_password/" in outbox[0].body
+        assert "mail@example.org" in outbox[0].recipients
+
+#
+# register
+#
+def test_register_and_login(app_with_user, test_client, req_ctx):
+    # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
+    app_with_user.test_mail.state.suppress = True
+    # record outbox
+    with app_with_user.test_mail.record_messages() as outbox:
+        email = "mail2@exmaple.org"
+        assert len(outbox) == 0
+        rv = test_client.post(
+            "/-/register",
+            data={
+                "email": email,
+                "name": "Example User",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        assert len(outbox) == 1
+        assert "Account" in outbox[0].subject
+        assert "/-/login" in outbox[0].body
+        assert email in outbox[0].recipients
+        # check password
+        m_passwd = re.search("The password generated for you is: ([A-Za-z0-9]+)",outbox[0].body)
+        assert m_passwd is not None
+        passwd = m_passwd.group(1)
+        assert len(passwd) > 4
+        # test login with new account
+        rv = test_client.post(
+            "/-/login",
+            data={
+                "email": email,
+                "password": passwd,
+            },
+            follow_redirects=True,
+        )
+        html = rv.data.decode()
+        assert "You logged in successfully." in html
