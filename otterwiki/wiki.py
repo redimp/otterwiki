@@ -788,7 +788,7 @@ class Attachment:
         t_start = timer()
         image = Image.open(BytesIO(storage.load(self.filepath, mode="rb")))
         # resample thumbnail
-        image.thumbnail((size, size), resample=Image.ANTIALIAS)
+        image.thumbnail((size, size), resample=Image.Resampling.LANCZOS)
         # create byteobject
         buffer = BytesIO()
         # store image in byteobject
