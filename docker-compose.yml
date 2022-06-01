@@ -8,13 +8,4 @@ services:
     volumes:
      - app-data:/app-data
 
-volumes:
-  app-data:
-    driver: local
-# use a local directory for storing the app-data
-#    driver_opts:
-#      o: bind
-#      type: none
-#      device: ./app-data
-
 # vim:set et ts=8 sts=2 sw=2 ai fenc=utf-8:
