@@ -73,7 +73,7 @@ def send_mail(subject, recipients, text_body, sender=None, html_body=None, _asyn
     msg = Message(subject, sender=sender, recipients=recipients)
     msg.body = text_body
     msg.html = html_body
-    if _async:
+    if not app.config['TESTING'] and _async:
         # send mail asynchronous
         thr = Thread(target=send_async_email, args=[app, msg])
         thr.start()
