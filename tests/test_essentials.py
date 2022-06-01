@@ -26,6 +26,6 @@ def test_fatal_error():
     from otterwiki import fatal_error
 
     with pytest.raises(SystemExit) as pytest_wrapped_e:
-        fatal_error("Test.")
+        fatal_error("test_fatal_error")
     assert pytest_wrapped_e.type == SystemExit
     assert pytest_wrapped_e.value.code == 1
