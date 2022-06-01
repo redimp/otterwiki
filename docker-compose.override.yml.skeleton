@@ -1,0 +1,30 @@
+version: '2'
+services:
+  web:
+    environment:
+      # configure Name and Logo of the Wiki
+      - SITE_NAME=Otter Wiki
+      # The logo can be an attachment
+      - SITE_LOGO=/Home/a/logo.png
+      # Permissions
+      - READ_ACCESS=ANONYMOUS
+      - WRITE_ACCESS=ANONYMOUS
+      - ATTACHMENT_ACCESS=ANONYMOUS
+      - AUTO_APPROVAL=True
+      # Mail configuration
+      - MAIL_DEFAULT_SENDER=otterwiki@example.com
+      - MAIL_SERVER=smtp.example.com
+      - MAIL_PORT=465
+      - MAIL_USE_TLS=False
+      - MAIL_USE_SSL=True
+      - MAIL_USERNAME=otterwiki
+      - MAIL_PASSWORD=password
+    ports:
+      # forward the http port to 8081
+      - "8081:80"
+    volumes:
+     # mount the local directory ./app-data into the container
+     # (so settings, database and repository are accessible)
+     - ./app-data:/app-data
+
+# vim:set et ts=8 sts=2 sw=2 ai fenc=utf-8:

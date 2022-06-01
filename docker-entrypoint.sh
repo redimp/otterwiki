@@ -16,14 +16,40 @@ RANDOM_SECRET_KEY=$(echo $RANDOM | md5sum | head -c 16)
 
 # take care of the otterwiki settings file
 if [ ! -f ${OTTERWIKI_SETTINGS} ]; then
-    # copy settings.cfg skeleton
-    sed -e "s#^DEBUG.*#DEBUG = False#" \
-        -e "s#^REPOSITORY.*#REPOSITORY = '/app-data/repository'#" \
-        -e "s#^SECRET_KEY.*#SECRET_KEY = '${RANDOM_SECRET_KEY}'#" \
-        -e "s#^SITE_NAME.*#SITE_NAME = 'Otter Wiki'#" \
-        -e "s#^SQLALCHEMY_DATABASE_URI.*#SQLALCHEMY_DATABASE_URI = 'sqlite:////app-data/db.sqlite'#" \
-    < /app/settings.cfg.skeleton > ${OTTERWIKI_SETTINGS}
+    echo "DEBUG = False" >> ${OTTERWIKI_SETTINGS}
+    echo "REPOSITORY = '/app-data/repository'" >> ${OTTERWIKI_SETTINGS}
+    echo "SECRET_KEY = '${RANDOM_SECRET_KEY}'" >> ${OTTERWIKI_SETTINGS}
+    echo "SQLALCHEMY_DATABASE_URI = 'sqlite:////app-data/db.sqlite'" >> ${OTTERWIKI_SETTINGS}
 fi
+
+# handle environment variables
+# branding
+for EV in SITE_NAME SITE_LOGO; do
+    if [ ! -z "${!EV}" ]; then
+        sed -i '#^${EV}.*#d' ${OTTERWIKI_SETTINGS}
+        echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
+    fi
+done
+# permissions
+for EV in READ_ACCESS WRITE_ACCESS ATTACHMENT_ACCESS; do
+    if [ ! -z "${!EV}" ]; then
+        sed -i '#^${EV}.*#d' ${OTTERWIKI_SETTINGS}
+        echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
+    fi
+done
+# mail
+for EV in MAIL_SERVER MAIL_USERNAME MAIL_PASSWORD; do
+    if [ ! -z "${!EV}" ]; then
+        sed -i '#^${EV}.*#d' ${OTTERWIKI_SETTINGS}
+        echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
+    fi
+done
+for EV in MAIL_PORT MAIL_USE_TLS MAIL_USE_SSL; do
+    if [ ! -z "${!EV}" ]; then
+        sed -i '#^${EV}.*#d' ${OTTERWIKI_SETTINGS}
+        echo "${EV} = ${!EV}" >> ${OTTERWIKI_SETTINGS}
+    fi
+done
 
 # configure uwsgi
 if [ ! -f ${UWSGI_INI} ]; then
