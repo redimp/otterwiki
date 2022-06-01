@@ -110,6 +110,7 @@ For the `SQLALCHEMY_DATABASE_URI` see <https://flask-sqlalchemy.palletsprojects.
 | `WRITE_ACCESS`   | `'REGISTERED'`  | Write access to wiki pages                   |
 | `ATTACHMENT_ACCESS` | `'APPROVED'` | Write acccess to attachments                 |
 | `AUTO_APPROVAL`  | `False`         | With `AUTO_APPROVAL=True` users are approved on registration |
+| `NOTIFY_ADMINS_ON_REGISTER` | `True`  | Notify admins if a new user is registered |
 
 There are four types of users in the Otterwiki: `ANONYMOUS` are non logged in users.
 Users that registered via email and are logged in are `REGISTERED`, users approved via

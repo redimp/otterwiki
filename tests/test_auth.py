@@ -65,6 +65,7 @@ def app_with_user(create_app, db):
         password_hash=generate_password_hash("password1234", method="sha256"),
         first_seen=datetime.now(),
         last_seen=datetime.now(),
+        is_admin=True,
     )
     db.session.add(user)
     db.session.commit()

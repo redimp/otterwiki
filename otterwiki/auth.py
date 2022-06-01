@@ -142,6 +142,21 @@ class SimpleAuth:
                 email
             )
         )
+        # notify admins
+        if app.config['NOTIFY_ADMINS_ON_REGISTER']:
+            # fetch all admin email adresses
+            admin_list = self.User.query.filter_by(is_admin=True).all()
+            admin_emails = [str(u.email) for u in admin_list]
+            print(admin_emails)
+            text_body = render_template(
+                    "admin_notification.txt",
+                    sitename=app.config["SITE_NAME"],
+                    name=name,
+                    email=email,
+                    url=url_for("settings", _external=True),
+                    )
+            subject = "New Account Registration - {} - An Otter Wiki".format(app.config["SITE_NAME"])
+            send_mail(subject=subject, recipients=admin_emails, text_body=text_body)
 
     def handle_register(self, email, name):
         # check if email exists

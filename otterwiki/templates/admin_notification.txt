@@ -1,0 +1,9 @@
+Dear {{sitename}} Admin,
+
+a new user registered an account at {{sitename}} (an Otter Wiki):
+
+{{name}} {{email}}
+
+Please check if the user needs to be approved here: {{url}}
+
+Cheers!
