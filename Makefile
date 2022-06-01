@@ -1,3 +1,5 @@
+PORT=8080
+
 all: run
 
 .PHONY: clean coverage run debug shell sdist
@@ -13,10 +15,10 @@ venv:
 	venv/bin/pip install -e '.[dev]'
 
 run: venv settings.cfg
-	FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask run --host 0.0.0.0
+	FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask run --host 0.0.0.0 --port $(PORT)
 
 debug: venv settings.cfg
-	FLASK_ENV=development FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask run
+	FLASK_ENV=development FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask run --port $(PORT)
 
 shell: venv
 	FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask shell
@@ -48,3 +50,4 @@ settings.cfg:
 	@echo " settings.cfg.skeleton"
 	@echo ""
 	@false
+
