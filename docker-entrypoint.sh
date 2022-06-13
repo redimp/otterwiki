@@ -38,7 +38,7 @@ for EV in READ_ACCESS WRITE_ACCESS ATTACHMENT_ACCESS; do
     fi
 done
 # mail
-for EV in MAIL_SERVER MAIL_USERNAME MAIL_PASSWORD; do
+for EV in MAIL_SERVER MAIL_USERNAME MAIL_PASSWORD MAIL_DEFAULT_SENDER; do
     if [ ! -z "${!EV}" ]; then
         sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
         echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
