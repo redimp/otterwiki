@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 # vim:set et ts=8 sts=4 sw=4 ai fenc=utf-8:
 
-set -e
+set -e -x
 
 # take care of repository dictionary
 if [ ! -d ${OTTERWIKI_REPOSITORY} ]; then
@@ -26,27 +26,27 @@ fi
 # branding
 for EV in SITE_NAME SITE_LOGO; do
     if [ ! -z "${!EV}" ]; then
-        sed -i '#^${EV}.*#d' ${OTTERWIKI_SETTINGS}
+        sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
         echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
     fi
 done
 # permissions
 for EV in READ_ACCESS WRITE_ACCESS ATTACHMENT_ACCESS; do
     if [ ! -z "${!EV}" ]; then
-        sed -i '#^${EV}.*#d' ${OTTERWIKI_SETTINGS}
+        sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
         echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
     fi
 done
 # mail
 for EV in MAIL_SERVER MAIL_USERNAME MAIL_PASSWORD; do
     if [ ! -z "${!EV}" ]; then
-        sed -i '#^${EV}.*#d' ${OTTERWIKI_SETTINGS}
+        sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
         echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
     fi
 done
 for EV in MAIL_PORT MAIL_USE_TLS MAIL_USE_SSL; do
     if [ ! -z "${!EV}" ]; then
-        sed -i '#^${EV}.*#d' ${OTTERWIKI_SETTINGS}
+        sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
         echo "${EV} = ${!EV}" >> ${OTTERWIKI_SETTINGS}
     fi
 done
