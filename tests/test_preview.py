@@ -20,6 +20,10 @@ echo "Hello $WORLD"
 - b
 - c
 
+1. one
+2. two
+3. three
+
 | column1 | column2 |
 |---------|---------|
 | row11   | row21   |
@@ -78,3 +82,15 @@ def test_preview_all(create_app, req_ctx):
         for j,part in enumerate(html_example_arr):
             assert part in preview_html
 
+def test_preview_list_bug(create_app, req_ctx):
+    from otterwiki.wiki import Page
+    p = Page("test")
+    content = """Zeile
+1. eins
+2. zwei
+3. drei"""
+    preview_html = p.preview(content=content, cursor_line=5,cursor_ch=1)
+    #pprint(preview_html)
+    assert "<li>eins" in preview_html
+    assert "<li>zwei" in preview_html
+    assert "<li>drei" in preview_html

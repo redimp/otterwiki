@@ -142,7 +142,7 @@ class OtterwikiRenderer:
         self.md_renderer = OtterwikiMdRenderer()
         self.md_lexer = OtterwikiInlineLexer(self.md_renderer)
         self.mistune = mistune.Markdown(renderer=self.md_renderer, inline=self.md_lexer)
-        self.firstword = re.compile("([a-zA-Z_0-9]+)")
+        self.lastword = re.compile("([a-zA-Z_0-9\.]+)$")
 
     def markdown(self, text, cursor=None):
         self.md_renderer.reset_toc()
@@ -150,15 +150,15 @@ class OtterwikiRenderer:
         if cursor is not None:
             text_arr = text.splitlines(True)
             try:
-                line = max(0, int(cursor)-1)
+                line = min(len(text_arr)-1, int(cursor)-1)
             except ValueError:
                 line = 0
             # find a line to place the cursor
-            while line > 0 and not len(self.firstword.findall(text_arr[line])) > 0:
+            while line > 0 and not len(self.lastword.findall(text_arr[line])) > 0:
                 line -= 1
             if line > 0:
-               # add empty span bevor edited line
-                text_arr[line] = self.firstword.sub(r"\1{}".format(cursormagicword), text_arr[line], count=1)
+                # add empty span at the end of the edited line
+                text_arr[line] = self.lastword.sub(r"\1{}".format(cursormagicword), text_arr[line], count=1)
                 text = "".join(text_arr)
 
         html = self.mistune(text)
