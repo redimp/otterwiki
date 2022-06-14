@@ -5,7 +5,24 @@
 {#
 #}
 <div class="card">
-<div class="mw-full w-400">
+<div class="mw-full w-600">
+<h2 class="card-title">Change Name</h2>
+<form action="{{url_for("settings")}}" method="POST">
+  <div class="form-group">
+  <label for="name" class="required">First and Lastname</label>
+  <input name="name" type="text" class="form-control" id="name" value="{{current_user.name if current_user.name}}">
+    <div class="form-text">
+      Please note that changing the Name doesn't not change anything in the edit history.
+    </div>
+  </div>
+  <input class="btn btn-primary" type="submit" value="Update Name">
+</form>
+</div>
+</div>
+{#
+#}
+<div class="card">
+<div class="mw-full w-600">
 <h2 class="card-title">Change Password</h2>
 <form action="{{url_for("settings")}}" method="POST">
   <div class="form-group">

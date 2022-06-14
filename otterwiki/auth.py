@@ -187,6 +187,16 @@ class SimpleAuth:
         )
 
     def handle_settings(self, form):
+        if not empty(form.get("name")):
+            new_name = form.get("name")
+            if len(new_name) < 1:
+                toast("Your name must be at least one character.")
+            else:
+                # update name
+                current_user.name = new_name
+                db.session.add(current_user)
+                db.session.commit()
+                toast("Your name was updated successfully.", "success")
         if not empty(form.get("password1")) or not empty(form.get("password2")):
             if form.get("password1") != form.get("password2"):
                 toast("The passwords do not match.", "error")
