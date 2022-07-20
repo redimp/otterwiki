@@ -11,7 +11,7 @@
   <!-- Favicon and title -->
   <link rel="icon" href="{{ url_for("static", filename="img/otter-favicon2.png") }}">
 {% block title %}
-  <title>{%if title%}{{title}} &ndash;{%endif%} An Otter Wiki</title>
+<title>{%if title%}{{title}} &ndash; {%endif%}{%if config.SITE_NAME %}{{config.SITE_NAME}}{%else%}An Otter Wiki{%endif%}</title>
 {% endblock %}
     <link href="{{ url_for("static", filename="css/halfmoon.min.css") | debug_unixtime }}" rel="stylesheet" media="screen" />
     <!-- Otterwiki CSS -->
