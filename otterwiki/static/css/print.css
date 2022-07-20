@@ -13,7 +13,9 @@
     display: none;
 }
 
+.alert, /* hide alerts */
 a.anchor {
     display: none;
 }
+
 
