@@ -3,16 +3,22 @@
 {% block formcontent %}
 <form action="{{ url_for("register") }}" method="POST" class="form-inline">{# <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
   <div class="form-group">
-    <label for="email" class="required w-100">eMail Address</label>
+    <label for="email" class="required w-150">eMail Address</label>
     <input type="text" class="form-control" name="email" id="email" placeholder="you@example.com" value="{{email if email}}">
   </div>
   <div class="form-group">
-    <div class="form-text">
-      A password will be generated and send to this address.
-    </div>
+    <label for="password1" class="required w-150">Password</label>
+    <input type="password" class="form-control" name="password1" id="password1" placeholder="Password">
   </div>
   <div class="form-group">
-    <label for="name" class="required w-100">Name</label>
+    <label for="password2" class="required w-150">Confirm password</label>
+    <input type="password" class="form-control" name="password2" id="password2" placeholder="Confirm Password">
+  </div>
+  <div class="form-group">
+      The password must be at least 8 characters long.
+  </div>
+  <div class="form-group">
+    <label for="name" class="required w-150">Name</label>
     <input type="text" class="form-control" name="name" id="name" placeholder="First and Last name" value="{{name if name}}">
   </div>
   <input class="btn btn-primary" type="submit" value="Register">

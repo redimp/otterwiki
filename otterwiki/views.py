@@ -139,6 +139,8 @@ def register():
         return otterwiki.auth.handle_register(
             email=request.form.get("email"),
             name=request.form.get("name"),
+            password1=request.form.get("password1"),
+            password2=request.form.get("password2"),
         )
 
 
@@ -156,6 +158,11 @@ def lost_password():
         return otterwiki.auth.recover_password(
             email=request.form.get("email"),
         )
+
+
+@app.route("/-/confirm_email/<string:token>", methods=["POST", "GET"])
+def confirm_email(token):
+    return otterwiki.auth.handle_confirmation(token)
 
 
 @app.route("/-/recover_password/<string:token>", methods=["GET"])

@@ -35,15 +35,30 @@ class SimpleAuth:
         password_hash = db.Column(db.String(128))
         first_seen = db.Column(db.DateTime())
         last_seen = db.Column(db.DateTime())
-        is_approved = db.Column(db.Boolean())
+        is_approved = db.Column(db.Boolean(), default=False)
         is_admin = db.Column(db.Boolean())
+        email_confirmed = db.Column(db.Boolean(), default=False)
+        allow_read = db.Column(db.Boolean())
+        allow_write = db.Column(db.Boolean())
+        allow_upload = db.Column(db.Boolean(), default=False)
 
         def __repr__(self):
             return "<User '{} <{}>'>".format(self.name, self.email)
 
     def __init__(self):
+        self._db_migrate()
         # create tables
         db.create_all()
+
+    def _db_migrate(self):
+        from sqlalchemy.exc import OperationalError
+        with db.engine.begin() as conn:
+            for column in ['email_confirmed', 'allow_read', 'allow_write', 'allow_upload']:
+                try:
+                    r = conn.execute("ALTER TABLE user ADD COLUMN {} BOOLEAN;".format(column))
+                    app.logger.warning("_db_migrate: altered table 'user' added '{}'".format(column))
+                except OperationalError:
+                    pass
 
     def user_loader(self, id):
         return self.User.query.get(int(id))
@@ -71,13 +86,20 @@ class SimpleAuth:
         user = self.User.query.filter_by(email=email).first()
         next_page = request.form.get("next")
         if user is not None and check_password_hash(user.password_hash, password):
-            if not user.is_approved:
+            if not user.is_admin and not user.is_approved:
                 toast("You are not approved yet.", "warning")
                 return redirect(url_for("login"))
+            # app.logger.info(f"{user.email=} {user.is_admin=} {user.email_confirmed=} {app.config['EMAIL_NEEDS_CONFIRMATION']=}")
+            if app.config["EMAIL_NEEDS_CONFIRMATION"] and not user.is_admin \
+                    and not user.email_confirmed:
+                toast("Please confirm your email address.", "error")
+                return redirect(url_for("index"))
+            # login
             login_user(user, remember=remember)
-            toast("You logged in successfully.", "success")
+            # set next_page
             if not next_page or url_parse(next_page).netloc != "":
                 next_page = url_for("index")
+            toast("You logged in successfully.", "success")
             # update last_seen
             user.last_seen = datetime.now()
             db.session.add(user)
@@ -98,9 +120,31 @@ class SimpleAuth:
             name=name,
         )
 
-    def create_user(self, email, name):
-        # generate random password
-        password = random_password()
+    def request_confirmation(self, email):
+        # check if email exists
+        user = self.User.query.filter_by(email=email).first()
+        token = serialize(email, salt="confirm-email")
+        # generate mail
+        subject = "Request confirmation - {} - An Otter Wiki".format(app.config["SITE_NAME"])
+        text_body = render_template(
+            "confirm_email.txt",
+            sitename=app.config["SITE_NAME"],
+            name=user.name,
+            url=url_for("confirm_email", token=token, _external=True),
+        )
+        # send mail
+        send_mail(subject=subject, recipients=[email], text_body=text_body)
+        # notify user
+        toast(
+            "A request for confirmation has been sent to {}. Please check your mailbox.".format(
+                email
+            )
+        )
+
+    def create_user(self, email, name, password=None):
+        if password is None:
+            # generate random password
+            password = random_password()
         # hash password
         hashed_password = generate_password_hash(password, method="sha256")
         # handle flags
@@ -111,6 +155,7 @@ class SimpleAuth:
             is_admin = False
         # handle auto approval
         is_approved = app.config["AUTO_APPROVAL"] is True
+        app.logger.info(f"{email=} {is_approved=}")
         # create user object
         user = self.User(
             name=name,
@@ -124,41 +169,32 @@ class SimpleAuth:
         # add to database
         db.session.add(user)
         db.session.commit()
-        # generate mail
-        subject = "Account - {} - An Otter Wiki".format(app.config["SITE_NAME"])
-        text_body = render_template(
-            "register.txt",
-            sitename=app.config["SITE_NAME"],
-            name=name,
-            password=password,
-            url=url_for("login", _external=True),
-        )
-        # send mail
-        send_mail(subject=subject, recipients=[email], text_body=text_body)
         # log user creation
         app.logger.info("user registered: {} <{}>".format(name, email))
-        # notify user
-        toast(
-            "Your password has been sent to {}. Please check your mailbox.".format(
-                email
-            )
-        )
-        # notify admins
-        if app.config['NOTIFY_ADMINS_ON_REGISTER']:
-            # fetch all admin email adresses
-            admin_list = self.User.query.filter_by(is_admin=True).all()
-            admin_emails = [str(u.email) for u in admin_list]
-            text_body = render_template(
-                    "admin_notification.txt",
-                    sitename=app.config["SITE_NAME"],
-                    name=name,
-                    email=email,
-                    url=url_for("settings", _external=True),
-                    )
-            subject = "New Account Registration - {} - An Otter Wiki".format(app.config["SITE_NAME"])
-            send_mail(subject=subject, recipients=admin_emails, text_body=text_body)
+        if app.config["EMAIL_NEEDS_CONFIRMATION"]:
+            self.request_confirmation(email)
+        else:
+            # notify user
+            toast("Your account has been activated. You can log in now.")
+            # notify admins
+            if app.config['NOTIFY_ADMINS_ON_REGISTER']:
+                self.activated_user_notify_admins(name, email)
 
-    def handle_register(self, email, name):
+    def activated_user_notify_admins(self, name, email):
+        # fetch all admin email adresses
+        admin_list = self.User.query.filter_by(is_admin=True).all()
+        admin_emails = [str(u.email) for u in admin_list]
+        text_body = render_template(
+                "admin_notification.txt",
+                sitename=app.config["SITE_NAME"],
+                name=name,
+                email=email,
+                url=url_for("settings", _external=True),
+                )
+        subject = "New Account Registration - {} - An Otter Wiki".format(app.config["SITE_NAME"])
+        send_mail(subject=subject, recipients=admin_emails, text_body=text_body)
+
+    def handle_register(self, email, name, password1, password2):
         # check if email exists
         user = self.User.query.filter_by(email=email).first()
         # check if email is valid
@@ -168,12 +204,39 @@ class SimpleAuth:
             toast("This email address is already registered.", "error")
         elif name is None or len(name) < 1:
             toast("Please enter your name.", "error")
+        elif password1 != password2:
+            toast("The passwords do not match.", "error")
+        elif password1 is  None or len(password1) < 8:
+            toast("The password must be at least 8 characters long.", "error")
         else:
             # register account
-            self.create_user(email, name)
+            self.create_user(email, name, password=password1)
             # send user back to login
             return redirect(url_for("login"))
         return self.register_form(email=email, name=name)
+
+    def handle_confirmation(self, token):
+        try:
+            email = deserialize(token, salt="confirm-email", max_age=86400)
+        except SerializeError:
+            app.logger.warning(
+                "auth.handle_confirmation() Invalid token: {}".format(token)
+            )
+            toast("Invalid token.", "error")
+            # redirect
+            return redirect(url_for("login"))
+        # check if email exists
+        user = self.User.query.filter_by(email=email).first()
+        if user is None:
+            toast("Invalid user or token.", "error")
+            return redirect(url_for("login"))
+        # mark user as confirmed
+        self.confirm_email(email)
+        # notify admins
+        if app.config['NOTIFY_ADMINS_ON_REGISTER']:
+            self.activated_user_notify_admins(name, email)
+        # redirect
+        return redirect(url_for("login"))
 
     def settings_form(self):
         if has_permission("ADMIN"):
@@ -296,15 +359,30 @@ class SimpleAuth:
                 "auth.recover_password_token() Invalid token: {}".format(token)
             )
             toast("Invalid token.", "error")
+            # redirect
+            return redirect(url_for("login"))
         user = self.User.query.filter_by(email=email).first()
         if user is not None:
             login_user(user, remember=True)
             app.logger.warning("auth password recovery successful: {}".format(email))
+            self.confirm_email(email)
             toast("Welcome {}, please update your password.".format(user.name))
             return redirect(url_for("settings"))
         else:
             toast("Invalid email address.")
         return lost_password_form()
+
+    def confirm_email(self, email):
+        user = self.User.query.filter_by(email=email).first()
+        if user is None or user.email_confirmed:
+            return
+        # mark email as confirmed
+        user.email_confirmed = True
+        db.session.add(user)
+        db.session.commit()
+        toast("Your email address has been confirmed. You can log in now.")
+
+
 
 
 # create login manager
@@ -332,6 +410,10 @@ def login_form(*args, **kwargs):
 
 def handle_login(*args, **kwargs):
     return auth_manager.handle_login(*args, **kwargs)
+
+
+def handle_confirmation(*args, **kwargs):
+    return auth_manager.handle_confirmation(*args, **kwargs)
 
 
 def register_form(*args, **kwargs):

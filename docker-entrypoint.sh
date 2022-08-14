@@ -37,6 +37,12 @@ for EV in READ_ACCESS WRITE_ACCESS ATTACHMENT_ACCESS; do
         echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
     fi
 done
+for EV in AUTO_APPROVAL EMAIL_NEEDS_CONFIRMATION; do
+    if [ ! -z "${!EV}" ]; then
+        sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
+        echo "${EV} = ${!EV}" >> ${OTTERWIKI_SETTINGS}
+    fi
+done
 # mail
 for EV in MAIL_SERVER MAIL_USERNAME MAIL_PASSWORD MAIL_DEFAULT_SENDER; do
     if [ ! -z "${!EV}" ]; then

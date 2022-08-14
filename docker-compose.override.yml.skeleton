@@ -12,6 +12,7 @@ services:
       - ATTACHMENT_ACCESS=ANONYMOUS
       - AUTO_APPROVAL=True
       - NOTIFY_ADMINS_ON_REGISTER=False
+      - EMAIL_NEEDS_CONFIRMATION=True
       # Mail configuration
       - MAIL_DEFAULT_SENDER=otterwiki@example.com
       - MAIL_SERVER=smtp.example.com

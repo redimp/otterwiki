@@ -1,0 +1,7 @@
+Hello {{name}},
+
+thank you for registering your account at {{sitename}} (an Otter Wiki).
+
+Please confirm your email address here: {{url}}
+
+Cheers!

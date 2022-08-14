@@ -490,38 +490,95 @@ def test_lost_password_mail(app_with_user, test_client, req_ctx):
 # register
 #
 def test_register_and_login(app_with_user, test_client, req_ctx):
+    app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = False
+    # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
+    app_with_user.test_mail.state.suppress = True
+    email = "mail2@example.org"
+    password = "1234567890"
+
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": email,
+            "name": "Example User",
+            "password1": password,
+            "password2": password,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # test login with new account
+    rv = test_client.post(
+        "/-/login",
+        data={
+            "email": email,
+            "password": password,
+        },
+        follow_redirects=True,
+    )
+    html = rv.data.decode()
+    assert "You logged in successfully." in html
+
+def test_register_and_confirm(app_with_user, test_client, req_ctx):
+    app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = True
     # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
     app_with_user.test_mail.state.suppress = True
     # record outbox
     with app_with_user.test_mail.record_messages() as outbox:
-        email = "mail2@exmaple.org"
+        email = "mail3@example.org"
+        password = "1234567890"
         assert len(outbox) == 0
         rv = test_client.post(
             "/-/register",
             data={
                 "email": email,
                 "name": "Example User",
+                "password1":password,
+                "password2":password,
             },
             follow_redirects=True,
         )
         assert rv.status_code == 200
-        assert len(outbox) == 1
-        assert "Account" in outbox[0].subject
-        assert "/-/login" in outbox[0].body
-        assert email in outbox[0].recipients
-        # check password
-        m_passwd = re.search("The password generated for you is: ([A-Za-z0-9]+)",outbox[0].body)
-        assert m_passwd is not None
-        passwd = m_passwd.group(1)
-        assert len(passwd) > 4
-        # test login with new account
+
+        # check if account is unconfirmed
         rv = test_client.post(
             "/-/login",
             data={
                 "email": email,
-                "password": passwd,
+                "password": password,
+            },
+            follow_redirects=True,
+        )
+        html = rv.data.decode()
+        assert "You logged in successfully." not in html
+
+        # check mail
+        assert len(outbox) == 1
+        assert "confirm" in outbox[0].subject.lower()
+        assert "/-/confirm_email/" in outbox[0].body
+        assert email in outbox[0].recipients
+
+        from pprint import pprint
+        pprint(outbox[0].body)
+        # find token
+        token = re.findall("confirm_email/(.*)", outbox[0].body)[0]
+        # check if confirm token works
+        rv = test_client.get(
+            "/-/confirm_email/{}".format(token),
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        assert "Your email address has been confirmed. You can log in now." in rv.data.decode()
+        # check if account is confirmed now
+        rv = test_client.post(
+            "/-/login",
+            data={
+                "email": email,
+                "password": password,
             },
             follow_redirects=True,
         )
         html = rv.data.decode()
         assert "You logged in successfully." in html
+
