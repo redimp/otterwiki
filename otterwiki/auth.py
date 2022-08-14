@@ -148,7 +148,6 @@ class SimpleAuth:
             # fetch all admin email adresses
             admin_list = self.User.query.filter_by(is_admin=True).all()
             admin_emails = [str(u.email) for u in admin_list]
-            print(admin_emails)
             text_body = render_template(
                     "admin_notification.txt",
                     sitename=app.config["SITE_NAME"],
