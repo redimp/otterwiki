@@ -234,7 +234,7 @@ class SimpleAuth:
         self.confirm_email(email)
         # notify admins
         if app.config['NOTIFY_ADMINS_ON_REGISTER']:
-            self.activated_user_notify_admins(name, email)
+            self.activated_user_notify_admins(user.name, email)
         # redirect
         return redirect(url_for("login"))
 
