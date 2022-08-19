@@ -7,6 +7,7 @@ import re
 import git
 
 import mistune
+
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import html
@@ -69,7 +70,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             return "\\(" + mistune.escape(text[1:-1]) + "\\)"
         return "<code>" + mistune.escape(text) + "</code>"
 
-    def block_code(self, code, lang):
+    def block_code(self, code, lang=None):
         prefix = ""
         if not lang:
             return '\n<pre class="code">{}</pre>\n'.format(mistune.escape(code.strip()))
