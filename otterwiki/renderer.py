@@ -13,7 +13,7 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import html
 from pygments.util import ClassNotFound
 
-from flask import url_for
+from flask import url_for, Markup
 from otterwiki.util import slugify, empty
 
 # Please check https://github.com/lepture/mistune-contrib
@@ -85,8 +85,9 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         html = showmagicword(cursorline, html)
         return prefix+html
 
-    def header(self, text, level, raw=None):
-        anchor = slugify(text)
+    def heading(self, text, level):
+        raw = Markup(text).striptags()
+        anchor = slugify(raw)
         try:
             self.toc_anchors[anchor] += 1
             anchor = "{}-{}".format(anchor, self.toc_anchors[anchor])

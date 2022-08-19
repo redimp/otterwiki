@@ -15,7 +15,7 @@ def test_toc():
     md = """
 # head 1
 text
-## head 1.1
+## head 1.1 **bold**
 text
 # head 2
 # head 2
@@ -26,8 +26,10 @@ text
     assert 1 == toc[0][2]
     assert "head-1" == toc[0][4]
     # head 1.1
-    assert "head 1.1" == toc[1][1]
-    assert "head-11" == toc[1][4]
+    assert "head 1.1 <strong>bold</strong>" == toc[1][1]
+    # check raw
+    assert "head 1.1 bold" == toc[1][3]
+    assert "head-11-bold" == toc[1][4]
     assert 2 == toc[1][2]
     # check duplicate header handling
     assert "head-2" == toc[2][4]
