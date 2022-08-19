@@ -86,14 +86,14 @@ class SimpleAuth:
         user = self.User.query.filter_by(email=email).first()
         next_page = request.form.get("next")
         if user is not None and check_password_hash(user.password_hash, password):
+            if app.config["EMAIL_NEEDS_CONFIRMATION"] and not user.is_admin \
+                    and not user.email_confirmed:
+                toast("Please confirm your email address.", "warning")
+                return redirect(url_for("login"))
             if not user.is_admin and not user.is_approved:
                 toast("You are not approved yet.", "warning")
                 return redirect(url_for("login"))
             # app.logger.info(f"{user.email=} {user.is_admin=} {user.email_confirmed=} {app.config['EMAIL_NEEDS_CONFIRMATION']=}")
-            if app.config["EMAIL_NEEDS_CONFIRMATION"] and not user.is_admin \
-                    and not user.email_confirmed:
-                toast("Please confirm your email address.", "error")
-                return redirect(url_for("index"))
             # login
             login_user(user, remember=remember)
             # set next_page
