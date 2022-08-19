@@ -58,7 +58,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         self.toc_tree = []
         self.toc_anchors = {}
 
-    def image(self, src, title, alt_text):
+    def image(self, src, alt_text, title):
         if not empty(title):
             return '<img src="{}" class="img-fluid" title="{}" alt="{}">'.format(
                 src, title, alt_text
@@ -143,7 +143,7 @@ class OtterwikiRenderer:
         self.md_renderer = OtterwikiMdRenderer()
         # self.md_lexer = OtterwikiInlineLexer(self.md_renderer)
         self.mistune = mistune.create_markdown(renderer=self.md_renderer)
-        self.lastword = re.compile("([a-zA-Z_0-9\.]+)$")
+        self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")
 
     def markdown(self, text, cursor=None):
         self.md_renderer.reset_toc()

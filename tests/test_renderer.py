@@ -82,3 +82,9 @@ def test_img():
     html, _ = render.markdown(text)
     assert 'src="/path/to/img.png"' in html
     assert 'title="title"' in html
+
+    text = '![alt text](/path/to/img.png "title")'
+    html, _ = render.markdown(text)
+    assert 'src="/path/to/img.png"' in html
+    assert 'title="title"' in html
+    assert 'alt="alt text"' in html
