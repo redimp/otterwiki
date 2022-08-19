@@ -1,6 +1,6 @@
-Dear {{sitename}} Admin,
+Dear {{sitename}}-Admin,
 
-a new user registered an account at {{sitename}} (an Otter Wiki):
+A new user registered an account at {{sitename}} (an Otter Wiki):
 
 {{name}} <{{email}}>
 
