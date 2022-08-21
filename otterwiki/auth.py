@@ -71,10 +71,11 @@ class SimpleAuth:
         user = self.User.query.filter_by(email=email).first()
         next_page = request.form.get("next")
         if user is not None and check_password_hash(user.password_hash, password):
-            login_user(user, remember=remember)
-            toast("You logged in successfully.", "success")
             if not user.is_approved:
                 toast("You are not approved yet.", "warning")
+                return redirect(url_for("login"))
+            login_user(user, remember=remember)
+            toast("You logged in successfully.", "success")
             if not next_page or url_parse(next_page).netloc != "":
                 next_page = url_for("index")
             # update last_seen
