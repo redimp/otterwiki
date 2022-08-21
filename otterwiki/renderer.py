@@ -7,6 +7,7 @@ import re
 import git
 
 import mistune
+from mistune.plugins import plugin_table, plugin_url, plugin_task_lists, plugin_strikethrough
 
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
@@ -143,33 +144,45 @@ class OtterwikiRenderer:
     def __init__(self):
         self.md_renderer = OtterwikiMdRenderer()
         # self.md_lexer = OtterwikiInlineLexer(self.md_renderer)
-        self.mistune = mistune.create_markdown(renderer=self.md_renderer)
+        self.mistune = mistune.create_markdown(renderer=self.md_renderer,
+                plugins=[
+                    plugin_task_lists,
+                    plugin_table,
+                    plugin_url,
+                    plugin_strikethrough,
+                ])
         self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")
+        self.htmlcursor = "<span id=\"cursor\" style=\"background-color:yellow;color:black;\">CURSOR</span>"
 
     def markdown(self, text, cursor=None):
         self.md_renderer.reset_toc()
+        #import pdb; pdb.set_trace()
         # add cursor position
         if cursor is not None:
-            text_arr = text.splitlines(True)
+            text_arr = text.splitlines()
             try:
                 line = min(len(text_arr)-1, int(cursor)-1)
             except ValueError:
                 line = 0
             # find a line to place the cursor
             while line > 0 and not len(self.lastword.findall(text_arr[line])) > 0:
+                print(f"skipped: {text_arr[line]}")
                 line -= 1
             if line > 0:
                 # add empty span at the end of the edited line
+                print("  lastword='{}'".format(self.lastword.findall(text_arr[line])[0]))
+                print(f"  {text_arr[line]=}")
                 text_arr[line] = self.lastword.sub(r"\1{}".format(cursormagicword), text_arr[line], count=1)
-                text = "".join(text_arr)
+                print(f"  {text_arr[line]=}")
+                text = "\n".join(text_arr)
 
         html = self.mistune(text)
         toc = self.md_renderer.toc_tree.copy()
         if cursor is not None and line > 0:
             # replace the magic word with the cursor span
-            html = html.replace(cursormagicword,"<span id=\"cursor\"></span>")
+            html = html.replace(cursormagicword,self.htmlcursor)
         elif cursor is not None:
-            html = "<span id=\"cursor\"></span>" + html
+            html = self.htmlcursor + html
 
         # clean magicword out of toc
         toc = [

@@ -59,9 +59,10 @@ def test_preview(create_app, req_ctx):
     from otterwiki.wiki import Page
     p = Page("test")
     preview_html = p.preview(content=markdown_example, cursor_line=1,cursor_ch=1)
-    assert "<span id=\"cursor\"></span>" in preview_html
+    assert render.htmlcursor in preview_html
 
 def test_preview_all(create_app, req_ctx):
+    markdown_arr = markdown_example.splitlines()
     html_example, _ = render.markdown(markdown_example)
     html_example_arr = html_example.split("<")
     from otterwiki.wiki import Page
@@ -69,7 +70,7 @@ def test_preview_all(create_app, req_ctx):
     preview_html = p.preview(content=markdown_example, cursor_line=1,cursor_ch=1)
     for part in html_example_arr:
         assert part in preview_html
-    assert "<span id=\"cursor\"></span>" in preview_html
+    assert render.htmlcursor in preview_html
     # check every cursor line
     for i,md_line in enumerate(markdown_example.splitlines(),start=1):
         preview_html = p.preview(content=markdown_example,cursor_line=i,cursor_ch=1) 
@@ -77,9 +78,10 @@ def test_preview_all(create_app, req_ctx):
         assert cursor_line in preview_html
         #assert "<span id=\"cursor\"></span>" in preview_html
         # clear cursor
-        preview_html = preview_html.replace("<span id=\"cursor\"></span>","")
+        preview_html = preview_html.replace(render.htmlcursor,"")
         # and check if everything made it into html
         for j,part in enumerate(html_example_arr):
+            #print(f"{md_line=} {part=} {markdown_arr[i]=}")
             assert part in preview_html
 
 def test_preview_list_bug(create_app, req_ctx):

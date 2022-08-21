@@ -4,6 +4,13 @@
 import pytest
 from otterwiki.renderer import render
 
+def test_lastword():
+    lastword = render.lastword
+    orig = "aaa bbb ccc"
+    modified = lastword.sub(r"ddd \1", orig)
+    #print(f"{orig=} {modified=}")
+    assert modified == "aaa bbb ddd ccc"
+
 
 def test_basic_markdown():
     html, toc = render.markdown("**bold** _italic_")

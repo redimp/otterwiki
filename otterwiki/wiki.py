@@ -17,7 +17,7 @@ from flask import (
 )
 from otterwiki.gitstorage import StorageNotFound, StorageError
 from otterwiki.server import app, db, storage
-from otterwiki.renderer import render, cursormagicword
+from otterwiki.renderer import render
 from otterwiki.util import (
     split_path,
     join_path,
