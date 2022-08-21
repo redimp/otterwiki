@@ -81,7 +81,6 @@ def test_preview_all(create_app, req_ctx):
         preview_html = preview_html.replace(render.htmlcursor,"")
         # and check if everything made it into html
         for j,part in enumerate(html_example_arr):
-            #print(f"{md_line=} {part=} {markdown_arr[i]=}")
             assert part in preview_html
 
 def test_preview_list_bug(create_app, req_ctx):
@@ -92,7 +91,6 @@ def test_preview_list_bug(create_app, req_ctx):
 2. zwei
 3. drei"""
     preview_html = p.preview(content=content, cursor_line=5,cursor_ch=1)
-    #pprint(preview_html)
     assert "<li>eins" in preview_html
     assert "<li>zwei" in preview_html
     assert "<li>drei" in preview_html

@@ -166,14 +166,10 @@ class OtterwikiRenderer:
                 line = 0
             # find a line to place the cursor
             while line > 0 and not len(self.lastword.findall(text_arr[line])) > 0:
-                print(f"skipped: {text_arr[line]}")
                 line -= 1
             if line > 0:
                 # add empty span at the end of the edited line
-                print("  lastword='{}'".format(self.lastword.findall(text_arr[line])[0]))
-                print(f"  {text_arr[line]=}")
                 text_arr[line] = self.lastword.sub(r"\1{}".format(cursormagicword), text_arr[line], count=1)
-                print(f"  {text_arr[line]=}")
                 text = "\n".join(text_arr)
 
         html = self.mistune(text)
