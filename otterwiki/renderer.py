@@ -152,7 +152,7 @@ class OtterwikiRenderer:
                     plugin_strikethrough,
                 ])
         self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")
-        self.htmlcursor = "<span id=\"cursor\" style=\"background-color:yellow;color:black;\">CURSOR</span>"
+        self.htmlcursor = "<span id=\"cursor\"></span>"
 
     def markdown(self, text, cursor=None):
         self.md_renderer.reset_toc()
