@@ -174,14 +174,14 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% for category, message in messages %}
     halfmoon.initStickyAlert({
-      content: "{{ message }}",
+      content: "{{ message | safe}}",
       alertType: "{{category}}",
       fillType: "filled",
       hasDismissButton: true,
 {% if category in ["alert-danger"] %}
-      timeShown: 15000,
+      timeShown: 60000,
 {% elif category in ["alert-secondary"] %}
-      timeShown: 10000,
+      timeShown: 120000,
 {% endif %}
     });
   {% endfor %}

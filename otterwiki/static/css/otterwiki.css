@@ -262,3 +262,10 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 .page table > :last-child > tr:last-child > th {
     border-bottom: 0;
 }
+
+/* toasts */
+.alert.alert-secondary a,
+.dark-mode .alert.alert-secondary a {
+    color: black;
+    text-decoration: underline;
+}
