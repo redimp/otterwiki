@@ -169,6 +169,9 @@ def confirm_email(token):
 def recover_password(token):
     return otterwiki.auth.recover_password_token(token=token)
 
+@app.route("/-/request_confirmation_link/<string:email>", methods=["GET"])
+def request_confirmation_link(email):
+    return otterwiki.auth.handle_request_confirmation(email=email)
 
 #
 # page views

@@ -88,12 +88,13 @@ class SimpleAuth:
         if user is not None and check_password_hash(user.password_hash, password):
             if app.config["EMAIL_NEEDS_CONFIRMATION"] and not user.is_admin \
                     and not user.email_confirmed:
-                toast("Please confirm your email address.", "warning")
+                toast("Please confirm your email address. "+\
+                        "<a href='{}'>Resend confirmation link.</a>".format(url_for("request_confirmation_link", email=email)),
+                        "warning")
                 return redirect(url_for("login"))
             if not user.is_admin and not user.is_approved:
                 toast("You are not approved yet.", "warning")
                 return redirect(url_for("login"))
-            # app.logger.info(f"{user.email=} {user.is_admin=} {user.email_confirmed=} {app.config['EMAIL_NEEDS_CONFIRMATION']=}")
             # login
             login_user(user, remember=remember)
             # set next_page
@@ -141,6 +142,10 @@ class SimpleAuth:
             )
         )
 
+    def handle_request_confirmation(self, email):
+        self.request_confirmation(email)
+        return redirect(url_for("login"))
+
     def create_user(self, email, name, password=None):
         if password is None:
             # generate random password
@@ -175,7 +180,10 @@ class SimpleAuth:
             self.request_confirmation(email)
         else:
             # notify user
-            toast("Your account has been activated. You can log in now.")
+            if user.is_approved:
+                toast("Your account has been created. You can log in now.")
+            else:
+                toast("Your account is waiting for approval.", "warning")
             # notify admins
             if app.config['NOTIFY_ADMINS_ON_REGISTER']:
                 self.activated_user_notify_admins(name, email)
@@ -193,6 +201,24 @@ class SimpleAuth:
                 )
         subject = "New Account Registration - {} - An Otter Wiki".format(app.config["SITE_NAME"])
         send_mail(subject=subject, recipients=admin_emails, text_body=text_body)
+
+    def user_confirmed_email(self, email):
+        user = self.User.query.filter_by(email=email).first()
+        if user is None or user.email_confirmed:
+            return
+        # mark email as confirmed
+        user.email_confirmed = True
+        db.session.add(user)
+        db.session.commit()
+
+        if user.is_approved:
+            toast("Your email address has been confirmed. You can log in now.")
+        else:
+            toast("Your account is waiting for approval.", "warning")
+        # notify admins
+        if app.config['NOTIFY_ADMINS_ON_REGISTER']:
+            self.activated_user_notify_admins(name, email)
+
 
     def handle_register(self, email, name, password1, password2):
         # check if email exists
@@ -231,7 +257,7 @@ class SimpleAuth:
             toast("Invalid user or token.", "error")
             return redirect(url_for("login"))
         # mark user as confirmed
-        self.confirm_email(email)
+        self.user_confirmed_email(email)
         # notify admins
         if app.config['NOTIFY_ADMINS_ON_REGISTER']:
             self.activated_user_notify_admins(user.name, email)
@@ -365,22 +391,11 @@ class SimpleAuth:
         if user is not None:
             login_user(user, remember=True)
             app.logger.warning("auth password recovery successful: {}".format(email))
-            self.confirm_email(email)
             toast("Welcome {}, please update your password.".format(user.name))
             return redirect(url_for("settings"))
         else:
             toast("Invalid email address.")
         return lost_password_form()
-
-    def confirm_email(self, email):
-        user = self.User.query.filter_by(email=email).first()
-        if user is None or user.email_confirmed:
-            return
-        # mark email as confirmed
-        user.email_confirmed = True
-        db.session.add(user)
-        db.session.commit()
-        toast("Your email address has been confirmed. You can log in now.")
 
 
 
@@ -451,6 +466,9 @@ def recover_password(*args, **kwargs):
 def recover_password_token(*args, **kwargs):
     return auth_manager.recover_password_token(*args, **kwargs)
 
+
+def handle_request_confirmation(*args, **kwargs):
+    return auth_manager.handle_request_confirmation(*args, **kwargs)
 
 #
 # utils
