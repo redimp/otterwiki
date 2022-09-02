@@ -36,10 +36,10 @@ class SimpleAuth:
         first_seen = db.Column(db.DateTime())
         last_seen = db.Column(db.DateTime())
         is_approved = db.Column(db.Boolean(), default=False)
-        is_admin = db.Column(db.Boolean())
+        is_admin = db.Column(db.Boolean(), default=False)
         email_confirmed = db.Column(db.Boolean(), default=False)
-        allow_read = db.Column(db.Boolean())
-        allow_write = db.Column(db.Boolean())
+        allow_read = db.Column(db.Boolean(), default=False)
+        allow_write = db.Column(db.Boolean(), default=False)
         allow_upload = db.Column(db.Boolean(), default=False)
 
         def __repr__(self):
