@@ -582,3 +582,79 @@ def test_register_and_confirm(app_with_user, test_client, req_ctx):
         html = rv.data.decode()
         assert "You logged in successfully." in html
 
+def test_register_errors(app_with_user, test_client, req_ctx):
+    # test invalid mail
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": "john",
+            "name": "",
+            "password1": "",
+            "password2": "",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert "email address is invalid" in rv.data.decode()
+    assert "account has been created" not in rv.data.decode()
+    assert "account is waiting for approval" not in rv.data.decode()
+    # test existing email
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": "mail@example.org",
+            "name": "",
+            "password1": "",
+            "password2": "",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert "already registered" in rv.data.decode()
+    assert "account has been created" not in rv.data.decode()
+    assert "account is waiting for approval" not in rv.data.decode()
+    # empty name
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": "mail@example.com",
+            "name": "",
+            "password1": "",
+            "password2": "",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert "enter your name" in rv.data.decode()
+    assert "account has been created" not in rv.data.decode()
+    assert "account is waiting for approval" not in rv.data.decode()
+    # passwords not match
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": "mail@example.com",
+            "name": "John Doe",
+            "password1": "123456789",
+            "password2": "12345678",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert "passwords do not match" in rv.data.decode()
+    assert "account has been created" not in rv.data.decode()
+    assert "account is waiting for approval" not in rv.data.decode()
+    # passwords not match
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": "mail@example.com",
+            "name": "John Doe",
+            "password1": "1234567",
+            "password2": "1234567",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert "password must be at least" in rv.data.decode()
+    assert "account has been created" not in rv.data.decode()
+    assert "account is waiting for approval" not in rv.data.decode()
