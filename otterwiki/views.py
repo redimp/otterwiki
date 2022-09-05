@@ -155,7 +155,7 @@ def lost_password():
     if request.method == "GET":
         return otterwiki.auth.lost_password_form()
     else:
-        return otterwiki.auth.recover_password(
+        return otterwiki.auth.handle_recover_password(
             email=request.form.get("email"),
         )
 
@@ -167,7 +167,7 @@ def confirm_email(token):
 
 @app.route("/-/recover_password/<string:token>", methods=["GET"])
 def recover_password(token):
-    return otterwiki.auth.recover_password_token(token=token)
+    return otterwiki.auth.handle_recover_password_token(token=token)
 
 @app.route("/-/request_confirmation_link/<string:email>", methods=["GET"])
 def request_confirmation_link(email):

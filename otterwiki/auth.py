@@ -344,7 +344,7 @@ class SimpleAuth:
             title="Lost password",
         )
 
-    def recover_password(self, email):
+    def handle_recover_password(self, email):
         # check if email exists
         user = self.User.query.filter_by(email=email).first()
         # check if email is valid
@@ -377,7 +377,7 @@ class SimpleAuth:
             )
         return self.lost_password_form()
 
-    def recover_password_token(self, token):
+    def handle_recover_password_token(self, token):
         try:
             email = deserialize(token, salt="lost-password-email", max_age=86400)
         except SerializeError:
@@ -459,12 +459,12 @@ def lost_password_form():
     return auth_manager.lost_password_form()
 
 
-def recover_password(*args, **kwargs):
-    return auth_manager.recover_password(*args, **kwargs)
+def handle_recover_password(*args, **kwargs):
+    return auth_manager.handle_recover_password(*args, **kwargs)
 
 
-def recover_password_token(*args, **kwargs):
-    return auth_manager.recover_password_token(*args, **kwargs)
+def handle_recover_password_token(*args, **kwargs):
+    return auth_manager.handle_recover_password_token(*args, **kwargs)
 
 
 def handle_request_confirmation(*args, **kwargs):
