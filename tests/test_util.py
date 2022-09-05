@@ -54,9 +54,9 @@ def test_split_and_join_path():
 
 
 def test_is_valid_email():
-    for e in ["mail@redimp.de", "thesen@ins.uni-bonn.de", "mail@example.com"]:
+    for e in ["mail@example.de", "mail.mail@mail.example.tld", "ex@mp-le.com"]:
         assert is_valid_email(e) is True
-    for e in ["@example.com", "mail@", "mail@.example.com"]:
+    for e in ["@example.com", "mail@", "mail@.example.com", "john"]:
         assert is_valid_email(e) is False
 
 
