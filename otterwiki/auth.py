@@ -160,7 +160,7 @@ class SimpleAuth:
             is_admin = False
         # handle auto approval
         is_approved = app.config["AUTO_APPROVAL"] is True
-        app.logger.info(f"{email=} {is_approved=}")
+        app.logger.info("email={} is_approved{}".format(email, is_approved))
         # create user object
         user = self.User(
             name=name,
