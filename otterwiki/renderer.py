@@ -142,7 +142,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
 
 class OtterwikiRenderer:
     def __init__(self):
-        self.md_renderer = OtterwikiMdRenderer()
+        self.md_renderer = OtterwikiMdRenderer(escape=False)
         # self.md_lexer = OtterwikiInlineLexer(self.md_renderer)
         self.mistune = mistune.create_markdown(renderer=self.md_renderer,
                 plugins=[

@@ -96,3 +96,8 @@ def test_img():
     assert 'src="/path/to/img.png"' in html
     assert 'title="title"' in html
     assert 'alt="alt text"' in html
+
+def test_html_mark():
+    text = "<mark>mark</mark>"
+    html, _ = render.markdown(text)
+    assert "<mark>mark</mark>" in html

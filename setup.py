@@ -22,7 +22,7 @@ setup(
         "Jinja2>=2.9",
         "gitpython",
         "cython",
-        "mistune==2.0.3",
+        "mistune==2.0.4",
         "pygments",
         "Pillow",
         "unidiff",
