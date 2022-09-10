@@ -13,6 +13,7 @@ from flask import (
 from otterwiki.server import app, db
 from otterwiki.wiki import Page, PageIndex, Changelog, Search, render
 import otterwiki.auth
+import otterwiki.preferences
 from otterwiki.helper import toast
 from otterwiki.util import sanitize_pagename
 from otterwiki.auth import login_required, has_permission
@@ -80,6 +81,11 @@ def settings():
         return otterwiki.auth.settings_form()
     else:
         return otterwiki.auth.handle_settings(request.form)
+
+@app.route("/-/preferences", methods=["POST"])
+@login_required
+def preferences():
+    return otterwiki.preferences.handle_preferences(request.form)
 
 
 #

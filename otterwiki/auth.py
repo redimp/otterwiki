@@ -335,6 +335,7 @@ class SimpleAuth:
                         )
                         db.session.add(user)
                 db.session.commit()
+                return redirect(url_for("settings", _anchor="user_management"))
 
         return redirect(url_for("settings"))
 
