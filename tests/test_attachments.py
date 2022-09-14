@@ -4,8 +4,6 @@
 import pytest
 import base64
 import otterwiki.gitstorage
-from test_otterwiki import create_app
-
 
 @pytest.fixture
 def app_with_attachments(create_app):

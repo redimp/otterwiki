@@ -10,52 +10,6 @@ import otterwiki.gitstorage
 
 from pprint import pprint
 
-
-@pytest.fixture
-def create_app(tmpdir):
-    tmpdir.mkdir("repo")
-    storage = otterwiki.gitstorage.GitStorage(
-        path=str(tmpdir.join("repo")), initialize=True
-    )
-    settings_cfg = str(tmpdir.join("settings.cfg"))
-    # write config file
-    with open(settings_cfg, "w") as f:
-        f.writelines(
-            [
-                "REPOSITORY = '{}'\n".format(str(tmpdir.join("repo"))),
-                "SITE_NAME = 'TEST WIKI'\n",
-            ]
-        )
-    # configure environment
-    os.environ["OTTERWIKI_SETTINGS"] = settings_cfg
-    # get app
-    from otterwiki.server import app
-
-    # configure permissions
-    app.config["READ_ACCESS"] = "ANONYMOUS"
-    app.config["WRITE_ACCESS"] = "ANONYMOUS"
-    app.config["ATTACHMENT_ACCESS"] = "ANONYMOUS"
-    # enable test and debug settings
-    app.config["TESTING"] = True
-    app.config["DEBUG"] = True
-    # for debugging
-    app._otterwiki_tempdir = storage.path
-    # for other tests
-    app.storage = storage
-    yield app
-
-
-@pytest.fixture
-def test_client(create_app):
-    yield create_app.test_client()
-
-
-@pytest.fixture
-def req_ctx(create_app):
-    with create_app.test_request_context() as ctx:
-        yield ctx
-
-
 def test_html(test_client):
     result = test_client.get("/")
     assert "<!DOCTYPE html>" in result.data.decode()

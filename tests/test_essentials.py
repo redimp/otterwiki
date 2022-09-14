@@ -2,8 +2,6 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import pytest
-from test_otterwiki import create_app, test_client
-
 
 def test_robots(test_client):
     response = test_client.get("/robots.txt")

@@ -4,7 +4,6 @@
 
 import pytest
 from pprint import pprint
-from test_otterwiki import create_app, req_ctx
 from otterwiki.renderer import render
 
 markdown_example = """# Header

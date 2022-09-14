@@ -5,7 +5,6 @@ import pytest
 import flask
 import os
 import contextlib
-from test_otterwiki import create_app
 import otterwiki
 import otterwiki.gitstorage
 
