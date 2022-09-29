@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
 # vim:set et ts=8 sts=4 sw=4 ai fenc=utf-8:
 
 set -e -x
