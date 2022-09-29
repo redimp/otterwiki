@@ -60,7 +60,8 @@ To enable user registration a mail account has to ne configured, see Configurati
 
 1. Clone the repository
 ```bash
-git clone https://github.com/redimp/otterwiki.git`
+git clone https://github.com/redimp/otterwiki.git
+cd otterwiki
 ```
 2. Create and adjust the file docker-compose.override.yml
 ```bash
