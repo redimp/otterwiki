@@ -1,3 +1,5 @@
+![alt text](screenshot.png)
+
 # An Otter Wiki
 
 An Otter Wiki is a python based software for collaborative content
