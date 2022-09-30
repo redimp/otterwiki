@@ -8,7 +8,7 @@ content is stored in a git repository, which keeps track of all changes.
 [Markdown](https://daringfireball.net/projects/markdown) is used as
 Markup language. An Otter Wiki is written in [python](https://www.python.org/)
 using the microframework [Flask](http://flask.pocoo.org/).
-[halfmoon](https://gethalfmoon.com) is used as CSS framework and [CodeMirror](https://codemirror.net/) as editor.
+[halfmoon](https://www.gethalfmoon.com) is used as CSS framework and [CodeMirror](https://codemirror.net/) as editor.
 [Font Awesome Free](https://fontawesome.com/license/free) serves the icons.
 
 ### Notable Features
