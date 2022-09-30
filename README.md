@@ -1,4 +1,4 @@
-![alt text](screenshot.png)
+![alt text](screenshot_dark.png)
 
 # An Otter Wiki
 
