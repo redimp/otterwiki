@@ -29,22 +29,25 @@ def _update_preference(name, value, delay_commit=False):
 
 def handle_mail_preferences(form):
     error = 0
-    if not is_valid_email(form.get("mail_sender")):
+    if not is_valid_email(form.get("mail_sender") or ""):
         toast("'{}' is not a valid email address.".format(form.get("mail_sender")), "error")
         error += 1
     else:
         _update_preference("MAIL_DEFAULT_SENDER", form.get("mail_sender"))
     if empty(form.get("mail_server")):
-        toast("Mail Server can not be empty.", "error")
+        toast("Mail Server must not be empty.", "error")
         error += 1
     else:
         _update_preference("MAIL_SERVER", form.get("mail_server"))
     try:
-        mail_port = int(form.get("mail_port"))
-        if mail_port < 24 or mail_port > 65535:
-            raise ValueError
-    except ValueError:
-        toast("Mail Port must a valid port.", "error")
+        if not empty(form.get("mail_port")):
+            mail_port = int(form.get("mail_port"))
+            if mail_port < 24 or mail_port > 65535:
+                raise ValueError
+        else:
+            mail_port = ""
+    except (ValueError, TypeError) as e:
+        toast("Mail port must be a valid port.", "error")
         error += 1
     else:
         _update_preference("MAIL_PORT", mail_port)
