@@ -27,6 +27,12 @@ app.config.update(
     NOTIFY_ADMINS_ON_REGISTER=False,
     SQLALCHEMY_DATABASE_URI="sqlite:///:memory:",
     MAIL_DEFAULT_SENDER="otterwiki@YOUR.ORGANIZATION.TLD",
+    MAIL_SERVER="",
+    MAIL_PORT="",
+    MAIL_USERNAME="",
+    MAIL_PASSWORD="",
+    MAIL_USE_TLS=False,
+    MAIL_USE_SSL=False,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     MINIFY_HTML=True,
 )
