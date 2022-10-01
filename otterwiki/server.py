@@ -27,13 +27,16 @@ app.config.update(
     NOTIFY_ADMINS_ON_REGISTER=False,
     SQLALCHEMY_DATABASE_URI="sqlite:///:memory:",
     MAIL_DEFAULT_SENDER="otterwiki@YOUR.ORGANIZATION.TLD",
+    MAIL_SERVER="",
+    MAIL_PORT="",
+    MAIL_USERNAME="",
+    MAIL_PASSWORD="",
+    MAIL_USE_TLS=False,
+    MAIL_USE_SSL=False,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     MINIFY_HTML=True,
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
-
-# setup flask_mail
-mail = Mail(app)
 
 # setup database
 db = SQLAlchemy(app)
@@ -56,6 +59,37 @@ else:
         storage = otterwiki.gitstorage.GitStorage(app.config["REPOSITORY"])
     except otterwiki.gitstorage.StorageError as e:
         fatal_error(e)
+
+#
+# app.config from db preferences
+#
+class Preferences(db.Model):
+    name = db.Column(db.String(256), primary_key=True)
+    value = db.Column(db.String(256))
+
+    def __str__(self):
+        return '{}: {}'.format(self.name, self.value)
+
+def update_app_config():
+    with app.app_context():
+        for item in Preferences.query:
+            if item.name.upper() in ["MAIL_USE_TLS", "MAIL_USE_SSL", "AUTO_APPROVAL",
+                    "EMAIL_NEEDS_CONFIRMATION", "NOTIFY_ADMINS_ON_REGISTER"]:
+                item.value = item.value.lower() in ["true","yes"]
+            if item.name.upper() in ["MAIL_PORT"]:
+                try:
+                    item.value = int(item.value)
+                except ValueError:
+                    app.logger.warning("ignored invalid value app.config[\"{}\"]={}".format(
+                        item.name, item.value))
+            # update app settings
+            app.config[item.name] = item.value
+
+db.create_all()
+update_app_config()
+
+# setup flask_mail
+mail = Mail(app)
 
 #
 # template extensions

@@ -8,7 +8,7 @@ content is stored in a git repository, which keeps track of all changes.
 [Markdown](https://daringfireball.net/projects/markdown) is used as
 Markup language. An Otter Wiki is written in [python](https://www.python.org/)
 using the microframework [Flask](http://flask.pocoo.org/).
-[halfmoon](https://gethalfmoon.com) is used as CSS framework and [CodeMirror](https://codemirror.net/) as editor.
+[halfmoon](https://www.gethalfmoon.com) is used as CSS framework and [CodeMirror](https://codemirror.net/) as editor.
 [Font Awesome Free](https://fontawesome.com/license/free) serves the icons.
 
 ### Notable Features
@@ -56,7 +56,7 @@ make
 ## Deployment
 
 An Otter Wiki can be deployed via docker/podman or as WSGI application. The deployment via `docker-compose` is recommended.
-To enable user registration a mail account has to ne configured, see Configuration.
+To enable user registration a mail account has to be configured, see Configuration.
 
 ## Deployment from source via docker-compose
 
@@ -87,6 +87,9 @@ docker-compose up -d
 Create a `settings.cfg` based upon `settings.cfg.skeleton` and set the
 variables fitting to your environment.
 
+**The basic configuration must be done in the `settings.cfg`** (The
+Docker container does this for you.) All other configurations can be
+configured in the _Settings_ as admin user.
 
 ### Basic Configuration
 

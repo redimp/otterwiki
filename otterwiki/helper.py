@@ -50,16 +50,18 @@ def toast(message, category=""):
     return flash(message, halfmoon_category)
 
 
-def send_async_email(app, msg):
+def send_async_email(app, msg, raise_on_error=False):
     app.logger.debug("send_async_email()")
     with app.app_context():
         try:
             mail.send(msg)
         except Exception as e:
             app.logger.error("send_async_email(): Exception {}".format(e))
+            if raise_on_error:
+                raise e
 
 
-def send_mail(subject, recipients, text_body, sender=None, html_body=None, _async=True):
+def send_mail(subject, recipients, text_body, sender=None, html_body=None, _async=True, raise_on_error=False):
     """send_mail
 
     :param subject:
@@ -78,4 +80,4 @@ def send_mail(subject, recipients, text_body, sender=None, html_body=None, _asyn
         thr = Thread(target=send_async_email, args=[app, msg])
         thr.start()
     else:
-        send_async_email(app, msg)
+        send_async_email(app, msg, raise_on_error)

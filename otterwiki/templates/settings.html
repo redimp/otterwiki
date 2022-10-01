@@ -1,7 +1,35 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
+{% block menu %}
+<a href="#settings" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+        <i class="fas fa-address-card"></i>
+    </span>
+    Personal Settings
+</a>
+{% if has_permission("ADMIN") %}
+<a href="#user_management" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+        <i class="fas fa-users"></i>
+    </span>
+    User Management
+</a>
+<a href="#application_preferences" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+        <i class="fas fa-cogs"></i>
+    </span>
+    Application Preferences
+</a>
+<a href="#mail_preferences" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+        <i class="far fa-envelope"></i>
+    </span>
+    Mail Preferences
+</a>
+{% endif %}
+{% endblock %}
 {% block content %}
-<h2>Settings</h2>
+<h2 id="settings">Settings</h2>
 {#
 #}
 <div class="card">
@@ -43,7 +71,7 @@
 {#
 #}
 {% if has_permission("ADMIN") %}
-<div class="card">
+<div class="card" id="user_management">
 <form action="{{url_for("settings")}}" method="POST">
 <h2 class="card-title">User Management</h2>
 <div class="table-responsive table-striped">
@@ -103,5 +131,130 @@
 #}
 {#
 #}
+<div class="card" id="application_preferences">
+<div class="mw-full w-600">
+<form action="{{url_for("preferences")}}" method="POST">
+<h2 class="card-title">Application Preferences</h2>
+{##}
+  <div class="form-group">
+    <label for="site_name" class="required">Site Name</label>
+    <input name="site_name" type="text" placeholder="An Otter Wiki" class="form-control" id="site_name" value="{{ config.SITE_NAME or "" }}">
+    <div class="form-text">
+      The name of the site, displayed on the top left of the page and in the subject of all emails.
+    </div>
+  </div>
+{##}
+  <div class="form-group">
+    <label for="site_logo">Site Logo</label>
+    <input name="site_logo" type="text" placeholder="/static/img/otterhead.png" class="form-control" id="site_logo" value="{{ config.SITE_LOGO or "" }}">
+    <div class="form-text">
+        Path to an image, can be an attachment, e.g. <code>/Home/a/logo.png</code>
+    </div>
+  </div>
+{##}
+<h3 class="card-title">Permissions and Registration Preferences</h3>
+{% for permission in ["READ","WRITE","ATTACHMENT"] %}
+  <div class="form-group">
+      <label for="{{permission}}_permission" class="required">{{permission | capitalize}} Access</label>
+      <select class="form-control" id="{{permission}}_permission" name="{{permission}}_access">
+        {% for permission_option in ["ANONYMOUS","REGISTERED","APPROVED","ADMIN"] %}
+        <option {% if config[permission + "_ACCESS"] == permission_option -%}
+selected="selected"
+{%- endif %} value="{{permission_option}}">{{permission_option | capitalize}}</option>
+        {% endfor %}
+    </select>
+  </div>
+{% endfor %}
+{##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.AUTO_APPROVAL %}checked{% endif %} type="checkbox" id="auto_approval" name="auto_approval" value="True">
+      <label for="auto_approval">Auto approve of new registered users</label>
+    </div>
+  </div>
+{##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.EMAIL_NEEDS_CONFIRMATION %}checked{% endif %} type="checkbox" id="email_confirmation" name="email_needs_confirmation" value="True">
+      <label for="email_confirmation">Registration requires email confirmation</label>
+    </div>
+  </div>
+{##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.NOTIFY_ADMINS_ON_REGISTER %}checked{% endif %} type="checkbox" id="notify_admins" name="notify_admins_on_register" value="True">
+      <label for="notify_admins">Notify admins on new user registration</label>
+    </div>
+  </div>
+{##}
+  <div class="mt-10">
+    <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
+  </div>
+</form>
+</div>
+</div>{# card #}
 
+<div class="card" id="mail_preferences">
+<div class="mw-full w-600">
+<form action="{{url_for("preferences")}}" method="POST">
+<h3 class="card-title">Mail Preferences</h3>
+{##}
+  <div class="form-group">
+    <label for="mail_sender" class="required">Mail Sender</label>
+    <input name="mail_sender" type="text" class="form-control" id="mail_sender" value="{{ config.MAIL_DEFAULT_SENDER}}">
+    {# <div class="form-text"> ...  </div> #}
+  </div>
+{##}
+  <div class="form-group">
+    <label for="mail_server" class="required">Mail Server</label>
+    <input name="mail_server" type="text" class="form-control" id="mail_server" value="{{ config.MAIL_SERVER}}">
+    {# <div class="form-text"> ...  </div> #}
+  </div>
+{##}
+  <div class="form-group">
+    <label for="mail_port">Mail Server Port</label>
+    <input name="mail_port" type="text" class="form-control" placeholder="25" id="mail_port" value="{{ config.MAIL_PORT }}">
+    {# <div class="form-text"> ...  </div> #}
+  </div>
+{##}
+  <div class="form-group">
+    <label for="mail_user">Mail Username</label>
+    <input name="mail_user" type="text" class="form-control" id="mail_user" value="{{ config.MAIL_USERNAME or "" }}">
+    {# <div class="form-text"> ...  </div> #}
+  </div>
+{##}
+  <div class="form-group">
+    <label for="mail_password">Mail Password</label>
+    <input name="mail_password" type="text" class="form-control" id="mail_password" value="{{ config.MAIL_PASSWORD or "" }}">
+    {# <div class="form-text"> ...  </div> #}
+  </div>
+{##}
+  <div class="form-group">
+      <label for="mail_security" class="required">Mail Security</label>
+      <select class="form-control" id="mail_security" name="mail_security">
+        <option value="">Not encrypted</option>
+        <option {% if config["MAIL_USE_TLS"] -%} selected="selected" {%- endif %} value="tls">TLS</option>
+        <option {% if config["MAIL_USE_SSL"] -%} selected="selected" {%- endif %} value="ssl">SSL</option>
+    </select>
+  </div>
+{##}
+  <div class="mt-10">
+    <input class="btn btn-primary" name="update_mail_preferences" type="submit" value="Save Mail Preferences">
+  </div>
+{##}
+<hr class="my-15"/>
+<h3 class="card-title">Test Mail Preferences</h3>
+{##}
+  <div class="form-group">
+    <label for="mail_recipient" class="required">Test Recipient</label>
+    <input name="mail_recipient" type="text" class="form-control" id="mail_recipient" placeholder="{{ current_user.email }}">
+    {# <div class="form-text"> ...  </div> #}
+  </div>
+{##}
+  <div class="mt-10">
+    <input class="btn" name="test_mail_preferences" type="submit" value="Send Test Mail">
+  </div>
+</form>
+</div>
+</div>{# card #}
 {% endblock %}
