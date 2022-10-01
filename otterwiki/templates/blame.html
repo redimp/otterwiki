@@ -7,7 +7,7 @@
 <table class="blame">
 {% for line in blame %}
 <tr class="{{line[5]}}">
-    <td class="min">{% if line[0] %}<span class="revision-small btn">{{line[0]}}</span>{% endif %}</td>
+    <td class="min">{% if line[0] %}<a href="/{{ pagename }}/view/{{line[0]}}" class="btn revision-small">{{line[0]}}</a>{% endif %}</td>
     <td class="min" style="white-space:nowrap">{{line[1]}}</td>
     <td class="min" style="white-space:nowrap">{% if line[2] %}{{line[2]|format_datetime}}{% endif %}</td>
     <td class="tt min" style="text-align:right;">{{line[3]}}</td>
