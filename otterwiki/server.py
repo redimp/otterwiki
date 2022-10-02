@@ -70,7 +70,10 @@ class Preferences(db.Model):
     def __str__(self):
         return '{}: {}'.format(self.name, self.value)
 
+mail = None
+
 def update_app_config():
+    global mail
     with app.app_context():
         for item in Preferences.query:
             if item.name.upper() in ["MAIL_USE_TLS", "MAIL_USE_SSL", "AUTO_APPROVAL",
@@ -84,12 +87,11 @@ def update_app_config():
                         item.name, item.value))
             # update app settings
             app.config[item.name] = item.value
+        # setup flask_mail
+        mail = Mail(app)
 
 db.create_all()
 update_app_config()
-
-# setup flask_mail
-mail = Mail(app)
 
 #
 # template extensions
