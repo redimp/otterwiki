@@ -285,6 +285,10 @@ class Page:
             except StorageNotFound:
                 content = ""
             content = content.rstrip()
+
+        # get file listing
+        files = [f.data for f in self._attachments() if f.metadata is not None]
+
         return render_template(
             "editor.html",
             pagename=self.pagename,
@@ -292,6 +296,7 @@ class Page:
             content_editor=content,
             cursor_line=cursor_line,
             cursor_ch=cursor_ch,
+            files = files
         )
 
     def save(self, content, commit, author):
