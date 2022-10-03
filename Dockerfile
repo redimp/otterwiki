@@ -1,7 +1,7 @@
 #
-# compile image
+# compile stage
 #
-FROM nginx:1.23.1 AS compile-image
+FROM nginx:1.23.1 AS compile-stage
 
 LABEL maintainer="Ralph Thesen <mail@redimp.de>"
 
@@ -19,15 +19,22 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 RUN pip install -U pip && pip install "uWSGI==2.0.20"
 
-RUN mkdir -p /app/otterwiki
-COPY setup.py /app
-COPY otterwiki /app/otterwiki
+COPY . /app
 WORKDIR /app
-RUN find /app
 RUN pip install .
 
 #
-# package image
+# test stage
+#
+FROM compile-stage AS test-stage
+
+RUN apt-get install -y --no-install-recommends git
+
+RUN pip install '.[dev]'
+RUN tox
+
+#
+# production stage
 #
 FROM nginx:1.23.1
 # environment variables (I'm not sure if anyone ever would modify this)
@@ -41,7 +48,7 @@ RUN apt-get -y update && \
   python3.9 python3.9-venv libpython3.9 \
   && rm -rf /var/lib/apt/lists/*
 # copy virtual environment
-COPY --from=compile-image /opt/venv /opt/venv
+COPY --from=compile-stage /opt/venv /opt/venv
 # Make sure we use the virtualenv:
 ENV PATH="/opt/venv/bin:$PATH"
 # create directories
@@ -49,13 +56,12 @@ RUN mkdir -p /app-data /app/otterwiki
 VOLUME /app-data
 RUN chown -R www-data:www-data /app-data
 WORKDIR /app
+# copy static files for nginx
+COPY otterwiki/static /app/otterwiki/static
 # copy supervisord configs (nginx is configured in the entrypoint.sh)
 COPY docker/uwsgi.ini /app/uwsgi.ini
 COPY docker/supervisord.conf /etc/supervisor/conf.d/
 COPY --chmod=0755 docker/stop-supervisor.sh /etc/supervisor/
-# otterwiki app
-COPY setup.py /app/
-COPY otterwiki /app/otterwiki
 # Copy the entrypoint that will generate Nginx additional configs
 COPY --chmod=0755 ./docker/entrypoint.sh /entrypoint.sh
 
