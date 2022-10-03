@@ -306,7 +306,11 @@ class Page:
             pagepath=self.pagepath,
             htmlcontent=htmlcontent,
             toc=toc,
+<<<<<<< HEAD
             attachments=files,
+=======
+            files=files,
+>>>>>>> 15970d5 (add files into the page view)
             breadcrumbs=self.breadcrumbs(),
             danger_alert=danger_alert
         )
