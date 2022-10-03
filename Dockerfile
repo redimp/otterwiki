@@ -7,7 +7,8 @@ LABEL maintainer="Ralph Thesen <mail@redimp.de>"
 
 # install python environment
 RUN \
-    apt-get -y update && apt-get install -y python3.9 python3.9-venv python3-pip
+    apt-get -y update && apt-get install -y python3.9 python3.9-venv python3-pip \
+    libjpeg-dev zlib1g-dev
 
 # install supervisord
 RUN apt-get install -y supervisor
