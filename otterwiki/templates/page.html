@@ -2,6 +2,35 @@
 {% extends "wiki.html" %}
 {% block js %}
 {{ super() }}
+
+<script>
+
+    document.querySelector('#wiki-content').addEventListener('scroll', () => {
+        console.log('scroll event fired!')
+     });
+
+    let last_known_scroll_position = 0;
+    let ticking = false;
+
+    function doSomething(scroll_pos) {
+      let c = document.getElementById('wiki-content');
+        console.log(c);
+    }
+
+    window.addEventListener('scroll', (e) => {
+      last_known_scroll_position = window.scrollY;
+
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          doSomething(last_known_scroll_position);
+          ticking = false;
+        });
+
+        ticking = true;
+      }
+    });
+</script>
+
 <script src="{{ url_for("static", filename="js/polyfill.e6.min.js") | debug_unixtime }}"></script>
     <script>
         MathJax = {
