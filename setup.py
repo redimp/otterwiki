@@ -24,7 +24,7 @@ setup(
         "cython",
         "mistune==2.0.4",
         "pygments",
-        "Pillow==8.4.0",
+        "Pillow",
         "unidiff",
         "flask-htmlmin==2.2.0",
     ],
