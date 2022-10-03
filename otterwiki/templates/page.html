@@ -118,7 +118,42 @@
 #}
 {% block content %}
 <div class="page">
-{{htmlcontent|safe}}
+    <div class="container-fluid">
+        <div class="row">
+      <!-- Flex grow by a factor of 1 -->
+            <div class="col-xl-9" id="wiki-content">{{htmlcontent|safe}}</div>
+            <div class="col-lg-3" >
+{#                                            Adding this height is pretty hacky, as it won't extend exactly
+                                            to the bottom of the page, but I think its good enough for now. #}
+                <div class="position-fixed" style="overflow-y: scroll;height: 75%;">
+
+                    <div class="pl-20 pb-15 pt-5">
+                        {% if has_permission('WRITE') %}
+                    <a href="{{ url_for('edit', path=pagepath) }}" class="btn btn-primary" role="button"><i class="fas fa-pencil-alt pr-5"></i> Edit Page</a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn" role="button"><i class="fas fa-sign-in-alt" title="Login"></i> Login to Edit Page</a>
+                    {% endif %}
+                    </div>
+                    <div>
+                        <h5 class="sidebar-title">Table of contents</h5>
+                        <div class="sidebar-divider" ></div>
+                        {% for count, name, level, raw, anchor in toc %}
+                            <a href="#{{anchor}}" class="sidebar-link sidebar-toc-{{level}}">{{name|safe}}</a>
+                        {% endfor %}
+
+                        <br>
+                        <h5 class="sidebar-title">Attachments</h5>
+                        <div class="sidebar-divider" ></div>
+                        <div>
+                            {% for f in files %}
+                                <a class="sidebar-link" href="{{ url_for("edit_attachment", pagepath=pagepath, filename=f.filename) }}">{{f.filename}}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {{content}}
 {% endblock %}
