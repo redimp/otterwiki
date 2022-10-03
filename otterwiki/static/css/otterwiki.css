@@ -16,6 +16,10 @@ img.sidebar-logo {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.container {
+    max-width: 100%;
+}
+
 .page-wrapper.with-sidebar > .content-wrapper
 {
     left: 20rem;
