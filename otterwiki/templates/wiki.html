@@ -24,13 +24,16 @@
                 </a>
 {% endif %}
                 <br />
-    {% if toc %}
-                <h5 class="sidebar-title">Table of contents</h5>
-                <div class="sidebar-divider"></div>
-        {% for count, name, level, raw, anchor in toc %}
-        <a href="#{{anchor}}" class="sidebar-link sidebar-toc-{{level}}">{{name|safe}}</a>
-        {% endfor %}
-    {% endif %}
+
+{#    Commented this out as it was moved into the right sidebar#}
+{#    {% if toc %}#}
+{#                <h5 class="sidebar-title">Table of contents</h5>#}
+{#                <div class="sidebar-divider"></div>#}
+{#        {% for count, name, level, raw, anchor in toc %}#}
+{#        <a href="#{{anchor}}" class="sidebar-link sidebar-toc-{{level}}">{{name|safe}}</a>#}
+{#        {% endfor %}#}
+{#    {% endif %}#}
+
 {% endblock %}
 
 {% block navbardropdown %}
