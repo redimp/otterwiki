@@ -29,6 +29,9 @@ test: venv
 testpdb: venv
 	OTTERWIKI_SETTINGS="" venv/bin/pytest --pdb tests
 
+tox: venv
+	# TODO: autodected available python versions and set TOXENV=py37,py39,..
+	venv/bin/tox
 
 venv/bin/coverage: venv
 	venv/bin/pip install coverage
