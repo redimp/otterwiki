@@ -1,0 +1,3 @@
+# include templates and static files in the package
+recursive-include otterwiki/templates *
+recursive-include otterwiki/static *
