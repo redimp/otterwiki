@@ -36,7 +36,10 @@ from datetime import datetime, timedelta
 from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
 from io import BytesIO
-from PIL import Image, ImageOps
+
+import PIL.Image
+if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
+    PIL.Image.Resampling = PIL.Image
 
 from pprint import pprint, pformat
 
@@ -786,9 +789,9 @@ class Attachment:
         from timeit import default_timer as timer
 
         t_start = timer()
-        image = Image.open(BytesIO(storage.load(self.filepath, mode="rb")))
+        image = PIL.Image.open(BytesIO(storage.load(self.filepath, mode="rb")))
         # resample thumbnail
-        image.thumbnail((size, size), resample=Image.Resampling.LANCZOS)
+        image.thumbnail((size, size), resample=PIL.Image.Resampling.LANCZOS)
         # create byteobject
         buffer = BytesIO()
         # store image in byteobject
