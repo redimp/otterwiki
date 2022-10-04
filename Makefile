@@ -1,4 +1,5 @@
 PORT=8080
+VERSION := $(shell ./venv/bin/python -c "with open('otterwiki/version.py') as f: exec(f.read());  print(__version__);")
 
 all: run
 
@@ -59,3 +60,14 @@ docker-test:
 
 docker-build: docker-test
 	docker build -t otterwiki .
+
+docker-buildx-test:
+	docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 --target test-stage .
+
+docker-buildx-push: venv
+# check if git is clean optional: --untracked-files=no
+ifneq ($(strip $(shell git status --porcelain)),)
+	$(error Error: Uncommitted changes in found)
+endif
+# TODO -t redimp/otterwiki:$(shell git describe --tags)
+	docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t redimp/otterwiki:latest -t redimp/otterwiki:$(VERSION) .
