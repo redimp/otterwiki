@@ -1,4 +1,6 @@
 venv/
+env*
+build/
 *.pyc
 *.egg-info/
 dist/
@@ -15,3 +17,4 @@ tmp
 docker-compose.override.yml
 .env
 .flaskenv
+.tox

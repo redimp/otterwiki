@@ -33,6 +33,7 @@ setup(
             "coverage",
             "pytest",
             "black",
+            "tox",
         ]
     },
 )

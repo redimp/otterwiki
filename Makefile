@@ -2,7 +2,7 @@ PORT=8080
 
 all: run
 
-.PHONY: clean coverage run debug shell sdist
+.PHONY: clean coverage run debug shell sdist docker-build docker-test
 
 clean:
 	rm -rf venv *.egg-info dist *.log* otterwiki/__pycache__ tests/__pycache__
@@ -29,6 +29,9 @@ test: venv
 testpdb: venv
 	OTTERWIKI_SETTINGS="" venv/bin/pytest --pdb tests
 
+tox: venv
+	# TODO: autodected available python versions and set TOXENV=py37,py39,..
+	venv/bin/tox
 
 venv/bin/coverage: venv
 	venv/bin/pip install coverage
@@ -51,3 +54,8 @@ settings.cfg:
 	@echo ""
 	@false
 
+docker-test:
+	docker build -t otterwiki --target test-stage .
+
+docker-build: docker-test
+	docker build -t otterwiki .
