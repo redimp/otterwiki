@@ -63,6 +63,9 @@ class SimpleAuth:
     def user_loader(self, id):
         return self.User.query.get(int(id))
 
+    def get_all_User(self):
+        return self.User.query.all()
+
     def get_author(self):
         if not current_user.is_authenticated:
             return ("Anonymous", "")
@@ -299,43 +302,6 @@ class SimpleAuth:
                 db.session.add(current_user)
                 db.session.commit()
                 toast("Your password was updated successfully.", "success")
-        if not empty(form.get("update_permissions")):
-            if not has_permission("ADMIN"):
-                return abort(403)
-            is_approved = [int(x) for x in form.getlist("is_approved")]
-            is_admin = [int(x) for x in form.getlist("is_admin")]
-            if len(is_admin) < 1:
-                toast("You can't remove all admins", "error")
-            elif len(is_approved) < 1:
-                toast("You can't disable all users", "error")
-            else:
-                # update users
-                for user in self.User.query.all():
-                    msgs = []
-                    # approval
-                    if user.is_approved and not user.id in is_approved:
-                        user.is_approved = False
-                        msgs.append("removed approved")
-                    elif not user.is_approved and user.id in is_approved:
-                        user.is_approved = True
-                        msgs.append("added approved")
-                    # admin
-                    if user.is_admin and not user.id in is_admin:
-                        user.is_admin = False
-                        msgs.append("removed admin")
-                    elif not user.is_admin and user.id in is_admin:
-                        user.is_admin = True
-                        msgs.append("added admin")
-                    if len(msgs):
-                        toast("{} {} flag".format(user.email, " and ".join(msgs)))
-                        app.logger.warning(
-                            "{} updated {} <{}>: {}".format(
-                                current_user, user.name, user.email, " and ".join(msgs)
-                            )
-                        )
-                        db.session.add(user)
-                db.session.commit()
-                return redirect(url_for("settings", _anchor="user_management"))
 
         return redirect(url_for("settings"))
 
@@ -470,6 +436,11 @@ def handle_recover_password_token(*args, **kwargs):
 
 def handle_request_confirmation(*args, **kwargs):
     return auth_manager.handle_request_confirmation(*args, **kwargs)
+
+
+def get_all_User(*args, **kwargs):
+    return auth_manager.get_all_User(*args, **kwargs)
+
 
 #
 # utils

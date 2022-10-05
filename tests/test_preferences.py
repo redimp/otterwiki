@@ -22,8 +22,8 @@ def admin_client(app_with_user, test_client):
     assert "You logged in successfully." in html
     yield test_client
 
-def test_preference_form(app_with_user, admin_client, req_ctx):
-    rv = admin_client.get(url_for("settings"))
+def test_admin_form(app_with_user, admin_client, req_ctx):
+    rv = admin_client.get(url_for("admin"))
     assert rv.status_code == 200
 
 def test_preferences_testmail(app_with_user, admin_client, req_ctx):
@@ -32,7 +32,7 @@ def test_preferences_testmail(app_with_user, admin_client, req_ctx):
     # record outbox
     with app_with_user.test_mail.record_messages() as outbox:
         rv = admin_client.post(
-                url_for("preferences"),
+                url_for("admin"),
                 data = {
                     "mail_recipient" : "",
                     "test_mail_preferences" : "true",
@@ -46,7 +46,7 @@ def test_preferences_testmail(app_with_user, admin_client, req_ctx):
 
     with app_with_user.test_mail.record_messages() as outbox:
         rv = admin_client.post(
-                url_for("preferences"),
+                url_for("admin"),
                 data = {
                     "mail_recipient" : "mail2@example.org",
                     "test_mail_preferences" : "true",
@@ -60,7 +60,7 @@ def test_preferences_testmail(app_with_user, admin_client, req_ctx):
 
     with app_with_user.test_mail.record_messages() as outbox:
         rv = admin_client.post(
-                url_for("preferences"),
+                url_for("admin"),
                 data = {
                     "mail_recipient" : "example.org",
                     "test_mail_preferences" : "true",
@@ -75,7 +75,7 @@ def test_update_preferences(app_with_user, admin_client, req_ctx):
     new_name = "Test Wiki 4711"
     assert app_with_user.config['SITE_NAME'] != new_name
     rv = admin_client.post(
-            url_for("preferences"),
+            url_for("admin"),
             data = {
                 "site_name" : new_name,
                 "update_preferences" : "true",
@@ -99,7 +99,7 @@ def test_update_mail_preferences(app_with_user, admin_client, req_ctx):
     assert app_with_user.config['MAIL_DEFAULT_SENDER'] != new_sender
     assert app_with_user.config['MAIL_SERVER'] != new_server
     rv = admin_client.post(
-            url_for("preferences"),
+            url_for("admin"),
             data = data,
             follow_redirects=True,
         )
@@ -112,7 +112,7 @@ def test_update_mail_preferences(app_with_user, admin_client, req_ctx):
     # modify data to test tls/ssl settings
     data["mail_security"] = "tls"
     rv = admin_client.post(
-            url_for("preferences"),
+            url_for("admin"),
             data = data,
             follow_redirects=True,
         )
@@ -121,7 +121,7 @@ def test_update_mail_preferences(app_with_user, admin_client, req_ctx):
     # modify data to test tls/ssl settings
     data["mail_security"] = "ssl"
     rv = admin_client.post(
-            url_for("preferences"),
+            url_for("admin"),
             data = data,
             follow_redirects=True,
         )
@@ -135,7 +135,7 @@ def test_update_mail_preferences_errors(app_with_user, admin_client, req_ctx):
     assert app_with_user.config['MAIL_PORT'] != wrong_port
     # post wrong values to the form
     rv = admin_client.post(
-            url_for("preferences"),
+            url_for("admin"),
             data = {
                 "mail_sender" : wrong_sender,
                 "mail_port" : wrong_port,
@@ -155,7 +155,7 @@ def test_update_mail_preferences_errors(app_with_user, admin_client, req_ctx):
 
     # post empty values
     rv = admin_client.post(
-            url_for("preferences"),
+            url_for("admin"),
             data = {
                 "update_mail_preferences" : "true",
             },
@@ -172,7 +172,7 @@ def test_update_mail_preferences_errors(app_with_user, admin_client, req_ctx):
 
     # post wrong port
     rv = admin_client.post(
-            url_for("preferences"),
+            url_for("admin"),
             data = {
                 "mail_port" : "1",
                 "update_mail_preferences" : "true",

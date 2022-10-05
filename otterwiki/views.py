@@ -82,10 +82,13 @@ def settings():
     else:
         return otterwiki.auth.handle_settings(request.form)
 
-@app.route("/-/preferences", methods=["POST"])
+@app.route("/-/admin", methods=["POST","GET"])
 @login_required
-def preferences():
-    return otterwiki.preferences.handle_preferences(request.form)
+def admin():
+    if request.method == "GET":
+        return otterwiki.preferences.admin_form()
+    else:
+        return otterwiki.preferences.handle_preferences(request.form)
 
 
 #

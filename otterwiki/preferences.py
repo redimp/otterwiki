@@ -17,6 +17,7 @@ from flask_login import (
 from otterwiki.server import app, db, update_app_config, Preferences
 from otterwiki.helper import toast, send_mail, serialize, deserialize, SerializeError
 from otterwiki.util import random_password, empty, is_valid_email
+from otterwiki.auth import has_permission, current_user, get_all_User
 from pprint import pprint
 
 def _update_preference(name, value, delay_commit=False):
@@ -69,7 +70,7 @@ def handle_mail_preferences(form):
 
     db.session.commit()
     update_app_config()
-    return redirect(url_for("settings", _anchor="mail_preferences"))
+    return redirect(url_for("admin", _anchor="mail_preferences"))
 
 def handle_app_preferences(form):
     for name in ["site_name", "site_logo"]:
@@ -83,7 +84,7 @@ def handle_app_preferences(form):
     db.session.commit()
     update_app_config()
     toast("Application Preferences upated.")
-    return redirect(url_for("settings", _anchor="application_preferences"))
+    return redirect(url_for("admin", _anchor="application_preferences"))
 
 def handle_test_mail_preferences(form):
     recipient = form.get("mail_recipient")
@@ -102,7 +103,7 @@ def handle_test_mail_preferences(form):
             toast("Testmail sent to {}.".format(recipient))
     else:
         toast("Invalid email address: {}".format(recipient),"error")
-    return redirect(url_for("settings", _anchor="mail_preferences"))
+    return redirect(url_for("admin", _anchor="mail_preferences"))
 
 def handle_preferences(form):
     if not empty(form.get('update_preferences')):
@@ -111,4 +112,56 @@ def handle_preferences(form):
         return handle_mail_preferences(form)
     if not empty(form.get('test_mail_preferences')):
         return handle_test_mail_preferences(form)
+    if not empty(form.get("update_permissions")):
+        return handle_user_management(form)
+
+def handle_user_management(form):
+    if not has_permission("ADMIN"):
+        return abort(403)
+    is_approved = [int(x) for x in form.getlist("is_approved")]
+    is_admin = [int(x) for x in form.getlist("is_admin")]
+    if len(is_admin) < 1:
+        toast("You can't remove all admins", "error")
+    elif len(is_approved) < 1:
+        toast("You can't disable all users", "error")
+    else:
+        # update users
+        for user in get_all_User():
+            msgs = []
+            # approval
+            if user.is_approved and not user.id in is_approved:
+                user.is_approved = False
+                msgs.append("removed approved")
+            elif not user.is_approved and user.id in is_approved:
+                user.is_approved = True
+                msgs.append("added approved")
+            # admin
+            if user.is_admin and not user.id in is_admin:
+                user.is_admin = False
+                msgs.append("removed admin")
+            elif not user.is_admin and user.id in is_admin:
+                user.is_admin = True
+                msgs.append("added admin")
+            if len(msgs):
+                toast("{} {} flag".format(user.email, " and ".join(msgs)))
+                app.logger.warning(
+                    "{} updated {} <{}>: {}".format(
+                        current_user, user.name, user.email, " and ".join(msgs)
+                    )
+                )
+                db.session.add(user)
+        db.session.commit()
+    return redirect(url_for("admin", _anchor="user_management"))
+
+def admin_form():
+    if not has_permission("ADMIN"):
+        abort(403)
+    # query user
+    user_list = get_all_User()
+    # render form
+    return render_template(
+        "admin.html",
+        title="Admin",
+        user_list=user_list,
+    )
 

@@ -485,9 +485,6 @@ def test_register_and_confirm(app_with_user, test_client, req_ctx):
         assert "confirm" in outbox[0].subject.lower()
         assert "/-/confirm_email/" in outbox[0].body
         assert email in outbox[0].recipients
-
-        from pprint import pprint
-        pprint(outbox[0].body)
         # find token
         token = re.findall("confirm_email/(.*)", outbox[0].body)[0]
         # check if confirm token works
