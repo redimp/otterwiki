@@ -4,35 +4,19 @@
 import pytest
 import os
 import re
-import otterwiki
 from datetime import datetime
-from flask import url_for
 
-@pytest.fixture
-def admin_client(app_with_user, test_client):
-    result = test_client.post(
-        "/-/login",
-        data={
-            "email": "mail@example.org",
-            "password": "password1234",
-        },
-        follow_redirects=True,
-    )
-    html = result.data.decode()
-    assert "You logged in successfully." in html
-    yield test_client
-
-def test_admin_form(app_with_user, admin_client, req_ctx):
-    rv = admin_client.get(url_for("admin"))
+def test_admin_form(app_with_user, admin_client):
+    rv = admin_client.get("/-/admin")
     assert rv.status_code == 200
 
-def test_preferences_testmail(app_with_user, admin_client, req_ctx):
+def test_preferences_testmail(app_with_user, admin_client):
     # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
     app_with_user.test_mail.state.suppress = True
     # record outbox
     with app_with_user.test_mail.record_messages() as outbox:
         rv = admin_client.post(
-                url_for("admin"),
+                "/-/admin",
                 data = {
                     "mail_recipient" : "",
                     "test_mail_preferences" : "true",
@@ -46,7 +30,7 @@ def test_preferences_testmail(app_with_user, admin_client, req_ctx):
 
     with app_with_user.test_mail.record_messages() as outbox:
         rv = admin_client.post(
-                url_for("admin"),
+                "/-/admin",
                 data = {
                     "mail_recipient" : "mail2@example.org",
                     "test_mail_preferences" : "true",
@@ -60,7 +44,7 @@ def test_preferences_testmail(app_with_user, admin_client, req_ctx):
 
     with app_with_user.test_mail.record_messages() as outbox:
         rv = admin_client.post(
-                url_for("admin"),
+                "/-/admin",
                 data = {
                     "mail_recipient" : "example.org",
                     "test_mail_preferences" : "true",
@@ -71,11 +55,11 @@ def test_preferences_testmail(app_with_user, admin_client, req_ctx):
         html = rv.data.decode()
         assert "invalid email address" in html.lower()
 
-def test_update_preferences(app_with_user, admin_client, req_ctx):
+def test_update_preferences(app_with_user, admin_client):
     new_name = "Test Wiki 4711"
     assert app_with_user.config['SITE_NAME'] != new_name
     rv = admin_client.post(
-            url_for("admin"),
+            "/-/admin",
             data = {
                 "site_name" : new_name,
                 "update_preferences" : "true",
@@ -86,7 +70,7 @@ def test_update_preferences(app_with_user, admin_client, req_ctx):
     assert app_with_user.config['SITE_NAME'] == new_name
     assert app_with_user.config['SITE_LOGO'] == ""
 
-def test_update_mail_preferences(app_with_user, admin_client, req_ctx):
+def test_update_mail_preferences(app_with_user, admin_client):
     new_sender = "mail@example.com"
     new_server = "mail.example.com"
     new_port = "25"
@@ -99,7 +83,7 @@ def test_update_mail_preferences(app_with_user, admin_client, req_ctx):
     assert app_with_user.config['MAIL_DEFAULT_SENDER'] != new_sender
     assert app_with_user.config['MAIL_SERVER'] != new_server
     rv = admin_client.post(
-            url_for("admin"),
+            "/-/admin",
             data = data,
             follow_redirects=True,
         )
@@ -112,7 +96,7 @@ def test_update_mail_preferences(app_with_user, admin_client, req_ctx):
     # modify data to test tls/ssl settings
     data["mail_security"] = "tls"
     rv = admin_client.post(
-            url_for("admin"),
+            "/-/admin",
             data = data,
             follow_redirects=True,
         )
@@ -121,21 +105,21 @@ def test_update_mail_preferences(app_with_user, admin_client, req_ctx):
     # modify data to test tls/ssl settings
     data["mail_security"] = "ssl"
     rv = admin_client.post(
-            url_for("admin"),
+            "/-/admin",
             data = data,
             follow_redirects=True,
         )
     assert app_with_user.config['MAIL_USE_TLS'] == False
     assert app_with_user.config['MAIL_USE_SSL'] == True
 
-def test_update_mail_preferences_errors(app_with_user, admin_client, req_ctx):
+def test_update_mail_preferences_errors(app_with_user, admin_client):
     wrong_sender = "mail.example.com"
     assert app_with_user.config['MAIL_DEFAULT_SENDER'] != wrong_sender
     wrong_port = "twentyfive"
     assert app_with_user.config['MAIL_PORT'] != wrong_port
     # post wrong values to the form
     rv = admin_client.post(
-            url_for("admin"),
+            "/-/admin",
             data = {
                 "mail_sender" : wrong_sender,
                 "mail_port" : wrong_port,
@@ -155,7 +139,7 @@ def test_update_mail_preferences_errors(app_with_user, admin_client, req_ctx):
 
     # post empty values
     rv = admin_client.post(
-            url_for("admin"),
+            "/-/admin",
             data = {
                 "update_mail_preferences" : "true",
             },
@@ -172,7 +156,7 @@ def test_update_mail_preferences_errors(app_with_user, admin_client, req_ctx):
 
     # post wrong port
     rv = admin_client.post(
-            url_for("admin"),
+            "/-/admin",
             data = {
                 "mail_port" : "1",
                 "update_mail_preferences" : "true",

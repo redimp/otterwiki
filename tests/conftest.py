@@ -52,7 +52,9 @@ def db():
 
 @pytest.fixture
 def test_client(create_app):
-    return create_app.test_client()
+    client = create_app.test_client()
+    client._app = create_app
+    yield client
 
 
 @pytest.fixture
@@ -76,9 +78,21 @@ def app_with_user(create_app, db):
     yield create_app
 
 
-@pytest.fixture
-def create_app_with_user(app_with_user, db):
-    yield app_with_user, db
+@pytest.fixture(scope="function")
+def admin_client(app_with_user):
+    client = app_with_user.test_client()
+    client._app = app_with_user
+    result = client.post(
+        "/-/login",
+        data={
+            "email": "mail@example.org",
+            "password": "password1234",
+        },
+        follow_redirects=True,
+    )
+    html = result.data.decode()
+    assert "You logged in successfully." in html
+    yield client
 
 
 @pytest.fixture

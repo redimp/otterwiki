@@ -3,13 +3,9 @@
 
 import pytest
 import base64
-import otterwiki.gitstorage
 
 @pytest.fixture
 def app_with_attachments(create_app):
-    storage = otterwiki.gitstorage.GitStorage(
-        path=create_app._otterwiki_tempdir, initialize=True
-    )
     # create test page
     message = "Test.md commit"
     filename = "test.md"
@@ -41,7 +37,9 @@ def app_with_attachments(create_app):
 
 @pytest.fixture
 def test_client(app_with_attachments):
-    yield app_with_attachments.test_client()
+    client = app_with_attachments.test_client()
+    client._app = app_with_attachments
+    yield client
 
 
 def test_app_with_attachments(test_client):
