@@ -418,6 +418,7 @@ def test_lost_password_mail(app_with_user, test_client, req_ctx):
 #
 def test_register_and_login(app_with_user, test_client, req_ctx):
     app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = False
+    app_with_user.config["AUTO_APPROVAL"] = True
     # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
     app_with_user.test_mail.state.suppress = True
     email = "mail2@example.org"
