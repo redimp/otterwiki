@@ -1,7 +1,7 @@
 /*
 * -----------------------------------------------------------------------------
 * Halfmoon JS
-* Version: 1.1.1
+* Version: 1.1.1-redimp/otterwiki
 * https://www.gethalfmoon.com
 * Copyright, Halfmoon UI
 * Licensed under MIT (https://www.gethalfmoon.com/license)
@@ -261,8 +261,14 @@ function halfmoonOnDOMContentLoaded() {
         }
     } else {
         // 2. If cookie does not exist, next preference is for the dark mode setting
-        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-            halfmoon.darkModeOn = true;
+        if (window.matchMedia) {
+            if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                halfmoon.createCookie("halfmoon_preferredMode", "dark-mode", 30)
+                halfmoon.darkModeOn = true;
+            } else {
+                halfmoon.createCookie("halfmoon_preferredMode", "light-mode", 30)
+                halfmoon.darkModeOn = false;
+            }
         } else {
             // 3. If all else fails, re-initialize the dark mode preference depending on the .dark-mode class
             if (document.body.classList.contains("dark-mode")) {

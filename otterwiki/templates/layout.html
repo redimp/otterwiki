@@ -37,7 +37,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="#000000">
 {% endif -%}
 </head>
+{% if request.cookies.get('halfmoon_preferredMode') %}
 <body class="{% if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}dark-mode {%endif%}with-custom-webkit-scrollbars with-custom-css-scrollbars">
+{% else %}
+<body class="with-custom-webkit-scrollbars with-custom-css-scrollbars" data-set-preferred-mode-onload="true">
+{% endif %}
+
 {%- block bodytop %}
 {% endblock -%}
     <!-- Page wrapper start -->
