@@ -34,6 +34,7 @@ setup(
             "pytest",
             "black",
             "tox",
+            "tbump",
         ]
     },
 )

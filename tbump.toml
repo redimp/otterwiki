@@ -1,0 +1,31 @@
+[version]
+current = "2.0.0-beta7"
+regex = '''
+  (?P<major>\d+)
+  \.
+  (?P<minor>\d+)
+  \.
+  (?P<patch>\d+)
+  (\-
+    (?P<extra>.+)
+  )?
+  '''
+
+[git]
+message_template = 'Bump to {new_version}'
+tag_template = 'v{new_version}'
+
+[[before_commit]]
+name = 'Run make test'
+cmd = 'make test'
+
+[[file]]
+src = 'otterwiki/version.py'
+version_template = '"{major}.{minor}.{patch}-{extra}"'
+search = '__version__ = {current_version}'
+
+[[field]]
+# the name of the field
+name = "extra"
+# the default value to use, if there is no match
+default = ""
