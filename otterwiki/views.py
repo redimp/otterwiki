@@ -15,6 +15,7 @@ from otterwiki.wiki import Page, PageIndex, Changelog, Search, render
 import otterwiki.auth
 import otterwiki.preferences
 from otterwiki.helper import toast
+from otterwiki.version import __version__
 from otterwiki.util import sanitize_pagename
 from otterwiki.auth import login_required, has_permission
 from pprint import pprint, pformat
@@ -64,6 +65,7 @@ def about():
     return render_template(
         "about.html",
         htmlcontent=htmlcontent,
+        __version__=__version__,
     )
 
 
