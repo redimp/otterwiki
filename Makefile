@@ -65,9 +65,13 @@ docker-buildx-test:
 	docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 --target test-stage .
 
 docker-buildx-push: venv
+# check if we are in the main branch (to avoid accidently pushing a feature branch
+ifneq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
+	$(error Error: Not on branch 'main')
+endif
 # check if git is clean optional: --untracked-files=no
 ifneq ($(strip $(shell git status --porcelain)),)
 	$(error Error: Uncommitted changes in found)
 endif
 # TODO -t redimp/otterwiki:$(shell git describe --tags)
-	docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t redimp/otterwiki:latest -t redimp/otterwiki:$(VERSION) .
+	docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t redimp/otterwiki:latest -t redimp/otterwiki:$(VERSION) . --push
