@@ -37,6 +37,7 @@ from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
 from io import BytesIO
 from PIL import Image, ImageOps
+import pathlib
 
 from pprint import pprint, pformat
 
@@ -196,6 +197,18 @@ class Changelog:
 
 class Page:
     def __init__(self, pagepath=None, pagename=None):
+
+        if storage.exists(f'{pagepath}.md'):
+            # This is kind of weird, but it makes it such that it will
+            # not further check for a folder and swizzle the path.
+            pass
+
+        elif storage.is_folder(pagepath):
+            # This means that this path on disk is a folder and not a file.
+            # Given that you cannot have a file and folder with the same name (since that is
+            # reserved for the attachments), this should not produce a false positive
+            pagepath = str(pathlib.Path(pagepath, f"{pagepath}"))
+
         if pagepath is not None:
             self.pagepath = pagepath
             self.pagename = get_pagename(pagepath)
