@@ -60,6 +60,18 @@ else:
     except otterwiki.gitstorage.StorageError as e:
         fatal_error(e)
 
+
+# check if the git repository is empty
+if (len(storage.list()[0]) < 1) and (len(storage.log()) < 1):
+    # we have a brand new repository here
+    with open(os.path.join(app.root_path, "initial_home.md")) as f:
+        content = f.read()
+        storage.store(
+            filename="home.md", content=content, 
+            author=("Otterwiki Robot", "noreply@otterwiki"),
+            message="Initial commit",
+        )
+
 #
 # app.config from db preferences
 #
