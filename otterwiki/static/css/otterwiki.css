@@ -73,6 +73,7 @@ pre,
     line-height: 1.5;
     padding: 0.1rem 0.5rem;
     margin: 0 0.1rem;
+    white-space: pre-wrap;
 }
 .dark-mode code,
 .dark-mode pre,
