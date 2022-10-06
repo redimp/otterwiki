@@ -297,3 +297,25 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
     text-decoration: none;
 }
 
+/* extra nav */
+.extra-nav {
+    position: fixed;
+    right: 0.5rem;
+    margin-right: 1rem;
+    z-index: 20;
+    background-color: #ffffff;
+    padding: 0.5rem;
+    border-radius: 0.4rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    max-height: 90%;
+}
+
+.dark-mode .extra-nav {
+    background-color: #25282c;
+}
+
+.extra-nav .sidebar-title {
+    white-space: nowrap;
+}

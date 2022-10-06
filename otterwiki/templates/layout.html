@@ -153,7 +153,9 @@
         <!-- Content wrapper start -->
         <div class="content-wrapper">
 
-            <div class="container-lg">
+            <div class="container-fluid">
+                <div class="row">
+                <div class="col-xl-9">
                 <div class="content">
 {% block breadcrumbs %}
 {% endblock %}
@@ -161,6 +163,19 @@
 {{content|safe}}
 {% endblock %}
                 </div> <!-- content -->
+            </div> <!-- col-xl-9 -->
+            {# #}
+{% if ( self.extra_nav() | trim | length ) > 0 %}{# display only if block not empty #}
+            <div class="col-xl-3 d-none d-xl-block extra-nav-container">
+                <div class="content">
+                    <div class="extra-nav" id="extra-nav">
+{% block extra_nav -%}
+{%- endblock %}
+                    </div>
+                </div>
+            </div>
+{% endif %}{# extra nav #}
+            </div> <!-- row -->
             </div> <!-- container -->
         </div>
         <!-- Content wrapper end -->
