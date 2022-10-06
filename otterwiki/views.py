@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import pathlib
+
 from flask import (
     redirect,
     request,
@@ -107,8 +109,10 @@ def pageindex():
 @app.route("/-/create", methods=["POST", "GET"])
 def create():
     pagename = request.form.get("pagename")
+    is_folder = request.form.get("is-folder")
     pagename_sanitized = sanitize_pagename(pagename)
     if pagename is None:
+        # This is the default creat page view
         return render_template("create.html", title="Create Page")
     elif pagename != pagename_sanitized:
         if pagename is not None and pagename != pagename_sanitized:
@@ -117,6 +121,10 @@ def create():
             "create.html", title="Create Page", pagename=pagename_sanitized
         )
     else:
+        if is_folder:
+            pagename = str(pathlib.Path(pagename, pagename))
+
+        # this is the creation of a new page
         p = Page(pagename)
         return p.create()
 
