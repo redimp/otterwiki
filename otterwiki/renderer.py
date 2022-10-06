@@ -49,6 +49,41 @@ def showmagicword(line, html):
     arr[line]=cursormagicword+arr[line]
     return "".join(arr)
 
+# inner wiki link regular expression
+wiki_link_iwlre = re.compile(r'([^\|]+)\|?(.*)')
+
+def plugin_wiki(md):
+    """
+    Plugin for rendering wiki Links:
+    [[Page]]
+    [[Title|Link]]
+    """
+    # define regex for Wiki links
+    WIKI_PATTERN = (
+        r'\[\['                   # [[
+        r'([^\]]+)'               # ...
+        r'\]\](?!\])'             # ]]
+    )
+    # define how to parse matched item
+    def parse_wiki(inline, m, state):
+        # ``inline`` is ``md.inline``, see below
+        # ``m`` is matched regex item
+        title, page = wiki_link_iwlre.findall(m.group(1))[0]
+        if page == '': page = title
+        return 'wiki', url_for('view', path=page), title
+
+    # define how to render HTML
+    def render_html_wiki(link, title):
+        return f'<a href="{link}">{title}</a>'
+
+    # this is an inline grammar, so we register wiki rule into md.inline
+    md.inline.register_rule('wiki', WIKI_PATTERN, parse_wiki)
+    # add wiki rule into active rules
+    md.inline.rules.append('wiki')
+    # add HTML renderer
+    if md.renderer.NAME == 'html':
+        md.renderer.register('wiki', render_html_wiki)
+
 class OtterwikiMdRenderer(mistune.HTMLRenderer):
     toc_count = 0
     toc_tree = []
@@ -106,40 +141,6 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         return rv
 
 
-#class OtterwikiInlineLexer(mistune.InlineLexer):
-#    def __init__(self, *args, **kwargs):
-#        super(OtterwikiInlineLexer, self).__init__(*args, **kwargs)
-#        self.enable_wiki_link()
-#
-#    def enable_wiki_link(self):
-#        self.rules.wiki_link = re.compile(
-#            r'\[\['                   # [[
-#            r'([^\]]+)'               # ...
-#            r'\]\]'                   # ]]
-#        )
-#        self.default_rules.insert(0, 'wiki_link')
-#        # inner regular expression
-#        self.wiki_link_iwlre = re.compile(
-#                r'([^\|]+)\|?(.*)'
-#                )
-#
-#    def output_wiki_link(self, m):
-#        # initial style
-#        style = ''
-#        # parse for title and pagename
-#        title, pagename = self.wiki_link_iwlre.findall(m.group(1))[0]
-#        # fetch all existing pages
-#        #pages = [get_pagename(x).lower() for x in storage.list_files() if x.endswith(".md")]
-#        # if the pagename is empty the title is the pagename
-#        if pagename == '': pagename = title
-#        # check if page exists
-#        #if pagename.lower() not in pages:
-#        #style = ' class="notfound"'
-#        # generate link
-#        url = url_for('view', path=pagename)
-#        link = '<a href="{}"{}>{}</a>'.format(url,style,title)
-#        return link
-
 class OtterwikiRenderer:
     def __init__(self):
         self.md_renderer = OtterwikiMdRenderer(escape=False)
@@ -150,6 +151,7 @@ class OtterwikiRenderer:
                     plugin_table,
                     plugin_url,
                     plugin_strikethrough,
+                    plugin_wiki,
                 ])
         self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")
         self.htmlcursor = "<span id=\"cursor\"></span>"

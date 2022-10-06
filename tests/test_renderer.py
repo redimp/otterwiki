@@ -101,3 +101,13 @@ def test_html_mark():
     text = "<mark>mark</mark>"
     html, _ = render.markdown(text)
     assert "<mark>mark</mark>" in html
+
+
+def test_wiki_link(req_ctx):
+    text = "[[Title|Link]]"
+    html, _ = render.markdown(text)
+    assert '<a href="/Link">Title</a>' in html
+    text = "[[Link]]"
+    html, _ = render.markdown(text)
+    assert '<a href="/Link">Link</a>' in html
+
