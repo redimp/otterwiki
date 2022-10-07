@@ -5,6 +5,10 @@
   <div class="form-group">
     <label for="pagename" class="required">Page name</label>
     <input type="text" class="form-control" name="pagename" id="pagename" placeholder="Page name" required="required" value="{{ pagename if pagename }}">
+    <div class="custom-switch">
+      <input type="checkbox" id="switch-1" value="true" name="is-folder">
+      <label for="switch-1">Create as folder</label>
+    </div>
   </div>
   <div class="form-group">
     <div class="form-text text-wrap">
