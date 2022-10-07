@@ -210,6 +210,11 @@ a.sidebar-toc-5 { padding-left: 4.5rem; padding-right: 0; }
 a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 
 /* page tweaks */
+.page h1, .page h2, .page h3,
+.page h4, .page h5, .page h6 {
+    font-weight: 400;
+}
+
 .page h1 { font-size: 3.6rem; }
 .page h2 { font-size: 3.2rem; }
 .page h3 { font-size: 2.8rem; }
@@ -220,6 +225,17 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 .page p,
 .page li {
     font-size: 1.6rem;
+}
+
+.page li {
+    margin-bottom: 0.2rem;
+    margin-left: 1.5rem;
+}
+
+.page ul,
+.page ol {
+    padding-left: 1rem;
+    list-style-position: outside;
 }
 
 .page blockquote {
