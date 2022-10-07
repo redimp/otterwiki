@@ -139,3 +139,21 @@ An Otter Wiki is using [Flask-Mail](https://pythonhosted.org/Flask-Mail/).
 | `MAIL_USE_SSL`   | `True`          | Use SSL encryption                           |
 
 [modeline]: # ( vim: set fenc=utf-8 spell spl=en sts=4 et tw=72: )
+
+## Developers Guide
+
+### Setup
+1. Clone the repo
+2. Install Dependencies `make venv`
+3. Run tests and coverage `make coverage`
+
+### Running the server
+
+If using Make:
+   - `make debug`
+If using IDE:
+   - Setup enviornment variable:
+     - FLASK_DEBUG=True 
+     - FLASK_APP=otterwiki.server 
+     - OTTERWIKI_SETTINGS=../settings.cfg
+   - Run server.py
