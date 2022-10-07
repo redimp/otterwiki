@@ -2,9 +2,6 @@ version: '2'
 services:
   web:
     build: .
-    restart: always
-    ports:
-      - "8080:80"
     volumes:
      - app-data:/app-data
 
