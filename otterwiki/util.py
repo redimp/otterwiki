@@ -56,6 +56,10 @@ def split_path(path):
 
 
 def get_filename(pagepath):
+    '''This is the actual filepath on disk (not via URL) relative to the repository root
+    This function will attempt to determine if this is a 'folder' or a 'page'.
+    '''
+
     p = pagepath.lower()
     if not p.endswith(".md"):
         return "{}.md".format(p)
@@ -70,6 +74,7 @@ def get_attachment_directoryname(filename):
 
 
 def get_pagename(filepath):
+    '''This will derive the page name (displayed on the web page) from the url requested'''
     name = os.path.basename(filepath)
     if name.endswith(".md"):
         name = name[:-3]
