@@ -149,13 +149,14 @@
         <!-- Sidebar end -->
 {% endblock %}
 
-{% block content_wrapper %}
+{% block content_wrapper_outer %}
         <!-- Content wrapper start -->
         <div class="content-wrapper">
 
             <div class="container-fluid">
                 <div class="row">
                 <div class="col-xl-9">
+{% block content_wrapper %}
                 <div class="content">
 {% block breadcrumbs %}
 {% endblock %}
@@ -163,6 +164,7 @@
 {{content|safe}}
 {% endblock %}
                 </div> <!-- content -->
+{% endblock content_wrapper %}
             </div> <!-- col-xl-9 -->
             {# #}
 {% if ( self.extra_nav() | trim | length ) > 0 %}{# display only if block not empty #}
