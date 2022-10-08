@@ -144,7 +144,7 @@ def handle_user_management(form):
                 msgs.append("added admin")
             if len(msgs):
                 toast("{} {} flag".format(user.email, " and ".join(msgs)))
-                app.logger.warning(
+                app.logger.report(
                     "{} updated {} <{}>: {}".format(
                         current_user, user.name, user.email, " and ".join(msgs)
                     )

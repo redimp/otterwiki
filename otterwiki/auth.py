@@ -56,7 +56,7 @@ class SimpleAuth:
             for column in ['email_confirmed', 'allow_read', 'allow_write', 'allow_upload']:
                 try:
                     r = conn.execute("ALTER TABLE user ADD COLUMN {} BOOLEAN;".format(column))
-                    app.logger.warning("_db_migrate: altered table 'user' added '{}'".format(column))
+                    app.logger.report("_db_migrate: Altered table 'user' added '{}'".format(column))
                 except OperationalError:
                     pass
 
@@ -177,7 +177,7 @@ class SimpleAuth:
         db.session.add(user)
         db.session.commit()
         # log user creation
-        app.logger.info("user registered: {} <{}>".format(name, email))
+        app.logger.report("New user registered: {} <{}>".format(name, email))
         if app.config["EMAIL_NEEDS_CONFIRMATION"]:
             self.request_confirmation(email)
         else:
@@ -263,6 +263,8 @@ class SimpleAuth:
         # notify admins
         if app.config['NOTIFY_ADMINS_ON_REGISTER']:
             self.activated_user_notify_admins(user.name, email)
+        # log activation
+        app.logger.report("New user activated: {} <{}>".format(user.name, user.email))
         # redirect
         return redirect(url_for("login"))
 
@@ -334,7 +336,7 @@ class SimpleAuth:
             # send mail
             send_mail(subject=subject, recipients=[email], text_body=text_body)
             # log recovery attempt
-            app.logger.info("password recovery for: {}".format(email))
+            app.logger.report("auth: Password recovery for: {}".format(email))
             # notify user
             toast(
                 "A recovery link been sent to {}. Please check your mailbox.".format(
@@ -356,14 +358,12 @@ class SimpleAuth:
         user = self.User.query.filter_by(email=email).first()
         if user is not None:
             login_user(user, remember=True)
-            app.logger.warning("auth password recovery successful: {}".format(email))
+            app.logger.report("auth: Password recovery successful: {}".format(email))
             toast("Welcome {}, please update your password.".format(user.name))
             return redirect(url_for("settings"))
         else:
             toast("Invalid email address.")
         return lost_password_form()
-
-
 
 
 # create login manager
