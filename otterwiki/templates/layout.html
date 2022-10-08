@@ -155,7 +155,7 @@
 
             <div class="container-fluid">
                 <div class="row">
-                <div class="col-xl-9">
+                <div class="col-xl-10">
 {% block content_wrapper %}
                 <div class="content">
 {% block breadcrumbs %}
@@ -166,22 +166,20 @@
                 </div> <!-- content -->
 {% endblock content_wrapper %}
             </div> <!-- col-xl-9 -->
-            {# #}
+{# extra_nav #}
 {% if ( self.extra_nav() | trim | length ) > 0 %}{# display only if block not empty #}
-            <div class="col-xl-3 d-none d-xl-block extra-nav-container">
-                <div class="content">
+            <div class="col-xl-2 d-none d-xl-block extra-nav-container">
                     <div class="extra-nav" id="extra-nav">
 {% block extra_nav -%}
-{%- endblock %}
-                    </div>
-                </div>
-            </div>
+{%- endblock extra_nav %}
+                    </div> <!-- extra-nav -->
+            </div> <!-- extra-nav-container -->
 {% endif %}{# extra nav #}
             </div> <!-- row -->
             </div> <!-- container -->
         </div>
         <!-- Content wrapper end -->
-{% endblock %}
+{% endblock content_wrapper_outer %}
     </div>
     <!-- Page wrapper end -->
   <!-- Halfmoon JS -->
