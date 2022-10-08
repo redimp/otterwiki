@@ -14,9 +14,8 @@ The first steps you might want to do:
    view and edit pages or upload attachments.
 3. If your user have to confirm their email address (recommended), make
    sure that you configured and tested the [Email preferences](/-/admin#mail_preferences).
-4. [Edit your Home](/Home/edit). Don't worry, you can undo everything. Every page has
-   a history of edits, you can undo anything.
-6. You can [attach](/Home/attachments) images and other files to any page,
+4. [Edit your Home](/Home/edit)! Don't like the change? Visit the page [history](/Home/history) and revert any change ever made.
+5. You can [attach](/Home/attachments) images and other files to any page,
    then display them and link to them in the page.
 6. [Create new pages](/-/create)! If you need help with the markdown syntax
    check the [Markdown syntax](/-/syntax).
