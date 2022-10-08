@@ -7,13 +7,6 @@
 <style type="text/css" media="screen">
 </style>
 <link href="{{ url_for("static", filename="css/codemirror.css") | debug_unixtime }}" rel="stylesheet" />
-<script>
- function hideMarkdown() {
-     let h = document.getElementById("markdown-helper");
-     currDisplay = h.style.display;
-     h.style.display = currDisplay === "none" ? "block" : "none";
- }
-</script>
 {% endblock %}
 {#
     Navbar
@@ -39,41 +32,18 @@
     Content
 #}
 {% block content_wrapper %}
-        <!-- Content wrapper start -->
-<div class="content-wrapper">
-      <div class="position-absolute bottom-0 z-50">
-        <div onclick="hideMarkdown()" class="card p-10 m-0 w-200 border rounded-0 rounded-top">
-            <span class="pr-5">
-                <i class="fab fa-markdown"></i>
-                </span>
-                Markdown Syntax
-        </div>
-{#        <hr style="margin:0px">#}
-        <div id="markdown-helper" class="card border rounded-0" style="overflow-y: scroll; max-height: 40vh; margin: 0; display: none">
-            <a href="/-/syntax"><span class="pl-5"><i class="fab fa-arrow"></i></span>Full Syntax Guide</a>
-            {% include "_syntax.html" %}
-        </div>
-    </div>
-    <div class="container-fluid z-10">
-        <div class="row" style="height:calc(100vh - 92px); overflow-y: scroll">
-            <div class="col-xl-9" style="height:100%; overflow-y: scroll">
-                <form id="pagecontent" action="{{ url_for('preview', path=pagepath) }}" method="post">
-                <input id="pc_cursor_line" type="hidden" name="cursor_line" value="" />
-                <input id="pc_cursor_ch" type="hidden" name="cursor_ch" value="" />
-                <textarea id="content_editor" name="content_editor">{{ content_editor }}</textarea>
-                </form>
-            </div>
-            <div class="col-xl-3 pt-15" >
-                <div class="position-fixed" style="height:100vh; overflow-y: scroll">
-                    <div class="pl-20 pb-15">
-                        {% if has_permission('WRITE') %}
-                        <a href="{{ url_for("attachments", pagepath=pagepath) }}" class="btn btn-primary" role="button"><i class="fas fa-pencil-alt pr-5"></i> Edit Attachments</a>
-                        {% else %}
-                        <a href="{{ url_for('login') }}" class="btn" role="button"><i class="fas fa-sign-in-alt" title="Login"></i> Login to Edit Page</a>
-                        {% endif %}
-                    </div>
-
-    {#              #Todo: This Attachments view could maybe be refactored out into it's own tempalte#}
+<!-- Content wrapper start -->
+<form id="pagecontent" action="{{ url_for('preview', path=pagepath) }}" method="post">
+<input id="pc_cursor_line" type="hidden" name="cursor_line" value="" />
+<input id="pc_cursor_ch" type="hidden" name="cursor_ch" value="" />
+<textarea id="content_editor" name="content_editor">{{ content_editor }}</textarea>
+</form>
+<!-- Content wrapper end -->
+{% endblock %}
+{#
+    extra-navbar
+#}
+{% block extra_nav -%}
                     <h5 class="sidebar-title">Attachments</h5>
                     <div class="sidebar-divider" ></div>
                     {% for f in files %}
@@ -99,13 +69,7 @@
                         <a class="sidebar-link pl-5" style="display: inline" href="{{ url_for("edit_attachment", pagepath=pagepath, filename=f.filename) }}">{{f.filename}}</a><br/>
                         {% endfor %}
                         <p class="p-15 text-muted">Additional media can be added to this wiki by clicking the 'Add Attachment...' button, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.</p>
-                    </div>
-               </div>
-        </div>
-    </div>
-</div>
-        <!-- Content wrapper end -->
-{% endblock %}
+{%- endblock extra_nav %}
 {#
     Javascript
 #}
