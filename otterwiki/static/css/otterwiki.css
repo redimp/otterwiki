@@ -316,3 +316,18 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 .extra-nav .sidebar-title {
     white-space: nowrap;
 }
+
+.btn-xsm {
+  height: 2.2rem;
+  line-height: 2.2rem;
+  padding: 0 1rem;
+  font-size: 1rem;
+}
+
+.extra-nav-attachment {
+    padding: 1rem;
+}
+
+.font-size-10 {
+  font-size: 1rem !important;
+}

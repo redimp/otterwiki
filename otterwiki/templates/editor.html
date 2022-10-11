@@ -44,31 +44,32 @@
     extra-navbar
 #}
 {% block extra_nav -%}
-                    <h5 class="sidebar-title">Attachments</h5>
+                    <h5 class="sidebar-title"><i class="fa fa-paperclip"></i> Attachments</h5>
                     <div class="sidebar-divider" ></div>
                     {% for f in files %}
     {#                            <a href="{{f.url}}">{% if f.thumbnail_url %}<img src="{{f.thumbnail_url}}"/>{%else%}{{f.thumbnail_icon|safe}}{%endif%}</a>#}
-                        <div class="dropdown dropdown pl-20">
-                            <a href="#" data-toggle="dropdown" id="dropdown-toggle-btn-{{loop.index}}" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-copy"></i>
-                                <div style="z-index: 1000" class="dropdown-menu" aria-labelledby="dropdown-toggle-btn-{{loop.index}}">
-                                    <h6 class="dropdown-header">Markdown Shortcuts <span class="font-size-12">- Click to copy to clipboard</span></h6>
-                                    {% if f.thumbnail_url %}
-                                        <a href="#" onclick="navigator.clipboard.writeText('![]({{f.url}})')" class="dropdown-item"><i class="fas fa-copy"></i> Inline Image:</a>
-                                        <div class="dropdown-item font-size-12">![]({{f.url}})</div>
-                                        <div class="dropdown-divider"></div>
-                                        <a href="#" onclick="navigator.clipboard.writeText('[![]({{f.thumbnail_url}})]({{f.url}})')" class="dropdown-item">Link with Thumbnail:</a>
-                                        <div class="dropdown-item font-size-12>">[![]({{f.thumbnail_url}})]({{f.url}})</div>
-                                        <div class="dropdown-divider"></div>
-                                    {% endif %}
-                                    <a href="#" onclick="navigator.clipboard.writeText('[{{f.filename}}]({{f.url}})')" class="dropdown-item"><i class="fas fa-copy"></i> Link Attachment:</a>
-                                    <div class="dropdown-item font-size-12">[{{f.filename}}]({{f.url}})</div>
-                                </div>
-                            </a>
-                        </div>
-                        <a class="sidebar-link pl-5" style="display: inline" href="{{ url_for("edit_attachment", pagepath=pagepath, filename=f.filename) }}">{{f.filename}}</a><br/>
+                        <details class="collapse-panel pb-5">
+                          <summary class="collapse-header font-size-12">
+                            {{f.filename}}
+                          </summary>
+                          <div class="position-relative collapse-content font-size-12 extra-nav-attachment">
+{% if f.thumbnail_url %}
+                            <span class="font-weight-semi-bold">Inline Image:</span>
+                            <a href="#" onclick="navigator.clipboard.writeText('![]({{f.url}})')" class="btn btn-xsm position-absolute right-0"><i class="fas fa-copy"></i> Copy</a>
+                            <div class="font-size-10 text-monospace py-5">![]({{f.url}})</div>
+                            <!-- -->
+                            <span class="font-weight-semi-bold">Link with Thumbnail:</span>
+                            <a href="#" onclick="navigator.clipboard.writeText('[![]({{f.thumbnail_url}})]({{f.url}})')" class="btn btn-xsm position-absolute right-0"><i class="fas fa-copy"></i> Copy</a>
+                            <div class="font-size-10 text-monospace py-5">[![]({{f.thumbnail_url}})]({{f.url}})</div>
+                            <!-- -->
+{% endif %}
+                            <span class="font-weight-semi-bold">Link:</span>
+                            <a href="#" onclick="navigator.clipboard.writeText('[{{f.filename}}]({{f.url}})')" class="btn btn-xsm position-absolute right-0"><i class="fas fa-copy"></i> Copy</a>
+                            <div class="font-size-10 text-monospace py-5">[{{f.filename}}]({{f.url}})</div>
+                          </div>
+                        </details>
                         {% endfor %}
-                        <p class="p-15 text-muted">Additional media can be added to this wiki by clicking the 'Add Attachment...' button, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.</p>
+                        <p class="font-size-12 p-15 text-muted">Additional media can be added to this wiki by clicking the 'Add Attachment...' button, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.</p>
 {%- endblock extra_nav %}
 {#
     Javascript
