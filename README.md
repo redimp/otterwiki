@@ -22,12 +22,11 @@ using the microframework [Flask](http://flask.pocoo.org/).
 ## Recommended Installation with docker-compose
 
 1. Copy and edit the `docker-compose.yml` below to match your preferences.
-2. Create the folder app-data with `mkdir app-data`according to the path in the `docker-compose.yml`, default in the same directory.
-3. Run `docker-compose up -d`
-4. Access the wiki via http://127.0.0.1:8080 if run on your machine.
-5. If the wiki shall be accessable via the internet and an domainname make sure to configure your web server accordingly. For Nginx e.g., see [Nginx Reverse Proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/)
-6. Register your account. The first account is an admin-account giving you access to the settings tab.
-7. Customize the settings to your liking.
+2. Run `docker-compose up -d`
+3. Access the wiki via http://127.0.0.1:8080 if run on your machine.
+4. If the wiki shall be accessable via the internet and an domainname make sure to configure your web server accordingly. For Nginx e.g., see [Nginx Reverse Proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/)
+5. Register your account. The first account is an admin-account giving you access to the settings tab.
+6. Customize the settings to your liking.
 
 ## docker-compose.yml
 
