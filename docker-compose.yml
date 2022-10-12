@@ -1,8 +1,10 @@
-version: '2'
+version: '3'
 services:
-  web:
-    build: .
+  otterwiki:
+    image: redimp/otterwiki:latest
+    restart: unless-stopped
     volumes:
-     - app-data:/app-data
+      - ./app-data:/app-data
+
 
 # vim:set et ts=8 sts=2 sw=2 ai fenc=utf-8:
