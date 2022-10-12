@@ -43,7 +43,7 @@ services:
 ```
 
 ## Build from Source ( not recommended!)
-
+TODO: Rewrite this section
 ## Configuration
 ### Branding
 
