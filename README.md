@@ -45,7 +45,7 @@ services:
 
 ## Build from Source ( not recommended!)
 
-## COnfiguration
+## Configuration
 ### Branding
 
 | Variable         |  Example        | Description                                  |
@@ -85,7 +85,6 @@ An Otter Wiki is using [Flask-Mail](https://pythonhosted.org/Flask-Mail/).
 
 
 ### Advanced configuration
-These settings are set initially for you via the `docker/entrypoint.sh` when starting the container for the first time. Please note: These settings should not be changed in production state.
 
 | Variable         |  Example        | Description                                  |
 |------------------|-----------------|----------------------------------------------|
