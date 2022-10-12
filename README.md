@@ -19,88 +19,33 @@ using the microframework [Flask](http://flask.pocoo.org/).
 - Page Attachments
 - A very cute Otter as logo (drawn by [Christy Presler](http://christypresler.com/) CC BY 3.0).
 
-## Quick and dirty standalone demo
+## Recommended Installation with docker-compose
 
-1. Install the prerequisites
-    1. Debian / Ubuntu
-    ```bash
-    apt install git build-essential python3-dev python3-venv
-    ```
-    2. RHEL8 / Fedora / Centos8 / Rocky Linux 8
-    ```bash
-    yum install make python3-devel
-    ```
-2. Clone the otterwiki repository and enter the directory
-```bash
-git clone https://github.com/redimp/otterwiki.git
-cd otterwiki
+1. Copy and edit the `docker-compose.yml` below to match your preferences.
+2. Create the folder app-data with `mkdir app-data`according to the path in the `docker-compose.yml`, default in the same directory.
+3. Run `docker-compose up -d`
+4. Access the wiki via http://127.0.0.1:8080 if run on your machine.
+5. If the wiki shall be accessable via the internet and an domainname make sure to configure your web server accordingly. For Nginx e.g., see [Nginx Reverse Proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/)
+6. Register your account. The first account is an admin-account giving you access to the settings tab.
+7. Customize the settings to your liking.
+
+## docker-compose.yml
+
+```yaml
+version: '3'
+services:
+  otterwiki:
+    image: redimp/otterwiki:latest
+    restart: unless-stopped
+    ports:
+      - 8080:80
+    volumes:
+      - ./app-data:/app-data
 ```
-3. Create and initialize the repository where the otterwiki data lives
-```bash
-mkdir -p app-data/repository
-# initialize the empty repository
-git init app-data/repository
-```
-4. Create a minimal configuration file
-```bash
-echo "REPOSITORY='${PWD}/app-data/repository'" >> settings.cfg
-echo "SQLALCHEMY_DATABASE_URI='sqlite:///${PWD}/app-data/db.sqlite'" >> settings.cfg
-echo "SECRET_KEY='$(echo $RANDOM | md5sum | head -c 16)'" >> settings.cfg 
-```
-5. Run make to setup a virtual environment and run a local server on port 8080.
-```
-make
-```
-6. Open the wiki in your browser <http://127.0.0.1:8080>. You can create and edit pages as anonymous user without any further configuration. Please note: This setup is not for production use!
 
-## Deployment
+## Build from Source ( not recommended!)
 
-An Otter Wiki can be deployed via docker/podman or as WSGI application. The deployment via `docker-compose` is recommended.
-To enable user registration a mail account has to be configured, see Configuration.
-
-## Deployment from source via docker-compose
-
-1. Clone the repository
-```bash
-git clone https://github.com/redimp/otterwiki.git
-cd otterwiki
-```
-2. Create and adjust the file docker-compose.override.yml
-```bash
-cp docker-compose.override.yml.skeleton docker-compose.override.yml
-``` 
-The use of `docker-compose.override.yml` is recommended, since the `docker-compose.yml` may change when updating the repository.
-3. Start the container
-```bash
-docker-compose up -d
-```
-4. Access the wiki via <http://127.0.0.1:8080/>.
-
-### Deployment as WSGI application
-
-<mark>TODO</mark>
-
-- [WSGI container](https://flask.palletsprojects.com/en/2.0.x/deploying/wsgi-standalone/)
-
-## Configuration
-
-Create a `settings.cfg` based upon `settings.cfg.skeleton` and set the
-variables fitting to your environment.
-
-**The basic configuration must be done in the `settings.cfg`** (The
-Docker container does this for you.) All other configurations can be
-configured in the _Settings_ as admin user.
-
-### Basic Configuration
-
-| Variable         |  Example        | Description                                  |
-|------------------|-----------------|----------------------------------------------|
-| `SECRET_KEY`     | `'CHANGE ME'`   | Choose a random string that is used to encrypt user session data |
-| `REPOSITORY`     | `'/path/to/the/repository/root'` | The absolute path to the repository storing the wiki pages |
-| `SQLALCHEMY_DATABASE_URI` | `'sqlite:////path/to/the/sqlite/file'` | The absolute path to the database storing the user credentials |
-
-For the `SQLALCHEMY_DATABASE_URI` see <https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/#connection-uri-format>.
-
+## COnfiguration
 ### Branding
 
 | Variable         |  Example        | Description                                  |
@@ -138,6 +83,17 @@ An Otter Wiki is using [Flask-Mail](https://pythonhosted.org/Flask-Mail/).
 | `MAIL_USE_TLS`   | `False`         | Use TLS encrytion                            |
 | `MAIL_USE_SSL`   | `True`          | Use SSL encryption                           |
 
+
+### Advanced configuration
+These settings are set initially for you via the `docker/entrypoint.sh` when starting the container for the first time. Please note: These settings should not be changed in production state.
+
+| Variable         |  Example        | Description                                  |
+|------------------|-----------------|----------------------------------------------|
+| `SECRET_KEY`     | `'CHANGE ME'`   | Choose a random string that is used to encrypt user session data |
+| `REPOSITORY`     | `'/path/to/the/repository/root'` | The absolute path to the repository storing the wiki pages |
+| `SQLALCHEMY_DATABASE_URI` | `'sqlite:////path/to/the/sqlite/file'` | The absolute path to the database storing the user credentials |
+
+For the `SQLALCHEMY_DATABASE_URI` see <https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/#connection-uri-format>.
 
 ## Developers Guide
 
