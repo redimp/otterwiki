@@ -1,4 +1,4 @@
-![alt text](screenshot_dark.png)
+![](screenshot_dark.png)
 
 # An Otter Wiki
 
@@ -42,9 +42,11 @@ services:
       - ./app-data:/app-data
 ```
 
-## Build from Source ( not recommended!)
-TODO: Rewrite this section
 ## Configuration
+
+An Otter Wiki is configured in the application via the **Settings** menu
+as admin user. For development you can use the `settings.cfg`, see below.
+
 ### Branding
 
 | Variable         |  Example        | Description                                  |
@@ -85,6 +87,10 @@ An Otter Wiki is using [Flask-Mail](https://pythonhosted.org/Flask-Mail/).
 
 ### Advanced configuration
 
+This applies only when you create the `settings.cfg` manually. Create your
+`settings.cfg` based upon the `settings.cfg.skeleton` and set the
+variables fitting to your environment.
+
 | Variable         |  Example        | Description                                  |
 |------------------|-----------------|----------------------------------------------|
 | `SECRET_KEY`     | `'CHANGE ME'`   | Choose a random string that is used to encrypt user session data |
@@ -93,23 +99,59 @@ An Otter Wiki is using [Flask-Mail](https://pythonhosted.org/Flask-Mail/).
 
 For the `SQLALCHEMY_DATABASE_URI` see <https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/#connection-uri-format>.
 
-## Developers Guide
+## Setup a development environment
 
-### Setup
+1. Install the prerequisites
+    1. Debian / Ubuntu
+    ```bash
+    apt install git build-essential python3-dev python3-venv
+    ```
+    2. RHEL8 / Fedora / Centos8 / Rocky Linux 8
+    ```bash
+    yum install make python3-devel
+    ```
+2. Clone the otterwiki repository and enter the directory
+```bash
+git clone https://github.com/redimp/otterwiki.git
+cd otterwiki
+```
+3. Create and initialize the repository where the otterwiki data lives
+```bash
+mkdir -p app-data/repository
+# initialize the empty repository
+git init app-data/repository
+```
+4. Create a minimal configuration file
+```bash
+echo "REPOSITORY='${PWD}/app-data/repository'" >> settings.cfg
+echo "SQLALCHEMY_DATABASE_URI='sqlite:///${PWD}/app-data/db.sqlite'" >> settings.cfg
+echo "SECRET_KEY='$(echo $RANDOM | md5sum | head -c 16)'" >> settings.cfg 
+```
+5. Run make to setup a virtual environment and run a local server on port 8080.
+```
+make debug
+```
+6. Open the wiki in your browser <http://127.0.0.1:8080>. You can create and edit pages as anonymous user without any further configuration. Please note: This setup is not for production use!
+7. Edit the code, flask will automatically reload the server, just refresh your browser.
+8. Run the tests
+```
+make test
+```
+9. Run the coverage tests, and check `coverage_html/index.html`.
+```
+make coverage
+```
 
-1. Clone the repository
-2. Install Dependencies `make venv`
-3. Run tests and coverage `make coverage`
+### Setup an IDE as development environment
 
-### Running the server
-
-If using Make:
-   - `make debug`
-If using IDE:
-   - Setup enviornment variable:
-     - FLASK_DEBUG=True
-     - FLASK_APP=otterwiki.server
-     - OTTERWIKI_SETTINGS=../settings.cfg
-   - Run server.py
+1. You can setup a virtual environemnt using `make venv` or create a
+   virtual environment manually an `pip install -e .` the source tree
+   into it.
+2. Setup environment variables:
+   - `FLASK_DEBUG=True`
+   - `FLASK_APP=otterwiki.server`
+   - `OTTERWIKI_SETTINGS=../settings.cfg`
+3. Run `server.py` or `flask run --host 0.0.0.0 --port 8080` from the
+   virtual environment.
 
 [modeline]: # ( vim: set fenc=utf-8 spell spl=en sts=4 et tw=72: )
