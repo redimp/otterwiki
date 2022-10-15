@@ -1,0 +1,14 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{% extends "wiki.html" %}
+{% block content %}
+<h2>{{ title }}</h2>
+<div class="container-lg">
+{% for depth, title in pages%}
+<div class="row">
+    <div class="col-xl-2 col-lg-3 col-md-6 pl-{{ depth*10 }}">
+        <a class="sidebar-link sidebar-toc-{{ depth }} pl-5" href="{{ url_for('view', path=title ) }}">{{title | title}}</a>
+    </div>
+</div>
+{% endfor %}
+</div>
+{% endblock %}
