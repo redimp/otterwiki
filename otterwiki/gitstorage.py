@@ -8,7 +8,8 @@ from datetime import datetime
 from pprint import pprint
 from otterwiki.util import split_path
 import pathlib
-
+import os
+import typing
 
 class StorageError(Exception):
     pass
@@ -300,5 +301,78 @@ class GitStorage(object):
 
         return sorted(result_files), sorted(result_directories)
 
+    def _recurse_folders(self, s, level, fullpath, stop_depth):
+        '''Recurisvely build up a list of files and folders until a specified depth.
+        This will generate a flat list. Example:
+        [
+            (1, 'a page'),
+            (1, 'an important wiki page'),
+            (1, 'home'),
+            (1, 'organizational things')
+        ]
+        Each item in the tuple is:
+        depth (starting at 1)
+        url path from root (also title)
+        '''
+        excludes = [".git"] #+ exclude
+
+        level += 1
+
+        if stop_depth < level:
+            return s
+
+        for root, dirs, files in os.walk(fullpath):
+
+            dirs.sort()
+            files.sort()
+
+            for dir in dirs:
+                if all([
+                    f'{dir}.md' not in files,  # This will ignore the attachments
+                    dir not in excludes,  # ignore excludes
+                    not str(dir).startswith('.') # ignore hidden dirs
+                ]):
+                    title = dir.replace(".md", "")
+
+                    # Add into TOC
+                    s.append((level, title, dir))
+                    _fp = os.path.join(root, dir)
+                    s = self._recurse_folders(s, level, _fp, stop_depth,)
+
+            for file in files:
+                if all([
+                    file not in excludes,
+                    not str(file).startswith('.')
+                ]):
+                    title = file.replace(".md", "")
+                    # Add into TOC
+                    s.append((level, title, file ))
+
+            break
+
+        return s
+
+    def toc(self, p=None, depth=1) -> typing.List[typing.Tuple[int, str]]:
+        '''
+        Generate a toc from a given path
+
+        :param: p = path in which to generate the toc from, whill default to root path
+        :param: depth = how deep to recurse (helpful for when sub folders are implemented)
+        '''
+        fullpath = self.path
+
+        # regexp to strip the root path from any path
+        striproot = re.compile(r"^{}\/?".format(re.escape(fullpath)))
+        # I took this from the index function, but I don't think we need it?
+
+        # full path to search
+        if p is not None:
+            # This is not yet implemented, but the idea is to generate
+            # a toc from a given path
+            fullpath = os.path.join(fullpath, p)
+
+        s = []
+        r = self._recurse_folders(s, 0, fullpath, depth)
+        return r
 
 storage = None
