@@ -213,11 +213,20 @@ class Page:
         return get_breadcrumbs(self.pagepath)
 
     def load(self, revision):
+        metadata = None
+        content = None
         try:
             content = storage.load(self.filename, revision=revision)
             metadata = storage.metadata(self.filename, revision=revision)
         except StorageNotFound as e:
-            raise
+            if all([
+                not metadata,
+                not content
+            ]):
+                # If both are None, raise the exception. Otherwise, a warning will show on the page that
+                # the file is not under version control.
+                raise
+
         return content, metadata
 
     def view(self, revision=None):
@@ -236,6 +245,14 @@ class Page:
         except StorageNotFound:
             app.logger.warning("Not found {}".format(self.pagename))
             return render_template("page404.html", pagename=self.pagename), 404
+
+        danger_alert = False
+        if not metadata:
+            danger_alert = [
+                "Not under version control",
+                f"""This page was loaded from the repository but is not added under git version control. Make a commit on the <a href="{self.pagename}/edit" class="alert-link">Edit page</a> to add it."""
+            ]
+
         # set title
         title = self.pagename
         if revision is not None:
@@ -252,6 +269,7 @@ class Page:
             htmlcontent=htmlcontent,
             toc=toc,
             breadcrumbs=self.breadcrumbs(),
+            danger_alert=danger_alert
         )
 
     def preview(self, content=None, cursor_line=None, cursor_ch=None):
