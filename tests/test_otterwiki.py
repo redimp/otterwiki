@@ -264,6 +264,25 @@ def test_delete(test_client):
     assert rv.status_code == 404
 
 
+
+def test_non_version_control_file(test_client, create_app):
+    p = create_app._otterwiki_tempdir
+
+    filename = "no version file"
+    content = 'oh no! no control!'
+    with open(os.path.join(p, f'{filename}.md'), 'w') as f:
+        f.write(content)
+
+    # first, assert that a file that doesn't exists returns a 404
+    response = test_client.get(f"/some crazy file name that doesn't exist")
+    assert response.status_code == 404
+
+    # then try that file that was previous created (but not added to version control)
+    response = test_client.get(f"/{filename}")
+    assert response.status_code == 200
+    assert "This page was loaded from the repository but is not added under git version control" in response.data.decode()
+    assert content in response.data.decode()
+
 # class TestViews(unittest.TestCase):
 #     def setUp(self):
 #         self.app = otterwiki.app
