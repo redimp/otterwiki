@@ -78,6 +78,22 @@ class PageIndex:
             pages=self.pages,
         )
 
+class WikiToc:
+    def __init__(self, path=None):
+        '''
+        This will generate a TOC from a given path. Path is not yet implemented. But, the idea is that you could,
+        for instance, create a feature where a toc could be automatically generated for a complicated sub folder.
+        '''
+        self.toc = storage.toc(p=None, depth=1)
+
+    def render(self):
+        if not has_permission("READ"):
+            abort(403)
+        return render_template(
+            "global_toc.html",
+            title="Table of Contents",
+            pages=self.toc,
+        )
 
 class Changelog:
     def __init__(self, commit_start=None):
