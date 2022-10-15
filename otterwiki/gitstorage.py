@@ -313,10 +313,10 @@ class GitStorage(object):
         '''Recurisvely build up a list of files and folders until a specified depth.
         This will generate a flat list. Example:
         [
-            (1, 'a page'),
-            (1, 'an important wiki page'),
-            (1, 'home'),
-            (1, 'organizational things')
+            (1, 'a page', 'a page.md'),
+            (1, 'an important wiki page', 'an important wiki page.md'),
+            (1, 'home', 'home.md'),
+            (1, 'organizational things', 'organizational things.md')
         ]
         Each item in the tuple is:
         depth (starting at 1)
