@@ -736,7 +736,9 @@ class Attachment:
             storage.rename(self.filepath, new_filepath, message=message, author=author)
         except StorageError:
             toast("Renaming failed", "error")
-            return redirect_url(url_for("attachments", pagepath=self.pagepath))
+            return redirect(
+                url_for("attachments", pagepath=self.pagepath)
+            )
         toast(toast_message)
         return redirect(
             url_for("edit_attachment", pagepath=self.pagepath, filename=new_filename)
