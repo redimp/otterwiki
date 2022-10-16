@@ -859,7 +859,7 @@ class Search:
 
     def search(self):
         if self.re is None:
-            return
+            return {}
         # find all markdown files
         files, _ = storage.list()
         md_files = [filename for filename in files if filename.endswith(".md")]
