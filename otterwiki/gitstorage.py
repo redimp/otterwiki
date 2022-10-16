@@ -248,7 +248,9 @@ class GitStorage(object):
         return self.repo.git.diff(rev_a, rev_b, filename)
 
     def delete(self, filename, message=None, author=None):
-        self.repo.index.remove([filename], working_tree=True)
+        if not type(filename) == list:
+            filename=[filename]
+        self.repo.index.remove(filename, working_tree=True, r=True)
         actor = git.Actor(author[0], author[1])
         if message is None:
             message = "Deleted {}.".format(filename)
