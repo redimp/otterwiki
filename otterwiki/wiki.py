@@ -508,6 +508,11 @@ class Page:
             try:
                 self.rename(new_pagename, message, author)
             except Exception as e:
+                # I tried to plumb an error message in here, but it did not show up in the UI - turns out these messages
+                # get stored in the cookie, and some browsers don't like big cookies:
+                # https://flask.palletsprojects.com/en/2.2.x/patterns/flashing/
+                #   "Note that browsers and sometimes web servers enforce a limit on cookie sizes. This means that
+                #    flashing messages that are too large for session cookies causes message flashing to fail silently."
                 toast("Renaming failed.", "error")
             else:
                 return redirect(url_for("view", path=new_pagename))
