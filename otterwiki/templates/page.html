@@ -44,6 +44,13 @@
  </ul>
 </nav>
 {% endif %}
+{% if danger_alert %}
+<div class="alert alert-danger" role="alert">
+  <h4 class="alert-heading">{{ danger_alert[0] }}</h4>
+  {{ danger_alert[1] | safe}}
+</div>
+    {% endif %}
+
 {% endblock %}
 {#
 #}

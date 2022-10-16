@@ -1,5 +1,6 @@
-PORT=8080
+PORT ?= 8080
 VERSION := $(shell ./venv/bin/python -c "with open('otterwiki/version.py') as f: exec(f.read());  print(__version__);")
+PLATFORM ?= "linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6"
 
 all: run
 
@@ -62,7 +63,7 @@ docker-build: docker-test
 	docker build -t otterwiki .
 
 docker-buildx-test:
-	docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 --target test-stage .
+	docker buildx build --platform $(PLATFORM) --target test-stage .
 
 docker-buildx-push: venv
 # check if we are in the main branch (to avoid accidently pushing a feature branch
@@ -73,4 +74,4 @@ endif
 ifneq ($(strip $(shell git status --porcelain)),)
 	$(error Error: Uncommitted changes in found)
 endif
-	docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t redimp/otterwiki:latest -t redimp/otterwiki:$(VERSION) -t redimp/otterwiki:$(shell git describe --tags) . --push
+	docker buildx build --platform $(PLATFORM) -t redimp/otterwiki:latest -t redimp/otterwiki:$(VERSION) -t redimp/otterwiki:$(shell git describe --tags) . --push

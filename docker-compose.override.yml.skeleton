@@ -1,7 +1,11 @@
 version: '2'
 services:
   web:
+    restart: unless-stopped
     environment:
+      #
+      # Please note: These settings can be OVERWRITTEN in the admin interface
+      #
       # configure Name and Logo of the Wiki
       - SITE_NAME=Otter Wiki
       # The logo can be an attachment
@@ -22,11 +26,11 @@ services:
       - MAIL_USERNAME=otterwiki
       - MAIL_PASSWORD=password
     ports:
-      # forward the http port to 8081
-      - "8081:80"
+      # forward the http port to 8080
+      - "8080:80"
     volumes:
      # mount the local directory ./app-data into the container
      # (so settings, database and repository are accessible)
      - ./app-data:/app-data
 
-# vim:set et ts=8 sts=2 sw=2 ai fenc=utf-8:
+# vim:set et ts=8 sts=2 sw=2 ai fenc=utf-8 ft=yaml:
