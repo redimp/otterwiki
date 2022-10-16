@@ -13,7 +13,7 @@ clean:
 venv:
 	python3 -m venv venv
 	#venv/bin/python setup.py develop
-	venv/bin/pip install -U pip
+	venv/bin/pip install -U pip wheel
 	venv/bin/pip install -e '.[dev]'
 
 run: venv settings.cfg
