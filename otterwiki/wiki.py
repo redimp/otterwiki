@@ -528,16 +528,23 @@ class Page:
             abort(403)
         if empty(message):
             message = "{} deleted.".format(self.pagename)
-        storage.delete(self.filename, message=message, author=author)
+        storage.delete([self.filename, self.attachment_directoryname], 
+                        message=message, author=author)
         toast("{} deleted.".format(self.pagename))
         return redirect(url_for("changelog"))
 
     def delete_form(self):
         if not has_permission("WRITE"):
             abort(403)
+        # count attachments and subpages
+        files, directories = storage.list(self.attachment_directoryname)
+        if len(files)>0:
+            title="Delete {} and the {} file(s) attached?".format(self.pagename, len(files))
+        else:
+            title="Delete {} ?".format(self.pagename)
         return render_template(
             "delete.html",
-            title="Delete {} ?".format(self.pagename),
+            title=title,
             pagepath=self.pagepath,
             pagename=self.pagename,
         )
