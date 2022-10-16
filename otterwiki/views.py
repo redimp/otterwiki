@@ -117,7 +117,7 @@ def create():
     is_folder = request.form.get("is-folder")
     pagename_sanitized = sanitize_pagename(pagename)
     if pagename is None:
-        # This is the default creat page view
+        # This is the default create page view
         return render_template("create.html", title="Create Page")
     elif pagename != pagename_sanitized:
         if pagename is not None and pagename != pagename_sanitized:
