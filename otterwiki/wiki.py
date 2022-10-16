@@ -85,13 +85,41 @@ class WikiToc:
         This will generate a TOC from a given path. Path is not yet implemented. But, the idea is that you could,
         for instance, create a feature where a toc could be automatically generated for a complicated sub folder.
         '''
+        from timeit import default_timer as timer
+
+        t_start = timer()
         files, directories = storage.list(p=None)
-        self.toc = [
-                (len(split_path(f)), # depth
-                 get_pagename(f), # title
-                 f) # path
-                 for f in files if f.endswith(".md") # filter .md files
-            ]
+        app.logger.debug(
+            "WikiToc reading files took {:.3f} seconds.".format(timer() - t_start)
+        )
+        self.toc = []
+        t_start = timer()
+        for f in [f for f in files if f.endswith(".md")]: # filter .md files
+            depth = len(split_path(f))
+            self.toc.append(
+                    (depth,
+                     get_pagename(f), # title
+                     url_for("view", path=f), # url
+                     1) # 1 == page
+                )
+            # read file
+            content = storage.load(f)
+            # parse file contents
+            htmlcontent, ftoc = render.markdown(content)
+            # add headers to global toc
+            # (4, '2 L <strong>bold</strong>', 1, '2 L bold', '2-l-bold')
+            for header in ftoc:
+                self.toc.append((
+                        depth + header[2], # depth
+                        header[3], # title without formatting
+                        url_for("view", path=f, _anchor=header[4]),
+                        0 # 0 == not a page, so a header
+                    ))
+
+        app.logger.debug(
+            "WikiToc parsing files took {:.3f} seconds.".format(timer() - t_start)
+        )
+
 
     def render(self):
         if not has_permission("READ"):
