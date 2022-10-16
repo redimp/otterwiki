@@ -37,11 +37,21 @@ def sanitize_pagename(value, allow_unicode=True):
             .decode("ascii")
         )
     # remove slashes, question marks ...
-    value = re.sub(r"[?|$|.|!|#|/|\\]", r"", value)
+    value = re.sub(r"[?|$|.|!|#|\\]", r"", value)
+    #old version below
+    #value = re.sub(r"[?|$|.|!|#|/|\\]", r"", value)
+
     # remove leading -
     value = value.lstrip("-")
     # remove leading and trailing whitespaces
     value = value.strip()
+
+    #remove trailing slash. even if creating a folder, we will default
+    # to making it new_folder/Home
+    # This is a while loop because the regex no longer take this char off outright, only when it ends in  "/"
+    while value.endswith('/'):
+        value = value[:-1]
+
     return value
 
 
