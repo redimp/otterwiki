@@ -2,5 +2,5 @@
 {% extends "wiki.html" %}
 {% block content %}
 <h2>404 Page not found</h2>
-<p>Page "{{pagename}}" not found. Do you want to <a href="{{ url_for("edit", path=pagename) }}">create</a> it?</p>
+<p>Page "{{pagename}}" not found. Do you want to <a href="{{ url_for("edit", path=pagepath) }}">create</a> it?</p>
 {% endblock %}

@@ -246,7 +246,7 @@ class Page:
             content, metadata = self.load(revision=revision)
         except StorageNotFound:
             app.logger.warning("Not found {}".format(self.pagename))
-            return render_template("page404.html", pagename=self.pagename), 404
+            return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath), 404
 
         danger_alert = False
         if not metadata:
@@ -280,7 +280,7 @@ class Page:
                 content, metadata = self.load(revision=None)
             except StorageNotFound:
                 app.logger.warning("Not found {}".format(self.pagename))
-                return render_template("page404.html", pagename=self.pagename)
+                return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath)
         content_html, toc = render.markdown(content, cursor=cursor_line)
 
         return render_template(
@@ -350,7 +350,7 @@ class Page:
             data = storage.blame(self.filename, revision)
             content, _ = self.load(revision=revision)
         except StorageNotFound:
-            return render_template("page404.html", pagename=self.pagename), 404
+            return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath), 404
         markup_lines = render.hilight(content, lang="markdown")
         # fix markup_lines
         markup_lines = markup_lines.replace(
@@ -448,7 +448,7 @@ class Page:
         try:
             orig_log = storage.log(self.filename)
         except StorageNotFound:
-            return render_template("page404.html", pagename=self.pagename), 404
+            return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath), 404
         if rev_a is not None and rev_b is not None and rev_a != rev_b:
             return self.diff(rev_a=rev_a, rev_b=rev_b)
 
