@@ -85,7 +85,13 @@ class WikiToc:
         This will generate a TOC from a given path. Path is not yet implemented. But, the idea is that you could,
         for instance, create a feature where a toc could be automatically generated for a complicated sub folder.
         '''
-        self.toc = storage.toc(p=None, depth=1)
+        files, directories = storage.list(p=None)
+        self.toc = [
+                (len(split_path(f)), # depth
+                 get_pagename(f), # title
+                 f) # path
+                 for f in files if f.endswith(".md") # filter .md files
+            ]
 
     def render(self):
         if not has_permission("READ"):
