@@ -266,6 +266,9 @@ class GitStorage(object):
     def rename(
         self, old_filename, new_filename, message=None, author=None, no_commit=False
     ):
+        if self.exists(new_filename):
+            raise StorageError(f'The filename "{new_filename}" already exist. Please choose a new filename.')
+
         try:
             self.repo.git.mv(old_filename, new_filename)
         except Exception:
