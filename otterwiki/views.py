@@ -126,9 +126,6 @@ def create():
             "create.html", title="Create Page", pagename=pagename_sanitized
         )
     else:
-        if is_folder:
-            pagename = str(pathlib.Path(pagename, pagename))
-
         # this is the creation of a new page
         p = Page(pagename)
         return p.create()
