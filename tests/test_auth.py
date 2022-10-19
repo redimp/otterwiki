@@ -18,8 +18,8 @@ def test_create_app_with_user(app_with_user):
     assert "</html>" in result.data.decode()
 
 
-def test_db(app_with_user, db):
-    from otterwiki.auth import SimpleAuth, check_password_hash
+def test_db(app_with_user):
+    from otterwiki.auth import SimpleAuth, check_password_hash, db
 
     # check that table 'user' exists
     from sqlalchemy import inspect

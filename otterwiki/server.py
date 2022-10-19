@@ -2,12 +2,14 @@
 
 import os
 import sys
+import logging
 from flask import Flask
 from flask_htmlmin import HTMLMIN
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from otterwiki import fatal_error, __version__
 import otterwiki.gitstorage
+import otterwiki.util
 
 app = Flask(__name__)
 # default configuration settings
@@ -38,6 +40,9 @@ app.config.update(
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
+# add log level
+otterwiki.util.addLoggingLevel('REPORT',logging.ERROR + 5)
+
 # setup database
 db = SQLAlchemy(app)
 
@@ -67,10 +72,12 @@ if (len(storage.list()[0]) < 1) and (len(storage.log()) < 1):
     with open(os.path.join(app.root_path, "initial_home.md")) as f:
         content = f.read()
         storage.store(
-            filename="home.md", content=content, 
+            filename="home.md", content=content,
             author=("Otterwiki Robot", "noreply@otterwiki"),
             message="Initial commit",
         )
+        app.logger.report("Initial /Home created.")
+
 
 #
 # app.config from db preferences

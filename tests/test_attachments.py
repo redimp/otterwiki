@@ -11,27 +11,30 @@ def app_with_attachments(create_app):
     filename = "test.md"
     author = ("Example Author", "mail@example.com")
     # create attachment
-    assert True == create_app.storage.store(
-        "test.md", content="# Test\nAttachment Test.", author=author, message=message
+    create_app.storage.store(
+        filename, content="# Test\nAttachment Test.", author=author, message=message
     )
+    assert True == create_app.storage.exists(filename)
     # create txt attachment
     message = "Test/attachment0.txt attach0-commit"
-    assert True == create_app.storage.store(
+    create_app.storage.store(
         "test/attachment0.txt",
         content="attachment0-content0",
         author=author,
         message=message,
     )
+    assert True == create_app.storage.exists("test/attachment0.txt")
     # create gif attachment
     message = "Test/attachment1.gif attach1-commit"
     content_b64 = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-    assert True == create_app.storage.store(
+    create_app.storage.store(
         "test/attachment1.gif",
         content=base64.b64decode(content_b64),
         author=author,
         message=message,
         mode="wb",
     )
+    assert True == create_app.storage.exists("test/attachment1.gif")
     yield create_app
 
 
