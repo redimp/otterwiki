@@ -4,16 +4,14 @@
 import pytest
 import os
 import re
-import otterwiki
 import otterwiki.gitstorage
-from flask import url_for
 from datetime import datetime
 
 
 @pytest.fixture
 def create_app(tmpdir):
     tmpdir.mkdir("repo")
-    storage = otterwiki.gitstorage.GitStorage(
+    _storage = otterwiki.gitstorage.GitStorage(
         path=str(tmpdir.join("repo")), initialize=True
     )
     settings_cfg = str(tmpdir.join("settings.cfg"))
@@ -31,7 +29,7 @@ def create_app(tmpdir):
     # configure environment
     os.environ["OTTERWIKI_SETTINGS"] = settings_cfg
     # get app
-    from otterwiki.server import app, mail
+    from otterwiki.server import app, db, mail, storage
     # for debugging
     app._otterwiki_tempdir = storage.path
     # for other tests
@@ -47,7 +45,7 @@ def create_app(tmpdir):
 @pytest.fixture
 def test_client(create_app):
     client = create_app.test_client()
-    yield client
+    return client
 
 
 @pytest.fixture
@@ -84,7 +82,7 @@ def admin_client(app_with_user):
     )
     html = result.data.decode()
     assert "You logged in successfully." in html
-    yield client
+    return client
 
 
 @pytest.fixture
