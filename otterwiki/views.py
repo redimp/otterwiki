@@ -114,7 +114,6 @@ def pageindex():
 @app.route("/-/create", methods=["POST", "GET"])
 def create():
     pagename = request.form.get("pagename")
-    is_folder = request.form.get("is-folder")
     pagename_sanitized = sanitize_pagename(pagename)
     if pagename is None:
         # This is the default create page view
