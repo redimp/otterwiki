@@ -25,13 +25,6 @@
 {% for bname, bpath in breadcrumbs %}
 {% if not loop.last %}
 {# TODO recheck when subdirectories are implemented #}
-{#   At first, I also thought thus would need to be checked for folders, but I actually
-     think its much easier to let the backend try and do a match for a page OR folder. This will work
-     as long as we block a folder and a page (on the same level) from having the same name. ie:
-     repository/
-         some_wiki/
-         some_wiki.md
-#}
 <li class="breadcrumb-item"><a href="{{ url_for('view', path=bpath) }}">{{bname}}</a></li>
 {% else %}
 <li class="breadcrumb-item"><a href="{{ url_for('view', path=bpath) }}">{{bname}}</a></li>

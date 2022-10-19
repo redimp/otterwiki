@@ -42,10 +42,6 @@ class GitStorage(object):
     def exists(self, filename):
         return os.path.exists(os.path.join(self.path, filename))
 
-    def is_folder(self, filename):
-        '''Check if file path on disk is a folder'''
-        return pathlib.Path(self.path, filename).is_dir()
-
     def load(self, filename, mode="r", revision=None):
         if revision is not None:
             try:
