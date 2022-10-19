@@ -45,21 +45,14 @@ def create_app(tmpdir):
 
 
 @pytest.fixture
-def db():
-    from otterwiki.auth import db
-    yield db
-
-
-@pytest.fixture
 def test_client(create_app):
     client = create_app.test_client()
-    client._app = create_app
     yield client
 
 
 @pytest.fixture
-def app_with_user(create_app, db):
-    from otterwiki.auth import SimpleAuth, generate_password_hash
+def app_with_user(create_app):
+    from otterwiki.auth import SimpleAuth, generate_password_hash, db
 
     # delete all users
     db.session.query(SimpleAuth.User).delete()
@@ -81,7 +74,6 @@ def app_with_user(create_app, db):
 @pytest.fixture(scope="function")
 def admin_client(app_with_user):
     client = app_with_user.test_client()
-    client._app = app_with_user
     result = client.post(
         "/-/login",
         data={

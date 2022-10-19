@@ -266,7 +266,7 @@ def test_delete(test_client):
 # but
 @pytest.mark.xfail # because of https://github.com/redimp/otterwiki/issues/36
 def test_non_version_control_file(test_client):
-    p = test_client._app._otterwiki_tempdir
+    p = test_client.application._otterwiki_tempdir
 
     filename = "no version file"
     content = 'oh no! no control!'
