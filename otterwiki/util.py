@@ -25,6 +25,17 @@ def slugify(value, separator="-"):
     value = re.sub(r"[^\w\s-]", "", value.decode("ascii")).strip().lower()
     return re.sub(r"[%s\s]+" % separator, separator, value)
 
+def clean_slashes(value):
+    '''This will insure that any path separated by slashes only has one
+    slash between each dir and does not end in slash'''
+
+    _split_path = value.split("/")
+
+    # This will remove empty strings
+    _path = [p for p in _split_path if p]
+
+    value = "/".join(_path)
+    return value
 
 def sanitize_pagename(value, allow_unicode=True):
     value = str(value)
@@ -49,8 +60,7 @@ def sanitize_pagename(value, allow_unicode=True):
     #remove trailing slash. even if creating a folder, we will default
     # to making it new_folder/Home
     # This is a while loop because the regex no longer take this char off outright, only when it ends in  "/"
-    while value.endswith('/'):
-        value = value[:-1]
+    value = clean_slashes(value)
 
     return value
 
@@ -71,8 +81,11 @@ def get_filename(pagepath):
     '''
 
     p = pagepath.lower()
+    p = clean_slashes(p)
+
     if not p.endswith(".md"):
         return "{}.md".format(p)
+
     return p
 
 
