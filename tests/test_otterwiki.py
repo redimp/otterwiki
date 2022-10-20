@@ -59,7 +59,7 @@ def test_create_page(test_client):
         follow_redirects=True,
     ).data.decode()
     assert "Test test 12345678" in html
-    assert "<title>{}".format(pagename) in html
+    assert "<title>{}".format(pagename.title()) in html
     assert "<p><strong>strong</strong></p>" in html
     # check exisiting page
     html = test_client.post(
