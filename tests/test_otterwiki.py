@@ -282,6 +282,41 @@ def test_non_version_control_file(test_client):
     assert "This page was loaded from the repository but is not added under git version control" in response.data.decode()
     assert content in response.data.decode()
 
+def test_move_page(test_client):
+    '''test that moving a file works'''
+    p = test_client.application._otterwiki_tempdir
+    _inner_folder = "a_folder/another_folder/"
+    _file_name = "wiki_page"
+    _new_file_name = "wiki_page_new"
+
+    pagename = f"{_inner_folder}{_file_name}"
+    new_pagename = f"{_inner_folder}{_new_file_name}"
+
+    content = "# My nested file\n\nDid it work?"
+    commit = "my commit"
+
+    rv = test_client.post(
+        "/{}/save".format(pagename),
+        data={
+            "content_update": content,
+            "commit": commit,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    rv = test_client.post(
+        "/{}/rename".format(pagename),
+        data={
+            "new_pagename": f"{new_pagename}",
+            "message": commit,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    assert f'<a href="/{new_pagename}">{_new_file_name}</a>' in rv.data.decode()
+
 def test_nested_files(test_client):
     p = test_client.application._otterwiki_tempdir
     _inner_folder = "a_folder/another_folder/"
