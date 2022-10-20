@@ -885,7 +885,7 @@ class Search:
             # check if pagename matches
             mi = self.rei.search(get_pagename(fn))
             if mi is not None:
-                fn_result[fn] = [True, "{}".format(get_pagename(fn))]
+                fn_result[fn] = [True, "{}".format(get_pagename(fn, full=True))]
             # open file, read file
             haystack = storage.load(fn)
             lastlinematched = False
@@ -920,7 +920,7 @@ class Search:
                     n += len(self.rei.findall(line))
                 else:
                     n += len(self.re.findall(line))
-            key = (fnmatch, n, fn, get_pagename(fn))
+            key = (fnmatch, n, fn, get_pagename(fn, full=True))
             summary = []
             if fnmatch == 1:
                 summary = [matches.pop(0)]
