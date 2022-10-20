@@ -58,8 +58,8 @@ class PageIndex:
     def __init__(self, path=""):
         self.path = path
 
-        files, directories = storage.list(depth=0)
-        files = [get_pagename(x) for x in files if x.endswith(".md")]
+        files, directories = storage.list()
+        files = [get_pagename(x, full=True) for x in files if x.endswith(".md")]
         self.pages = {}
         self.directories = {}
         for f in files:
