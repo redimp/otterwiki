@@ -2,7 +2,9 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
+import pathlib
 import re
+from io import BytesIO
 import pytest
 import otterwiki
 
@@ -57,7 +59,7 @@ def test_create_page(test_client):
         follow_redirects=True,
     ).data.decode()
     assert "Test test 12345678" in html
-    assert "<title>{}".format(pagename) in html
+    assert "<title>{}".format(pagename.title()) in html
     assert "<p><strong>strong</strong></p>" in html
     # check exisiting page
     html = test_client.post(
@@ -280,3 +282,109 @@ def test_non_version_control_file(test_client):
     assert "This page was loaded from the repository but is not added under git version control" in response.data.decode()
     assert content in response.data.decode()
 
+def test_move_page(test_client):
+    '''test that moving a file works'''
+    p = test_client.application._otterwiki_tempdir
+    _inner_folder = "a_folder/another_folder/"
+    _file_name = "wiki_page"
+    _new_file_name = "wiki_page_new"
+
+    pagename = f"{_inner_folder}{_file_name}"
+    new_pagename = f"{_inner_folder}{_new_file_name}"
+
+    content = "# My nested file\n\nDid it work?"
+    commit = "my commit"
+
+    rv = test_client.post(
+        "/{}/save".format(pagename),
+        data={
+            "content_update": content,
+            "commit": commit,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    rv = test_client.post(
+        "/{}/rename".format(pagename),
+        data={
+            "new_pagename": f"{new_pagename}",
+            "message": commit,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    assert f'<a href="/{new_pagename}">{_new_file_name}</a>' in rv.data.decode()
+
+def test_nested_files(test_client):
+    p = test_client.application._otterwiki_tempdir
+    _inner_folder = "a_folder/another_folder/"
+    _file_name = "my_file"
+    pagename = f"{_inner_folder}{_file_name}"
+
+    content = "# My nested file\n\nDid it work?"
+    commit = "my commit"
+
+    rv = test_client.post(
+        "/{}/save".format(pagename),
+        data={
+            "content_update": content,
+            "commit": commit,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    nested_wiki_file = pathlib.Path(p, pagename+'.md')
+    nested_file_exists = nested_wiki_file.exists()
+    assert nested_file_exists == True
+
+    # check the page is there
+    rv = test_client.get("/{}".format(pagename))
+    assert rv.status_code == 200
+
+    # check path with a trailing slash
+    rv = test_client.get("/{}/".format(pagename))
+    assert rv.status_code == 200
+
+    # check that the parent pages does NOT have a wiki associated
+    rv = test_client.get("/{}".format(_inner_folder))
+    assert rv.status_code == 404
+
+    # upload an iamge
+    file_name = 'test_image.png'
+    _file_path = pathlib.Path(__file__).parent / file_name
+    data = dict(
+        file=(BytesIO(open(_file_path, 'rb').read()), file_name),
+    )
+    response = test_client.post(
+        "/{}/attachments".format(pagename),
+        content_type = 'multipart/form-data',
+        data = data,
+        follow_redirects=True
+    )
+
+    # check the image exists
+    assert response.status_code == 200
+    assert f'{file_name}">{file_name}</a>' in response.data.decode()
+
+    nest_file_location = pathlib.Path(p, pagename, file_name)
+
+    # check it's location on disk
+    exists = nest_file_location.exists()
+    assert exists == True
+
+    # delete the image
+    rv = test_client.post(
+        "/{}/delete".format(pagename),
+        data={"message": "deleted ..."},
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # check all locations are deleted
+    assert nested_wiki_file.exists() == False
+    assert nest_file_location.exists() == False
+    rv = test_client.get("/{}".format(pagename))
+    assert rv.status_code == 404

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import pathlib
+
 from flask import (
     redirect,
     request,
@@ -114,6 +116,7 @@ def create():
     pagename = request.form.get("pagename")
     pagename_sanitized = sanitize_pagename(pagename)
     if pagename is None:
+        # This is the default create page view
         return render_template("create.html", title="Create Page")
     elif pagename != pagename_sanitized:
         if pagename is not None and pagename != pagename_sanitized:
@@ -122,6 +125,7 @@ def create():
             "create.html", title="Create Page", pagename=pagename_sanitized
         )
     else:
+        # this is the creation of a new page
         p = Page(pagename)
         return p.create()
 

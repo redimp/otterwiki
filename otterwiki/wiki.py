@@ -36,6 +36,7 @@ from datetime import datetime, timedelta
 from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
 from io import BytesIO
+import pathlib
 
 import PIL.Image
 if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
@@ -57,8 +58,8 @@ class PageIndex:
     def __init__(self, path=""):
         self.path = path
 
-        files, directories = storage.list(depth=0)
-        files = [get_pagename(x) for x in files if x.endswith(".md")]
+        files, directories = storage.list()
+        files = [get_pagename(x, full=True) for x in files if x.endswith(".md")]
         self.pages = {}
         self.directories = {}
         for f in files:
@@ -199,6 +200,7 @@ class Changelog:
 
 class Page:
     def __init__(self, pagepath=None, pagename=None):
+
         if pagepath is not None:
             self.pagepath = pagepath
             self.pagename = get_pagename(pagepath)
@@ -244,7 +246,7 @@ class Page:
             content, metadata = self.load(revision=revision)
         except StorageNotFound:
             app.logger.warning("Not found {}".format(self.pagename))
-            return render_template("page404.html", pagename=self.pagename), 404
+            return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath), 404
 
         danger_alert = False
         if not metadata:
@@ -278,7 +280,7 @@ class Page:
                 content, metadata = self.load(revision=None)
             except StorageNotFound:
                 app.logger.warning("Not found {}".format(self.pagename))
-                return render_template("page404.html", pagename=self.pagename)
+                return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath)
         content_html, toc = render.markdown(content, cursor=cursor_line)
 
         return render_template(
@@ -348,7 +350,7 @@ class Page:
             data = storage.blame(self.filename, revision)
             content, _ = self.load(revision=revision)
         except StorageNotFound:
-            return render_template("page404.html", pagename=self.pagename), 404
+            return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath), 404
         markup_lines = render.hilight(content, lang="markdown")
         # fix markup_lines
         markup_lines = markup_lines.replace(
@@ -446,7 +448,7 @@ class Page:
         try:
             orig_log = storage.log(self.filename)
         except StorageNotFound:
-            return render_template("page404.html", pagename=self.pagename), 404
+            return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath), 404
         if rev_a is not None and rev_b is not None and rev_a != rev_b:
             return self.diff(rev_a=rev_a, rev_b=rev_b)
 
@@ -506,6 +508,11 @@ class Page:
             try:
                 self.rename(new_pagename, message, author)
             except Exception as e:
+                # I tried to plumb an error message in here, but it did not show up in the UI - turns out these messages
+                # get stored in the cookie, and some browsers don't like big cookies:
+                # https://flask.palletsprojects.com/en/2.2.x/patterns/flashing/
+                #   "Note that browsers and sometimes web servers enforce a limit on cookie sizes. This means that
+                #    flashing messages that are too large for session cookies causes message flashing to fail silently."
                 toast("Renaming failed.", "error")
             else:
                 return redirect(url_for("view", path=new_pagename))
@@ -723,7 +730,9 @@ class Attachment:
             storage.rename(self.filepath, new_filepath, message=message, author=author)
         except StorageError:
             toast("Renaming failed", "error")
-            return redirect_url(url_for("attachments", pagepath=self.pagepath))
+            return redirect(
+                url_for("attachments", pagepath=self.pagepath)
+            )
         toast(toast_message)
         return redirect(
             url_for("edit_attachment", pagepath=self.pagepath, filename=new_filename)
@@ -876,7 +885,7 @@ class Search:
             # check if pagename matches
             mi = self.rei.search(get_pagename(fn))
             if mi is not None:
-                fn_result[fn] = [True, "{}".format(get_pagename(fn))]
+                fn_result[fn] = [True, "{}".format(get_pagename(fn, full=True))]
             # open file, read file
             haystack = storage.load(fn)
             lastlinematched = False
@@ -911,7 +920,7 @@ class Search:
                     n += len(self.rei.findall(line))
                 else:
                     n += len(self.re.findall(line))
-            key = (fnmatch, n, fn, get_pagename(fn))
+            key = (fnmatch, n, fn, get_pagename(fn, full=True))
             summary = []
             if fnmatch == 1:
                 summary = [matches.pop(0)]
