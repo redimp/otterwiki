@@ -104,6 +104,13 @@ def test_get_pagepath():
     assert "Home" == get_pagepath("Home")
 
 
+def test_get_pagename():
+    assert "Example" == get_pagename("subspace/example.md")
+    assert "Subspace/Example" == get_pagename("subspace/example.md", full=True)
+    assert "Example" == get_pagename("example.md")
+    assert "Example" == get_pagename("example.md", full=True)
+
+
 def test_mkdir(tmpdir):
     tmpdir.mkdir("aa")
     path_a = "aa"

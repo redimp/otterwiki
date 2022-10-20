@@ -96,13 +96,13 @@ def get_attachment_directoryname(filename):
     return filename[:-3]
 
 
-def get_pagename(filepath):
+def get_pagename(filepath, full=False):
     '''This will derive the page name (displayed on the web page) from the url requested'''
-    name = os.path.basename(filepath)
-    if name.endswith(".md"):
-        name = name[:-3]
-        name = name.title()
-    return name
+    if filepath.endswith(".md"):
+        filepath = filepath[:-3]
+    if not full:
+        return os.path.basename(filepath).title()
+    return "/".join([p.title() for p in split_path(filepath)])
 
 
 def get_pagepath(pagename):
