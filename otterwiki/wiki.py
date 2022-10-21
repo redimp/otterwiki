@@ -99,7 +99,7 @@ class WikiToc:
             self.toc.append(
                     (depth,
                      get_pagename(f), # title
-                     url_for("view", path=f), # url
+                     url_for("view", path=get_pagename(f, full=True)), # url
                      1) # 1 == page
                 )
             # read file
@@ -112,7 +112,7 @@ class WikiToc:
                 self.toc.append((
                         depth + header[2], # depth
                         header[3], # title without formatting
-                        url_for("view", path=f, _anchor=header[4]),
+                        url_for("view", path=get_pagename(f, full=True), _anchor=header[4]),
                         0 # 0 == not a page, so a header
                     ))
 
