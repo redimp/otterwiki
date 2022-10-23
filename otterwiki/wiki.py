@@ -561,7 +561,7 @@ class Page:
         # currently only attached files are handled
         return [
             Attachment(
-                self.pagepath, f[len(self.attachment_directoryname) + len(os.sep) :]
+                self.pagepath, f
             )
             for f in files
         ]

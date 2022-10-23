@@ -223,9 +223,31 @@ def test_list(storage):
     # check if depth=1 works
     files, directories = storage.list(depth=0)
     assert files == ["a"]
-    # check if depth=2 works
+    # check if depth=1 works
     files, directories = storage.list(depth=1)
     assert files == ["a", "b/c"]
+    # check if depth=2 works
+    files, directories = storage.list(depth=2)
+    assert files == ["a", "b/c", "d/e/f"]
+
+
+def test_list_path(storage):
+    msg, content = "Test commit", "Lore ipsum"
+    author = ("Example Author", "mail@example.com")
+    all_files = ["a", "b/c", "b/d"]
+    for f in all_files:
+        assert True == storage.store(f, content=content, author=author, message=msg)
+    files, directories = storage.list()
+    assert files == ["a", "b/c", "b/d"]
+    # check if depth=2 works
+    files, directories = storage.list(depth=2)
+    assert files == ["a", "b/c", "b/d"]
+    # check if path works
+    files, directories = storage.list("b")
+    assert files == ["c", "d"]
+    # check if path works
+    files, directories = storage.list("b", depth=1)
+    assert files == ["c", "d"]
 
 
 def test_diff(storage):

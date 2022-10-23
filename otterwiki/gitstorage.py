@@ -279,11 +279,11 @@ class GitStorage(object):
     def list(self, p=None, depth=None, exclude=[]):
         fullpath = self.path
         excludes = [".git"] + exclude
-        # regexp to strip the root path from any path
-        striproot = re.compile(r"^{}\/?".format(re.escape(fullpath)))
         # full path to search
         if p is not None:
             fullpath = os.path.join(fullpath, p)
+        # regexp to strip the root path from any path
+        striproot = re.compile(r"^{}\/?".format(re.escape(fullpath)))
         # initialize empty results
         result_files, result_directories = [], []
         # walk the path
