@@ -295,7 +295,7 @@ class Page:
         htmlcontent, toc = render.markdown(content)
 
         # get file listing
-        files = [f.data for f in self._attachments() if f.metadata is not None]
+        files = [f.data for f in self._attachments(maximum=10) if f.metadata is not None]
 
         # render template
         return render_template(
@@ -306,7 +306,7 @@ class Page:
             pagepath=self.pagepath,
             htmlcontent=htmlcontent,
             toc=toc,
-            files=files,
+            attachments=files,
             breadcrumbs=self.breadcrumbs(),
             danger_alert=danger_alert
         )
@@ -598,8 +598,10 @@ class Page:
             pagename=self.pagename,
         )
 
-    def _attachments(self):
-        files, directories = storage.list(self.attachment_directoryname)
+    def _attachments(self, maximum=None):
+        files, directories = storage.list(self.attachment_directoryname, depth=1)
+        if maximum:
+            files = files[:maximum]
         # currently only attached files are handled
         return [
             Attachment(

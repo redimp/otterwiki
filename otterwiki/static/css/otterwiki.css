@@ -209,6 +209,36 @@ a.sidebar-toc-4 { padding-left: 4.0rem; padding-right: 0; }
 a.sidebar-toc-5 { padding-left: 4.5rem; padding-right: 0; }
 a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 
+.sidebar-title-link {
+    display: block;
+    margin: 2.5rem 2.5rem 0.5rem 2.5rem;
+    font-size: 1.5rem;
+    font-weight: 500;
+    min-height: 3rem;
+    height: auto;
+    color: rgba(0, 0, 0, 0.7);
+    background-color: transparent;
+    border: 0 solid transparent;
+    border-radius: 0;
+}
+.sidebar-title-link:hover {
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.85);
+    background-color: transparent;
+    border-color: transparent;
+}
+.dark-mode .sidebar-title-link {
+    color: rgba(255, 255, 255, 0.65);
+    background-color: transparent;
+    border-color: transparent;
+}
+.dark-mode .sidebar-title-link:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background-color: transparent;
+    border-color: transparent;
+}
+
+
 /* page tweaks */
 .page h1, .page h2, .page h3,
 .page h4, .page h5, .page h6 {
