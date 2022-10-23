@@ -44,7 +44,7 @@
     extra-navbar
 #}
 {% block extra_nav -%}
-                    <h5 class="sidebar-title"><i class="fa fa-paperclip"></i> Attachments</h5>
+                    <a class="sidebar-title-link" href="{{ url_for('attachments', pagepath=pagepath ) }}">Attachments <i class="fa fa-paperclip"></i></a>
                     <div class="sidebar-divider" ></div>
                     {% for f in files %}
     {#                            <a href="{{f.url}}">{% if f.thumbnail_url %}<img src="{{f.thumbnail_url}}"/>{%else%}{{f.thumbnail_icon|safe}}{%endif%}</a>#}
@@ -69,7 +69,7 @@
                           </div>
                         </details>
                         {% endfor %}
-                        <p class="font-size-12 p-15 text-muted">Additional media can be added to this wiki by clicking the 'Add Attachment...' button, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.</p>
+                        <p class="font-size-12 p-15 text-muted">Additional media can be added via the 'Attachments' of this page, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.</p>
 {%- endblock extra_nav %}
 {#
     Javascript
