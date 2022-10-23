@@ -25,7 +25,7 @@
 {% endif %}
                 <br />
     {% if toc %}
-                <h5 class="sidebar-title">Table of contents</h5>
+                <h5 class="sidebar-title">On this page</h5>
                 <div class="sidebar-divider"></div>
         {% for count, name, level, raw, anchor in toc %}
         <a href="#{{anchor}}" class="sidebar-link sidebar-toc-{{level}}">{{name|safe}}</a>
