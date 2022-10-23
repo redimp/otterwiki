@@ -1,3 +1,4 @@
+/* vim: set et sts=2 ts=2 ai: */
 /* BASICS */
 
 .CodeMirror {
@@ -5,6 +6,12 @@
   font-family: monospace;
   color: black;
   direction: ltr;
+}
+
+.editor-bottom-panel {
+  height: 3rem;
+  padding: 0.4rem 2rem 0.2rem 2rem;
+  font-size: 1.4rem;
 }
 
 /* PADDING */
@@ -147,7 +154,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #a22;}
 
 div.CodeMirror.cm-s-otterwiki.CodeMirror-wrap,
 div.CodeMirror.cm-s-otterwiki.CodeMirror-wrap.CodeMirror.focused {
-height:calc(100vh - 5rem);
+height:calc(100vh - 8rem);
 }
 
 /* based upon elegant.css */

@@ -141,6 +141,18 @@ pre,
     background: transparent;
     display: none;
 }
+
+#editor-help-markdown {
+    position: absolute;
+    bottom: 3rem;
+    left: 5rem;
+    z-index: 1000;
+    overflow-y: scroll;
+    max-height: 40vh;
+    margin: 0;
+    min-width: 90%;
+}
+
 /* history diff */
 table.diff {
     overflow-x: auto;

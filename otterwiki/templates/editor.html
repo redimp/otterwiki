@@ -21,12 +21,6 @@
 #}
 {% block menu %}
 {{ super() }}
-                <a href="{{ url_for("syntax") }}" class="sidebar-link sidebar-link-with-icon" target="_blank">
-                    <span class="sidebar-icon">
-                        <i class="fab fa-markdown"></i>
-                    </span>
-                    Markdown Syntax
-                </a>
 {% endblock %}
 {#
     Content
@@ -38,6 +32,17 @@
 <input id="pc_cursor_ch" type="hidden" name="cursor_ch" value="" />
 <textarea id="content_editor" name="content_editor">{{ content_editor }}</textarea>
 </form>
+<div id="editor-bottom-panel" class="editor-bottom-panel" style="display:none;">
+    <a href="#" onclick="otterwiki.toggleMarkdownHelp()" class="btn btn-xsm"><i class="fab fa-markdown"></i> Markdown Syntax</a>
+    <div id="editor-help-markdown" class="content card border rounded-top p-5" style="display: none;">
+        <a href="{{ url_for("syntax") }}" class="btn btn-xsm" target="_blank" style="float:right;">
+            <i class="fas fa-expand-arrows-alt"></i>
+                    Full Syntax Guide
+        </a>
+
+          {% include "snippets/syntax.html" %}
+    </div>
+</div>
 <!-- Content wrapper end -->
 {% endblock %}
 {#
@@ -80,6 +85,7 @@
 <script src="{{ url_for("static", filename="js/codemirror.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-markdown.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-continuelist.js") }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for("static", filename="js/cm-panel.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/codemirror-4.inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
@@ -95,6 +101,9 @@
 {% if cursor_line and cursor_ch %}
     cm_editor.setCursor({ line: {{cursor_line}}, ch: {{cursor_ch}} } );
 {% endif %}
+    var bottom_panel = document.getElementById('editor-bottom-panel');
+    bottom_panel.style.display = 'block';
+    cm_editor.addPanel(bottom_panel, {position: "bottom", stable: true});
 {#
 thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuecomment-227075500
 #}
