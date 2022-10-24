@@ -3,16 +3,16 @@
 {% block content %}
 <h2>{{ title }}</h2>
 <div class="container-lg">
+<div class="global-toc-container">
 {% for depth, title, url, is_page in pages%}
-<div class="row">
-    <div class="col-xl-2 col-lg-3 col-md-6 pt-{{5*is_page}}" style="padding-left:{{0.5 * depth}}rem">
+    <div class="pt-{{5*is_page}}" style="padding-left:{{0.5 * depth}}rem">
         {% if is_page == 1 %}
         <a href="{{ url }}" class="global-toc-link"><strong>{{title | title}}</strong></a>
         {% else %}
         <a href="{{ url }}" class="global-toc-link">{{title | title}}</a>
         {% endif %}
     </div>
-</div>
 {% endfor %}
+</div>
 </div>
 {% endblock %}
