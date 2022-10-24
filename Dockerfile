@@ -11,7 +11,7 @@ RUN \
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 # upgrade pip and install requirements not in otterwiki
-RUN pip install -U pip && pip install "uWSGI==2.0.20"
+RUN pip install -U pip wheel && pip install "uWSGI==2.0.20"
 # copy app
 COPY . /app
 WORKDIR /app
