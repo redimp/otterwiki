@@ -599,7 +599,7 @@ class Page:
         )
 
     def _attachments(self, maximum=None):
-        files, directories = storage.list(self.attachment_directoryname)
+        files, directories = storage.list(self.attachment_directoryname, depth=0)
         if maximum:
             files = files[:maximum]
         # currently only attached files are handled
