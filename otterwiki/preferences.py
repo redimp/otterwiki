@@ -34,15 +34,15 @@ def handle_mail_preferences(form):
         toast("'{}' is not a valid email address.".format(form.get("mail_sender")), "error")
         error += 1
     else:
-        _update_preference("MAIL_DEFAULT_SENDER", form.get("mail_sender"))
+        _update_preference("MAIL_DEFAULT_SENDER", form.get("mail_sender").strip())
     if empty(form.get("mail_server")):
         toast("Mail Server must not be empty.", "error")
         error += 1
     else:
-        _update_preference("MAIL_SERVER", form.get("mail_server"))
+        _update_preference("MAIL_SERVER", form.get("mail_server").strip())
     try:
         if not empty(form.get("mail_port")):
-            mail_port = int(form.get("mail_port"))
+            mail_port = int(form.get("mail_port").strip())
             if mail_port < 24 or mail_port > 65535:
                 raise ValueError
         else:
