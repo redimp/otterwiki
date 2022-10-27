@@ -96,14 +96,3 @@
 {{content}}
 {% endblock %}
 
-{% block extra_nav -%}
-{{ super() }}
-{#- Attachments -#}
-{% if attachments and attachments|length > 0 %}
-<a class="sidebar-title-link" href="{{ url_for('attachments', pagepath=pagepath ) }}">Attachments <i class="fa fa-paperclip"></i></a>
-<div class="sidebar-divider"></div>
-{% for attachment in attachments %}
-<a href="{{attachment.url}}" class="sidebar-link">{# {% if attachment.thumbnail_url %}<img src="{{attachment.thumbnail_url}}" style="vertical-align: middle;"/>{%endif%}#}{{attachment.filename}}</a>
-{% endfor %}
-{% endif %}
-{% endblock extra_nav %}

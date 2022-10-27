@@ -294,9 +294,6 @@ class Page:
         # render markdown
         htmlcontent, toc = render.markdown(content)
 
-        # get file listing
-        files = [f.data for f in self._attachments(maximum=10) if f.metadata is not None]
-
         # render template
         return render_template(
             "page.html",
@@ -306,7 +303,6 @@ class Page:
             pagepath=self.pagepath,
             htmlcontent=htmlcontent,
             toc=toc,
-            attachments=files,
             breadcrumbs=self.breadcrumbs(),
             danger_alert=danger_alert
         )
