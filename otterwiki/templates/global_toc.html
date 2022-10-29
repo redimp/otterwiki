@@ -1,27 +1,14 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
 {% block js %}
-<script>
-function handleChange(e) {
-    const {checked} = e.target;
-    const boxes = document.getElementsByClassName('pagetoc');
-    if (checked) {
-        console.log(checked);
-        for (const box of boxes) {
-            box.style.display = 'block';
-        }
-    } else {
-        for (const box of boxes) {
-            box.style.display = 'none';
-        }
-    }
-}
-</script>
-{% endblock %}
+{{ super() }}
+{# this fetches the editor/preview content #}
+<script src="{{ url_for("static", filename="js/otterwiki.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
+{% endblock js %}
 {% block content %}
 <h2 class="pr-20 d-inline-block">{{ title }}</h2>
 <div style="" class="d-inline-block custom-switch font-size-12">
-  <input type="checkbox" id="switch-headings" value="" onchange="handleChange(event)">
+  <input type="checkbox" id="switch-headings" value="" onchange="otterwiki.toggleClass(event.target.checked,'pagetoc')">
   <label for="switch-headings">Toggle page headings</label>
 </div>
 <div class="container-lg">
@@ -44,4 +31,4 @@ function handleChange(e) {
 {% endfor %}
 </div>
 </div>
-{% endblock %}
+{% endblock content %}
