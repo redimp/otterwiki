@@ -13,7 +13,7 @@ from flask import (
     make_response,
 )
 from otterwiki.server import app, db
-from otterwiki.wiki import Page, PageIndex, WikiToc, Changelog, Search, render
+from otterwiki.wiki import Page, PageIndex, Changelog, Search, render
 import otterwiki.auth
 import otterwiki.preferences
 from otterwiki.helper import toast
@@ -107,12 +107,7 @@ def changelog(revision=None):
 
 @app.route("/-/index")
 def pageindex():
-    idx = PageIndex("/")
-    return idx.render()
-
-@app.route("/-/toc")
-def toc():
-    idx = WikiToc("/")
+    idx = PageIndex()
     return idx.render()
 
 @app.route("/-/create", methods=["POST", "GET"])

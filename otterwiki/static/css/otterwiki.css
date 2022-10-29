@@ -287,32 +287,6 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
     text-decoration: underline;
 }
 
-/* global toc */
-.global-toc-container
-{
-    -webkit-column-count: 1;  /* Chrome, Safari, Opera */
-    -moz-column-count: 1;     /* Firefox */
-    column-count: 1;
-}
-
-@media (min-width: 769px) {
-    .global-toc-container
-    {
-        -webkit-column-count: 2;  /* Chrome, Safari, Opera */
-        -moz-column-count: 2;     /* Firefox */
-        column-count: 2;
-    }
-}
-
-@media (min-width: 1201px) {
-    .global-toc-container
-    {
-        -webkit-column-count: 3;  /* Chrome, Safari, Opera */
-        -moz-column-count: 3;     /* Firefox */
-        column-count: 3;
-    }
-}
-
 .global-toc-link
 {
     color: rgba(0,0,0,.7);

@@ -55,42 +55,16 @@ def get_breadcrumbs(pagepath):
 
 
 class PageIndex:
-    def __init__(self, path=""):
-        self.path = path
-
-        files, directories = storage.list()
-        files = [get_pagename(x, full=True) for x in files if x.endswith(".md")]
-        self.pages = {}
-        self.directories = {}
-        for f in files:
-            pair = (f, path + f)
-            if f[0][0] in self.pages:
-                self.pages[f[0]].append(pair)
-            else:
-                self.pages[f[0]] = [pair]
-
-    def render(self):
-        if not has_permission("READ"):
-            abort(403)
-        return render_template(
-            "pageindex.html",
-            title="Page Index",
-            directories=self.directories,
-            pages=self.pages,
-        )
-
-class WikiToc:
     def __init__(self, path=None):
         '''
-        This will generate a TOC from a given path. Path is not yet implemented. But, the idea is that you could,
-        for instance, create a feature where a toc could be automatically generated for a complicated sub folder.
+        This will generate an index of pages/toc of pages from a given path.
         '''
         from timeit import default_timer as timer
 
         t_start = timer()
-        files, directories = storage.list(p=None)
+        files, directories = storage.list(p=path)
         app.logger.debug(
-            "WikiToc reading files took {:.3f} seconds.".format(timer() - t_start)
+            "PageIndex reading files took {:.3f} seconds.".format(timer() - t_start)
         )
         self.toc = {}
         t_start = timer()
@@ -115,21 +89,20 @@ class WikiToc:
             self.toc[firstletter].append(
                     (depth,
                      get_pagename(f, full=True), # title
-                     url_for("view", path=f), # url
+                     url_for("view", path=get_pagename(f, full=True)), # url
                      pagetoc)
                 )
 
         app.logger.debug(
-            "WikiToc parsing files took {:.3f} seconds.".format(timer() - t_start)
+            "PageIndex parsing files took {:.3f} seconds.".format(timer() - t_start)
         )
-
 
     def render(self):
         if not has_permission("READ"):
             abort(403)
         return render_template(
-            "global_toc.html",
-            title="Table of Contents",
+            "pageindex.html",
+            title="Page Index",
             pages=self.toc,
         )
 

@@ -8,12 +8,6 @@
                     Home
                 </a>
 {% if has_permission('READ') %}
-                <a href="{{ url_for("toc") }}" class="sidebar-link sidebar-link-with-icon">
-                    <span class="sidebar-icon">
-                        <i class="fas fa-align-left"></i>
-                    </span>
-                    Table of contents
-                </a>
                 <a href="{{ url_for("pageindex") }}" class="sidebar-link sidebar-link-with-icon">
                     <span class="sidebar-icon">
                         <i class="fas fa-list"></i>
