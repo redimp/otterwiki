@@ -92,29 +92,32 @@ class WikiToc:
         app.logger.debug(
             "WikiToc reading files took {:.3f} seconds.".format(timer() - t_start)
         )
-        self.toc = []
+        self.toc = {}
         t_start = timer()
         for f in [f for f in files if f.endswith(".md")]: # filter .md files
             depth = len(split_path(f))
-            self.toc.append(
-                    (depth,
-                     get_pagename(f), # title
-                     url_for("view", path=get_pagename(f, full=True)), # url
-                     1) # 1 == page
-                )
+            firstletter = get_pagename(f, full=True)[0].lower()
+            if firstletter not in self.toc.keys():
+                self.toc[firstletter] = []
+            pagetoc = []
             # read file
             content = storage.load(f)
             # parse file contents
             htmlcontent, ftoc = render.markdown(content)
-            # add headers to global toc
+            # add headers to page toc
             # (4, '2 L <strong>bold</strong>', 1, '2 L bold', '2-l-bold')
             for header in ftoc:
-                self.toc.append((
+                pagetoc.append((
                         depth + header[2], # depth
                         header[3], # title without formatting
-                        url_for("view", path=get_pagename(f, full=True), _anchor=header[4]),
-                        0 # 0 == not a page, so a header
+                        url_for("view", path=get_pagename(f, full=True), _anchor=header[4])
                     ))
+            self.toc[firstletter].append(
+                    (depth,
+                     get_pagename(f, full=True), # title
+                     url_for("view", path=f), # url
+                     pagetoc)
+                )
 
         app.logger.debug(
             "WikiToc parsing files took {:.3f} seconds.".format(timer() - t_start)

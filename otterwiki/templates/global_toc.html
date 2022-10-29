@@ -1,17 +1,46 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
+{% block js %}
+<script>
+function handleChange(e) {
+    const {checked} = e.target;
+    const boxes = document.getElementsByClassName('pagetoc');
+    if (checked) {
+        console.log(checked);
+        for (const box of boxes) {
+            box.style.display = 'block';
+        }
+    } else {
+        for (const box of boxes) {
+            box.style.display = 'none';
+        }
+    }
+}
+</script>
+{% endblock %}
 {% block content %}
-<h2>{{ title }}</h2>
+<h2 class="pr-20 d-inline-block">{{ title }}</h2>
+<div style="" class="d-inline-block custom-switch font-size-12">
+  <input type="checkbox" id="switch-headings" value="" onchange="handleChange(event)">
+  <label for="switch-headings">Toggle page headings</label>
+</div>
 <div class="container-lg">
-<div class="global-toc-container">
-{% for depth, title, url, is_page in pages%}
-    <div class="pt-{{5*is_page}}" style="padding-left:{{0.5 * depth}}rem">
-        {% if is_page == 1 %}
-        <a href="{{ url }}" class="global-toc-link"><strong>{{title | title}}</strong></a>
-        {% else %}
-        <a href="{{ url }}" class="global-toc-link">{{title | title}}</a>
-        {% endif %}
-    </div>
+<div class="row">
+{% for letter, pagelist in pages.items()|sort %}
+<div class="col-xl-3 col-lg-4 col-md-6 pr-5 pb-10"><h2 class="content-title font-weight-bolder">{{letter|upper}}</h2>
+{% for depth, title, url, page_toc in pagelist %}
+<div class="pb-5" style="word-break: break-all;">
+<a href="{{ url }}" class="global-toc-link font-weight-semi-bold">{{title}}</a>
+<div class="pagetoc" style="display: none;">
+{% for depth, title, url in page_toc %}
+<div style="word-break: all; padding-left:{{0.5 * depth}}rem;">
+<a href="{{ url }}" class="global-toc-link">{{title}}</a><br/>
+</div>
+{% endfor %}
+</div>
+</div>
+{% endfor %}
+</div>
 {% endfor %}
 </div>
 </div>
