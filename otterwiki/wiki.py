@@ -95,20 +95,26 @@ class Changelog:
             for filename in orig_entry["files"]:
                 entry["files"][filename] = {}
                 # handle attachments and pages
-                arr = filename.split("/")
+                arr = split_path(filename)
                 if filename.endswith(".md"):
-                    entry["files"][filename]["name"] = get_pagename(filename)
+                    entry["files"][filename]["name"] = get_pagename(filename, full=True)
                     entry["files"][filename]["url"] = url_for(
-                        "view", path=get_pagename(filename), revision=entry["revision"]
+                        "view", path=get_pagename(filename, full=True), revision=entry["revision"]
                     )
-                # FIXME: if the subdirectory feature is there this has to be fixed
-                if len(arr) >= 2:
-                    pagename, attached_filename = get_pagename(arr[-2]), arr[-1]
+                else:
+                    # attachment
+                    pagename, attached_filename = get_pagename(join_path(arr[:-1]), full=True), arr[-1]
                     entry["files"][filename]["name"] = filename
-                    # FIXME: as soon as the attachments are, this needs an url
-                    entry["files"][filename]["url"] = ""
-                    # entry['files'][filename]['url'] = url_for('.get_attachment',
-                    #         pagename=pagename, filename=filename, revision=entry['revision'])
+                    entry['files'][filename]['url'] = url_for('get_attachment',
+                            pagepath=pagename, filename=attached_filename, revision=entry['revision'])
+                ## FIXME: if the subdirectory feature is there this has to be fixed
+                #if len(arr) >= 2:
+                #    pagename, attached_filename = get_pagename(arr[-2]), arr[-1]
+                #    entry["files"][filename]["name"] = filename
+                #    # FIXME: as soon as the attachments are, this needs an url
+                #    entry["files"][filename]["url"] = ""
+                #    # entry['files'][filename]['url'] = url_for('.get_attachment',
+                #    #         pagename=pagename, filename=filename, revision=entry['revision'])
             log.append(entry)
         # log.reverse()
         return log
