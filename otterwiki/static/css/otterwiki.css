@@ -289,23 +289,11 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 
 .global-toc-link
 {
-    color: rgba(0,0,0,.7);
-    background-color: transparent;
     font-size: 1.6rem;
 }
 
 .global-toc-link:hover
 {
-    color: rgba(0,0,0,.5);
     text-decoration: none;
 }
 
-.dark-mode .global-toc-link
-{
-    color: rgba(255,255,255,.65);
-}
-
-.dark-mode .global-toc-link:hover
-{
-    color: rgba(255,255,255,.8);
-}
