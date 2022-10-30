@@ -1,0 +1,70 @@
+[project]
+name = "otterwiki"
+description = "An Otter Wiki is Python-based software for collaborative content management, called a wiki. The content is stored in a git repository, which keeps track of all changes. Markdown is used as markup language."
+authors = [
+    { name = "Ralph Thesen", email = "mail@redimp.de" }
+    ]
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.7"
+dynamic = ["version"]
+dependencies = [
+    "Werkzeug==2.0.3",
+    "Flask-Login==0.5.0",
+    "Flask-Mail==0.9.1",
+    "Flask-SQLAlchemy==2.5.1",
+    "Flask==2.0.3",
+    "Jinja2>=2.9",
+    "gitpython",
+    "cython",
+    "mistune==2.0.4",
+    "pygments",
+    "Pillow",
+    "unidiff",
+    "flask-htmlmin==2.2.0",
+]
+
+[project.urls]
+repository = "https://github.com/redimp/otterwiki"
+
+[project.optional-dependencies]
+dev = [
+    "coverage",
+    "pytest",
+    "black",
+    "tox",
+    "tbump",
+    ]
+
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["otterwiki"]
+
+[tool.setuptools.dynamic]
+version = {attr = "otterwiki.version.__version__"}
+
+[tool.black]
+# The default line length in black is 88 characters, in defiance of
+# pep8, which mandates 79 characters. However, consistency with pep8
+# is better than inconsistency.
+line-length = 79
+# Do not enforce double-quoted strings
+skip-string-normalization = true
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+isolated_build = True
+[testenv]
+deps = pytest
+commands =
+    pytest tests
+"""
+
+# vim: set et ts=8 sts=4 sw=4 ai fenc=utf-8:
