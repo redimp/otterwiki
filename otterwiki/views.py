@@ -107,9 +107,8 @@ def changelog(revision=None):
 
 @app.route("/-/index")
 def pageindex():
-    idx = PageIndex("/")
+    idx = PageIndex()
     return idx.render()
-
 
 @app.route("/-/create", methods=["POST", "GET"])
 def create():

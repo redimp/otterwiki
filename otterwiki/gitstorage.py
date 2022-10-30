@@ -8,7 +8,8 @@ from datetime import datetime
 from pprint import pprint
 from otterwiki.util import split_path
 import pathlib
-
+import os
+import typing
 
 class StorageError(Exception):
     pass
@@ -307,6 +308,5 @@ class GitStorage(object):
                 result_directories.append(dn)
 
         return sorted(result_files), sorted(result_directories)
-
 
 storage = None

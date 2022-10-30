@@ -286,3 +286,14 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
     color: black;
     text-decoration: underline;
 }
+
+.global-toc-link
+{
+    font-size: 1.6rem;
+}
+
+.global-toc-link:hover
+{
+    text-decoration: none;
+}
+
