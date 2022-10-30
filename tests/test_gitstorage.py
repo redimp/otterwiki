@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import pytest
 import tempfile
 from pprint import pprint
@@ -198,13 +199,18 @@ def test_revision(storage):
 def test_store_subdir(storage):
     content = "kdfjlhg gdklfjghdf gkl;djshfg dgf;lkjhs glkshjad\n"
     message = "Test commit"
-    filename = "test_subdir/test_subdir.md"
+    subdir = "test_subdir"
+    filename = os.path.join(subdir,"test_subdir.md")
     author = ("Example Author", "mail@example.com")
     assert True == storage.store(
         filename, content=content, author=author, message=message
     )
     # check if file exists
     assert True == storage.exists(filename)
+    # check if file is not a directory
+    assert False == storage.isdir(filename)
+    # check if the subdir is a directory
+    assert True == storage.isdir(subdir)
     # check via file list
     files, directories = storage.list()
     assert filename in files

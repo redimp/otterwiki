@@ -43,6 +43,9 @@ class GitStorage(object):
     def exists(self, filename):
         return os.path.exists(os.path.join(self.path, filename))
 
+    def isdir(self, dirname):
+        return os.path.isdir(os.path.join(self.path, dirname))
+
     def load(self, filename, mode="r", revision=None):
         if revision is not None:
             try:
