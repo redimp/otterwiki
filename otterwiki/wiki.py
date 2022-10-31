@@ -657,7 +657,8 @@ class Page:
         return Attachment(self.pagepath, filename, revision).get()
 
     def get_attachment_thumbnail(self, filename, size=80, revision=None):
-        return Attachment(self.pagepath, filename, revision).get_thumbnail()
+        if empty(size): size=80
+        return Attachment(self.pagepath, filename, revision).get_thumbnail(size=size)
 
     def edit_attachment(self, filename, author, new_filename=None, message=None, delete=None):
         if not has_permission("READ"):
@@ -687,6 +688,7 @@ class Attachment:
         self.absdirectory = os.path.join(
             storage.path, get_attachment_directoryname(get_filename(pagepath))
         )
+        self.fullpath = os.path.join(pagepath, filename)
         self.directory = get_attachment_directoryname(get_filename(pagepath))
         self.filepath = os.path.join(self.directory, filename)
         self.abspath = os.path.join(storage.path, self.filepath)
@@ -712,11 +714,24 @@ class Attachment:
     def get_thumbnail_url(self):
         if self.mimetype is not None and self.mimetype.startswith("image"):
             return url_for(
-                "get_attachment_thumbnail",
+                "view",
+                path=self.fullpath,
+            ) + "?thumbnail"
+        return None
+
+    def get_url(self):
+        if self.revision is None:
+            return url_for(
+                "view",
+                path=self.fullpath,
+            )
+        else:
+            url_for(
+                "get_attachment",
                 pagepath=self.pagepath,
                 filename=self.filename,
+                revision=self.revision,
             )
-        return None
 
     def get_thumbnail_icon(self):
         if self.mimetype is not None:
@@ -731,12 +746,7 @@ class Attachment:
         return {
             "filename": self.filename,
             "filepath": self.filepath,
-            "url": url_for(
-                "get_attachment",
-                pagepath=self.pagepath,
-                filename=self.filename,
-                revision=self.revision,
-            ),
+            "url": self.get_url(),
             "thumbnail_url": self.get_thumbnail_url(),
             "thumbnail_icon": self.get_thumbnail_icon(),
             "filesize": sizeof_fmt(os.stat(self.abspath).st_size),
@@ -1007,5 +1017,36 @@ class Search:
             result=result,
         )
 
+class AutoRoute:
+    def __init__(self, path, values={}):
+        self.path = path
+        self.values = values
+
+    def view(self):
+        # split path in path and filename
+        *prefix, filename = split_path(self.path)
+        if len(prefix):
+            pagepath = join_path(prefix)
+        else:
+            pagepath = None
+        # check if the path leads to an attachment
+        if pagepath and not filename.lower().endswith(".md") and \
+                not storage.isdir(self.path) and storage.exists(self.path):
+            # create page
+            p = Page(pagepath)
+            # is this a thumbnail?
+            if 'thumbnail' in self.values:
+                # handle size parameter
+                try:
+                    size=int(self.values['thumbnail'])
+                except:
+                    size=None
+                print(f"{size=}")
+                return p.get_attachment_thumbnail(filename=filename, size=size, revision=None)
+            # this is an attachment
+            return p.get_attachment(filename)
+        # default to Page view
+        p = Page(self.path)
+        return p.view()
 
 # vim: set et ts=8 sts=4 sw=4 ai:
