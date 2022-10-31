@@ -56,8 +56,14 @@ def test_list_attachments(test_client):
     assert "attachment0.txt" in response.data.decode()
 
 
-def test_get_attachment0(test_client):
+def test_get_attachment0_legcay(test_client):
     response = test_client.get("/Test/a/attachment0.txt")
+    assert response.status_code == 200
+    assert "attachment0-content0" in response.data.decode()
+
+
+def test_get_attachment0(test_client):
+    response = test_client.get("/Test/attachment0.txt")
     assert response.status_code == 200
     assert "attachment0-content0" in response.data.decode()
 
@@ -68,7 +74,7 @@ def test_edit_attachment0(test_client):
     assert "attach0-commit" in response.data.decode()
 
 
-def test_thumbnail(test_client):
+def test_thumbnail_legacy(test_client):
     response = test_client.get("/Test/attachment/attachment1.gif")
     assert response.status_code == 200
     assert "attach1-commit" in response.data.decode()
@@ -77,4 +83,16 @@ def test_thumbnail(test_client):
     assert response.status_code == 200
     # test thumbnail
     response = test_client.get("/Test/t/attachment1.gif")
+    assert response.status_code == 200
+
+
+def test_thumbnail(test_client):
+    # test download
+    response = test_client.get("/Test/attachment1.gif")
+    assert response.status_code == 200
+    # test thumbnail
+    response = test_client.get("/Test/attachment1.gif?thumbnail")
+    assert response.status_code == 200
+    # test thumbnail
+    response = test_client.get("/Test/attachment1.gif?thumbnail=10")
     assert response.status_code == 200

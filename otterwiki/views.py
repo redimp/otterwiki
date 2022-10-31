@@ -13,7 +13,7 @@ from flask import (
     make_response,
 )
 from otterwiki.server import app, db
-from otterwiki.wiki import Page, PageIndex, Changelog, Search, render
+from otterwiki.wiki import Page, PageIndex, Changelog, Search, render, AutoRoute
 import otterwiki.auth
 import otterwiki.preferences
 from otterwiki.helper import toast
@@ -190,15 +190,18 @@ def request_confirmation_link(email):
 #
 # page views
 #
-@app.route("/<path:path>/view")
-# last matching endpoint seems to be the default for url_for
-@app.route("/<path:path>")
 @app.route("/<path:path>/view/<string:revision>")
-def view(path="Home", revision=None):
-    # return "path={}".format(path)
+@app.route("/<path:path>/view")
+def pageview(path="Home", revision=None):
     p = Page(path)
     return p.view(revision)
 
+
+# last matching endpoint seems to be the default for url_for
+@app.route("/<path:path>")
+def view(path="Home"):
+    p = AutoRoute(path, values=request.values)
+    return p.view()
 
 @app.route("/<path:path>/history", methods=["POST", "GET"])
 def history(path):
