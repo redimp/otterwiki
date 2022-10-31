@@ -10,6 +10,7 @@ from otterwiki.util import split_path
 import pathlib
 import os
 import typing
+from functools import lru_cache
 
 class StorageError(Exception):
     pass
@@ -62,6 +63,7 @@ class GitStorage(object):
             raise StorageNotFound("{} not found.".format(filename))
         return content
 
+    @lru_cache
     def _get_metadata_of_commit(self, commit):
         metadata = {
             "revision-full": commit.hexsha,
