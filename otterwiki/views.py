@@ -268,7 +268,7 @@ def save(path):
     return p.save(content=content, commit=commit, author=otterwiki.auth.get_author())
 
 
-@app.route("/<path:path>/preview", methods=["POST", "GET"])
+@app.route("/<path:path>?preview", methods=["POST", "GET"])
 def preview(path):
     p = Page(path)
     return p.preview(
