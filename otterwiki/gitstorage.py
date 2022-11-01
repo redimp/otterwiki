@@ -283,11 +283,17 @@ class GitStorage(object):
             self.commit([new_filename], message, author)
 
     def list(self, p=None, depth=None, exclude=[]):
-        fullpath = self.path
         excludes = [".git"] + exclude
         # full path to search
         if p is not None:
-            fullpath = os.path.join(fullpath, p)
+            if os.path.isabs(p):
+                raise ValueError("p must not be an absolute path")
+            # That would break os.path.join():
+            # If a component is an absolute path, all previous components are
+            # thrown away and joining continues from the absolute path component.
+            fullpath = os.path.normpath(os.path.join(self.path, p))
+        else:
+            fullpath = self.path
         # regexp to strip the root path from any path
         striproot = re.compile(r"^{}\/?".format(re.escape(fullpath)))
         # initialize empty results

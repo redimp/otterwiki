@@ -226,6 +226,8 @@ def test_list(storage):
     files, directories = storage.list()
     # check that all files are there
     assert files == all_files
+    # check that all files are there
+    assert files == all_files
     # check if depth=1 works
     files, directories = storage.list(depth=0)
     assert files == ["a"]
@@ -235,6 +237,14 @@ def test_list(storage):
     # check if depth=2 works
     files, directories = storage.list(depth=2)
     assert files == ["a", "b/c", "d/e/f"]
+    # check for given path /b
+    files, directories = storage.list("b")
+    # check that all files are there
+    assert files == ["c"]
+    # check if abspath raises an Exception
+    with pytest.raises(ValueError) as e_info:
+        # check for given path /
+        files, directories = storage.list("/")
 
 
 def test_list_path(storage):
