@@ -255,7 +255,7 @@ def test_page_edit_permissions(app_with_permissions, test_client):
     assert rv.status_code == 200
     html = rv.data.decode()
     # check that there is an editor in the html
-    assert 'action="/{}/preview"'.format(pagename) in html
+    assert 'action="{}"'.format(url_for("preview", path=pagename)) in html
     assert "<textarea" in html
     # update permissions
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
@@ -265,7 +265,7 @@ def test_page_edit_permissions(app_with_permissions, test_client):
     html = rv.data.decode()
     # check that there is an editor in the html
     assert rv.status_code == 403
-    assert 'action="/{}/preview"'.format(pagename) not in html
+    assert 'action="{}"'.format(url_for("preview", path=pagename)) not in html
     assert "<textarea" not in html
     # login
     login(test_client)
@@ -273,7 +273,7 @@ def test_page_edit_permissions(app_with_permissions, test_client):
     rv = test_client.get(url_for("edit", path=pagename))
     html = rv.data.decode()
     assert rv.status_code == 200
-    assert 'action="/{}/preview"'.format(pagename) in html
+    assert 'action="{}"'.format(url_for("preview", path=pagename)) in html
     assert "<textarea" in html
 
 

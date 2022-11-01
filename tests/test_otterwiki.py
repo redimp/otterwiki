@@ -5,6 +5,7 @@ import os
 import pathlib
 import re
 from io import BytesIO
+from flask import url_for
 import pytest
 import otterwiki
 
@@ -36,7 +37,7 @@ def test_create_page_sanitized(test_client):
     assert "Please check the pagename" in html
 
 
-def test_create_page(test_client):
+def test_create_page(test_client, req_ctx):
     pagename = "CreateTest"
     html = test_client.post(
         "/-/create",
@@ -46,7 +47,7 @@ def test_create_page(test_client):
         follow_redirects=True,
     ).data.decode()
     # check form
-    assert 'action="/{}/preview"'.format(pagename) in html
+    assert 'action="{}"'.format(url_for("preview", path=pagename)) in html
     assert "<textarea" in html
     assert 'name="content_editor"' in html
     # test save
