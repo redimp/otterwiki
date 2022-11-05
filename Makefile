@@ -57,10 +57,14 @@ settings.cfg:
 	@false
 
 docker-test:
-	docker build -t otterwiki --target test-stage .
+	docker build -t otterwiki:_test --target test-stage .
 
 docker-build: docker-test
 	docker build -t otterwiki .
+
+docker-run:
+	docker build -t otterwiki .
+	docker run -p 8080:80 otterwiki
 
 docker-buildx-test:
 	docker buildx build --platform $(PLATFORM) --target test-stage .
