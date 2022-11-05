@@ -1032,7 +1032,7 @@ class AutoRoute:
             pagepath = None
         # check if the path leads to an attachment
         if pagepath and not filename.lower().endswith(".md") and \
-                not storage.isdir(self.path) and storage.exists(self.path):
+                not storage.isdir(self.path.lower()) and storage.exists(self.path.lower()):
             # create page
             p = Page(pagepath)
             # is this a thumbnail?
