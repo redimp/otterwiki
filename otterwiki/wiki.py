@@ -656,8 +656,9 @@ class Page:
     def get_attachment(self, filename, revision=None):
         return Attachment(self.pagepath, filename, revision).get()
 
-    def get_attachment_thumbnail(self, filename, size=80, revision=None):
-        if empty(size): size=80
+    def get_attachment_thumbnail(self, filename, size=None, revision=None):
+        if empty(size):
+            size=80
         return Attachment(self.pagepath, filename, revision).get_thumbnail(size=size)
 
     def edit_attachment(self, filename, author, new_filename=None, message=None, delete=None):
@@ -1041,7 +1042,6 @@ class AutoRoute:
                     size=int(self.values['thumbnail'])
                 except:
                     size=None
-                print(f"{size=}")
                 return p.get_attachment_thumbnail(filename=filename, size=size, revision=None)
             # this is an attachment
             return p.get_attachment(filename)
