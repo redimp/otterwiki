@@ -228,10 +228,16 @@ class GitStorage(object):
         index.commit(message, author=actor)
         return True
 
-    def commit(self, filenames, message="", author=None):
+    def commit(self, filenames, message="", author=None, no_add=False):
         index = self.repo.index
         # add and commit to git
-        index.add(filenames)
+        if no_add == False:
+            try:
+                index.add(filenames)
+            except Exception:
+                raise StorageError(
+                    "index.add {} in commit failed.".format(filenames)
+                )
         actor = git.Actor(author[0], author[1])
         index.commit(message, author=actor)
 
@@ -280,7 +286,7 @@ class GitStorage(object):
         if message is None:
             message = "{} renamed to {}.".format(old_filename, new_filename)
         if not no_commit:
-            self.commit([new_filename], message, author)
+            self.commit([new_filename], message, author, no_add=True)
 
     def list(self, p=None, depth=None, exclude=[]):
         excludes = [".git"] + exclude

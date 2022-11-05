@@ -3,6 +3,7 @@
 
 import pytest
 import base64
+from flask import url_for
 
 @pytest.fixture
 def app_with_attachments(create_app):
@@ -96,3 +97,18 @@ def test_thumbnail(test_client):
     # test thumbnail
     response = test_client.get("/Test/attachment1.gif?thumbnail=10")
     assert response.status_code == 200
+
+
+def test_rename_attachment(test_client, req_ctx):
+    response = test_client.get("/Test/attachments")
+    assert response.status_code == 200
+    assert "attachment0.txt" in response.data.decode()
+    response = test_client.post(
+        url_for("edit_attachment",pagepath="Test",filename="attachment0.txt"),
+        data={
+            "new_filename": "attachment0_renamed.txt",
+        },
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert "attachment0_renamed.txt" in response.data.decode()
