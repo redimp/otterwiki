@@ -1,4 +1,4 @@
-{#- vim: set et ts=8 sts=4 sw=4 ai: -#}
+{#- vim: set et ts=8 sts=4 sw=4 ai ft=htmldjango: -#}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -149,12 +149,14 @@
         <!-- Sidebar end -->
 {% endblock %}
 
-{% block content_wrapper %}
+{% block content_wrapper_outer %}
         <!-- Content wrapper start -->
         <div class="content-wrapper">
 
-            <div class="container-lg">
-                <!-- Simple Layouting and Elements Test -->
+            <div class="container-fluid">
+                <div class="row">
+                <div class="col-xl-9">
+{% block content_wrapper %}
                 <div class="content">
 {% block breadcrumbs %}
 {% endblock %}
@@ -162,10 +164,25 @@
 {{content|safe}}
 {% endblock %}
                 </div> <!-- content -->
-            </div>
+{% endblock content_wrapper %}
+            </div> <!-- col-xl-9 -->
+{# extra_nav #}
+{% if ( self.extra_nav() | trim | length ) > 0 %}{# display only if block not empty #}
+            <div class="col-xl-3 d-none d-xl-block extra-nav-container">
+                    <div class="extra-nav" id="extra-nav">
+{% block extra_nav -%}
+{%- endblock extra_nav %}
+{# Nasty little hack to blow up the width of the extra-nav to a maximum
+ - of you find a solution in css: please tell me #}
+<div style="visibility:hidden;">0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9</div>
+                    </div> <!-- extra-nav -->
+            </div> <!-- extra-nav-container -->
+{% endif %}{# extra nav #}
+            </div> <!-- row -->
+            </div> <!-- container -->
         </div>
         <!-- Content wrapper end -->
-{% endblock %}
+{% endblock content_wrapper_outer %}
     </div>
     <!-- Page wrapper end -->
   <!-- Halfmoon JS -->

@@ -293,6 +293,7 @@ class Page:
             title = "{} ({})".format(self.pagename, revision)
         # render markdown
         htmlcontent, toc = render.markdown(content)
+
         # render template
         return render_template(
             "page.html",
@@ -335,6 +336,10 @@ class Page:
             except StorageNotFound:
                 content = ""
             content = content.rstrip()
+
+        # get file listing
+        files = [f.data for f in self._attachments() if f.metadata is not None]
+
         return render_template(
             "editor.html",
             pagename=self.pagename,
@@ -342,6 +347,7 @@ class Page:
             content_editor=content,
             cursor_line=cursor_line,
             cursor_ch=cursor_ch,
+            files = files
         )
 
     def save(self, content, commit, author):
@@ -588,8 +594,10 @@ class Page:
             pagename=self.pagename,
         )
 
-    def _attachments(self):
-        files, directories = storage.list(self.attachment_directoryname)
+    def _attachments(self, maximum=None):
+        files, directories = storage.list(self.attachment_directoryname, depth=0)
+        if maximum:
+            files = files[:maximum]
         # currently only attached files are handled
         return [
             Attachment(

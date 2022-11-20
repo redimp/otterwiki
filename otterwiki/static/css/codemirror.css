@@ -1,11 +1,17 @@
+/* vim: set et sts=2 ts=2 ai: */
 /* BASICS */
 
 .CodeMirror {
   /* Set height, width, borders, and global font properties here */
   font-family: monospace;
-  height: 300px;
   color: black;
   direction: ltr;
+}
+
+.editor-bottom-panel {
+  height: 3rem;
+  padding: 0.4rem 2rem 0.2rem 2rem;
+  font-size: 1.4rem;
 }
 
 /* PADDING */
@@ -145,6 +151,11 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #a22;}
 .CodeMirror-activeline-background {background: #e8f2ff;}
 
 /* Otterwiki Theme */
+
+div.CodeMirror.cm-s-otterwiki.CodeMirror-wrap,
+div.CodeMirror.cm-s-otterwiki.CodeMirror-wrap.CodeMirror.focused {
+height:calc(100vh - 8rem);
+}
 
 /* based upon elegant.css */
 .cm-s-otterwiki span.cm-number, .cm-s-elegant span.cm-string, .cm-s-elegant span.cm-atom { color:

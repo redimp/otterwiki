@@ -141,6 +141,18 @@ pre,
     background: transparent;
     display: none;
 }
+
+#editor-help-markdown {
+    position: absolute;
+    bottom: 3rem;
+    left: 5rem;
+    z-index: 1000;
+    overflow-y: scroll;
+    max-height: 40vh;
+    margin: 0;
+    min-width: 90%;
+}
+
 /* history diff */
 table.diff {
     overflow-x: auto;
@@ -208,6 +220,29 @@ a.sidebar-toc-3 { padding-left: 3.5rem; padding-right: 0; }
 a.sidebar-toc-4 { padding-left: 4.0rem; padding-right: 0; }
 a.sidebar-toc-5 { padding-left: 4.5rem; padding-right: 0; }
 a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
+
+.sidebar-title-link {
+    color: rgba(0, 0, 0, 0.7);
+    background-color: transparent;
+    border: 0 solid transparent;
+    border-radius: 0;
+}
+.sidebar-title-link:hover {
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.85);
+    background-color: transparent;
+    border-color: transparent;
+}
+.dark-mode .sidebar-title-link {
+    color: rgba(255, 255, 255, 0.65);
+    background-color: transparent;
+    border-color: transparent;
+}
+.dark-mode .sidebar-title-link:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background-color: transparent;
+    border-color: transparent;
+}
 
 /* page tweaks */
 .page h1, .page h2, .page h3,
@@ -297,3 +332,36 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
     text-decoration: none;
 }
 
+/* extra nav */
+.extra-nav {
+    position: fixed;
+    margin-right: 1rem;
+    z-index: 20;
+    padding: 2rem 4rem 0rem 1rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    max-height: 95%;
+}
+
+.dark-mode .extra-nav {
+}
+
+.extra-nav .sidebar-title {
+    white-space: nowrap;
+}
+
+.btn-xsm {
+  height: 2.2rem;
+  line-height: 2.2rem;
+  padding: 0 1rem;
+  font-size: 1rem;
+}
+
+.extra-nav-attachment {
+    padding: 1rem;
+}
+
+.font-size-10 {
+  font-size: 1rem !important;
+}

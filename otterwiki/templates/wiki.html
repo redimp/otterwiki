@@ -24,13 +24,9 @@
                 </a>
 {% endif %}
                 <br />
-    {% if toc %}
-                <h5 class="sidebar-title">On this page</h5>
-                <div class="sidebar-divider"></div>
-        {% for count, name, level, raw, anchor in toc %}
-        <a href="#{{anchor}}" class="sidebar-link sidebar-toc-{{level}}">{{name|safe}}</a>
-        {% endfor %}
-    {% endif %}
+                <div class="sidebar-toc d-xl-none">
+                {% include 'snippets/toc.html' %}
+                </div>
 {% endblock %}
 
 {% block navbardropdown %}
@@ -53,3 +49,6 @@
 {{ super() }}
 {% endblock %}
 
+{% block extra_nav -%}
+{%- include 'snippets/toc.html' -%}
+{%- endblock %}

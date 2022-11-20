@@ -21,27 +21,61 @@
 #}
 {% block menu %}
 {{ super() }}
-                <a href="{{ url_for("syntax") }}" class="sidebar-link sidebar-link-with-icon" target="_blank">
-                    <span class="sidebar-icon">
-                        <i class="fab fa-markdown"></i>
-                    </span>
-                    Markdown Syntax
-                </a>
 {% endblock %}
 {#
     Content
 #}
 {% block content_wrapper %}
-        <!-- Content wrapper start -->
-        <div class="content-wrapper">
+<!-- Content wrapper start -->
 <form id="pagecontent" action="{{ url_for('preview', path=pagepath) }}" method="post">
 <input id="pc_cursor_line" type="hidden" name="cursor_line" value="" />
 <input id="pc_cursor_ch" type="hidden" name="cursor_ch" value="" />
 <textarea id="content_editor" name="content_editor">{{ content_editor }}</textarea>
 </form>
-        </div>
-        <!-- Content wrapper end -->
+<div id="editor-bottom-panel" class="editor-bottom-panel" style="display:none;">
+    <a href="#" onclick="otterwiki.toggleMarkdownHelp()" class="btn btn-xsm"><i class="fab fa-markdown"></i> Markdown Syntax</a>
+    <div id="editor-help-markdown" class="content card border rounded-top p-5" style="display: none;">
+        <a href="{{ url_for("syntax") }}" class="btn btn-xsm" target="_blank" style="float:right;">
+            <i class="fas fa-expand-arrows-alt"></i>
+                    Full Syntax Guide
+        </a>
+
+          {% include "snippets/syntax.html" %}
+    </div>
+</div>
+<!-- Content wrapper end -->
 {% endblock %}
+{#
+    extra-navbar
+#}
+{% block extra_nav -%}
+<h5 class="sidebar-title"><a class="sidebar-title-link" href="{{ url_for('attachments', pagepath=pagepath ) }}">Attachments <i class="fa fa-paperclip"></i></a></h5>
+                    <div class="sidebar-divider" ></div>
+                    {% for f in files %}
+    {#                            <a href="{{f.url}}">{% if f.thumbnail_url %}<img src="{{f.thumbnail_url}}"/>{%else%}{{f.thumbnail_icon|safe}}{%endif%}</a>#}
+                        <details class="collapse-panel pb-5">
+                          <summary class="collapse-header font-size-12">
+                            {{f.filename}}
+                          </summary>
+                          <div class="position-relative collapse-content font-size-12 extra-nav-attachment">
+{% if f.thumbnail_url %}
+                            <span class="font-weight-semi-bold">Inline Image:</span>
+                            <a href="#" onclick="navigator.clipboard.writeText('![]({{f.url}})')" class="btn btn-xsm position-absolute right-0"><i class="fas fa-copy"></i> Copy</a>
+                            <div class="font-size-10 text-monospace py-5">![]({{f.url}})</div>
+                            <!-- -->
+                            <span class="font-weight-semi-bold">Link with Thumbnail:</span>
+                            <a href="#" onclick="navigator.clipboard.writeText('[![]({{f.thumbnail_url}})]({{f.url}})')" class="btn btn-xsm position-absolute right-0"><i class="fas fa-copy"></i> Copy</a>
+                            <div class="font-size-10 text-monospace py-5">[![]({{f.thumbnail_url}})]({{f.url}})</div>
+                            <!-- -->
+{% endif %}
+                            <span class="font-weight-semi-bold">Link:</span>
+                            <a href="#" onclick="navigator.clipboard.writeText('[{{f.filename}}]({{f.url}})')" class="btn btn-xsm position-absolute right-0"><i class="fas fa-copy"></i> Copy</a>
+                            <div class="font-size-10 text-monospace py-5">[{{f.filename}}]({{f.url}})</div>
+                          </div>
+                        </details>
+                        {% endfor %}
+                        <p class="font-size-12 p-15 text-muted">Additional media can be added via the 'Attachments' of this page, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.</p>
+{%- endblock extra_nav %}
 {#
     Javascript
 #}
@@ -51,6 +85,7 @@
 <script src="{{ url_for("static", filename="js/codemirror.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-markdown.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-continuelist.js") }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for("static", filename="js/cm-panel.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/codemirror-4.inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
@@ -66,6 +101,9 @@
 {% if cursor_line and cursor_ch %}
     cm_editor.setCursor({ line: {{cursor_line}}, ch: {{cursor_ch}} } );
 {% endif %}
+    var bottom_panel = document.getElementById('editor-bottom-panel');
+    bottom_panel.style.display = 'block';
+    cm_editor.addPanel(bottom_panel, {position: "bottom", stable: true});
 {#
 thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuecomment-227075500
 #}

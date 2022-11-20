@@ -26,4 +26,18 @@ var otterwiki = {
             }
         }
     },
+    toggleMarkdownHelp: function() {
+        var ehm = document.getElementById("editor-help-markdown");
+        console.log(".");
+        currDisplay = ehm.style.display;
+        if (ehm.style.display === "none")
+        {
+            ehm.style.display = "block";
+        }
+        else
+        {
+            ehm.style.display = "none";
+        }
+    }
+
 }
