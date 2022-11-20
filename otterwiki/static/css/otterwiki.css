@@ -222,12 +222,6 @@ a.sidebar-toc-5 { padding-left: 4.5rem; padding-right: 0; }
 a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 
 .sidebar-title-link {
-    display: block;
-    margin: 2.5rem 2.5rem 0.5rem 2.5rem;
-    font-size: 1.5rem;
-    font-weight: 500;
-    min-height: 3rem;
-    height: auto;
     color: rgba(0, 0, 0, 0.7);
     background-color: transparent;
     border: 0 solid transparent;
@@ -249,7 +243,6 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
     background-color: transparent;
     border-color: transparent;
 }
-
 
 /* page tweaks */
 .page h1, .page h2, .page h3,

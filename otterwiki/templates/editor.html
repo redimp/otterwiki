@@ -49,7 +49,7 @@
     extra-navbar
 #}
 {% block extra_nav -%}
-                    <a class="sidebar-title-link" href="{{ url_for('attachments', pagepath=pagepath ) }}">Attachments <i class="fa fa-paperclip"></i></a>
+<h5 class="sidebar-title"><a class="sidebar-title-link" href="{{ url_for('attachments', pagepath=pagepath ) }}">Attachments <i class="fa fa-paperclip"></i></a></h5>
                     <div class="sidebar-divider" ></div>
                     {% for f in files %}
     {#                            <a href="{{f.url}}">{% if f.thumbnail_url %}<img src="{{f.thumbnail_url}}"/>{%else%}{{f.thumbnail_icon|safe}}{%endif%}</a>#}
