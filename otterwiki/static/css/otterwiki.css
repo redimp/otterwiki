@@ -337,12 +337,11 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
     position: fixed;
     margin-right: 1rem;
     z-index: 20;
-    padding: 0.5rem;
-    border-radius: 0.4rem;
+    padding: 2rem 4rem 0rem 1rem;
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-width: thin;
-    max-height: 90%;
+    max-height: 95%;
 }
 
 .dark-mode .extra-nav {
