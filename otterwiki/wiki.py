@@ -1030,19 +1030,21 @@ class AutoRoute:
     def __init__(self, path, values={}):
         self.path = path
         self.values = values
+        # split path in path and filename
+        *prefix, self.filename = split_path(self.path)
+        if len(prefix):
+            self.pagepath = join_path(prefix)
+        else:
+            self.pagepath = ""
+        # glue together storage path
+        self.storage_path = join_path([self.pagepath.lower(),self.filename])
 
     def view(self):
-        # split path in path and filename
-        *prefix, filename = split_path(self.path)
-        if len(prefix):
-            pagepath = join_path(prefix)
-        else:
-            pagepath = None
         # check if the path leads to an attachment
-        if pagepath and not filename.lower().endswith(".md") and \
-                not storage.isdir(self.path.lower()) and storage.exists(self.path.lower()):
+        if not empty(self.pagepath) and not self.filename.lower().endswith(".md") and \
+                not storage.isdir(self.path.lower()) and storage.exists(self.storage_path):
             # create page
-            p = Page(pagepath)
+            p = Page(self.pagepath)
             # is this a thumbnail?
             if 'thumbnail' in self.values:
                 # handle size parameter
@@ -1050,9 +1052,9 @@ class AutoRoute:
                     size=int(self.values['thumbnail'])
                 except:
                     size=None
-                return p.get_attachment_thumbnail(filename=filename, size=size, revision=None)
+                return p.get_attachment_thumbnail(filename=self.filename, size=size, revision=None)
             # this is an attachment
-            return p.get_attachment(filename)
+            return p.get_attachment(self.filename)
         # default to Page view
         p = Page(self.path)
         return p.view()
