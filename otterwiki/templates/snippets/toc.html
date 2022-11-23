@@ -2,7 +2,7 @@
 {% if toc -%}
             <h5 class="sidebar-title">On this page</h5>
             <div class="sidebar-divider"></div>
-    {% for count, name, level, raw, anchor in toc %}
-    <a href="#{{anchor}}" class="sidebar-link sidebar-toc-{{level}}">{{name|safe}}</a>
+    {% for count, html, level, text, anchor in toc %}
+    <a href="#{{anchor}}" class="sidebar-link sidebar-toc-{{level}}">{{text}}</a>
     {% endfor %}
 {%- endif %}
