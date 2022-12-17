@@ -7,6 +7,10 @@
 {% if pages|length > 0 %}
 <nav aria-label="Pagination" class="float-right">
 <div class="btn-group" role="group">
+  <a class="btn btn-square" href="{{ url_for("changelog", revision=first_page) }}">
+    <i class="fa fa-angle-double-left" aria-hidden="true"></i>
+    <span class="sr-only">First page</span> <!-- sr-only = only for screen readers -->
+  </a>
   <!-- Previous page -->
   {% if previous_page %}
   <a class="btn btn-square" href="{{ url_for("changelog", revision=previous_page) }}">
@@ -20,7 +24,11 @@
   {% endif %}
   <!-- Pages -->
   {% for page in pages %}
+  {% if page["dummy"] %}
+  <span class="btn btn-square">...</span>
+  {% else %}
   <a class="btn btn-square {{ "active" if page["active"] }}" href="{{url_for("changelog", revision=page["revision"])}}">{{page["i"]}}</a>
+  {% endif %}
   {% endfor %}
   {% if next_page %}
   <!-- Next page -->
@@ -33,6 +41,10 @@
     <i class="fa fa-angle-right" aria-hidden="true"></i>
   </span>
   {% endif %}
+  <a class="btn btn-square" href="{{ url_for("changelog", revision=last_page) }}">
+    <i class="fa fa-angle-double-right" aria-hidden="true"></i>
+    <span class="sr-only">Last page</span> <!-- sr-only = only for screen readers -->
+  </a>
 </div>
 </nav>
 {% endif %}

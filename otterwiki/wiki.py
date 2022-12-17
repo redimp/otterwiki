@@ -146,6 +146,11 @@ class Changelog:
         return log
 
     def render(self):
+        """revert_form.
+
+        :param revision:
+        :param message:
+        """
         if not has_permission("READ"):
             abort(403)
         log = self.get()
@@ -195,12 +200,45 @@ class Changelog:
                 commit_i += self.commit_count
                 page_i += 1
             log = log_page
-        # TODO thin out pages ... remove pages, add "..." and set dummy = true
+        # store first and last page
+        first_page = pages[0]["revision"]
+        last_page = pages[-1]["revision"]
+        # thin out pages
+        page_span = 4
+        max_pages = 8
+        if len(pages) > max_pages:
+            # calculate how many pages would be displayed left and right of the active page
+            l_len = active_page - max(1, active_page - page_span)
+            r_len = min(active_page + page_span, len(pages)) - active_page
+            # to have a fixed length of displayed pages add the missing 
+            # lengths to the respectively other side
+            if l_len < page_span:
+                r_len += page_span - l_len
+            if r_len < page_span:
+                l_len += page_span - r_len
+            # calculate array positions
+            l_pos = active_page - l_len - 1
+            r_pos = active_page + r_len
+            # left of active page
+            pages_short = pages[l_pos:active_page]
+            if l_pos > 0:
+                # insert dummy (and remove page to not break the layout)
+                pages_short = [{"dummy":True}] + pages_short[1:]
+            # right of active page
+            pages_short += pages[active_page : r_pos]
+            if r_pos < len(pages):
+                # insert dummy (and remove page to not break the layout)
+                pages_short = pages_short[:-1] + [{"dummy":True}]
+            # use the shorter page list
+            pages = pages_short
+
         return render_template(
             "changelog.html",
             log=log,
             title="Changelog",
             pages=pages,
+            first_page=first_page,
+            last_page=last_page,
             previous_page=previous_page,
             next_page=next_page,
         )
