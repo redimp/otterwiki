@@ -1,8 +1,9 @@
+---
 version: '2'
 services:
   web:
     build: .
     volumes:
-     - app-data:/app-data
+      - app-data:/app-data
 
 # vim:set et ts=8 sts=2 sw=2 ai fenc=utf-8:
