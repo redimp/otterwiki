@@ -13,6 +13,14 @@
     display: none;
 }
 
+.sidebar-toc {
+    display: none;
+}
+
+.extra-nav-container {
+    display: none;
+}
+
 .alert, /* hide alerts */
 a.anchor {
     display: none;
