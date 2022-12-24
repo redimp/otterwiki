@@ -60,11 +60,11 @@ docker-test:
 	docker build -t otterwiki:_test --target test-stage .
 
 docker-build: docker-test
-	docker build -t otterwiki .
+	docker build -t otterwiki:_build .
 
 docker-run:
-	docker build -t otterwiki .
-	docker run -p 8080:80 otterwiki
+	docker build -t otterwiki:_build .
+	docker run -p 8080:80 otterwiki:_build
 
 docker-buildx-test:
 	docker buildx build --platform $(PLATFORM) --target test-stage .
