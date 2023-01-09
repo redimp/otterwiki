@@ -59,18 +59,30 @@ class PageIndex:
         '''
         This will generate an index of pages/toc of pages from a given path.
         '''
+
+        self.path = path
+
+        if self.path is not None:
+            self.breadcrumbs = get_breadcrumbs(path)
+        else:
+            self.breadcrumbs = None
+
         from timeit import default_timer as timer
 
         t_start = timer()
-        files, directories = storage.list(p=path)
+        files, directories = storage.list(p=self.path)
         app.logger.debug(
             "PageIndex reading files took {:.3f} seconds.".format(timer() - t_start)
         )
         self.toc = {}
         t_start = timer()
-        for f in [f for f in files if f.endswith(".md")]: # filter .md files
+        for fn in [f for f in files if f.endswith(".md")]: # filter .md files
+            if self.path is None:
+                f = fn
+            else:
+                f = os.path.join(path,fn)
             depth = len(split_path(f))
-            firstletter = get_pagename(f, full=True)[0].lower()
+            firstletter = get_pagename(fn, full=True)[0].lower()
             if firstletter not in self.toc.keys():
                 self.toc[firstletter] = []
             pagetoc = []
@@ -88,7 +100,7 @@ class PageIndex:
                     ))
             self.toc[firstletter].append(
                     (depth,
-                     get_pagename(f, full=True), # title
+                     get_pagename(fn, full=True), # title
                      url_for("view", path=get_pagename(f, full=True)), # url
                      pagetoc)
                 )
@@ -104,6 +116,7 @@ class PageIndex:
             "pageindex.html",
             title="Page Index",
             pages=self.toc,
+            breadcrumbs=self.breadcrumbs
         )
 
 class Changelog:
