@@ -1106,8 +1106,13 @@ class AutoRoute:
                 return p.get_attachment_thumbnail(filename=self.filename, size=size, revision=None)
             # this is an attachment
             return p.get_attachment(self.filename)
-        # default to Page view
+        # create page object
         p = Page(self.path)
+        # if page md doesn't exist, but the folder exists, show index
+        if not storage.exists(p.filename) and storage.exists(p.attachment_directoryname):
+            pi = PageIndex(p.pagename)
+            return pi.render()
+        # default to Page view
         return p.view()
 
 # vim: set et ts=8 sts=4 sw=4 ai:

@@ -349,9 +349,10 @@ def test_nested_files(test_client):
     rv = test_client.get("/{}/".format(pagename))
     assert rv.status_code == 200
 
-    # check that the parent pages does NOT have a wiki associated
+    # check that the parent page returns the page index
     rv = test_client.get("/{}".format(_inner_folder))
-    assert rv.status_code == 404
+    assert rv.status_code == 200
+    assert 'Page Index' in rv.data.decode()
 
     # upload an iamge
     file_name = 'test_image.png'
