@@ -321,7 +321,7 @@ def test_move_page(test_client):
 def test_nested_files(test_client):
     p = test_client.application._otterwiki_tempdir
     _inner_folder = "a_folder/another_folder/"
-    _file_name = "my_file"
+    _file_name = "examplepage"
     pagename = f"{_inner_folder}{_file_name}"
 
     content = "# My nested file\n\nDid it work?"
@@ -353,6 +353,7 @@ def test_nested_files(test_client):
     rv = test_client.get("/{}".format(_inner_folder))
     assert rv.status_code == 200
     assert 'Page Index' in rv.data.decode()
+    assert _file_name.capitalize() in rv.data.decode()
 
     # upload an iamge
     file_name = 'test_image.png'

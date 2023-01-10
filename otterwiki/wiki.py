@@ -60,12 +60,11 @@ class PageIndex:
         This will generate an index of pages/toc of pages from a given path.
         '''
 
-        self.path = path
-
-        if self.path is not None:
+        if path is not None:
             self.breadcrumbs = get_breadcrumbs(path)
+            self.path = path.lower()
         else:
-            self.breadcrumbs = None
+            self.path, self.breadcrumbs = None, None
 
         from timeit import default_timer as timer
 
@@ -80,7 +79,7 @@ class PageIndex:
             if self.path is None:
                 f = fn
             else:
-                f = os.path.join(path,fn)
+                f = os.path.join(self.path,fn)
             depth = len(split_path(f))
             firstletter = get_pagename(fn, full=True)[0].lower()
             if firstletter not in self.toc.keys():
