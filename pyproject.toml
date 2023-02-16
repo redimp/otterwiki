@@ -9,7 +9,7 @@ license = {file = "LICENSE"}
 requires-python = ">=3.7"
 dynamic = ["version"]
 dependencies = [
-    "Werkzeug==2.0.3",
+    "Werkzeug==2.2.3",
     "Flask-Login==0.5.0",
     "Flask-Mail==0.9.1",
     "SQLAlchemy==1.4.0",
