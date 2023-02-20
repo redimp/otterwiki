@@ -109,7 +109,8 @@ def update_app_config():
         # setup flask_mail
         mail = Mail(app)
 
-db.create_all()
+with app.app_context():
+    db.create_all()
 update_app_config()
 
 #

@@ -46,22 +46,24 @@ class SimpleAuth:
             return "<User '{} <{}>'>".format(self.name, self.email)
 
     def __init__(self):
-        self._db_migrate()
-        # create tables
-        db.create_all()
+        with app.app_context():
+            self._db_migrate()
+            # create tables
+            db.create_all()
 
     def _db_migrate(self):
         from sqlalchemy.exc import OperationalError
         with db.engine.begin() as conn:
             for column in ['email_confirmed', 'allow_read', 'allow_write', 'allow_upload']:
                 try:
-                    r = conn.execute("ALTER TABLE user ADD COLUMN {} BOOLEAN;".format(column))
+                    sqlc = db.text("ALTER TABLE user ADD COLUMN {} BOOLEAN;".format(column))
+                    r = conn.execute(sqlc)
                     app.logger.report("_db_migrate: Altered table 'user' added '{}'".format(column))
                 except OperationalError:
                     pass
 
     def user_loader(self, id):
-        return self.User.query.get(int(id))
+        return self.User.query.filter_by(id=int(id)).first()
 
     def get_all_User(self):
         return self.User.query.all()

@@ -47,9 +47,13 @@ def test_client(create_app):
     client = create_app.test_client()
     return client
 
+@pytest.fixture
+def req_ctx(create_app):
+    with create_app.test_request_context() as ctx:
+        yield ctx
 
 @pytest.fixture
-def app_with_user(create_app):
+def app_with_user(create_app, req_ctx):
     from otterwiki.auth import SimpleAuth, generate_password_hash, db
 
     # delete all users
@@ -83,9 +87,3 @@ def admin_client(app_with_user):
     html = result.data.decode()
     assert "You logged in successfully." in html
     return client
-
-
-@pytest.fixture
-def req_ctx(create_app):
-    with create_app.test_request_context() as ctx:
-        yield ctx
