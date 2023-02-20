@@ -8,6 +8,7 @@ all: run
 
 clean:
 	rm -rf venv *.egg-info dist *.log* otterwiki/__pycache__ tests/__pycache__
+	rm -rf .pytest_cache .tox
 	rm -rf coverage_html
 
 venv:
@@ -57,13 +58,13 @@ settings.cfg:
 	@false
 
 docker-test:
-	docker build -t otterwiki:_test --target test-stage .
+	DOCKER_BUILDKIT=1 docker build -t otterwiki:_test --target test-stage .
 
 docker-build: docker-test
-	docker build -t otterwiki:_build .
+	DOCKER_BUILDKIT=1 docker build -t otterwiki:_build .
 
 docker-run:
-	docker build -t otterwiki:_build .
+	DOCKER_BUILDKIT=1 docker build -t otterwiki:_build .
 	docker run -p 8080:80 otterwiki:_build
 
 docker-buildx-test:
