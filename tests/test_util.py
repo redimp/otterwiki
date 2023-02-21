@@ -17,6 +17,7 @@ from otterwiki.util import (
     get_pagepath,
     random_password,
     mkdir,
+    titleSs,
 )
 
 
@@ -124,3 +125,9 @@ def test_mkdir(tmpdir):
     path_c = "bb/cc/dd"
     mkdir(path=tmpdir.join(path_c))
     assert os.path.exists(tmpdir.join(path_c))
+
+def test_titleSs():
+    assert "Abc Def" == titleSs("abc dEf")
+    assert "ßabc Def" == titleSs("ßabc def")
+    assert "Åbcd Éfgh" == titleSs("åbcd éfgh")
+    assert "Test Magicword" == titleSs("Test MAGICWORD")

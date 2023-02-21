@@ -95,14 +95,27 @@ def get_attachment_directoryname(filename):
         raise ValueError
     return filename[:-3]
 
+def titleSs(s):
+    """
+    This function is a workaround for str.title() not knowing upercase 'ß'.
+    """
+    if 'ß' not in s:
+        return s.title()
+    magicword = 'M🙉A🙈G🙊I🐤C🐣W🐥O🦆R🐔D'
+    while magicword in s:
+        magicword = 2*magicword
+    s = s.replace('ß',magicword)
+    s = s.title()
+    return s.replace(magicword,'ß')
+
 
 def get_pagename(filepath, full=False):
     '''This will derive the page name (displayed on the web page) from the url requested'''
     if filepath.endswith(".md"):
         filepath = filepath[:-3]
     if not full:
-        return os.path.basename(filepath).title()
-    return "/".join([p.title() for p in split_path(filepath)])
+        return titleSs(os.path.basename(filepath))
+    return "/".join([titleSs(p) for p in split_path(filepath)])
 
 
 def get_pagepath(pagename):

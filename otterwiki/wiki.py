@@ -81,7 +81,7 @@ class PageIndex:
             else:
                 f = os.path.join(self.path,fn)
             depth = len(split_path(f))
-            firstletter = get_pagename(fn, full=True)[0].lower()
+            firstletter = get_pagename(fn, full=True)[0]
             if firstletter not in self.toc.keys():
                 self.toc[firstletter] = []
             pagetoc = []
