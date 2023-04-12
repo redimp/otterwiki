@@ -176,16 +176,16 @@ def test_binary(storage):
 
 
 def test_revision(storage):
-    content = "kdfjlhg gdklfjghdf gkl;djshfg dgf;lkjhs glkshjad"
+    content = ["aaa","kdfjlhg gdklfjghdf gkl;djshfg dgf;lkjhs glkshjad"]
     message = "Test commit"
     filename = "test_revision.md"
     author = ("Example Author", "mail@example.com")
     assert True == storage.store(
-        filename, content=content, author=author, message=message
+        filename, content=content[0], author=author, message=message
     )
     metadata = storage.metadata(filename)
     revision = metadata["revision-full"]
-    assert storage.load(filename, revision=revision) == content
+    assert storage.load(filename, revision=revision) == content[0]
     metadata2 = storage.metadata(filename, revision=revision)
     assert metadata == metadata2
     # check broken revision
@@ -194,6 +194,14 @@ def test_revision(storage):
         storage.metadata(filename, revision=revision3)
     with pytest.raises(gitstorage.StorageNotFound):
         storage.load(filename, revision=revision3)
+    # add commit
+    assert True == storage.store(
+        filename, content=content[1], author=author, message=message
+    )
+    # fetch last commit
+    assert storage.load(filename) == content[1]
+    # fetch first commit
+    assert storage.load(filename, revision=revision) == content[0]
 
 
 def test_store_subdir(storage):

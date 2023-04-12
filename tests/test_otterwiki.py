@@ -100,6 +100,44 @@ def test_page_save(test_client):
     assert commit_message in html
 
 
+def test_view_revision(test_client, req_ctx):
+    pagename = "ViewRevisionTest"
+    content = ["aaa","bbb"]
+    commit_messages = ["initial commit", "update"]
+    # save page
+    save_shortcut(test_client, pagename, content[0], commit_messages[0])
+    html0 = test_client.get("/{}".format(pagename)).data.decode()
+    assert content[0] in html0
+    # update page
+    save_shortcut(test_client, pagename, content[1], commit_messages[1])
+    html1 = test_client.get("/{}".format(pagename)).data.decode()
+    assert content[1] in html1
+    # check history
+    html = test_client.get("/{}/history".format(pagename)).data.decode()
+    # find revisions
+    revision = re.findall(r"class=\"btn revision-small\">([A-z0-9]+)</a>", html)
+    assert len(revision) == 2
+    # fetch revisions via pageview
+    url0 = url_for("pageview", path=pagename, revision=revision[0])
+    html0 = test_client.get(url0).data.decode()
+    url1 = url_for("pageview", path=pagename, revision=revision[1])
+    html1 = test_client.get(url1).data.decode()
+    # and check them
+    assert revision[0] in html0
+    assert revision[1] in html1
+    assert content[1] in html0
+    assert content[0] in html1
+    # fetch revisions via view
+    url0 = url_for("view", path=pagename, revision=revision[0])
+    html0 = test_client.get(url0).data.decode()
+    url1 = url_for("view", path=pagename, revision=revision[1])
+    html1 = test_client.get(url1).data.decode()
+    # and check them
+    assert revision[0] in html0
+    assert revision[1] in html1
+    assert content[1] in html0
+    assert content[0] in html1
+
 def test_blame_and_history_and_diff(test_client):
     pagename = "Blame Test"
     content = "Blame Test\naaa_aaa_aaa"
@@ -137,7 +175,6 @@ def test_blame_and_history_and_diff(test_client):
     assert pagename in html
     assert revision[0] in html
     assert revision[1] in html
-
 
 def test_blame_and_history_404(test_client):
     pagename = "Doe's not exist"
