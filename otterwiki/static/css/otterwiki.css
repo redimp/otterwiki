@@ -365,3 +365,19 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 .font-size-10 {
   font-size: 1rem !important;
 }
+
+/* dark mode button tweaks */
+.dark-mode .btn.btn-danger {
+    background-color: #B00020;
+    border-color: #B00020;
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+}
+
+.dark-mode .btn.btn-success {
+    color: #fff;
+    background-color: #4caf50;
+    border-color: #4caf50;
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+}
