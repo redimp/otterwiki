@@ -96,7 +96,15 @@
         lineWrapping: true,
         indentWithTabs: false,
         autofocus: true,
-        extraKeys: {"Enter": "newlineAndIndentContinueMarkdownList"},
+        extraKeys: {
+            "Enter": "newlineAndIndentContinueMarkdownList",
+            'Cmd-S': function () {
+                return false
+            },
+            'Ctrl-S': function () {
+                return false
+            },
+        },
       });
 {% if cursor_line and cursor_ch %}
     cm_editor.setCursor({ line: {{cursor_line}}, ch: {{cursor_ch}} } );
@@ -104,6 +112,7 @@
     var bottom_panel = document.getElementById('editor-bottom-panel');
     bottom_panel.style.display = 'block';
     cm_editor.addPanel(bottom_panel, {position: "bottom", stable: true});
+
 {#
 thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuecomment-227075500
 #}
