@@ -156,7 +156,7 @@ class SimpleAuth:
             # generate random password
             password = random_password()
         # hash password
-        hashed_password = generate_password_hash(password, method="sha256")
+        hashed_password = generate_password_hash(password, method="scrypt")
         # handle flags
         # first user is admin
         if len(self.User.query.all()) < 1:
@@ -300,7 +300,7 @@ class SimpleAuth:
             else:
                 # update password
                 current_user.password_hash = generate_password_hash(
-                    form.get("password1"), method="sha256"
+                    form.get("password1"), method="scrypt"
                 )
                 db.session.add(current_user)
                 db.session.commit()

@@ -39,13 +39,30 @@ def test_db(app_with_user):
     assert True is check_password_hash(user.password_hash, "password1234")
 
 
+@pytest.mark.filterwarnings("ignore: The 'sha256' password method is deprecated")
+@pytest.mark.filterwarnings("ignore: The 'sha512' password method is deprecated")
 def test_generate_and_check_hash(create_app):
     from otterwiki.auth import generate_password_hash, check_password_hash
 
     for password in ["abc123.!äüöß", "aedaiPaesh8ie5Iu", "┳━┳ ヽ(ಠل͜ಠ)ﾉ"]:
-        for method in ["sha256", "sha512"]:
+        for method in ["sha256", "sha512", "scrypt"]:
             hash = generate_password_hash(password, method=method)
             assert True is check_password_hash(hash, password)
+
+
+@pytest.mark.filterwarnings("ignore: The 'sha256' password method is deprecated")
+@pytest.mark.filterwarnings("ignore: The 'sha512' password method is deprecated")
+def test_check_password_hash_backward(create_app):
+    from otterwiki.auth import generate_password_hash, check_password_hash
+    # make sure check_password_hash still works sice sha256/sha512 password methods
+    # are deprecated and will be removed in Werkzeug 3.0 to not break existing
+    # installations
+    assert True is check_password_hash(
+        "sha256$nWPrdEycvH4DN89j$4fa6082732725cfd19b4e398c20471035949ec96229d2f49c38338d915a3c527",
+        "1234")
+    assert True is check_password_hash(
+        "sha512$mvuWSvXoAqOR53Av$f1e4bbea9cc0c581fafffda1824a0b64510cf861b1cb3fdb829cffa2d1639001a2deaa86516de080413f57e2f1cf72a04148ac63ac04bc6ad724a2ccbd51fe48",
+        "1234")
 
 
 def test_minimal_auth(app_with_user):

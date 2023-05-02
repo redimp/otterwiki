@@ -63,7 +63,7 @@ def app_with_user(create_app, req_ctx):
     user = SimpleAuth.User(
         name="Test User",
         email="mail@example.org",
-        password_hash=generate_password_hash("password1234", method="sha256"),
+        password_hash=generate_password_hash("password1234", method="scrypt"),
         first_seen=datetime.now(),
         last_seen=datetime.now(),
         is_admin=True,
