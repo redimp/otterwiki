@@ -14,7 +14,7 @@ dependencies = [
     "Flask-Mail==0.9.1",
     "SQLAlchemy==2.0.4",
     "Flask-SQLAlchemy==3.0.3",
-    "Flask==2.2.3",
+    "Flask==2.3.2",
     "Jinja2>=2.9",
     "gitpython==3.1.31",
     "cython==0.29.33",
