@@ -9,8 +9,8 @@ license = {file = "LICENSE"}
 requires-python = ">=3.7"
 dynamic = ["version"]
 dependencies = [
-    "Werkzeug==2.3.3",
-    "Flask-Login==0.6.2",
+    "Werkzeug>=2.3.3",
+    "Flask-Login>=0.6.2",
     "Flask-Mail==0.9.1",
     "SQLAlchemy==2.0.4",
     "Flask-SQLAlchemy==3.0.3",
@@ -22,7 +22,7 @@ dependencies = [
     "pygments==2.14.0",
     "Pillow==9.4.0",
     "unidiff==0.7.4",
-    "flask-htmlmin==2.2.0",
+    "flask-htmlmin>=2.2.0",
 ]
 
 [project.urls]
@@ -67,5 +67,16 @@ deps = pytest
 commands =
     pytest tests
 """
+
+[tool.pytest.ini_options]
+testpaths = ["./tests"]
+filterwarnings = [
+    # venv/lib/python3.11/site-packages/htmlmin/main.py:28: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+    "ignore: 'cgi' is deprecated:DeprecationWarning",
+    # /venv/lib/python3.11/site-packages/flask_login/utils.py:126: DeprecationWarning: 'werkzeug.urls.url_decode' is deprecated and will be removed in Werkzeug 2.4. Use 'urllib.parse.parse_qs' instead.
+    "ignore: 'werkzeug.urls.url_decode' is deprecated:DeprecationWarning",
+    # venv/lib/python3.11/site-packages/flask_login/utils.py:130: DeprecationWarning: 'werkzeug.urls.url_encode' is deprecated and will be removed in Werkzeug 2.4. Use 'urllib.parse.urlencode' instead.
+    "ignore: 'werkzeug.urls.url_encode' is deprecated:DeprecationWarning",
+]
 
 # vim: set et ts=8 sts=4 sw=4 ai fenc=utf-8:
