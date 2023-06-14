@@ -14,7 +14,8 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import html
 from pygments.util import ClassNotFound
 
-from flask import url_for, Markup
+from flask import url_for
+from markupsafe import Markup
 from otterwiki.util import slugify, empty
 
 # Please check https://github.com/lepture/mistune-contrib

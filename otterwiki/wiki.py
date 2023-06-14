@@ -10,11 +10,11 @@ from flask import (
     abort,
     url_for,
     render_template,
-    escape as html_escape,
     make_response,
     send_file,
     jsonify,
 )
+from markupsafe import escape as html_escape
 from otterwiki.gitstorage import StorageNotFound, StorageError
 from otterwiki.server import app, db, storage
 from otterwiki.renderer import render

@@ -9,20 +9,20 @@ license = {file = "LICENSE"}
 requires-python = ">=3.7"
 dynamic = ["version"]
 dependencies = [
-    "Werkzeug>=2.3.3",
-    "Flask-Login>=0.6.2",
+    "Werkzeug==2.3.6",
+    "Flask-Login==0.6.2",
     "Flask-Mail==0.9.1",
     "SQLAlchemy==2.0.4",
     "Flask-SQLAlchemy==3.0.3",
     "Flask==2.3.2",
-    "Jinja2>=2.9",
+    "Jinja2==3.1.2",
     "gitpython==3.1.31",
     "cython==0.29.33",
     "mistune==2.0.4",
     "pygments==2.14.0",
     "Pillow==9.4.0",
     "unidiff==0.7.4",
-    "flask-htmlmin>=2.2.0",
+    "flask-htmlmin==2.2.1",
 ]
 
 [project.urls]
