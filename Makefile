@@ -58,6 +58,8 @@ settings.cfg:
 	@false
 
 docker-test:
+	# make sure the image is rebuild
+	DOCKER_BUILDKIT=1 docker rmi otterwiki:_test || true
 	DOCKER_BUILDKIT=1 docker build -t otterwiki:_test --target test-stage .
 
 docker-build: docker-test

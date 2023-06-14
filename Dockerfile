@@ -22,13 +22,15 @@ RUN pip install .
 #
 FROM compile-stage AS test-stage
 # install git (not needed for compiling)
-RUN apt-get install -y --no-install-recommends git
+RUN apt-get update -y && apt-get install -y --no-install-recommends git
 # install the dev environment
 RUN pip install '.[dev]'
 # run pytest to test the installation in /opt/venv
 RUN cd /app/tests && pytest .
 # run tox (which builds a new environemnt and runs pytest)
 RUN tox
+# configure tox as default command when the test-stage is executed
+CMD ["tox"]
 #
 # production stage
 #
