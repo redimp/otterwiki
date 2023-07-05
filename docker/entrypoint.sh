@@ -77,7 +77,16 @@ USE_LISTEN_PORT=${LISTEN_PORT:-80}
 echo "server {
     listen ${USE_LISTEN_PORT};
     client_max_body_size $USE_NGINX_MAX_UPLOAD;
-    location / {
+" > /etc/nginx/conf.d/default.conf
+
+if [ ! -z "${REAL_IP_FROM}" ]; then
+echo "    set_real_ip_from $REAL_IP_FROM;
+    real_ip_header X-Real-IP;
+    real_ip_recursive on;" >> /etc/nginx/conf.d/nginx.conf
+fi
+
+
+echo "    location / {
         try_files \$uri @app;
     }
     location @app {
@@ -86,12 +95,7 @@ echo "server {
     }
     location $USE_STATIC_URL {
         alias $USE_STATIC_PATH;
-    }" > /etc/nginx/conf.d/default.conf
-
-# # FIXME
-# echo "    set_real_ip_from 172.21.0.1;
-#     real_ip_header X-Real-IP;
-#     real_ip_recursive on;" >> /etc/nginx/conf.d/nginx.conf
+    }" >> /etc/nginx/conf.d/default.conf
 
 # close the server block
 echo "}" >> /etc/nginx/conf.d/default.conf

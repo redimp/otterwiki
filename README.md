@@ -84,7 +84,6 @@ An Otter Wiki is using [Flask-Mail](https://pythonhosted.org/Flask-Mail/).
 | `MAIL_USE_TLS`   | `False`         | Use TLS encrytion                            |
 | `MAIL_USE_SSL`   | `True`          | Use SSL encryption                           |
 
-
 ### Advanced configuration
 
 This applies only when you create the `settings.cfg` manually. Create your
@@ -98,6 +97,12 @@ variables fitting to your environment.
 | `SQLALCHEMY_DATABASE_URI` | `'sqlite:////path/to/the/sqlite/file'` | The absolute path to the database storing the user credentials |
 
 For the `SQLALCHEMY_DATABASE_URI` see <https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/#connection-uri-format>.
+
+### nginx configuration
+
+| Variable         |  Example         | Description                                  |
+|------------------|------------------|----------------------------------------------|
+| `REAL_IP_FROM`   | `'10.0.0.0/8'`   | Configure nginx to respect `real_ip_header`, see <http://nginx.org/en/docs/http/ngx_http_realip_module.html> |
 
 ## Setup a development environment
 
