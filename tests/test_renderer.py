@@ -2,7 +2,8 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import pytest
-from otterwiki.renderer import render
+from otterwiki.renderer import render, preprocess_wiki_links
+
 
 def test_lastword():
     lastword = render.lastword
@@ -97,6 +98,7 @@ def test_img():
     assert 'title="title"' in html
     assert 'alt="alt text"' in html
 
+
 def test_html_mark():
     text = "<mark>mark</mark>"
     html, _ = render.markdown(text)
@@ -111,3 +113,33 @@ def test_wiki_link(req_ctx):
     html, _ = render.markdown(text)
     assert '<a href="/Link">Link</a>' in html
 
+
+def test_wiki_link_subspace(req_ctx):
+    text = "[[Paul|people/Paul]]"
+    html, _ = render.markdown(text)
+    assert '<a href="/people/Paul">Paul</a>' in html
+
+
+def test_wiki_link_in_table(req_ctx):
+    text = """| name | date | link |
+| -------- | -------- | -------- |
+| John | 01/31/1996 | [[people/John]] |
+| Mary |10/08/2001 | [[Mary|people/Mary]] |
+
+[[Paul|people/Paul]]
+"""
+    html, _ = render.markdown(text)
+    assert '<td><a href="/people/John">people/John</a></td>' in html
+    assert '<a href="/people/Paul">Paul</a>' in html
+    assert '<td><a href="/people/Mary">Mary</a></td>' in html
+
+
+def test_preprocess_wiki_links():
+    md = preprocess_wiki_links(
+        """
+        [[Page]]
+        [[Title|Link]]"""
+    )
+    assert '[Page](/Page)' in md
+    assert '[Page](/Page)' == preprocess_wiki_links("[[Page]]")
+    assert '[Title](/Link)' == preprocess_wiki_links("[[Title|Link]]")

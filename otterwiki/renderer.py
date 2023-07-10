@@ -7,7 +7,12 @@ import re
 import git
 
 import mistune
-from mistune.plugins import plugin_table, plugin_url, plugin_task_lists, plugin_strikethrough
+from mistune.plugins import (
+    plugin_table,
+    plugin_url,
+    plugin_task_lists,
+    plugin_strikethrough,
+)
 
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
@@ -24,6 +29,7 @@ from otterwiki.util import slugify, empty
 # the cursor magic word which is ignored by the rendering
 cursormagicword = "CuRsoRm4g1cW0Rd"
 
+
 def pygments_render(code, lang):
     try:
         lexer = get_lexer_by_name(lang, stripall=True)
@@ -35,55 +41,49 @@ def pygments_render(code, lang):
     formatter = html.HtmlFormatter(classprefix=".highlight ")
     return highlight(code, lexer, formatter)
 
+
 def hidemagicword(text):
     arr = text.splitlines(True)
     for n, line in enumerate(arr):
         if cursormagicword in line:
-            arr[n] = line.replace(cursormagicword,"")
+            arr[n] = line.replace(cursormagicword, "")
             return n, "".join(arr)
     return None, text
+
 
 def showmagicword(line, html):
     if line is None:
         return html
     arr = html.splitlines(True)
-    arr[line]=cursormagicword+arr[line]
+    arr[line] = cursormagicword + arr[line]
     return "".join(arr)
 
-# inner wiki link regular expression
-wiki_link_iwlre = re.compile(r'([^\|]+)\|?(.*)')
 
-def plugin_wiki(md):
+wiki_link_outer = re.compile(
+    r'\[\[' r'([^\]]+)' r'\]\](?!\])'  # [[  # ...  # ]]
+)
+wiki_link_inner = re.compile(r'([^\|]+)\|?(.*)')
+
+
+def preprocess_wiki_links(md):
     """
-    Plugin for rendering wiki Links:
-    [[Page]]
-    [[Title|Link]]
+    pre-mistune-parser for wiki links. Will turn
+        [[Page]]
+        [[Title|Link]]
+    into
+        [Page](/Page)
+        [Title](/Link)
     """
-    # define regex for Wiki links
-    WIKI_PATTERN = (
-        r'\[\['                   # [[
-        r'([^\]]+)'               # ...
-        r'\]\](?!\])'             # ]]
-    )
-    # define how to parse matched item
-    def parse_wiki(inline, m, state):
-        # ``inline`` is ``md.inline``, see below
-        # ``m`` is matched regex item
-        title, page = wiki_link_iwlre.findall(m.group(1))[0]
-        if page == '': page = title
-        return 'wiki', url_for('view', path=page), title
+    for m in wiki_link_outer.finditer(md):
+        title, link = wiki_link_inner.findall(m.group(1))[0]
+        if link == '':
+            link = title
+        if not link.startswith("/"):
+            link = f"/{link}"
+        md = md.replace(m.group(0), f'[{title}]({link})')
 
-    # define how to render HTML
-    def render_html_wiki(link, title):
-        return f'<a href="{link}">{title}</a>'
+    return md
 
-    # this is an inline grammar, so we register wiki rule into md.inline
-    md.inline.register_rule('wiki', WIKI_PATTERN, parse_wiki)
-    # add wiki rule into active rules
-    md.inline.rules.append('wiki')
-    # add HTML renderer
-    if md.renderer.NAME == 'html':
-        md.renderer.register('wiki', render_html_wiki)
 
 class OtterwikiMdRenderer(mistune.HTMLRenderer):
     toc_count = 0
@@ -97,10 +97,14 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
 
     def image(self, src, alt_text, title):
         if not empty(title):
-            return '<img src="{}" class="img-fluid" title="{}" alt="{}">'.format(
-                src, title, alt_text
+            return (
+                '<img src="{}" class="img-fluid" title="{}" alt="{}">'.format(
+                    src, title, alt_text
+                )
             )
-        return '<img src="{}" class="img-fluid" alt="{}">'.format(src, alt_text)
+        return '<img src="{}" class="img-fluid" alt="{}">'.format(
+            src, alt_text
+        )
 
     def codespan(self, text):
         if text.startswith("$") and text.endswith("$"):
@@ -110,17 +114,21 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
     def block_code(self, code, lang=None):
         prefix = ""
         if not lang:
-            return '\n<pre class="code">{}</pre>\n'.format(mistune.escape(code.strip()))
+            return '\n<pre class="code">{}</pre>\n'.format(
+                mistune.escape(code.strip())
+            )
         if cursormagicword in lang:
-            lang = lang.replace(cursormagicword,"")
+            lang = lang.replace(cursormagicword, "")
             prefix = cursormagicword
         cursorline, code = hidemagicword(code)
         if lang == "math":
-            html = "".join(["\\[{}\\]".format(line) for line in code.strip().splitlines()])
+            html = "".join(
+                ["\\[{}\\]".format(line) for line in code.strip().splitlines()]
+            )
         else:
-            html = prefix+pygments_render(code, lang)
+            html = prefix + pygments_render(code, lang)
         html = showmagicword(cursorline, html)
-        return prefix+html
+        return prefix + html
 
     def heading(self, text, level):
         raw = Markup(text).striptags()
@@ -146,51 +154,59 @@ class OtterwikiRenderer:
     def __init__(self):
         self.md_renderer = OtterwikiMdRenderer(escape=False)
         # self.md_lexer = OtterwikiInlineLexer(self.md_renderer)
-        self.mistune = mistune.create_markdown(renderer=self.md_renderer,
-                plugins=[
-                    plugin_task_lists,
-                    plugin_table,
-                    plugin_url,
-                    plugin_strikethrough,
-                    plugin_wiki,
-                ])
+        self.mistune = mistune.create_markdown(
+            renderer=self.md_renderer,
+            plugins=[
+                plugin_task_lists,
+                plugin_table,
+                plugin_url,
+                plugin_strikethrough,
+            ],
+        )
         self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")
         self.htmlcursor = "<span id=\"cursor\"></span>"
 
     def markdown(self, text, cursor=None):
         self.md_renderer.reset_toc()
-        #import pdb; pdb.set_trace()
+        # do the preparsing
+        text = preprocess_wiki_links(text)
         # add cursor position
         if cursor is not None:
             text_arr = text.splitlines()
             try:
-                line = min(len(text_arr)-1, int(cursor)-1)
+                line = min(len(text_arr) - 1, int(cursor) - 1)
             except ValueError:
                 line = 0
             # find a line to place the cursor
-            while line > 0 and not len(self.lastword.findall(text_arr[line])) > 0:
+            while (
+                line > 0 and not len(self.lastword.findall(text_arr[line])) > 0
+            ):
                 line -= 1
             if line > 0:
                 # add empty span at the end of the edited line
-                text_arr[line] = self.lastword.sub(r"\1{}".format(cursormagicword), text_arr[line], count=1)
+                text_arr[line] = self.lastword.sub(
+                    r"\1{}".format(cursormagicword), text_arr[line], count=1
+                )
                 text = "\n".join(text_arr)
 
         html = self.mistune(text)
         toc = self.md_renderer.toc_tree.copy()
         if cursor is not None and line > 0:
             # replace the magic word with the cursor span
-            html = html.replace(cursormagicword,self.htmlcursor)
+            html = html.replace(cursormagicword, self.htmlcursor)
         elif cursor is not None:
             html = self.htmlcursor + html
 
         # clean magicword out of toc
         toc = [
-            (a, b.replace(cursormagicword,""), c, d, e) for (a,b,c,d,e) in toc
+            (a, b.replace(cursormagicword, ""), c, d, e)
+            for (a, b, c, d, e) in toc
         ]
 
         return html, toc
 
     def hilight(self, code, lang):
         return pygments_render(code, lang)
+
 
 render = OtterwikiRenderer()
