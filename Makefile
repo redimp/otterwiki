@@ -18,7 +18,7 @@ venv:
 	venv/bin/pip install -e '.[dev]'
 
 run: venv settings.cfg
-	FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask run --host 0.0.0.0 --port $(PORT)
+	FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=$(PWD)/settings.cfg venv/bin/flask run --host 0.0.0.0 --port $(PORT)
 
 debug: venv settings.cfg
 	FLASK_ENV=development FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask run --port $(PORT)
