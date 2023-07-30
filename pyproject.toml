@@ -19,7 +19,7 @@ dependencies = [
     "gitpython==3.1.31",
     "cython==0.29.33",
     "mistune==2.0.5",
-    "pygments==2.14.0",
+    "pygments==2.15.0",
     "Pillow==9.4.0",
     "unidiff==0.7.4",
     "flask-htmlmin==2.2.1",
