@@ -221,7 +221,7 @@ class SimpleAuth:
             toast("Your account is waiting for approval.", "warning")
         # notify admins
         if app.config['NOTIFY_ADMINS_ON_REGISTER']:
-            self.activated_user_notify_admins(name, email)
+            self.activated_user_notify_admins(user.name, user.email)
 
 
     def handle_register(self, email, name, password1, password2):
