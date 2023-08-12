@@ -144,6 +144,24 @@ def test_preprocess_wiki_links():
     assert '[Page](/Page)' == preprocess_wiki_links("[[Page]]")
     assert '[Title](/Link)' == preprocess_wiki_links("[[Title|Link]]")
 
+
+def test_table_align():
+    text = """
+| left th     | center th     | right th  |
+|:----------- |:-------------:| ---------:|
+| left td     | center td     | right td  |
+"""
+    html, _ = render.markdown(text)
+    # check header
+    assert '<th style="text-align:left;">left th</th>' in html
+    assert '<th style="text-align:center;">center th</th>' in html
+    assert '<th style="text-align:right;">right th</th>' in html
+    # check cells
+    assert '<td style="text-align:left;">left td</td>' in html
+    assert '<td style="text-align:center;">center td</td>' in html
+    assert '<td style="text-align:right;">right td</td>' in html
+
+
 def test_sanitizer():
     text = """Preformatted script:
 
