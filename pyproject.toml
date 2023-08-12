@@ -23,6 +23,7 @@ dependencies = [
     "Pillow==9.4.0",
     "unidiff==0.7.4",
     "flask-htmlmin==2.2.1",
+    "bleach[css]==6.0.0",
 ]
 
 [project.urls]

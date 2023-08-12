@@ -13,6 +13,8 @@ from mistune.plugins import (
     plugin_task_lists,
     plugin_strikethrough,
 )
+import bleach
+from bleach.css_sanitizer import CSSSanitizer
 
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
@@ -190,6 +192,25 @@ class OtterwikiRenderer:
                 text = "\n".join(text_arr)
 
         html = self.mistune(text)
+        # clean up html
+        css_sanitizer = CSSSanitizer()
+        html = bleach.clean(
+                html,
+                tags={'p','a','i','img','h1','h2','h3','h4','h5','h6','h7','h8',
+                      'mark','pre','code','span','div','strong','em','ul','ol','li',
+                      'table','thead','tbody','th','td','tr','input','blockquote',
+                      'del','ins','hr'},
+                attributes={
+                    '*': ['class','style'],
+                    'td' : ['class', 'style'],
+                    'a': ['href', 'rel'],
+                    'img': ['alt', 'title', 'src', 'width', 'height'],
+                    'input': ['type', 'disabled'],
+                },
+                css_sanitizer=css_sanitizer
+        )
+
+        # generate the toc
         toc = self.md_renderer.toc_tree.copy()
         if cursor is not None and line > 0:
             # replace the magic word with the cursor span

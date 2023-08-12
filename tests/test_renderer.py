@@ -143,3 +143,31 @@ def test_preprocess_wiki_links():
     assert '[Page](/Page)' in md
     assert '[Page](/Page)' == preprocess_wiki_links("[[Page]]")
     assert '[Title](/Link)' == preprocess_wiki_links("[[Title|Link]]")
+
+def test_sanitizer():
+    text = """Preformatted script:
+
+    <script>alert(1)</script>
+
+```javascript
+<script>alert(3)</script>
+```
+<script>alert(2)</script>
+
+And last an onlick example:
+<p onclick="alert(4)">PPPPP</p>
+"""
+    html, _ = render.markdown(text)
+    # make sure that preformatted html stays preformatted
+    assert (
+        '<pre class="code">&lt;script&gt;alert(1)&lt;/script&gt;</pre>' in html
+    )
+    # and that highlited blocks are okay
+    assert (
+        '<span class=".highlight o">&lt;</span><span class=".highlight nx">script</span><span class=".highlight o">&gt;</span><span class=".highlight nx">alert</span><span class=".highlight p">(</span><span class=".highlight mf">3</span><span class=".highlight p">)</span><span class=".highlight o">&lt;</span><span class=".highlight err">/script&gt;</span>'
+        in html
+    )
+    # but script code is removed
+    assert '<script>alert(2)</script>' not in html
+    # and that onlick is removed
+    assert 'alert(4)' not in html
