@@ -78,7 +78,8 @@ ifneq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
 	$(error Error: Not on branch 'main')
 endif
 # check if git is clean optional: --untracked-files=no
+# reconsider if -t redimp/otterwiki:$(shell git describe --tags) might be useful
 ifneq ($(strip $(shell git status --porcelain)),)
 	$(error Error: Uncommitted changes in found)
 endif
-	docker buildx build --platform $(PLATFORM) -t redimp/otterwiki:latest -t redimp/otterwiki:$(shell git describe --tags) . --push
+	docker buildx build --platform $(PLATFORM) -t redimp/otterwiki:latest -t redimp/otterwiki:$(VERSION)  . --push
