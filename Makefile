@@ -81,4 +81,4 @@ endif
 ifneq ($(strip $(shell git status --porcelain)),)
 	$(error Error: Uncommitted changes in found)
 endif
-	docker buildx build --platform $(PLATFORM) -t redimp/otterwiki:latest -t redimp/otterwiki:$(VERSION) -t redimp/otterwiki:$(shell git describe --tags) . --push
+	docker buildx build --platform $(PLATFORM) -t redimp/otterwiki:latest -t redimp/otterwiki:$(shell git describe --tags) . --push
