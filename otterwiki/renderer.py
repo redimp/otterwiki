@@ -193,21 +193,43 @@ class OtterwikiRenderer:
 
         html = self.mistune(text)
         # clean up html
-        css_sanitizer = CSSSanitizer()
+        css_sanitizer = CSSSanitizer(
+            allowed_css_properties=[
+                'azimuth', 'background-color', 'border-bottom-color',
+                'border-collapse', 'border-color', 'border-left-color',
+                'border-right-color', 'border-top-color', 'clear',
+                'color', 'cursor', 'direction', 'display', 'elevation',
+                'float', 'font', 'font-family', 'font-size',
+                'font-style', 'font-variant', 'font-weight', 'height',
+                'letter-spacing', 'line-height', 'overflow', 'margin',
+                'margin-bottom', 'margin-left', 'margin-right',
+                'margin-top', 'pause', 'pause-after', 'pause-before',
+                'padding', 'padding-bottom', 'padding-left',
+                'padding-right', 'padding-top', 'pitch', 'pitch-range',
+                'richness', 'speak', 'speak-header', 'speak-numeral',
+                'speak-punctuation', 'speech-rate', 'stress',
+                'text-align', 'text-decoration', 'text-indent',
+                'unicode-bidi', 'vertical-align', 'voice-family',
+                'volume', 'white-space', 'width',
+            ]
+        )
         html = bleach.clean(
-                html,
-                tags={'p','a','i','img','h1','h2','h3','h4','h5','h6','h7','h8',
-                      'mark','pre','code','span','div','strong','em','ul','ol','li',
-                      'table','thead','tbody','th','td','tr','input','blockquote',
-                      'del','ins','hr'},
-                attributes={
-                    '*': ['class','style'],
-                    'td' : ['class', 'style'],
-                    'a': ['href', 'rel'],
-                    'img': ['alt', 'title', 'src', 'width', 'height'],
-                    'input': ['type', 'disabled'],
-                },
-                css_sanitizer=css_sanitizer
+            html,
+            tags={
+                'a', 'blockquote', 'code', 'del', 'div', 'em', 'h1',
+                'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'hr', 'i',
+                'img', 'input', 'ins', 'li', 'mark', 'ol', 'p', 'pre',
+                'span', 'strong', 'table', 'tbody', 'td', 'th', 'thead',
+                'tr', 'ul',
+            },
+            attributes={
+                '*': ['class', 'style'],
+                'td': ['class', 'style'],
+                'a': ['href', 'rel'],
+                'img': ['alt', 'title', 'src', 'width', 'height'],
+                'input': ['type', 'disabled'],
+            },
+            css_sanitizer=css_sanitizer,
         )
 
         # generate the toc
