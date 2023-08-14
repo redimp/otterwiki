@@ -216,7 +216,7 @@ class OtterwikiRenderer:
         html = bleach.clean(
             html,
             tags={
-                'a', 'blockquote', 'code', 'del', 'div', 'em', 'h1',
+                'a', 'blockquote', 'br', 'code', 'del', 'div', 'em', 'h1',
                 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'hr', 'i',
                 'img', 'input', 'ins', 'li', 'mark', 'ol', 'p', 'pre',
                 'span', 'strong', 'table', 'tbody', 'td', 'th', 'thead',
@@ -224,7 +224,6 @@ class OtterwikiRenderer:
             },
             attributes={
                 '*': ['class', 'style'],
-                'td': ['class', 'style'],
                 'a': ['href', 'rel'],
                 'img': ['alt', 'title', 'src', 'width', 'height'],
                 'input': ['type', 'disabled'],
