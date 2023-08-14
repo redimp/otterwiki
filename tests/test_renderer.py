@@ -184,6 +184,10 @@ def test_sanitizer():
 
 And last an onlick example:
 <p onclick="alert(4)">PPPPP</p>
+
+<video width='80%' controls> <!-- this is updated to width="80%" -->
+<source src="/mp4%20example/example.mp4" type="video/mp4">
+</video>
 """
     html, _ = render.markdown(text)
     # make sure that preformatted html stays preformatted
@@ -199,3 +203,6 @@ And last an onlick example:
     assert '<script>alert(2)</script>' not in html
     # and that onlick is removed
     assert 'alert(4)' not in html
+    # check multimedia
+    assert "<video width=\"80%\" controls>" in html
+    assert "</video>" in html
