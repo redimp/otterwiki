@@ -112,6 +112,9 @@ def test_wiki_link(req_ctx):
     text = "[[Link]]"
     html, _ = render.markdown(text)
     assert '<a href="/Link">Link</a>' in html
+    text = "[[Text with spaces|Link with spaces]]"
+    html, _ = render.markdown(text)
+    assert '<a href="/Link%20with%20spaces">Text with spaces</a>' in html
 
 
 def test_wiki_link_subspace(req_ctx):
@@ -138,11 +141,18 @@ def test_preprocess_wiki_links():
     md = preprocess_wiki_links(
         """
         [[Page]]
-        [[Title|Link]]"""
+        [[Title|Link]]
+        [[Text with space|Link with space]]
+        """
     )
     assert '[Page](/Page)' in md
+    assert '[Title](/Link)' in md
     assert '[Page](/Page)' == preprocess_wiki_links("[[Page]]")
     assert '[Title](/Link)' == preprocess_wiki_links("[[Title|Link]]")
+    assert '[Text with space](/Link%20with%20space)' == preprocess_wiki_links(
+            "[[Text with space|Link with space]]")
+    assert '[Text with space](/Link%20with%20space)' == preprocess_wiki_links(
+            "[[Text with space|Link%20with%20space]]")
 
 
 def test_table_align():

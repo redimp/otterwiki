@@ -15,6 +15,7 @@ from mistune.plugins import (
 )
 import bleach
 from bleach.css_sanitizer import CSSSanitizer
+import urllib.parse
 
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
@@ -82,6 +83,8 @@ def preprocess_wiki_links(md):
             link = title
         if not link.startswith("/"):
             link = f"/{link}"
+        # quote link (and just in case someone encoded already: unquote)
+        link = urllib.parse.quote(urllib.parse.unquote(link))
         md = md.replace(m.group(0), f'[{title}]({link})')
 
     return md
