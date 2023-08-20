@@ -1,5 +1,5 @@
 PORT ?= 8080
-VERSION := $(shell ./venv/bin/python -c "with open('otterwiki/version.py') as f: exec(f.read());  print(__version__);")
+VERSION := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.read());  print(__version__);")
 PLATFORM ?= "linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6"
 
 all: run
