@@ -226,7 +226,7 @@ class OtterwikiRenderer:
                 'tr', 'ul', 'video', 'audio', 'picture', 'source',
             },
             attributes={
-                '*': ['class', 'style', 'width', 'height'],
+                '*': ['class', 'style', 'width', 'height', 'id'],
                 'a': ['href', 'rel'],
                 'img': ['alt', 'title', 'src'],
                 'input': ['type', 'disabled'],

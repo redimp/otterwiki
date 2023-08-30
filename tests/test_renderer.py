@@ -32,16 +32,20 @@ text
     assert "head 1" == toc[0][1]
     assert 1 == toc[0][2]
     assert "head-1" == toc[0][4]
+    assert "<h1 id=\"head-1\"" in html
     # head 1.1
     assert "head 1.1 <strong>bold</strong>" == toc[1][1]
+    assert "<h2 id=\"head-11-bold\"" in html
     # check raw
     assert "head 1.1 bold" == toc[1][3]
     assert "head-11-bold" == toc[1][4]
+    assert "<h2 id=\"head-11-bold\"" in html
     assert 2 == toc[1][2]
     # check duplicate header handling
     assert "head-2" == toc[2][4]
     assert "head-2-1" == toc[3][4]
-
+    assert "<h1 id=\"head-2\"" in html
+    assert "<h1 id=\"head-2-1\"" in html
 
 def test_code():
     html, _ = render.markdown(
