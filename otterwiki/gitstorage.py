@@ -35,6 +35,7 @@ class GitStorage(object):
         try:
             self.repo = git.Repo(self.path)
         except git.InvalidGitRepositoryError:
+            self.repo = None
             raise StorageError(
                 "No valid git repository in '{}'. Did you run 'git init'?".format(
                     self.path
@@ -177,17 +178,19 @@ class GitStorage(object):
 
         return metadata
 
-    def log(self, filename=None):
+    def log(self, filename=None, fail_on_git_error=False):
         if filename is None:
             try:
                 rawlog = self.repo.git.log("--name-only", "-z")
-            except (git.exc.GitCommandError):
+            except (git.exc.GitCommandError) as e:
+                if fail_on_git_error:
+                    raise StorageNotFound(str(e))
                 return []
         else:
             try:
                 rawlog = self.repo.git.log("--name-only", "-z", "--follow", filename)
-            except (git.exc.GitCommandError):
-                raise StorageNotFound
+            except (git.exc.GitCommandError) as e:
+                raise StorageNotFound(str(e))
 
         rawlog = rawlog.strip("\x00").split("\x00\x00")
         return [self._get_metadata_of_log(entry) for entry in rawlog]

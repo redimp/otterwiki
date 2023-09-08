@@ -69,6 +69,10 @@ def test_broken_message(storage):
     metadata = storage.metadata(filename)
     assert metadata["message"] == ""
 
+def test_log_empty(storage):
+    assert [] == storage.log(fail_on_git_error=False)
+    with pytest.raises(gitstorage.StorageNotFound):
+        log = storage.log(fail_on_git_error=True)
 
 def test_log(storage):
     content = "kdfjlhg gdklfjghdf gkl;djshfg dgf;lkjhs glkshjad\n"
