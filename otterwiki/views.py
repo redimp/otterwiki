@@ -16,7 +16,7 @@ from otterwiki.server import app, db
 from otterwiki.wiki import Page, PageIndex, Changelog, Search, render, AutoRoute
 import otterwiki.auth
 import otterwiki.preferences
-from otterwiki.helper import toast
+from otterwiki.helper import toast, health_check
 from otterwiki.version import __version__
 from otterwiki.util import sanitize_pagename
 from otterwiki.auth import login_required, has_permission
@@ -54,6 +54,14 @@ def favicon():
         "otter-favicon2.ico",
         mimetype="image/vnd.microsoft.icon",
     )
+
+
+@app.route("/-/healthz")
+def healthz():
+    healthy, msgs = health_check()
+    return "\n".join(msgs), \
+            200 if healthy else 503, \
+            {'Content-Type': 'text/plain; charset=utf-8'}
 
 
 #

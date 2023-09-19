@@ -57,3 +57,36 @@ def test_serializer(create_app, req_ctx):
     # check salt
     with pytest.raises(SerializeError):
         deserialize(serialize(s), salt=s)
+
+def test_health_check_ok(create_app, req_ctx):
+    from otterwiki.helper import health_check
+
+    healthy, messages = health_check()
+    assert healthy is True
+    assert messages == ["ok"]
+
+def test_health_check_error_storage(create_app, req_ctx, tmpdir):
+    from otterwiki.helper import health_check
+    from otterwiki.gitstorage import GitStorage
+    # update the Storage object with a storage on a not initialized directory
+    _working_dir = create_app.storage.repo.git._working_dir
+    create_app.storage.repo.git._working_dir = str(tmpdir.mkdir("test_health_check_error_storage"))
+
+    healthy, messages = health_check()
+    assert healthy is False
+    assert True in [m.startswith("StorageError") for m in messages]
+    # restore _working_dir FIXME: no idea why the pytest fixture doesn't work in scope=session
+    create_app.storage.repo.git._working_dir = _working_dir
+
+def test_health_check_error_storage(create_app, req_ctx, tmpdir):
+    from otterwiki.helper import health_check
+    from otterwiki.gitstorage import GitStorage
+    # update the Storage object with a storage on a not initialized directory
+    _working_dir = create_app.storage.repo.git._working_dir
+    create_app.storage.repo.git._working_dir = str(tmpdir.mkdir("test_health_check_error_storage"))
+
+    healthy, messages = health_check()
+    assert healthy is False
+    assert True in [m.startswith("StorageError") for m in messages]
+    # restore _working_dir
+    create_app.storage.repo.git._working_dir = _working_dir

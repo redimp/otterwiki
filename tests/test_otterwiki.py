@@ -11,11 +11,17 @@ import otterwiki
 
 from pprint import pprint
 
+
 def test_html(test_client):
     result = test_client.get("/")
     assert "<!DOCTYPE html>" in result.data.decode()
     assert "<title>" in result.data.decode()
     assert "</html>" in result.data.decode()
+
+
+def test_healthz(test_client):
+    result = test_client.get("/-/healthz")
+    assert "ok" in result.data.decode()
 
 
 def test_create_form(test_client):

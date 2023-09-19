@@ -9,7 +9,8 @@ lightweight as utils.
 
 """
 
-from otterwiki.server import app, mail
+from otterwiki.server import app, mail, storage, db, Preferences
+from otterwiki.gitstorage import StorageError
 from flask import flash
 from threading import Thread
 from flask_mail import Message
@@ -81,3 +82,20 @@ def send_mail(subject, recipients, text_body, sender=None, html_body=None, _asyn
         thr.start()
     else:
         send_async_email(app, msg, raise_on_error)
+
+def health_check():
+    # check if storage is readable, the database works and auth is healthy
+    msg = []
+    # storage check
+    try:
+        log = storage.log(fail_on_git_error=True)
+    except StorageError as e:
+        msg += [f"StorageError in {storage.path}"]
+    # db check
+    try:
+        p = Preferences.query.all()
+    except:
+        msg += [f"DB Error: Unable to query Preferences from DB."]
+    if len(msg) == 0:
+        return True, ["ok"]
+    return False, msg
