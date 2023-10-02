@@ -376,5 +376,10 @@ def search(query=None):
     )
     return s.render()
 
+@app.route("/.git", methods=["POST", "GET"])
+@app.route("/.git/<path:path>", methods=["POST", "GET"])
+def dotgit(path=None):
+    abort(404)
+
 
 # vim: set et ts=8 sts=4 sw=4 ai:

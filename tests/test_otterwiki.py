@@ -24,6 +24,11 @@ def test_healthz(test_client):
     assert "ok" in result.data.decode()
 
 
+def test_dotgit(test_client):
+    rv = test_client.get("/.git/logs/HEAD")
+    assert 404 == rv.status_code
+
+
 def test_create_form(test_client):
     result = test_client.get("/-/create")
     html = result.data.decode()
