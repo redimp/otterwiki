@@ -188,7 +188,7 @@ def test_blame_and_history_and_diff(test_client):
     assert revision[1] in html
 
 def test_blame_and_history_404(test_client):
-    pagename = "Doe's not exist"
+    pagename = "Does not exist"
     # check blame
     rv = test_client.get("/{}/blame".format(pagename), follow_redirects=True)
     assert "Page not found" in rv.data.decode()
