@@ -20,7 +20,7 @@ dependencies = [
     "cython==0.29.33",
     "mistune==2.0.5",
     "pygments==2.15.0",
-    "Pillow==9.4.0",
+    "Pillow==10.0.1",
     "unidiff==0.7.4",
     "flask-htmlmin==2.2.1",
     "bleach[css]==6.0.0",
