@@ -5,7 +5,9 @@ FROM nginx:1.23.1 AS compile-stage
 LABEL maintainer="Ralph Thesen <mail@redimp.de>"
 # install python environment
 RUN \
-    apt-get -y update && apt-get install -y python3.9 python3.9-venv python3-pip \
+    apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y python3.9 python3.9-venv python3-pip \
     libjpeg-dev zlib1g-dev
 # prepare environment
 RUN python3 -m venv /opt/venv
@@ -40,6 +42,7 @@ ENV OTTERWIKI_SETTINGS=/app-data/settings.cfg
 ENV OTTERWIKI_REPOSITORY=/app-data/repository
 # install supervisord and python
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
+  apt-get upgrade -y && \
   apt-get install -y --no-install-recommends \
   supervisor git \
   python3.9 python3.9-venv libpython3.9 \
