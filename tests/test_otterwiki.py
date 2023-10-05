@@ -149,6 +149,35 @@ def test_view_revision(test_client, req_ctx):
     assert content[1] in html0
     assert content[0] in html1
 
+
+def test_view_commit(test_client, req_ctx):
+    # check if an invalid commit triggers an 404
+    rv = test_client.get(f"/-/commit/xxx")
+    assert rv.status_code == 404
+
+    pagename = "ViewCommitTest"
+    content = ["aaa initial commit line","bbb updated commit line"]
+    commit_messages = ["initial commit", "update"]
+    # save page
+    save_shortcut(test_client, pagename, content[0], commit_messages[0])
+    html0 = test_client.get("/{}".format(pagename)).data.decode()
+    assert content[0] in html0
+    # update page
+    save_shortcut(test_client, pagename, content[1], commit_messages[1])
+    html1 = test_client.get("/{}".format(pagename)).data.decode()
+    assert content[1] in html1
+    # check history
+    html = test_client.get("/{}/history".format(pagename)).data.decode()
+    # find revisions
+    revision = re.findall(r"class=\"btn revision-small\">([A-z0-9]+)</a>", html)
+    assert len(revision) == 2
+    html = test_client.get(f"/-/commit/{revision[0]}").data.decode()
+
+    assert revision[0] in html
+    assert content[0] in html
+    assert content[1] in html
+
+
 def test_blame_and_history_and_diff(test_client):
     pagename = "Blame Test"
     content = "Blame Test\naaa_aaa_aaa"

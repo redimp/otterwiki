@@ -280,6 +280,23 @@ class Changelog:
             toast(toast_message)
         return redirect(url_for("changelog"))
 
+    def show_commit(self, revision):
+        if not has_permission("READ"):
+            abort(403)
+        try:
+            metadata, diff = storage.show_commit(revision)
+        except StorageError as e:
+            abort(404)
+        patchset = PatchSet(diff)
+        hunk_helper = patchset2hunkdict(patchset)
+        return render_template(
+            "diff.html",
+            title="commit {}".format(revision),
+            patchset=patchset,
+            hunk_helper=hunk_helper,
+            revision=revision,
+        )
+
 
 class Page:
     def __init__(self, pagepath=None, pagename=None):
@@ -475,7 +492,6 @@ class Page:
         if not has_permission("READ"):
             abort(403)
         diff = storage.diff(self.filename, rev_b, rev_a)
-        print(diff)
         patchset = PatchSet(diff)
         hunk_helper = patchset2hunkdict(patchset)
         return render_template(

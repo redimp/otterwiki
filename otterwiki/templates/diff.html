@@ -2,7 +2,12 @@
 {% extends "page.html" %}
 {% block content %}
 <div class="w-full mw-full p-0 clearfix">
-    <h2>Comparing <tt>{{rev_a}}</tt> to <tt>{{rev_b}}</tt></h2>
+{% if rev_a and rev_b %}
+    <h3>Comparing <tt>{{rev_a}}</tt> to <tt>{{rev_b}}</tt></h3>
+{% endif %}
+{% if revision %}
+    <h3>Commit <tt>{{revision}}</tt></h3>
+{% endif %}
 <table class="diff">
 {% if patchset %}
 {% for file in patchset %}

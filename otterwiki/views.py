@@ -288,6 +288,10 @@ def preview(path):
             cursor_ch=request.form.get("cursor_ch"),
             )
 
+@app.route("/-/commit/<string:revision>", methods=["GET"])
+def show_commit(revision):
+    chlg = Changelog()
+    return chlg.show_commit(revision)
 
 @app.route("/-/revert/<string:revision>", methods=["POST", "GET"])
 def revert(revision):
