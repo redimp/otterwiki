@@ -18,6 +18,7 @@ from otterwiki.util import (
     random_password,
     mkdir,
     titleSs,
+    patchset2hunkdict,
 )
 
 
@@ -131,3 +132,32 @@ def test_titleSs():
     assert "ßabc Def" == titleSs("ßabc def")
     assert "Åbcd Éfgh" == titleSs("åbcd éfgh")
     assert "Test Magicword" == titleSs("Test MAGICWORD")
+
+def test_patchset2hunkdict():
+    from unidiff import PatchSet
+    diff = """diff --git a/test_show_commit.md b/test_show_commit.md
+index 72943a1..f761ec1 100644
+--- a/test_show_commit.md
++++ b/test_show_commit.md
+@@ -1 +1 @@
+-aaa
++bbb
+"""
+    p = PatchSet(diff)
+    hd = patchset2hunkdict(p)
+    # there is only one hunk
+    assert len(hd.keys()) == 1
+    k = list(hd.keys())[0]
+    # check dict keys
+    assert k[0] == 'a/test_show_commit.md'
+    assert k[1] == 'b/test_show_commit.md'
+    # check line 1
+    line = hd[k][1]
+    assert line[0]['source'] == 1
+    assert line[1]['target'] == 1
+    assert line[0]['type'] == "-"
+    assert line[1]['type'] == "+"
+    assert line[0]['style'] == "removed"
+    assert line[1]['style'] == "added"
+    assert line[0]['value'] == "aaa\n"
+    assert line[1]['value'] == "bbb\n"

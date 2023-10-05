@@ -29,6 +29,7 @@ from otterwiki.util import (
     get_pagename,
     get_pagepath,
     sanitize_pagename,
+    patchset2hunkdict,
 )
 from otterwiki.helper import toast
 from otterwiki.auth import has_permission, current_user
@@ -474,51 +475,9 @@ class Page:
         if not has_permission("READ"):
             abort(403)
         diff = storage.diff(self.filename, rev_b, rev_a)
+        print(diff)
         patchset = PatchSet(diff)
-        hunk_helper = {}
-        _line_type_style = {
-            " ": "",
-            "+": "added",
-            "-": "removed",
-        }
-        for file in patchset:
-            for hunk in file:
-                lines = {}
-                for l in hunk.source_lines():
-                    if not l.source_line_no in lines:
-                        lines[l.source_line_no] = []
-                    lines[l.source_line_no].append(
-                        {
-                            "source": l.source_line_no,
-                            "target": l.target_line_no or "",
-                            "type": l.line_type,
-                            "style": _line_type_style[l.line_type],
-                            "value": l.value,
-                        }
-                    )
-                for l in hunk.target_lines():
-                    if l.source_line_no is not None:
-                        continue
-                    if not l.target_line_no in lines:
-                        lines[l.target_line_no] = []
-                    lines[l.target_line_no].append(
-                        {
-                            "source": l.source_line_no or "",
-                            "target": l.target_line_no,
-                            "type": l.line_type,
-                            "style": _line_type_style[l.line_type],
-                            "value": l.value,
-                        }
-                    )
-                hunk_helper[
-                    (
-                        file.source_file,
-                        file.target_file,
-                        hunk.source_start,
-                        hunk.source_length,
-                    )
-                ] = lines
-
+        hunk_helper = patchset2hunkdict(patchset)
         return render_template(
             "diff.html",
             title="{} - diff {} {}".format(self.pagename, rev_a, rev_b),

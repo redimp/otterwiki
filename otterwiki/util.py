@@ -207,4 +207,51 @@ def addLoggingLevel(levelName, levelNum, methodName=None):
     setattr(logging, levelName, levelNum)
     setattr(logging.getLoggerClass(), methodName, logForLevel)
     setattr(logging, methodName, logToRoot)
+
+
+def patchset2hunkdict(patchset):
+    hunk_helper = {}
+    _line_type_style = {
+        " ": "",
+        "+": "added",
+        "-": "removed",
+    }
+    for file in patchset:
+        for hunk in file:
+            lines = {}
+            for l in hunk.source_lines():
+                if not l.source_line_no in lines:
+                    lines[l.source_line_no] = []
+                lines[l.source_line_no].append(
+                    {
+                        "source": l.source_line_no,
+                        "target": l.target_line_no or "",
+                        "type": l.line_type,
+                        "style": _line_type_style[l.line_type],
+                        "value": l.value,
+                    }
+                )
+            for l in hunk.target_lines():
+                if l.source_line_no is not None:
+                    continue
+                if not l.target_line_no in lines:
+                    lines[l.target_line_no] = []
+                lines[l.target_line_no].append(
+                    {
+                        "source": l.source_line_no or "",
+                        "target": l.target_line_no,
+                        "type": l.line_type,
+                        "style": _line_type_style[l.line_type],
+                        "value": l.value,
+                    }
+                )
+            hunk_helper[
+                (
+                    file.source_file,
+                    file.target_file,
+                    hunk.source_start,
+                    hunk.source_length,
+                )
+            ] = lines
+    return hunk_helper
 # vim: set et ts=8 sts=4 sw=4 ai:
