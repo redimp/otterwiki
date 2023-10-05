@@ -329,4 +329,18 @@ class GitStorage(object):
 
         return sorted(result_files), sorted(result_directories)
 
+    def show_commit(self, revision):
+        try:
+            commit = self.repo.commit(revision)
+        except git.exc.BadName as e:
+            raise StorageError(
+                f"No commit found for ref '{revision}"
+                )
+        # fetch metadata
+        metadata = self._get_metadata_of_commit(commit)
+        # get diff via 'git show'
+        diff = self.repo.git.show(revision, format="%b")
+        return metadata, diff
+
+
 storage = None

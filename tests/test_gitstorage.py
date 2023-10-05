@@ -371,4 +371,39 @@ def test_init_fail():
             storage = gitstorage.GitStorage(path=path)
 
 
+def test_show_commit_error(storage):
+    with pytest.raises(gitstorage.StorageError):
+        storage.show_commit("xxx")
+
+
+def test_show_commit(storage):
+    author = ("Example Author", "mail@example.com")
+    filename = "test_show_commit.md"
+    content1 = "aaa\n"
+    message1 = "added {}".format(content1)
+    content2 = "bbb\n"
+    message2 = "added {}".format(content2)
+    assert True == storage.store(
+        filename, content=content1, author=author, message=message1
+    )
+    # check content
+    assert storage.load(filename) == content1
+    # change content
+    assert True == storage.store(
+        filename, content=content2, author=author, message=message2
+    )
+    # check content
+    assert storage.load(filename) == content2
+    # get log
+    log = storage.log()
+    # get revisions
+    rev_b, rev_a = log[0]["revision"], log[1]["revision"]
+    # show commit
+    metadata, diff = storage.show_commit(rev_b)
+    assert metadata['revision'] == rev_b
+    assert "--- a/test_show_commit.md" in diff
+    assert "+++ b/test_show_commit.md" in diff
+    assert "\n-aaa" in diff
+    assert "\n+bbb" in diff
+
 # vim: set et ts=8 sts=4 sw=4 ai:
