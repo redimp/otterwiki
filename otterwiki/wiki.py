@@ -125,6 +125,25 @@ class Changelog:
         self.commit_count = 100
         pass
 
+    def _filename_link(self, filename, revision=None):
+        # handle attachments and pages
+        arr = split_path(filename)
+        if filename.endswith(".md"):
+            # page
+            return (get_pagename(filename, full=True),
+                    url_for(
+                        "view", path=get_pagename(filename, full=True),
+                        revision=revision
+                   ))
+        else:
+            # attachment
+            pagename, attached_filename = get_pagename(join_path(arr[:-1]), full=True), arr[-1]
+            return (filename,
+                    url_for('get_attachment',
+                        pagepath=pagename,
+                        filename=attached_filename, revision=revision)
+                   )
+
     def get(self):
         log = []
         # filter log
@@ -133,29 +152,9 @@ class Changelog:
             entry["files"] = {}
             for filename in orig_entry["files"]:
                 entry["files"][filename] = {}
-                # handle attachments and pages
-                arr = split_path(filename)
-                if filename.endswith(".md"):
-                    entry["files"][filename]["name"] = get_pagename(filename, full=True)
-                    entry["files"][filename]["url"] = url_for(
-                        "view", path=get_pagename(filename, full=True), revision=entry["revision"]
-                    )
-                else:
-                    # attachment
-                    pagename, attached_filename = get_pagename(join_path(arr[:-1]), full=True), arr[-1]
-                    entry["files"][filename]["name"] = filename
-                    entry['files'][filename]['url'] = url_for('get_attachment',
-                            pagepath=pagename, filename=attached_filename, revision=entry['revision'])
-                ## FIXME: if the subdirectory feature is there this has to be fixed
-                #if len(arr) >= 2:
-                #    pagename, attached_filename = get_pagename(arr[-2]), arr[-1]
-                #    entry["files"][filename]["name"] = filename
-                #    # FIXME: as soon as the attachments are, this needs an url
-                #    entry["files"][filename]["url"] = ""
-                #    # entry['files'][filename]['url'] = url_for('.get_attachment',
-                #    #         pagename=pagename, filename=filename, revision=entry['revision'])
+                entry["files"][filename]["name"], entry["files"][filename]["url"] = \
+                        self._filename_link(filename, entry["revision"])
             log.append(entry)
-        # log.reverse()
         return log
 
     def render(self):
