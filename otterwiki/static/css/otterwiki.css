@@ -162,6 +162,10 @@ table.diff {
 table.diff td {
     padding: 0.1rem 1.5rem;
 }
+table.diff td.filename {
+    padding-top: 1rem;
+    padding-left: 0;
+}
 tr.removed {
     color: rgba(0, 0, 0, 0.85);
     background-color: #f8d0d9;
