@@ -90,3 +90,14 @@ def test_health_check_error_storage(create_app, req_ctx, tmpdir):
     assert True in [m.startswith("StorageError") for m in messages]
     # restore _working_dir
     create_app.storage.repo.git._working_dir = _working_dir
+
+def test_auto_url(create_app, req_ctx):
+    name, path = otterwiki.helper.auto_url("home.md")
+    assert name == "Home"
+    assert path == "/Home"
+    name, path = otterwiki.helper.auto_url("subspace/example.md")
+    assert name == "Subspace/Example"
+    assert path == "/Subspace/Example"
+    name, path = otterwiki.helper.auto_url("page/example.mp4")
+    assert name == "page/example.mp4"
+    assert path == "/Page/a/example.mp4"

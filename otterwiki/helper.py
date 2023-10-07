@@ -11,10 +11,11 @@ lightweight as utils.
 
 from otterwiki.server import app, mail, storage, db, Preferences
 from otterwiki.gitstorage import StorageError
-from flask import flash
+from flask import flash, url_for
 from threading import Thread
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, BadSignature, BadData, SignatureExpired
+from otterwiki.util import get_pagename, split_path, join_path
 
 
 class SerializeError(ValueError):
@@ -99,3 +100,23 @@ def health_check():
     if len(msg) == 0:
         return True, ["ok"]
     return False, msg
+
+def auto_url(filename, revision=None):
+    # handle attachments and pages
+    arr = split_path(filename)
+    if filename.endswith(".md"):
+        # page
+        return (get_pagename(filename, full=True),
+                url_for(
+                    "view", path=get_pagename(filename, full=True),
+                    revision=revision
+               ))
+    else:
+        # attachment
+        pagename, attached_filename = get_pagename(join_path(arr[:-1]), full=True), arr[-1]
+        return (filename,
+                url_for('get_attachment',
+                    pagepath=pagename,
+                    filename=attached_filename, revision=revision)
+               )
+

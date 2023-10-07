@@ -31,7 +31,7 @@ from otterwiki.util import (
     sanitize_pagename,
     patchset2hunkdict,
 )
-from otterwiki.helper import toast
+from otterwiki.helper import toast, auto_url
 from otterwiki.auth import has_permission, current_user
 from datetime import datetime, timedelta
 from werkzeug.http import http_date
@@ -125,25 +125,6 @@ class Changelog:
         self.commit_count = 100
         pass
 
-    def _filename_link(self, filename, revision=None):
-        # handle attachments and pages
-        arr = split_path(filename)
-        if filename.endswith(".md"):
-            # page
-            return (get_pagename(filename, full=True),
-                    url_for(
-                        "view", path=get_pagename(filename, full=True),
-                        revision=revision
-                   ))
-        else:
-            # attachment
-            pagename, attached_filename = get_pagename(join_path(arr[:-1]), full=True), arr[-1]
-            return (filename,
-                    url_for('get_attachment',
-                        pagepath=pagename,
-                        filename=attached_filename, revision=revision)
-                   )
-
     def get(self):
         log = []
         # filter log
@@ -153,7 +134,7 @@ class Changelog:
             for filename in orig_entry["files"]:
                 entry["files"][filename] = {}
                 entry["files"][filename]["name"], entry["files"][filename]["url"] = \
-                        self._filename_link(filename, entry["revision"])
+                        auto_url(filename, entry["revision"])
             log.append(entry)
         return log
 
@@ -287,10 +268,14 @@ class Changelog:
         except StorageError as e:
             abort(404)
         patchset = PatchSet(diff)
+        url_map = {}
+        for file in patchset:
+            url_map[file.path] = auto_url(file.path, revision=revision)
         hunk_helper = patchset2hunkdict(patchset)
         return render_template(
             "diff.html",
             title="commit {}".format(revision),
+            url_map = url_map,
             patchset=patchset,
             hunk_helper=hunk_helper,
             revision=revision,
@@ -492,6 +477,9 @@ class Page:
             abort(403)
         diff = storage.diff(self.filename, rev_b, rev_a)
         patchset = PatchSet(diff)
+        url_map = {}
+        for file in patchset:
+            url_map[file.path] = auto_url(file.path, revision=rev_a)
         hunk_helper = patchset2hunkdict(patchset)
         return render_template(
             "diff.html",
@@ -499,6 +487,7 @@ class Page:
             pagepath=self.pagepath,
             pagename=self.pagename,
             patchset=patchset,
+            url_map=url_map,
             hunk_helper=hunk_helper,
             rev_a=rev_a,
             rev_b=rev_b,

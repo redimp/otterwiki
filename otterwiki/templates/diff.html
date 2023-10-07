@@ -13,7 +13,9 @@
 {% for file in patchset %}
 {# file.path #} {# file.added #} {# file.removed #}
 <tr>
-    <td class="filename" colspan="{%if withlinenumbers %}4{%else%}2{%endif%}">{{file.path}}</td>
+<td class="filename" colspan="{%if withlinenumbers %}4{%else%}2{%endif%}">
+<a href="{{url_map[file.path][1]}}">{{url_map[file.path][0]}}</a>
+</td>
 </tr>
 {% for hunk in file %}
 <tr>
