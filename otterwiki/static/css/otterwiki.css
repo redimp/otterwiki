@@ -157,7 +157,6 @@ pre,
 table.diff {
     overflow-x: auto;
     width: 100%;
-    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
 }
 table.diff td {
     padding: 0.1rem 1.5rem;
@@ -165,6 +164,11 @@ table.diff td {
 table.diff td.filename {
     padding-top: 1rem;
     padding-left: 0;
+}
+table.diff tr.added,
+table.diff tr.removed,
+table.diff td.hunk {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
 }
 tr.removed {
     color: rgba(0, 0, 0, 0.85);
