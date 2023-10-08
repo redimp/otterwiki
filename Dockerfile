@@ -1,19 +1,19 @@
 #
 # compile stage
 #
-FROM nginx:1.23.1 AS compile-stage
+FROM nginx:1.25.2 AS compile-stage
 LABEL maintainer="Ralph Thesen <mail@redimp.de>"
 # install python environment
 RUN \
     apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install -y python3.9 python3.9-venv python3-pip \
+    apt-get install -y python3.11 python3.11-venv python3-pip \
     libjpeg-dev zlib1g-dev
 # prepare environment
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 # upgrade pip and install requirements not in otterwiki
-RUN pip install -U pip wheel && pip install "uWSGI==2.0.20"
+RUN pip install -U pip wheel && pip install "uWSGI==2.0.22"
 # copy app
 COPY . /app
 WORKDIR /app
@@ -36,7 +36,7 @@ CMD ["tox"]
 #
 # production stage
 #
-FROM nginx:1.23.1
+FROM nginx:1.25.2
 # environment variables (I'm not sure if anyone ever would modify this)
 ENV OTTERWIKI_SETTINGS=/app-data/settings.cfg
 ENV OTTERWIKI_REPOSITORY=/app-data/repository
@@ -45,7 +45,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
   apt-get upgrade -y && \
   apt-get install -y --no-install-recommends \
   supervisor git \
-  python3.9 python3.9-venv libpython3.9 \
+  python3.11 python3.11-venv libpython3.11 \
   && rm -rf /var/lib/apt/lists/*
 # copy virtual environment
 COPY --from=compile-stage /opt/venv /opt/venv
