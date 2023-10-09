@@ -197,6 +197,11 @@ tr.added {
 table .min {
     width: 1%;
 }
+table .linenumber {
+    text-align: right;
+    vertical-align: top;
+}
+
 table.blame {
     overflow-x: auto;
     width: 100%;
