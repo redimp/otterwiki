@@ -83,8 +83,9 @@ def preprocess_wiki_links(md):
             link = title
         if not link.startswith("/"):
             link = f"/{link}"
+        print(link)
         # quote link (and just in case someone encoded already: unquote)
-        link = urllib.parse.quote(urllib.parse.unquote(link))
+        link = urllib.parse.quote(urllib.parse.unquote(link), safe="/#")
         md = md.replace(m.group(0), f'[{title}]({link})')
 
     return md

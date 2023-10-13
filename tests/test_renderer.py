@@ -157,6 +157,9 @@ def test_preprocess_wiki_links():
             "[[Text with space|Link with space]]")
     assert '[Text with space](/Link%20with%20space)' == preprocess_wiki_links(
             "[[Text with space|Link%20with%20space]]")
+    # make sure fragment identifier of the URL survived the parser
+    assert '[Random#Title](/Random#Title)' == preprocess_wiki_links(
+            "[[Random#Title]]")
 
 
 def test_table_align():
