@@ -108,6 +108,8 @@ def admin():
 #
 @app.route("/-/log")
 @app.route("/-/log/<string:revision>")
+@app.route("/-/changelog")
+@app.route("/-/changelog/<string:revision>")
 def changelog(revision=None):
     chlg = Changelog(revision)
     return chlg.render()
