@@ -53,6 +53,7 @@ as admin user. For development you can use the `settings.cfg`, see below.
 |------------------|-----------------|----------------------------------------------|
 | `SITE_NAME`      | `'Otterwiki'`   | The `SITE_NAME` displayed on every page and email |
 | `SITE_LOGO`      | `'/Home/a/logo.png'` | Customize navbar logo url (can be a page attachment) |
+| `SITE_DESCRIPTION` | `'A minimalistic wiki powered by python, markdown and git.'` | The default description used in `<meta>` tags |
 
 ### Permission configuration
 

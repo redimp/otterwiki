@@ -73,7 +73,7 @@ def handle_mail_preferences(form):
     return redirect(url_for("admin", _anchor="mail_preferences"))
 
 def handle_app_preferences(form):
-    for name in ["site_name", "site_logo"]:
+    for name in ["site_name", "site_logo", "site_description"]:
         _update_preference(name.upper(),form.get(name, ""))
     for name in ["READ_access", "WRITE_access", "ATTACHMENT_access"]:
         _update_preference(name.upper(),form.get(name, "ANONYMOUS"))

@@ -19,6 +19,7 @@ app.config.update(
     REPOSITORY=None,
     SECRET_KEY="CHANGE ME",
     SITE_NAME="An Otter Wiki",
+    SITE_DESCRIPTION=None,
     SITE_LOGO=None,
     AUTH_METHOD="",
     READ_ACCESS="ANONYMOUS",

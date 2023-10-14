@@ -113,6 +113,14 @@
     </div>
   </div>
 {##}
+  <div class="form-group">
+    <label for="site_description">Site Description</label>
+    <input name="site_description" type="text" placeholder="A minimalistic wiki powered by python, markdown and git." class="form-control" id="site_description" value="{{ config.SITE_DESCRIPTION or "" }}">
+    <div class="form-text">
+      The default description used in <code>&lt;meta&gt;</code> tags.
+    </div>
+  </div>
+{##}
 <h3 class="card-title">Permissions and Registration Preferences</h3>
 {% for permission in ["READ","WRITE","ATTACHMENT"] %}
   <div class="form-group">

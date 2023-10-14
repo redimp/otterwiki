@@ -7,11 +7,25 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
   <meta name="viewport" content="width=device-width" />
-
+{# meta preview block [[ #}
+  <meta property="og:title" content="{%if title%}{{title}} - {%endif%}{%if config.SITE_NAME %}{{config.SITE_NAME}}{%else%}An Otter Wiki{%endif%}" />
+  <meta property="og:type" content="website" />
+{%- if pagepath %}
+  <meta property="og:url" content="{{ url_for('view', path=pagepath, _external=True) }}" />
+{%- else %}
+  <meta property="og:url" content="{{ url_for("index", _external=True) }}" />
+{%- endif %}
+  <meta property="og:description" content="{%if description%}{{description}}{%elif config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}A minimalistic wiki powered by python, markdown and git.{%endif%}" />
+{%- if config.SITE_LOGO %}
+  <meta property="og:image" content="{{ config.SITE_LOGO }}" />
+{%- else %}
+  <meta property="og:image" content="{{ url_for("static", filename="img/otterhead.png", _external=True) }}" />
+{%- endif %}
+{# meta preview block ]] #}
   <!-- Favicon and title -->
-  <link rel="icon" href="{{ url_for("static", filename="img/otter-favicon2.png") }}">
+    <link rel="icon" href="{{ url_for("static", filename="img/otter-favicon2.png") }}">
 {% block title %}
-<title>{%if title%}{{title}} &ndash; {%endif%}{%if config.SITE_NAME %}{{config.SITE_NAME}}{%else%}An Otter Wiki{%endif%}</title>
+    <title>{%if title%}{{title}} &ndash; {%endif%}{%if config.SITE_NAME %}{{config.SITE_NAME}}{%else%}An Otter Wiki{%endif%}</title>
 {% endblock %}
     <link href="{{ url_for("static", filename="css/halfmoon.min.css") | debug_unixtime }}" rel="stylesheet" media="screen" />
     <!-- Otterwiki CSS -->
@@ -59,7 +73,7 @@
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
-            <a href="{{ url_for("index") }}" class="navbar-brand ml-10 ml-sm-20">
+            <a href="{{ url_for("index") }}" class="navbar-brand ml-10 ml-sm-20" title="{%if description%}{{description}}{%elif config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}A minimalistic wiki powered by python, markdown and git.{%endif%}">
 {% if config.SITE_LOGO %}
                 <img src="{{ config.SITE_LOGO }}" alt=""/><br/>
 {% else %}
