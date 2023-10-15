@@ -429,6 +429,51 @@ def test_lost_password_mail(app_with_user, test_client, req_ctx):
         assert "Password Recovery" in outbox[0].subject
         assert "/-/recover_password/" in outbox[0].body
         assert "mail@example.org" in outbox[0].recipients
+        # find token
+        m = re.search(r"\/-\/recover_password\/(\S+)", outbox[0].body, flags=re.MULTILINE)
+        token = m.group(1)
+        assert len(token) > 0
+        # test token
+        rv = test_client.get(
+            f"/-/recover_password/{token}",
+            follow_redirects=True,
+        )
+        assert "please update your password." in rv.data.decode()
+
+def test_lost_password_form(app_with_user, test_client):
+    rv = test_client.post(
+        "/-/lost_password",
+        data={
+            "email": "invalidmail@",
+        },
+        follow_redirects=True,
+    )
+    assert "This email address is invalid." in rv.data.decode()
+    rv = test_client.post(
+        "/-/lost_password",
+        data={
+            "email": "nonexistent@email.address",
+        },
+        follow_redirects=True,
+    )
+    assert "This email address is unknown." in rv.data.decode()
+
+def test_lost_password_invalid_token(app_with_user, test_client):
+    rv = test_client.get(
+        "/-/recover_password/invalidtoken",
+        follow_redirects=True,
+    )
+    assert "Invalid token." in rv.data.decode()
+
+    from otterwiki.helper import serialize
+
+    # generate token
+    token = serialize("nonexistent@email.address", salt="lost-password-email")
+    rv = test_client.get(
+        f"/-/recover_password/{token}",
+        follow_redirects=True,
+    )
+    assert "Invalid email address." in rv.data.decode()
 
 #
 # register
