@@ -3,15 +3,6 @@
 {% block js %}
 {{ super() }}
 <script src="{{ url_for("static", filename="js/polyfill.e6.min.js") | debug_unixtime }}"></script>
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [["\\(", "\\)"]],
-                displayMath: [ ['\\[', '\\]'], ],
-                processEscapes: true,
-            }
-        };
-    </script>
     <script id="MathJax-script" async src="{{ url_for("static", filename="mathjax/tex-chtml.js") | debug_unixtime }}"></script>
 {% endblock %}
 {% block menu %}
@@ -72,4 +63,3 @@
 </div>
 {{content}}
 {% endblock %}
-

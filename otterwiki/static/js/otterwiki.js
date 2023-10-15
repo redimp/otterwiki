@@ -39,5 +39,12 @@ var otterwiki = {
             ehm.style.display = "none";
         }
     }
-
 }
+
+var MathJax = {
+    tex: {
+        inlineMath: [["\\(", "\\)"]],
+        displayMath: [ ['\\[', '\\]'], ],
+        processEscapes: true,
+    }
+};
