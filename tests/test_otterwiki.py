@@ -111,6 +111,19 @@ def test_page_save(test_client):
     assert commit_message in html
 
 
+def test_view_source(test_client):
+    pagename = "Source Test"
+    content = "# src test\n\n**strong text**\n"
+    commit_message = "Source test commit message"
+    save_shortcut(test_client, pagename, content, commit_message)
+    html = test_client.get("/{}/source".format(pagename)).data.decode()
+    assert "# src test" in html
+    assert "**strong text**" in html
+    # test with ?raw
+    html = test_client.get("/{}/source?raw".format(pagename)).data.decode()
+    assert content in html
+
+
 def test_view_revision(test_client, req_ctx):
     pagename = "ViewRevisionTest"
     content = ["aaa","bbb"]
