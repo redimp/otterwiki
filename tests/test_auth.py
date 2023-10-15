@@ -29,7 +29,7 @@ def test_db(app_with_user):
 
     # query all user
     all_user = SimpleAuth.User.query.all()
-    assert len(all_user) == 1
+    assert len(all_user) == 2
 
     # query created user
     user = SimpleAuth.User.query.filter_by(email="mail@example.org").first()
@@ -398,6 +398,72 @@ def test_page_revert_permissions(app_with_permissions, test_client):
     # check if content changed
     html = test_client.get("/{}/view".format(pagename)).data.decode()
     assert old_content in html
+
+def test_permissions_per_user(app_with_permissions, test_client):
+    fun = "view"
+    app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
+    rv = test_client.get(url_for(fun, path="Home"))
+    assert "There is no place like Home." in rv.data.decode()
+    app_with_permissions.config["READ_ACCESS"] = "ADMIN"
+    app_with_permissions.config["WRITE_ACCESS"] = "ADMIN"
+    app_with_permissions.config["ATTACHMENT_ACCESS"] = "ADMIN"
+    rv = test_client.get(url_for(fun, path="Home"), follow_redirects=True)
+    assert "There is no place like Home." not in rv.data.decode()
+    # check for the toast
+    assert "lack the permissions to access" in rv.data.decode()
+
+    rv = test_client.post(
+        "/-/login",
+        data={
+            "email": "another@user.org",
+            "password": "password4567",
+        },
+        follow_redirects=True,
+    )
+
+    assert "You logged in successfully" in rv.data.decode()
+    assert "You are logged in but lack READ permissions." in rv.data.decode()
+    assert "There is no place like Home." not in rv.data.decode()
+    # grant the user read_access
+    from otterwiki.auth import SimpleAuth, db
+    user = SimpleAuth.User.query.filter_by(email="another@user.org").first()
+    user.allow_read = True
+    db.session.add(user)
+    db.session.commit()
+    # check if the read_access works
+    rv = test_client.get(
+        url_for(fun, path="Home"),
+        follow_redirects=True
+        )
+    assert "There is no place like Home." in rv.data.decode()
+    # try to save
+    rv = test_client.post(
+        url_for("save", path="SaveTest"),
+        data={
+            "content_update": "Another save test",
+            "commit": "test commit.",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 403
+    user = SimpleAuth.User.query.filter_by(email="another@user.org").first()
+    user.allow_write = True
+    db.session.add(user)
+    db.session.commit()
+    # try to save
+    rv = test_client.post(
+        url_for("save", path="SaveTest"),
+        data={
+            "content_update": "Another save test",
+            "commit": "test commit.",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    # restore permissions
+    app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
+    app_with_permissions.config["WRITE_ACCESS"] = "ANONYMOUS"
+    app_with_permissions.config["ATTACHMENT_ACCESS"] = "ANONYMOUS"
 
 #
 # lost_password

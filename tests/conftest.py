@@ -69,6 +69,19 @@ def app_with_user(create_app, req_ctx):
         is_admin=True,
     )
     db.session.add(user)
+
+    # create a non admin user
+    user = SimpleAuth.User(
+        name="Another User",
+        email="another@user.org",
+        password_hash=generate_password_hash("password4567", method="scrypt"),
+        first_seen=datetime.now(),
+        last_seen=datetime.now(),
+        is_admin=False,
+        is_approved=True,
+        email_confirmed=True,
+    )
+    db.session.add(user)
     db.session.commit()
     yield create_app
 

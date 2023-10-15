@@ -120,6 +120,9 @@ def handle_user_management(form):
         return abort(403)
     is_approved = [int(x) for x in form.getlist("is_approved")]
     is_admin = [int(x) for x in form.getlist("is_admin")]
+    allow_read = [int(x) for x in form.getlist("allow_read")]
+    allow_write = [int(x) for x in form.getlist("allow_write")]
+    allow_upload = [int(x) for x in form.getlist("allow_upload")]
     if len(is_admin) < 1:
         toast("You can't remove all admins", "error")
     elif len(is_approved) < 1:
@@ -131,17 +134,38 @@ def handle_user_management(form):
             # approval
             if user.is_approved and not user.id in is_approved:
                 user.is_approved = False
-                msgs.append("removed approved")
+                msgs.append("disapproved")
             elif not user.is_approved and user.id in is_approved:
                 user.is_approved = True
-                msgs.append("added approved")
+                msgs.append("approved")
+            # read
+            if user.allow_read and not user.id in allow_read:
+                user.allow_read = False
+                msgs.append("disallowed read")
+            elif not user.allow_read and user.id in allow_read:
+                user.allow_read = True
+                msgs.append("allowed read")
+            # write
+            if user.allow_write and not user.id in allow_write:
+                user.allow_write = False
+                msgs.append("disallowed write")
+            elif not user.allow_write and user.id in allow_write:
+                user.allow_write = True
+                msgs.append("allowed write")
+            # upload
+            if user.allow_upload and not user.id in allow_upload:
+                user.allow_upload = False
+                msgs.append("disallowed upload")
+            elif not user.allow_upload and user.id in allow_upload:
+                user.allow_upload = True
+                msgs.append("allowed upload")
             # admin
             if user.is_admin and not user.id in is_admin:
                 user.is_admin = False
-                msgs.append("removed admin")
+                msgs.append("disabled admin")
             elif not user.is_admin and user.id in is_admin:
                 user.is_admin = True
-                msgs.append("added admin")
+                msgs.append("enabled admin")
             if len(msgs):
                 toast("{} {} flag".format(user.email, " and ".join(msgs)))
                 app.logger.report(

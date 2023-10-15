@@ -15,6 +15,9 @@
         <th>eMail</th>
         <th>Name</th>
         <th>Approved</th>
+        <th>Read</th>
+        <th>Write</th>
+        <th>Upload</th>
         <th>Admin</th>
       </tr>
     </thead>
@@ -40,14 +43,38 @@
         </td>
         <td>
           <div class="custom-checkbox">
-              <input type="checkbox" id="checkbox-b-{{user.id}}" name="is_admin" value="{{user.id}}" {{ "checked=\"checked\"" if user.is_admin }}>
+              <input type="checkbox" id="checkbox-b-{{user.id}}" name="allow_read" value="{{user.id}}" {{ "checked=\"checked\"" if user.allow_read }}>
             <label for="checkbox-b-{{user.id}}"></label>
+          </div>
+        </td>
+        <td>
+          <div class="custom-checkbox">
+              <input type="checkbox" id="checkbox-c-{{user.id}}" name="allow_write" value="{{user.id}}" {{ "checked=\"checked\"" if user.allow_write }}>
+            <label for="checkbox-c-{{user.id}}"></label>
+          </div>
+        </td>
+        <td>
+          <div class="custom-checkbox">
+              <input type="checkbox" id="checkbox-d-{{user.id}}" name="allow_upload" value="{{user.id}}" {{ "checked=\"checked\"" if user.allow_upload }}>
+            <label for="checkbox-d-{{user.id}}"></label>
+          </div>
+        </td>
+        <td>
+          <div class="custom-checkbox">
+              <input type="checkbox" id="checkbox-e-{{user.id}}" name="is_admin" value="{{user.id}}" {{ "checked=\"checked\"" if user.is_admin }}>
+            <label for="checkbox-e-{{user.id}}"></label>
           </div>
         </td>
       </tr>
 {% endfor %}
     </tbody>
   </table>
+  </div>
+  <div class="mt-10">
+      <em>Permission granted per user</em> add <em>to the general permissions. For example, if in general
+          only users with the <strong>Admin</strong> flag are allowed to upload attachments, the 
+          <tt>user@example.org</tt> can be allowed to <strong>Upload</strong> without being flagged as Admin.
+      </em>
   </div>
   <div class="mt-10">
     <input class="btn btn-primary" name="update_permissions" type="submit" value="Update Permissions">
@@ -110,9 +137,21 @@
   </div>
 {##}
 <h3 class="card-title" id="permissions_and_registration">Permissions and Registration Preferences</h3>
+  <div class="form-group">
+    <div>
+        <em>Note:</em> To configure permissions per user, set Read Access, Write Access and Attachment 
+        management to <strong>Admin</strong> and configure Read, Write, Upload per user via <a href="#user_management">User Management</a>.
+    </div>
+  </div>
 {% for permission in ["READ","WRITE","ATTACHMENT"] %}
   <div class="form-group">
-      <label for="{{permission}}_permission" class="required">{{permission | capitalize}} Access</label>
+      <label for="{{permission}}_permission" class="required">
+{%- if permission == "ATTACHMENT" %}
+          Attachment management
+{%- else %}
+          {{permission | capitalize}} Access
+{%- endif %}
+      </label>
       <select class="form-control" id="{{permission}}_permission" name="{{permission}}_access">
         {% for permission_option in ["ANONYMOUS","REGISTERED","APPROVED","ADMIN"] %}
         <option {% if config[permission + "_ACCESS"] == permission_option -%}

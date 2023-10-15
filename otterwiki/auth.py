@@ -529,6 +529,18 @@ def has_permission(permission):
             and current_user.is_approved
         ):
             return True
+        if (
+            current_user.is_authenticated
+            and current_user.is_approved
+            and current_user.allow_read
+        ):
+            return True
+        # admins have permissions for everything
+        if (
+            current_user.is_authenticated
+            and current_user.is_admin
+        ):
+            return True
     # check page edit permission
     if permission.upper() == "WRITE":
         # if you are not allowed to read, you are not allowed to write
@@ -545,6 +557,18 @@ def has_permission(permission):
             app.config["WRITE_ACCESS"].upper() == "APPROVED"
             and current_user.is_authenticated
             and current_user.is_approved
+        ):
+            return True
+        if (
+            current_user.is_authenticated
+            and current_user.is_approved
+            and current_user.allow_write
+        ):
+            return True
+        # admins have permissions for everything
+        if (
+            current_user.is_authenticated
+            and current_user.is_admin
         ):
             return True
     # check upload permission
@@ -564,10 +588,20 @@ def has_permission(permission):
             and current_user.is_approved
         ):
             return True
+        if (
+            current_user.is_authenticated
+            and current_user.is_approved
+            and current_user.allow_upload
+        ):
+            return True
+        # admins have permissions for everything
+        if (
+            current_user.is_authenticated
+            and current_user.is_admin
+        ):
+            return True
     if permission.upper() == "ADMIN":
         if current_user.is_anonymous:
-            return False
-        if not has_permission("READ"):
             return False
         return True == current_user.is_admin
 
