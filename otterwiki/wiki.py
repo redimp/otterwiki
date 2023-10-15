@@ -318,13 +318,7 @@ class Page:
     def source(self, revision=None, raw=False):
         # handle permissions
         if not has_permission("READ"):
-            if current_user.is_authenticated and not current_user.is_approved:
-                toast(
-                    "You lack the permissions to access this wiki. Please wait for approval."
-                )
-            else:
-                toast("You lack the permissions to access this wiki. Please login.")
-            return redirect(url_for("login"))
+            abort(403)
         # handle page
         try:
             content, metadata = self.load(revision=revision)
@@ -360,6 +354,10 @@ class Page:
             if current_user.is_authenticated and not current_user.is_approved:
                 toast(
                     "You lack the permissions to access this wiki. Please wait for approval."
+                )
+            elif current_user.is_authenticated and current_user.is_approved:
+                toast(
+                    "You are logged in but lack READ permissions. Please wait for an administrator to grant access."
                 )
             else:
                 toast("You lack the permissions to access this wiki. Please login.")
