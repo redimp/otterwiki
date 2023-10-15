@@ -23,7 +23,11 @@
 {%- endif %}
 {# meta preview block ]] #}
   <!-- Favicon and title -->
+{%- if config.SITE_ICON %}
+    <link rel="icon" href="{{ config.SITE_ICON }}">
+{%- else %}
     <link rel="icon" href="{{ url_for("static", filename="img/otter-favicon2.png") }}">
+{%- endif %}
 {% block title %}
     <title>{%if title%}{{title}} &ndash; {%endif%}{%if config.SITE_NAME %}{{config.SITE_NAME}}{%else%}An Otter Wiki{%endif%}</title>
 {% endblock %}
@@ -74,11 +78,11 @@
                 </button>
             </div>
             <a href="{{ url_for("index") }}" class="navbar-brand ml-10 ml-sm-20" title="{%if description%}{{description}}{%elif config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}A minimalistic wiki powered by python, markdown and git.{%endif%}">
-{% if config.SITE_LOGO %}
-                <img src="{{ config.SITE_LOGO }}" alt=""/><br/>
-{% else %}
-                <img src="{{ url_for("static", filename="img/otterhead.png") }}" alt="">
-{% endif %}
+{%- if config.SITE_LOGO %}
+                <img src="{{ config.SITE_LOGO }}" alt="" id="site_logo"/>
+{%- else %}
+                <img src="{{ url_for("static", filename="img/otterhead.png") }}" alt="" id="site_logo"/>
+{%- endif %}
                 <span class="d-none d-sm-flex">{{ config.SITE_NAME }}</span>
             </a>
             <div class="navbar-content ml-auto">

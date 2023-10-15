@@ -24,7 +24,7 @@ fi
 
 # handle environment variables
 # branding
-for EV in SITE_NAME SITE_LOGO SITE_DESCRIPTION; do
+for EV in SITE_NAME SITE_LOGO SITE_DESCRIPTION SITE_ICON; do
     if [ ! -z "${!EV}" ]; then
         sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
         echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}

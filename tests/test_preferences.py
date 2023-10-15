@@ -57,18 +57,45 @@ def test_preferences_testmail(app_with_user, admin_client):
 
 def test_update_preferences(app_with_user, admin_client):
     new_name = "Test Wiki 4711"
+    new_description = "another Test Wiki 4711"
     assert app_with_user.config['SITE_NAME'] != new_name
+    assert app_with_user.config['SITE_DESCRIPTION'] != new_description
     rv = admin_client.post(
             "/-/admin",
             data = {
                 "site_name" : new_name,
+                "site_description" : new_description,
                 "update_preferences" : "true",
             },
             follow_redirects=True,
         )
     assert rv.status_code == 200
     assert app_with_user.config['SITE_NAME'] == new_name
+    assert app_with_user.config['SITE_DESCRIPTION'] == new_description
     assert app_with_user.config['SITE_LOGO'] == ""
+    assert app_with_user.config['SITE_ICON'] == ""
+
+def test_update_preferences_logo_and_icon(app_with_user, admin_client):
+    new_logo = '/Home/a/logo.png'
+    new_icon = '/Random/a/favicon.png'
+    assert app_with_user.config['SITE_LOGO'] != new_logo
+    assert app_with_user.config['SITE_ICON'] != new_icon
+    rv = admin_client.post(
+            "/-/admin",
+            data = {
+                "site_logo" : new_logo,
+                "site_icon" : new_icon,
+                "update_preferences" : "true",
+            },
+            follow_redirects=True,
+        )
+    assert rv.status_code == 200
+    assert app_with_user.config['SITE_LOGO'] == new_logo
+    assert app_with_user.config['SITE_ICON'] == new_icon
+    # check html
+    html = rv.data.decode()
+    assert f"<link rel=\"icon\" href=\"{new_icon}\">" in html
+    assert f"<img src=\"{new_logo}\" alt=\"\" id=\"site_logo\"/>" in html
 
 def test_update_mail_preferences(app_with_user, admin_client):
     new_sender = "mail@example.com"

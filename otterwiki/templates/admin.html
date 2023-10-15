@@ -109,7 +109,17 @@
     <label for="site_logo">Site Logo</label>
     <input name="site_logo" type="text" placeholder="/static/img/otterhead.png" class="form-control" id="site_logo" value="{{ config.SITE_LOGO or "" }}">
     <div class="form-text">
-        Path to an image, can be an attachment, e.g. <code>/Home/a/logo.png</code>
+        Configure via an url to the image that is displayed in the navbar on top of every page.
+        This can be an attachment, e.g. <code>/Home/a/logo.png</code>
+    </div>
+  </div>
+{##}
+  <div class="form-group">
+    <label for="site_icon">Site Icon (favicon)</label>
+    <input name="site_icon" type="text" placeholder="/static/img/otter-favicon2.png" class="form-control" id="site_icon" value="{{ config.SITE_ICON or "" }}">
+    <div class="form-text">
+        Configure via an url to the image that is displayed as favicon (tab icon, URL icon, bookmark icon).
+        This can be an attachment, e.g. <code>/Home/a/favicon-32x32.png</code>
     </div>
   </div>
 {##}
