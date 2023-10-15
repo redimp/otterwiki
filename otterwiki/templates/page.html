@@ -29,6 +29,14 @@
                         </span>
                         Blame
                     </a>
+{% if has_permission('READ') and not has_permission('WRITE') %}
+                    <a href="{{ url_for('source', pagepath=pagepath) }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="fab fa-markdown"></i>
+                        </span>
+                        View Source
+                    </a>
+{% endif %}
 {% if has_permission('WRITE') %}
                     <a href="{{ url_for('rename', path=pagepath) }}" class="dropdown-item-with-icon">
                         <span class="dropdown-icon">

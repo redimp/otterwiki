@@ -17,7 +17,7 @@ from flask import (
 from markupsafe import escape as html_escape
 from otterwiki.gitstorage import StorageNotFound, StorageError
 from otterwiki.server import app, db, storage
-from otterwiki.renderer import render
+from otterwiki.renderer import render, pygments_render
 from otterwiki.util import (
     split_path,
     join_path,
@@ -314,6 +314,45 @@ class Page:
                 raise
 
         return content, metadata
+
+    def source(self, revision=None, raw=False):
+        # handle permissions
+        if not has_permission("READ"):
+            if current_user.is_authenticated and not current_user.is_approved:
+                toast(
+                    "You lack the permissions to access this wiki. Please wait for approval."
+                )
+            else:
+                toast("You lack the permissions to access this wiki. Please login.")
+            return redirect(url_for("login"))
+        # handle page
+        try:
+            content, metadata = self.load(revision=revision)
+        except StorageNotFound:
+            app.logger.warning("Not found {}".format(self.pagename))
+            return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath), 404
+
+        # set title
+        title = self.pagename
+        if revision is not None:
+            title = "{} ({})".format(self.pagename, revision)
+
+        if raw:
+            # build a reference link that is appended to the content as markdown comment
+            reference = f"\n[]: # ({url_for('source', pagepath=self.pagepath, _external=True)})"
+            return content+reference, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+        source = pygments_render(content, lang='markdown')
+
+        return render_template(
+            "source.html",
+            title=title,
+            revision=revision,
+            pagename=self.pagename,
+            pagepath=self.pagepath,
+            source=source,
+            breadcrumbs=self.breadcrumbs(),
+        )
 
     def view(self, revision=None):
         # handle permissions

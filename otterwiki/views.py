@@ -290,6 +290,15 @@ def preview(path):
             cursor_ch=request.form.get("cursor_ch"),
             )
 
+
+@app.route("/<path:pagepath>/source/<string:revision>")
+@app.route("/<path:pagepath>/source", methods=["GET"])
+def source(pagepath, revision=None):
+    raw = 'raw' in request.args
+    p = Page(pagepath)
+    return p.source(revision=revision, raw=raw)
+
+
 @app.route("/-/commit/<string:revision>", methods=["GET"])
 def show_commit(revision):
     chlg = Changelog()
