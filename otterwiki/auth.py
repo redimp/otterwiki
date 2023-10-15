@@ -282,7 +282,7 @@ class SimpleAuth:
         )
 
     def handle_settings(self, form):
-        if not empty(form.get("name")):
+        if form.get("name") is not None:
             new_name = form.get("name")
             if len(new_name) < 1:
                 toast("Your name must be at least one character.")
