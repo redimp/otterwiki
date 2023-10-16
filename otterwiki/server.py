@@ -136,6 +136,7 @@ def format_datetime(value, format="medium"):
         format = "%Y-%m-%d %H:%M:%S"
     return value.strftime(format)
 
+app.jinja_env.globals.update(os_getenv=os.getenv)
 
 import otterwiki.views
 

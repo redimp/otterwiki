@@ -14,7 +14,7 @@
 {% block content %}
 <div class="page">
 {{htmlcontent|safe}}
-Version {{__version__}}
+Version {{__version__}} {{ os_getenv("DEV_BRANCH","") }}
 </div>
 {{content}}
 {% endblock %}
