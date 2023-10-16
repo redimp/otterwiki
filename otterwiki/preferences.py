@@ -54,7 +54,8 @@ def handle_mail_preferences(form):
         _update_preference("MAIL_PORT", mail_port)
     # MAIL_USERNAME and MAIL_PASSWORD
     _update_preference("MAIL_USERNAME", form.get("mail_user", ""))
-    _update_preference("MAIL_PASSWORD", form.get("mail_password", ""))
+    if len(form.get("mail_password", ""))>0:
+        _update_preference("MAIL_PASSWORD", form.get("mail_password", ""))
     # Encryption
     if empty(form.get("mail_security")):
         _update_preference("MAIL_USE_TLS", "False")

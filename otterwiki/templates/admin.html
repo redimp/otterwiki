@@ -204,7 +204,7 @@ selected="selected"
 {##}
   <div class="form-group">
     <label for="mail_password">Mail Password</label>
-    <input name="mail_password" type="password" class="form-control" autocomplete="off" id="mail_password" value="{{ config.MAIL_PASSWORD or "" }}">
+    <input name="mail_password" type="password" class="form-control" autocomplete="off" id="mail_password" placeholder="{{ config.MAIL_PASSWORD | length * "·" }}" value="">
     {# <div class="form-text"> ...  </div> #}
   </div>
 {##}
