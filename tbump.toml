@@ -21,8 +21,8 @@ cmd = 'make test'
 
 [[file]]
 src = 'otterwiki/version.py'
-version_template = '"{major}.{minor}.{patch}-{extra}"'
-search = '__version__ = {current_version}'
+version_template = '({major}, {minor}, {patch}, "{extra}")'
+search = "version_info = {current_version}"
 
 [[field]]
 # the name of the field
