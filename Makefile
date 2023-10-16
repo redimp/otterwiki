@@ -1,5 +1,6 @@
 PORT ?= 8080
 VERSION := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.read());  print(__version__);")
+VERSION_MAJOR_MINOR := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.read()); "print('.'.join(__version__.split('.')[0:2]));)
 PLATFORM ?= "linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6"
 
 all: run
@@ -70,16 +71,34 @@ docker-run:
 	docker run -p 8080:80 otterwiki:_build
 
 docker-buildx-test:
+ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
 	docker buildx build --platform $(PLATFORM) --target test-stage .
+else
+	docker buildx build --platform linux/arm64,linux/amd64 --target test-stage .
+endif
 
 docker-buildx-push: venv
 # check if we are in the main branch (to avoid accidently pushing a feature branch
-ifneq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
-	$(error Error: Not on branch 'main')
-endif
+ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
 # check if git is clean optional: --untracked-files=no
 # reconsider if -t redimp/otterwiki:$(shell git describe --tags) might be useful
 ifneq ($(strip $(shell git status --porcelain)),)
 	$(error Error: Uncommitted changes in found)
 endif
-	docker buildx build --platform $(PLATFORM) -t redimp/otterwiki:latest -t redimp/otterwiki:$(VERSION)  . --push
+	docker buildx build --platform $(PLATFORM) \
+		-t redimp/otterwiki:latest \
+		-t redimp/otterwiki:$(VERSION) \
+		-t redimp/otterwiki:$(VERSION_MAJOR_MINOR) \
+		--push .
+else
+	@echo ""
+	@echo "-- Building dev image"
+	@echo ""
+	docker buildx build --platform linux/arm64,linux/amd64 \
+		-t redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD) \
+		--build-arg DEV_BRANCH=$(shell git rev-parse --abbrev-ref HEAD) \
+		--push .
+	@echo ""
+	@echo "-- Done dev-image: redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD)"
+	@echo ""
+endif
