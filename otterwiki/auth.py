@@ -447,6 +447,8 @@ def get_all_User(*args, **kwargs):
 # utils
 #
 def has_permission(permission):
+    if current_user.is_authenticated and current_user.is_admin:
+        return True
     # check page read permission
     if permission.upper() == "READ":
         if app.config["READ_ACCESS"].upper() == "ANONYMOUS":
