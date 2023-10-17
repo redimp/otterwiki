@@ -398,4 +398,12 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 /* task list */
 .task-list-item-checkbox {
     margin-right: 1rem;
+    /* disable checkbox without using the disabled property */
+    position: relative;
+    pointer-events: none;
+    margin-left: -2.3rem;
+}
+
+.task-list-item {
+    list-style-type: none;
 }
