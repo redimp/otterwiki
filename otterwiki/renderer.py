@@ -229,7 +229,7 @@ class OtterwikiRenderer:
                 '*': ['class', 'style', 'width', 'height', 'id'],
                 'a': ['href', 'rel'],
                 'img': ['alt', 'title', 'src'],
-                'input': ['type', 'disabled'],
+                'input': ['type', 'disabled', 'checked'],
                 'video' : ['controls', 'loop', 'muted'],
                 'audio' : ['controls', 'loop', 'muted'],
                 'picture' : ['media','srcset'],
