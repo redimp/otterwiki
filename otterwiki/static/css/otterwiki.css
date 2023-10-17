@@ -1,4 +1,4 @@
-/* vim: set et sts=4 ts=4 ai: */
+/* vim: set et sts=4 ts=4 sw=4 ai: */
 .sidebar {
     width: 20rem;
     background: #e2e2e2;
@@ -393,4 +393,9 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
     border-color: #4caf50;
     -webkit-font-smoothing: auto;
     -moz-osx-font-smoothing: auto;
+}
+
+/* task list */
+.task-list-item-checkbox {
+    margin-right: 1rem;
 }
