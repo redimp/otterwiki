@@ -380,12 +380,27 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
   font-size: 1rem;
 }
 
+.btn-editor {
+    margin-left: 0.2rem;
+    width: 3.2rem;
+    padding-left: 0;
+    padding-right: 0;
+}
+
 .extra-nav-attachment {
     padding: 1rem;
 }
 
 .font-size-10 {
   font-size: 1rem !important;
+}
+
+.break-all {
+    word-break: break-all;
+}
+
+.right-02 {
+    right: 0.2rem!important;
 }
 
 /* dark mode button tweaks */

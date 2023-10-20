@@ -85,12 +85,15 @@
 {%- endif %}
                 <span class="d-none d-sm-flex">{{ config.SITE_NAME }}</span>
             </a>
+{% block navbar_editor %}
+{% endblock %}
             <div class="navbar-content ml-auto">
 {% block navbarsearch %}
                 <form action="{{ url_for("search") }}" method="post">
                 <input name="query" type="text" class="form-control mr-5" placeholder="Search">
                 </form>
 {% endblock %}
+{% block navbardropdown_outer %}
                 <div class="dropdown">
                   <button class="btn btn-action mr-5" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-btn-1">
                     <i class="fas fa-ellipsis-v"></i>
@@ -139,6 +142,7 @@
 {% endblock %}
                   </div> <!-- inner dropdown -->
                 </div> <!-- dropdown -->
+{% endblock %}
 {% block navbar %}
 {% endblock %}
             </div>
