@@ -250,6 +250,9 @@ class OtterwikiRenderer:
         )
         self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")
         self.htmlcursor = "<span id=\"cursor\"></span>"
+        # thanks to https://github.com/lepture/mistune/issues/158#issuecomment-830481284
+        # we can enable tables in lists
+        self.mistune.block.list_rules += ['table', 'nptable']
 
     def markdown(self, text, cursor=None):
         self.md_renderer.reset_toc()
