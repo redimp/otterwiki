@@ -31,6 +31,17 @@ from otterwiki.util import slugify, empty
 # the cursor magic word which is ignored by the rendering
 cursormagicword = "CuRsoRm4g1cW0Rd"
 
+#
+# patch mistune table_plugin so that not all the newlines at the end of a table are removed
+#
+mistune.plugins.plugin_table.TABLE_PATTERN = re.compile(
+    r' {0,3}\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n{0,1}'
+)
+mistune.plugins.plugin_table.NP_TABLE_PATTERN = re.compile(
+    r' {0,3}(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n{0,1}'
+)
+
+
 
 def pygments_render(code, lang):
     try:
