@@ -9,7 +9,7 @@ license = {file = "LICENSE"}
 requires-python = ">=3.7"
 dynamic = ["version"]
 dependencies = [
-    "Werkzeug==3.0.1",
+    "Werkzeug<3.0.0", # unable to update to 3.0.1 until Flask-Login is updated
     "Flask-Login==0.6.2",
     "Flask-Mail==0.9.1",
     "SQLAlchemy==2.0.4",
