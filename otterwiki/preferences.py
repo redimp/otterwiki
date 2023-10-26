@@ -2,7 +2,6 @@
 
 from otterwiki import fatal_error
 from otterwiki.util import is_valid_email
-from werkzeug.urls import url_parse
 from flask import (
     redirect,
     request,
