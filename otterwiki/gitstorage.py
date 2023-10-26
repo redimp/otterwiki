@@ -6,11 +6,10 @@ import re
 import git
 from datetime import datetime
 from pprint import pprint
-from otterwiki.util import split_path
+from otterwiki.util import split_path, ttl_lru_cache
 import pathlib
 import os
 import typing
-from functools import lru_cache
 
 class StorageError(Exception):
     pass
@@ -64,7 +63,7 @@ class GitStorage(object):
             raise StorageNotFound("{} not found.".format(filename))
         return content
 
-    @lru_cache
+    @ttl_lru_cache(maxsize=128, ttl=60)
     def _get_metadata_of_commit(self, commit):
         metadata = {
             "revision-full": commit.hexsha,
