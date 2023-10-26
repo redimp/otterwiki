@@ -3,7 +3,7 @@
 from otterwiki import fatal_error
 from otterwiki.util import is_valid_email
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.urls import url_parse
+from urllib.parse import urlsplit
 from flask import (
     redirect,
     request,
@@ -103,7 +103,7 @@ class SimpleAuth:
             # login
             login_user(user, remember=remember)
             # set next_page
-            if not next_page or url_parse(next_page).netloc != "":
+            if not next_page or urlsplit(next_page).netloc != "":
                 next_page = url_for("index")
             toast("You logged in successfully.", "success")
             # update last_seen
