@@ -39,30 +39,25 @@ def test_db(app_with_user):
     assert True is check_password_hash(user.password_hash, "password1234")
 
 
-@pytest.mark.filterwarnings("ignore: The 'sha256' password method is deprecated")
-@pytest.mark.filterwarnings("ignore: The 'sha512' password method is deprecated")
 def test_generate_and_check_hash(create_app):
     from otterwiki.auth import generate_password_hash, check_password_hash
 
     for password in ["abc123.!äüöß", "aedaiPaesh8ie5Iu", "┳━┳ ヽ(ಠل͜ಠ)ﾉ"]:
-        for method in ["sha256", "sha512", "scrypt"]:
+        for method in ["scrypt"]:
             hash = generate_password_hash(password, method=method)
             assert True is check_password_hash(hash, password)
 
 
-@pytest.mark.filterwarnings("ignore: The 'sha256' password method is deprecated")
-@pytest.mark.filterwarnings("ignore: The 'sha512' password method is deprecated")
-def test_check_password_hash_backward(create_app):
-    from otterwiki.auth import generate_password_hash, check_password_hash
+def test_check_password_hash_backport(create_app):
+    from otterwiki.auth import generate_password_hash, check_password_hash_backport
     # make sure check_password_hash still works sice sha256/sha512 password methods
     # are deprecated and will be removed in Werkzeug 3.0 to not break existing
     # installations
-    assert True is check_password_hash(
-        "sha256$nWPrdEycvH4DN89j$4fa6082732725cfd19b4e398c20471035949ec96229d2f49c38338d915a3c527",
-        "1234")
-    assert True is check_password_hash(
-        "sha512$mvuWSvXoAqOR53Av$f1e4bbea9cc0c581fafffda1824a0b64510cf861b1cb3fdb829cffa2d1639001a2deaa86516de080413f57e2f1cf72a04148ac63ac04bc6ad724a2ccbd51fe48",
-        "1234")
+    for passwd, pwhash in [("abc123.!äüöß","sha256$AuvUmsdieyFfazrT$c5f6f1efe98ed5590dee4971345e57f54da33f277e1e00e558fdc3749dc1aa4d"),("aedaiPaesh8ie5Iu","sha256$sF2obN32d4OkvmLs$cfb90dab3c2250791eaae6f9ece94a8f1eb79d2dc04d535801e15c53ac66305b"),("┳━┳ ヽ(ಠل͜ಠ)ﾉ","sha256$OEPGu0fDDZSvlEhZ$6af38560ea7a07d93e66105a02babca6a179f7c96dd1a3c42a7fca77bc2d09be"),("abc123.!äüöß","sha512$8hycondShwRbmPT7$8fe00313e3ae05eb788dcd24a7fb577442c3eb31c60bf4a66acb92868187425db0f3e3af07b0e76726930e4012b5b8488d23f28ac16f18a7790c066c94727954"),("aedaiPaesh8ie5Iu","sha512$JbDiZmPuzsOuHQLZ$57a18fa3eb3c9f93d0d8e6d5c460e9e14cbcefdb8c36fb7bbb4a24b0f61a8e9674e09172a4ee8dce40de79d64f7fddd8addc46b881f2fbb837be46402198ae14"),("┳━┳ ヽ(ಠل͜ಠ)ﾉ","sha512$5aG970kGxIx1lKp0$2f54f96e4e68020c0ba5780b0b882979dd3ce79eabd34b40b4fce8da215ea018dba5c2f71015a0051ad798106f4e5fdbd40c6589ea4e4b260555daf205f9accc"),("abc123.!äüöß","scrypt:32768:8:1$jTNi3RiP3DuKPgrX$7d6c11df590d60ac9b96837a43bbd57dbc2bf5958e4ef316dc7214fa87e60849883fc090265bbd2910659c527d51c17815e4f79bff8b3458f6925f1f07905ce7"),("aedaiPaesh8ie5Iu","scrypt:32768:8:1$m1S6sWOQ7GK1zDpM$14368587b86036a44835ac6f1775b36e6ad217a7a895c4e41ff3b087bab5222da982a79bae540868b7d01bdf6e952545196bbba8866b3f6d69153abd0cdb46a1"),("┳━┳ ヽ(ಠل͜ಠ)ﾉ","scrypt:32768:8:1$R4Tk2yLvwsIXIJqa$f298715f1ae4242014779d45a4fb509f59f49f347708039698023f8a9c7513e3ed68471b6282c2ca5f3d9f56213b404117e0fb5c8f395853ed5acd9ec17f10df")]:
+        assert True is check_password_hash_backport(
+            pwhash,
+            passwd
+            )
 
 
 def test_minimal_auth(app_with_user):

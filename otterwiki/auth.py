@@ -24,6 +24,21 @@ from otterwiki.helper import toast, send_mail, serialize, deserialize, Serialize
 from otterwiki.util import random_password, empty
 from datetime import datetime
 from pprint import pprint
+import hmac
+
+
+def check_password_hash_backport(pwhash, password):
+    # split pwhash to check the method
+    method, salt, hashval = pwhash.split("$", 2)
+    # sha256 is no longer supported by werkzeug>=3.x
+    if method in ["sha256", "sha512"]:
+        # encode salt and passwd
+        salt = salt.encode("utf-8")
+        password = password.encode("utf-8")
+        return hmac.compare_digest(
+                hmac.new(salt, password, method).hexdigest(),
+                hashval)
+    return check_password_hash(pwhash, password)
 
 
 class SimpleAuth:
@@ -90,7 +105,7 @@ class SimpleAuth:
         # query user
         user = self.User.query.filter_by(email=email).first()
         next_page = request.form.get("next")
-        if user is not None and check_password_hash(user.password_hash, password):
+        if user is not None and check_password_hash_backport(user.password_hash, password):
             if app.config["EMAIL_NEEDS_CONFIRMATION"] and not user.is_admin \
                     and not user.email_confirmed:
                 toast("Please confirm your email address. "+\
