@@ -9,12 +9,12 @@ license = {file = "LICENSE"}
 requires-python = ">=3.7"
 dynamic = ["version"]
 dependencies = [
-    "Werkzeug==2.3.7", # unable to update to 3.0.1 until Flask-Login is updated
-    "Flask-Login==0.6.2",
+    "Werkzeug==3.0.1",
+    "Flask-Login==0.6.3",
     "Flask-Mail==0.9.1",
-    "SQLAlchemy==2.0.4",
+    "SQLAlchemy==2.0.22",
     "Flask-SQLAlchemy==3.0.3",
-    "Flask==2.3.2",
+    "Flask==3.0.0",
     "Jinja2==3.1.2",
     "gitpython==3.1.37",
     "cython==0.29.33",
@@ -75,12 +75,6 @@ testpaths = ["./tests"]
 filterwarnings = [
     # venv/lib/python3.11/site-packages/htmlmin/main.py:28: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
     "ignore: 'cgi' is deprecated:DeprecationWarning",
-    # /venv/lib/python3.11/site-packages/flask_login/utils.py:126: DeprecationWarning: 'werkzeug.urls.url_decode' is deprecated and will be removed in Werkzeug 2.4. Use 'urllib.parse.parse_qs' instead.
-    "ignore: 'werkzeug.urls.url_decode' is deprecated:DeprecationWarning",
-    # venv/lib/python3.11/site-packages/flask_login/utils.py:130: DeprecationWarning: 'werkzeug.urls.url_encode' is deprecated and will be removed in Werkzeug 2.4. Use 'urllib.parse.urlencode' instead.
-    "ignore: 'werkzeug.urls.url_encode' is deprecated:DeprecationWarning",
-    # venv/lib/python3.11/site-packages/flask/testing.py:118: DeprecationWarning: The '__version__' attribute is deprecated and will be removed in Werkzeug 3.1. Use feature detection or 'importlib.metadata.version("werkzeug")' instead.
-    "ignore: The '__version__' attribute is deprecated and will be removed in Werkzeug 3.1:DeprecationWarning",
 ]
 
 # vim: set et ts=8 sts=4 sw=4 ai fenc=utf-8:
