@@ -62,6 +62,7 @@ skip-string-normalization = true
 [tool.tox]
 legacy_tox_ini = """
 [tox]
+envlist = py3{11,10,9}
 isolated_build = True
 [testenv]
 deps = pytest
