@@ -99,7 +99,7 @@ class SimpleAuth:
     def handle_logout(self):
         logout_user()
         toast("You logged out successfully.")
-        return redirect(url_for("index"))
+        return redirect(url_for("login"))
 
     def handle_login(self, email=None, password=None, remember=None):
         # query user
@@ -120,7 +120,12 @@ class SimpleAuth:
             # set next_page
             if not next_page or urlsplit(next_page).netloc != "":
                 next_page = url_for("index")
-            toast("You logged in successfully.", "success")
+            # check if the users password_hash is going to be deprecated
+            if (user.password_hash.startswith("sha256$")):
+                app.logger.warning(f"User has deprecated password hash: {user.email}")
+                toast(f"Please <a href='{url_for('settings')}'>update your password</a>. The hashing method used is deprecated. Check <a href='{url_for('settings')}'>settings</a> for additional information.", "warning");
+            else:
+                toast("You logged in successfully.", "success")
             # update last_seen
             user.last_seen = datetime.now()
             db.session.add(user)

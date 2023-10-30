@@ -53,6 +53,15 @@
 <div class="mw-full w-600">
 <h2 class="card-title">Change Password</h2>
 <form action="{{url_for("settings")}}" method="POST">
+{% if current_user.password_hash.startswith("sha256$") %}
+  <div class="form-group">
+<div class="alert alert-secondary" role="alert">
+  <h4 class="alert-heading">Please update your password</h4>
+  The hash method used to store your password is deprecated. Updating your
+  password will fix that.
+</div>
+  </div>
+{% endif %}
   <div class="form-group">
     <label for="password" class="required">New Password</label>
     <input name="password1" type="password" class="form-control" id="password" placeholder="Password">
