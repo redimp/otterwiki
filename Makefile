@@ -59,8 +59,7 @@ settings.cfg:
 
 docker-test:
 	# make sure the image is rebuild
-	DOCKER_BUILDKIT=1 docker rmi otterwiki:_test || true
-	DOCKER_BUILDKIT=1 docker build -t otterwiki:_test --target test-stage .
+	DOCKER_BUILDKIT=1 docker build --no-cache -t otterwiki:_test --target test-stage .
 
 docker-build: docker-test
 	DOCKER_BUILDKIT=1 docker build -t otterwiki:_build .
@@ -71,9 +70,9 @@ docker-run:
 
 docker-buildx-test:
 ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
-	docker buildx build --platform $(PLATFORM) --target test-stage .
+	docker buildx build --no-cache --platform $(PLATFORM) --target test-stage .
 else
-	docker buildx build --platform linux/arm64,linux/amd64 --target test-stage .
+	docker buildx build --no-cache --platform linux/arm64,linux/amd64 --target test-stage .
 endif
 
 docker-buildx-push: venv
