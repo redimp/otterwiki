@@ -268,7 +268,10 @@ var otterwiki_editor = {
     _findTable: function() {
         var orig_cursor = cm_editor.getCursor('start');
         var orig_cursor_end = cm_editor.getCursor('end');
-        const [block_start, block_end] = otterwiki_editor._findBlock(true);
+        const block = otterwiki_editor._findBlock(true);
+        // no block found
+        if (!block) return;
+        const [block_start, block_end] = block;
         // the relative cursor is positoned in the selection
         var relative_cursor = { line: orig_cursor.line - block_start.line, ch: orig_cursor.ch };
         // get selected block
