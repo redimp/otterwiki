@@ -24,7 +24,7 @@
 <button onclick="otterwiki_editor.img()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Picture"><i class="far fa-image"></i></button>
 <button onclick="otterwiki_editor.table()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Table"><i class="fas fa-table"></i></button>
 <div class="dropdown">
-  <button class="btn btn-editor mr-5" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-table">
+  <button class="btn btn-editor mr-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-table">
     <i class="fas fa-th fa-rotate-90"></i>
   </button>
   <div class="dropdown-menu dropdown-menu-right w-200" aria-labelledby="navbar-dropdown-toggle-table">
@@ -53,29 +53,29 @@
         Move Row down
     </a>
     <div class="dropdown-divider"></div>
-    <a onclick="otterwiki_editor.table_add_row()" href="#" class="dropdown-item-with-icon">
+    <a onclick="otterwiki_editor.table_add_column()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-plus-circle"></i>
         </span>
         Add Column
     </a>
-    <a onclick="otterwiki_editor.table_add_row()" href="#" class="dropdown-item-with-icon">
+    <a onclick="otterwiki_editor.table_remove_column()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-minus-circle"></i>
         </span>
         Remove Column
     </a>
-    <a onclick="otterwiki_editor.table_add_row()" href="#" class="dropdown-item-with-icon">
-        <span class="dropdown-icon">
-            <i class="fas fa-arrow-right"></i>
-        </span>
-        Move Column right
-    </a>
-    <a onclick="otterwiki_editor.table_add_row()" href="#" class="dropdown-item-with-icon">
+    <a onclick="otterwiki_editor.table_move_column(-1)" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-arrow-left"></i>
         </span>
         Move Column left
+    </a>
+    <a onclick="otterwiki_editor.table_move_column(1)" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-arrow-right"></i>
+        </span>
+        Move Column right
     </a>
      <div class="dropdown-divider"></div>
     <a onclick="otterwiki_editor.table_align_col('left')" href="#" class="dropdown-item-with-icon">

@@ -34,7 +34,7 @@ var otterwiki_editor = {
         if (cm_editor.getSelection().length == 0) {
             // if still nothing is selected, just insert the syntax characters at the cursor
             const cursor = cm_editor.getCursor();
-            cm_editor.doc.replaceRange(syntax_chars+syntax_chars, cursor);
+            cm_editor.doc.replaceRange(syntax_chars[0]+syntax_chars[0], cursor);
             setTimeout(() => {
                 cursor.ch += syntax_chars.length;
                 cm_editor.setCursor(cursor);
@@ -338,7 +338,7 @@ var otterwiki_editor = {
             }
         }
         // calculate colum width and fix all the rows
-        let colum_width = new Array(n_columns).fill(0);
+        let colum_width = new Array(n_columns).fill(1);
         // add missing cells to .. header
         while (header.length < n_columns) header.push('');
         for (j in header) colum_width[j] = Math.max(colum_width[j], header[j].length);
@@ -349,7 +349,7 @@ var otterwiki_editor = {
             while (cells[i].length < n_columns) cells[i].push('');
             for (j in cells[i]) colum_width[j] = Math.max(colum_width[j], cells[i][j].length);
         }
-        return { header: header, align: align, cells: cells, colum_width: colum_width, row: relative_cursor.line, col: relative_cursor.col };
+        return { header: header, align: align, cells: cells, colum_width: colum_width, row: parseInt(relative_cursor.line), col: parseInt(relative_cursor.col) };
     },
     _alignStr: function (s = "", l = 0, a = "") {
         if (a == "right") return s.padStart(l, ' ');
@@ -465,13 +465,13 @@ var otterwiki_editor = {
         var row = Math.min(arr.length-1,Math.max(2, t.row));
         arr.splice(row, 1);
         // update editor
-        otterwiki_editor.table_arr_replace(arr, row - 1, t.col);
+        otterwiki_editor.table_arr_replace(arr, row, t.col);
         cm_editor.focus();
     },
     table_move_row_up: function() {
         if (!cm_editor) return;
-        // find table
         var c = cm_editor.getCursor('start')
+        // find table
         var t = otterwiki_editor._findTable();
         if (!t) return;
         if (t.row < 3) {
@@ -501,6 +501,61 @@ var otterwiki_editor = {
         cm_editor.focus();
     },
     // column manipulation
+    table_add_column: function() {
+        if (!cm_editor) return;
+        // find table
+        var t = otterwiki_editor._findTable();
+        if (!t) return;
+        // get table as array
+        var arr = otterwiki_editor._tableArray(t);
+        // craft row
+        for (var i in arr)
+        {
+            let cell = "   ";
+            if (i==1) cell = " - ";
+            arr[i].splice(t.col, 0, cell);
+        }
+        // update editor
+        otterwiki_editor.table_arr_replace(arr, t.row, t.col);
+        cm_editor.focus();
+    },
+    table_remove_column: function() {
+        if (!cm_editor) return;
+        // find table
+        var t = otterwiki_editor._findTable();
+        if (!t) return;
+        // get table as array
+        var arr = otterwiki_editor._tableArray(t);
+        // craft row
+        for (var i in arr)
+        {
+            arr[i].splice(t.col, 1);
+        }
+        // update editor
+        otterwiki_editor.table_arr_replace(arr, t.row, Math.min(arr[0].length-1,t.col));
+        cm_editor.focus();
+    },
+    table_move_column: function(offset = 1) {
+        if (!cm_editor) return;
+        var c = cm_editor.getCursor('start')
+        // find table
+        var t = otterwiki_editor._findTable();
+        if (!t) return;
+        // get table as array
+        var arr = otterwiki_editor._tableArray(t);
+        offset = parseInt(offset);
+        if (t.col+offset >= arr[0].length || t.col+offset < 0) {
+            // restore cursor
+            cm_editor.setCursor(c);
+        } else {
+            for (var i in arr) {
+                arr[i][t.col]=arr[i].splice(t.col+offset, 1, arr[i][t.col])[0];
+            }
+            // update editor
+            otterwiki_editor.table_arr_replace(arr, t.row, t.col+offset);
+        }
+        cm_editor.focus();
+    },
     // alignment manipulation
     table_align_col: function(align = 'undef') {
         if (!cm_editor) return;
