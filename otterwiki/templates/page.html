@@ -59,7 +59,7 @@
 {% block navbar %}
 {% if has_permission('WRITE') %}
 <a href="{{ url_for('edit', path=pagepath) }}" class="btn btn-primary" role="button"><i class="fas fa-pencil-alt"></i></a>
-{% else %}
+{% elif not current_user.is_authenticated %}
 <a href="{{ url_for('login') }}" class="btn" role="button"><i class="fas fa-sign-in-alt" title="Login"></i></a>
 {% endif %}
 {% endblock %}
