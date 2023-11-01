@@ -218,6 +218,10 @@ table.blame tr.odd {
     background-color: rgba(0, 0, 0, 0.1);
 }
 
+table.compact td {
+    padding: 0.5rem 0.2rem;
+}
+
 .dark-mode table.blame tr.odd {
     background-color: rgba(0, 0, 0, 0.3);
 }

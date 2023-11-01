@@ -8,19 +8,19 @@
     Settings
 </a>
 {% if has_permission("ADMIN") %}
-<a href="#user_management" class="sidebar-link sidebar-link-with-icon">
+    <a href="{{ url_for("admin", _anchor="user_management") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon">
         <i class="fas fa-users"></i>
     </span>
     User Management
 </a>
-<a href="#application_preferences" class="sidebar-link sidebar-link-with-icon">
+<a href="{{ url_for("admin", _anchor="application_preferences") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon">
         <i class="fas fa-cogs"></i>
     </span>
     Application Preferences
 </a>
-<a href="#mail_preferences" class="sidebar-link sidebar-link-with-icon">
+<a href="{{ url_for("admin", _anchor="mail_preferences") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon">
         <i class="far fa-envelope"></i>
     </span>
@@ -36,7 +36,7 @@
 <form action="{{ url_for("admin") }}" method="POST">
 <h2 class="card-title">User Management</h2>
 <div class="table-responsive table-striped">
-  <table class="table">
+  <table class="table compact">
     <thead>
       <tr>
         <th>eMail</th>
