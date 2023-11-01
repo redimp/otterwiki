@@ -26,7 +26,6 @@ from datetime import datetime
 from pprint import pprint
 import hmac
 
-
 def check_password_hash_backport(pwhash, password):
     # split pwhash to check the method
     method, salt, hashval = pwhash.split("$", 2)
@@ -58,7 +57,7 @@ class SimpleAuth:
         allow_upload = db.Column(db.Boolean(), default=False)
 
         def __repr__(self):
-            return "<User '{} <{}>'>".format(self.name, self.email)
+            return f"<User '{self.name} <{self.email}>' a:{self.is_admin}>"
 
     def __init__(self):
         with app.app_context():
@@ -80,8 +79,29 @@ class SimpleAuth:
     def user_loader(self, id):
         return self.User.query.filter_by(id=int(id)).first()
 
-    def get_all_User(self):
+    def get_all_user(self):
         return self.User.query.all()
+
+    def get_user(self, uid=None, email=None):
+        if uid is not None:
+            return self.User.query.filter_by(id=uid).first()
+        if email is not None:
+            return self.User.query.filter_by(email=email).first()
+        raise ValueError("Neither uid nor email given")
+
+    def update_user(self, user):
+        # validation check
+        if not user.is_admin:
+            # check if any user is admin
+            if not True in [u.is_admin for u in self.get_all_user()]:
+                # no admin left
+                user.is_admin = True
+        db.session.add(user)
+        db.session.commit()
+
+    def delete_user(self, user):
+        db.session.delete(user)
+        db.session.commit()
 
     def get_author(self):
         if not current_user.is_authenticated:
@@ -459,10 +479,17 @@ def handle_request_confirmation(*args, **kwargs):
     return auth_manager.handle_request_confirmation(*args, **kwargs)
 
 
-def get_all_User(*args, **kwargs):
-    return auth_manager.get_all_User(*args, **kwargs)
+def get_all_user(*args, **kwargs):
+    return auth_manager.get_all_user(*args, **kwargs)
 
+def get_user(uid):
+    return auth_manager.get_user(uid)
 
+def update_user(user):
+    return auth_manager.update_user(user)
+
+def delete_user(user):
+    return auth_manager.delete_user(user)
 #
 # utils
 #

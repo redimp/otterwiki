@@ -1,0 +1,56 @@
+{# vim: set et ts=8 sts=2 sw=2 ai: #}
+{% extends "admin.html" %}
+{% block content %}
+<div class="col-sm-12 col-md-12 col-lg-10">
+<div class="card">
+    <h2 class="card-title">Edit User</h2>
+    <form action="{{ url_for("user", uid=user.id) }}" method="POST" class="form-inline">{# class="w-400 mw-full" <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
+      <div class="form-group">
+        <label for="name" class="required w-150">Name</label>
+        <input type="text" class="form-control" name="name" id="name" placeholder="" value="{{user.name if user.name}}">
+      </div>
+      <div class="form-group">
+        <label for="name" class="required w-150">eMail</label>
+        <input type="text" class="form-control" name="email" id="email" placeholder="" value="{{user.email if user.email}}">
+      </div>
+    <h3 class="card-title">Flags and Permissions</h3>
+    {%
+      for label, name, value, note in [
+        ("Approved","is_approved",user.is_approved,""),
+        ("Admin","is_admin",user.is_admin,""),
+      ]
+    %}
+      <div class="form-group">
+        <div class="custom-checkbox">
+          <input type="checkbox" id="{{name}}" name="{{name}}" value="1" {{"checked=\"checked\"" if value }}>
+          <label for="{{name}}" class="">{{ label }}</label>
+          {% if note %}
+          <div class="form-text">
+            {{ note }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+  {% endfor %}
+      {# #}
+      <input class="btn btn-primary" type="submit" value="Update">
+      <a href="{{ url_for("admin", _anchor="user_management") }}" class="btn" role="button">Cancel</a>
+    </form>
+</div>{# card #}
+</div>{# w-600 container #}
+
+<div class="col-sm-12 col-md-12 col-lg-10">
+<div class="card">
+    <h2 class="card-title">Delete User</h2>
+    <form action="{{ url_for("user", uid=user.id) }}" method="POST" class="form-inline">{# class="w-400 mw-full" <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
+      <div class="form-group">
+        <div class="custom-checkbox">
+          <input type="checkbox" id="agree-to-terms" name="delete" value="1">
+          <label for="agree-to-terms">Please check to confirm deleting <strong>{{user.name}}</strong>.</label>
+        </div>
+      </div>
+      <input class="btn btn-danger" type="submit" value="Delete">
+    </form>
+</div>{# card #}
+</div>{# w-600 container #}
+{% endblock %}

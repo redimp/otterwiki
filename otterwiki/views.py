@@ -102,6 +102,13 @@ def admin():
     else:
         return otterwiki.preferences.handle_preferences(request.form)
 
+@app.route("/-/user/<string:uid>", methods=["POST","GET"])
+@login_required
+def user(uid=None):
+    if request.method == "GET":
+        return otterwiki.preferences.user_edit_form(uid)
+    else:
+        return otterwiki.preferences.handle_user_edit(uid,request.form)
 
 #
 # index, changelog

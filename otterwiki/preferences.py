@@ -16,7 +16,7 @@ from flask_login import (
 from otterwiki.server import app, db, update_app_config, Preferences
 from otterwiki.helper import toast, send_mail, serialize, deserialize, SerializeError
 from otterwiki.util import random_password, empty, is_valid_email
-from otterwiki.auth import has_permission, current_user, get_all_User
+from otterwiki.auth import has_permission, current_user, get_all_user, get_user, update_user, delete_user
 from pprint import pprint
 
 def _update_preference(name, value, delay_commit=False):
@@ -126,7 +126,7 @@ def handle_user_management(form):
         toast("You can't disable all users", "error")
     else:
         # update users
-        for user in get_all_User():
+        for user in get_all_user():
             msgs = []
             # approval
             if user.is_approved and not user.id in is_approved:
@@ -149,19 +149,87 @@ def handle_user_management(form):
                         current_user, user.name, user.email, " and ".join(msgs)
                     )
                 )
-                db.session.add(user)
-        db.session.commit()
+                update_user(user)
     return redirect(url_for("admin", _anchor="user_management"))
 
 def admin_form():
     if not has_permission("ADMIN"):
         abort(403)
     # query user
-    user_list = get_all_User()
+    user_list = get_all_user()
     # render form
     return render_template(
         "admin.html",
         title="Admin",
         user_list=user_list,
     )
+
+def user_edit_form(uid):
+    if not has_permission("ADMIN"):
+        abort(403)
+    user = get_user(uid)
+    if user is None:
+        abort(404)
+    # render form
+    return render_template(
+        "user.html",
+        title="User",
+        user=user,
+    )
+
+def handle_user_edit(uid, form):
+    if not has_permission("ADMIN"):
+        abort(403)
+    user = get_user(uid)
+    if user is None:
+        abort(404)
+    msgs, flags = [], []
+    # delete
+    if (form.get("delete", False)):
+        if (user == current_user):
+            toast(f"Unable to delete yourself.","error")
+            return redirect(url_for("user", uid=user.id))
+        toast(f"User '{user.name} &lt;{user.email}&gt;' deleted.")
+        app.logger.report(f"deleted user '{user.name} &lt;{user.email}&gt;'")
+        delete_user(user)
+        return redirect(url_for("admin", _anchor="user_management"))
+    if form.get("name") is None:
+        return redirect(url_for("user", uid=user.id))
+    # name
+    if user.name != form.get("name").strip():
+        msgs.append(f"renamed '{user.name}' to '{form.get('name').strip()}'")
+        user.name = form.get("name").strip()
+    # email
+    if user.email != form.get("email").strip():
+        if is_valid_email(form.get("email").strip()):
+            msgs.append(f"updated {user.email} to {form.get('email').strip()}")
+            user.email = form.get("email").strip()
+        else:
+            toast(f"'{form.get('email').strip()}' is not a valid email address","danger")
+    # handle all the flags
+    for value, label in [
+            ("is_admin", "admin"),
+            ("is_approved", "approved"),
+            ]:
+        if getattr(user, value) and not form.get(value):
+            setattr(user, value, False)
+            flags.append(f"removed {label}")
+        elif not getattr(user, value) and form.get(value):
+            setattr(user, value, True)
+            msgs.append(f"added {label}")
+    # all flags checked updated msgs
+    if len(flags):
+        msgs.append("{} flag".format(" and ".join(flags)))
+    if len(msgs):
+        toast(" and ".join(msgs))
+        app.logger.report(
+            "{} updated {} <{}>: {}".format(
+                current_user, user.name, user.email, " and ".join(msgs)
+            ))
+    try:
+        update_user(user)
+    except:
+        pass
+    return redirect(url_for("user", uid=user.id))
+
 

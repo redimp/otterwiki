@@ -39,6 +39,7 @@
   <table class="table compact">
     <thead>
       <tr>
+        <th>&nbsp;</th>
         <th>eMail</th>
         <th>Name</th>
         <th>Approved</th>
@@ -48,6 +49,11 @@
     <tbody>
 {% for user in user_list %}
       <tr>
+        <td>
+            <a href="{{ url_for("user", uid=user.id) }}">
+                <i class="fas fa-user-edit"></i>
+            </a>
+        </td>
         <td>
             {{user.email}}
         </td>
