@@ -216,7 +216,7 @@ def handle_user_edit(uid, form):
             flags.append(f"removed {label}")
         elif not getattr(user, value) and form.get(value):
             setattr(user, value, True)
-            msgs.append(f"added {label}")
+            flags.append(f"added {label}")
     # all flags checked updated msgs
     if len(flags):
         msgs.append("{} flag".format(" and ".join(flags)))
