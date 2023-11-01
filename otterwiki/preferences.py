@@ -234,6 +234,9 @@ def handle_user_edit(uid, form):
     for value, label in [
             ("is_admin", "admin"),
             ("is_approved", "approved"),
+            ("allow_read", "read"),
+            ("allow_write", "write"),
+            ("allow_upload", "upload"),
             ]:
         if getattr(user, value) and not form.get(value):
             setattr(user, value, False)

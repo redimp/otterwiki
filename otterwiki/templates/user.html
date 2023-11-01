@@ -17,7 +17,10 @@
     {%
       for label, name, value, note in [
         ("Approved","is_approved",user.is_approved,""),
-        ("Admin","is_admin",user.is_admin,""),
+        ("Admin","is_admin",user.is_admin,"Users flagged as admins always have all the permissions."),
+        ("Read","allow_read",user.allow_read,""),
+        ("Write","allow_write",user.allow_write,""),
+        ("Upload","allow_upload",user.allow_upload,""),
       ]
     %}
       <div class="form-group">
