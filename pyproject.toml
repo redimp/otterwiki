@@ -79,6 +79,8 @@ filterwarnings = [
     "ignore: 'werkzeug.urls.url_decode' is deprecated:DeprecationWarning",
     # venv/lib/python3.11/site-packages/flask_login/utils.py:130: DeprecationWarning: 'werkzeug.urls.url_encode' is deprecated and will be removed in Werkzeug 2.4. Use 'urllib.parse.urlencode' instead.
     "ignore: 'werkzeug.urls.url_encode' is deprecated:DeprecationWarning",
+    # venv/lib/python3.11/site-packages/flask/testing.py:118: DeprecationWarning: The '__version__' attribute is deprecated and will be removed in Werkzeug 3.1. Use feature detection or 'importlib.metadata.version("werkzeug")' instead.
+    "ignore: The '__version__' attribute is deprecated and will be removed in Werkzeug 3.1:DeprecationWarning",
 ]
 
 # vim: set et ts=8 sts=4 sw=4 ai fenc=utf-8:
