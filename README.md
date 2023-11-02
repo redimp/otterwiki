@@ -45,7 +45,9 @@ services:
 ## Configuration
 
 An Otter Wiki is configured in the application via the **Settings** menu
-as admin user. For development you can use the `settings.cfg`, see below.
+as admin user. Alternatively you configure the variables via the 
+`settings.cfg`, see below. The docker image respects the environment variables and
+configures the `settings.cfg` accordingly.
 
 ### Branding
 
