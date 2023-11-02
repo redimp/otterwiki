@@ -12,9 +12,9 @@ clean:
 	rm -rf .pytest_cache .tox
 	rm -rf coverage_html
 
-venv:
+venv: pyproject.toml
+	rm -rf venv
 	python3 -m venv venv
-	#venv/bin/python setup.py develop
 	venv/bin/pip install -U pip wheel
 	venv/bin/pip install -e '.[dev]'
 
