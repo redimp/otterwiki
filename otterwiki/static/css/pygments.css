@@ -1,7 +1,10 @@
 /*
 /*
  * css created with
- * pygmentize -S autum -f html -a ".highlight" | grep "^.highlight"
+ *
+ *   pygmentize -S autum -f html -a ".highlight" | grep "^.highlight"
+ *
+ * and some manual tweaking.
  */
 
 .highlight .hll { background-color: #ffffcc }
@@ -36,12 +39,12 @@
 .highlight .s { color: #aa5500 } /* Literal.String */
 .highlight .na { color: #1e90ff } /* Name.Attribute */
 .highlight .nb { color: #00aaaa } /* Name.Builtin */
-.highlight .nc { color: #00aa00; text-decoration: underline } /* Name.Class */
+.highlight .nc { color: #00aa00; } /* Name.Class */
 .highlight .no { color: #aa0000 } /* Name.Constant */
 .highlight .nd { color: #888888 } /* Name.Decorator */
 .highlight .ni { color: #880000; font-weight: bold } /* Name.Entity */
 .highlight .nf { color: #00aa00 } /* Name.Function */
-.highlight .nn { color: #00aaaa; text-decoration: underline } /* Name.Namespace */
+.highlight .nn { color: #00aaaa; } /* Name.Namespace */
 .highlight .nt { color: #1e90ff; font-weight: bold } /* Name.Tag */
 .highlight .nv { color: #aa0000 } /* Name.Variable */
 .highlight .ow { color: #0000aa } /* Operator.Word */
@@ -75,7 +78,10 @@
 
 /*
  * css created with
- * pygmentize -S material -f html -a ".dark-mode .highlight" | grep "^.dark-mode"
+ *
+ *   pygmentize -S material -f html -a ".dark-mode .highlight" | grep "^.dark-mode"
+ *
+ * and some manual tweaking.
  */
 .dark-mode .highlight .hll { background-color: #2C3B41 }
 .dark-mode .highlight { background: #263238; color: #EEFFFF }
@@ -107,7 +113,7 @@
 .dark-mode .highlight .gt { color: #FF5370 } /* Generic.Traceback */
 .dark-mode .highlight .kc { color: #89DDFF } /* Keyword.Constant */
 .dark-mode .highlight .kd { color: #BB80B3 } /* Keyword.Declaration */
-.dark-mode .highlight .kn { color: #89DDFF; font-style: italic } /* Keyword.Namespace */
+.dark-mode .highlight .kn { color: #89DDFF; } /* Keyword.Namespace */
 .dark-mode .highlight .kp { color: #89DDFF } /* Keyword.Pseudo */
 .dark-mode .highlight .kr { color: #BB80B3 } /* Keyword.Reserved */
 .dark-mode .highlight .kt { color: #BB80B3 } /* Keyword.Type */
@@ -126,9 +132,9 @@
 .dark-mode .highlight .nn { color: #FFCB6B } /* Name.Namespace */
 .dark-mode .highlight .nx { color: #EEFFFF } /* Name.Other */
 .dark-mode .highlight .py { color: #FFCB6B } /* Name.Property */
-.dark-mode .highlight .nt { color: #FF5370 } /* Name.Tag */
+.dark-mode .highlight .nt { color: #82AAFF } /* Name.Tag */
 .dark-mode .highlight .nv { color: #89DDFF } /* Name.Variable */
-.dark-mode .highlight .ow { color: #89DDFF; font-style: italic } /* Operator.Word */
+.dark-mode .highlight .ow { color: #89DDFF; } /* Operator.Word */
 .dark-mode .highlight .pm { color: #89DDFF } /* Punctuation.Marker */
 .dark-mode .highlight .w { color: #EEFFFF } /* Text.Whitespace */
 .dark-mode .highlight .mb { color: #F78C6C } /* Literal.Number.Bin */
