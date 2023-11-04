@@ -57,6 +57,23 @@ settings.cfg:
 	@echo ""
 	@false
 
+tmp/codemirror-5.65.15:
+	mkdir -p tmp && \
+	cd tmp && \
+	test -f codemirror.zip || wget https://codemirror.net/5/codemirror.zip && \
+	unzip codemirror.zip
+
+otterwiki/static/js/cm-modes.min.js: tmp/codemirror-5.65.15
+	cat tmp/codemirror-5.65.15/addon/mode/simple.js > otterwiki/static/js/cm-modes.js
+	cat tmp/codemirror-5.65.15/mode/meta.js >> otterwiki/static/js/cm-modes.js
+	for MODE in shell clike xml python javascript markdown yaml php sql \
+		toml cmake perl http go rust dockerfile powershell properties \
+		stex nginx; do \
+		cat tmp/codemirror-5.65.15/mode/$$MODE/$$MODE.js \
+			>> otterwiki/static/js/cm-modes.js; \
+	done
+	./venv/bin/python -m rjsmin -p < otterwiki/static/js/cm-modes.js > otterwiki/static/js/cm-modes.min.js
+
 docker-test:
 	# make sure the image is rebuild
 	DOCKER_BUILDKIT=1 docker build --no-cache -t otterwiki:_test --target test-stage .

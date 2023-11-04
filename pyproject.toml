@@ -36,6 +36,7 @@ dev = [
     "black",
     "tox",
     "tbump",
+    "rjsmin",
     ]
 
 [build-system]
