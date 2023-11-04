@@ -64,6 +64,11 @@ h5:hover a.anchor {
 }
 
 /* pre and code */
+
+div.page > div.highlight {
+    margin-bottom: 1rem;
+}
+
 code,
 pre,
 .code {
