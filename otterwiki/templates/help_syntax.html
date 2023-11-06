@@ -1,0 +1,13 @@
+{#- vim: set et ts=8 sts=4 sw=4 ai: -#}
+{% extends "help.html" %}
+{% block js %}
+{{ super() }}
+<script src="{{ url_for("static", filename="js/polyfill.e6.min.js") | debug_unixtime }}"></script>
+<script id="MathJax-script" async src="{{ url_for("static", filename="mathjax/tex-chtml.js") | debug_unixtime }}"></script>
+{% endblock %}
+{% block content %}
+<div class="page">
+<h2>Markdown Syntax</h2>
+{% include "snippets/syntax.html" %}
+</div>
+{% endblock %}

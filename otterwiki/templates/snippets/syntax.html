@@ -1,3 +1,4 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% macro heading(name) %}
 {%if (in_help) %}
 <h3 id="{{name|lower}}">{{ name }}<a href="#{{name|lower}}" class="anchor"><i class="fas fa-link"></i></a></h3>
@@ -11,12 +12,15 @@
 <div class="col-md-6 col-sm-12">
 <pre>**<strong>bold</strong>**
 *<em>italics</em>*
-~~<strike>strikethrough</strike>~~</pre>
+~~<strike>strikethrough</strike>~~
+==<mark>mark</mark>==
+</pre>
 </div>
 <div class="col-md-6 col-sm-12 pl-5">
 <strong>bold</strong><br/>
 <em>italics</em><br/>
 <strike>strikethrough</strike><br/>
+<mark>mark</mark>
 </div>
 </div>
 
@@ -222,6 +226,59 @@ Math block:</br>
 \[a^2+b^2=c^2\]
 </div>
 </div>
+
+{{ heading("Footnotes") }}
+
+<div class="row">
+<div class="col-md-6 col-sm-12 p-5">
+<pre>
+Footnote identifiers[^1] are single characters
+or words[^bignote]. And can be referenced
+multiple[^1] times.
+
+[^1]: Footnotes can be a single line.
+
+[^bignote]: Or more complex.
+
+    Indent paragraphs to include them
+    in the footnote.
+
+    Add as many paragraphs as you like.
+</pre>
+</div>
+<div class="col-md-6 col-sm-12 p-5">
+Footnote identifiers<sup class="footnote-ref" id="fnref-1"><a href="#fn-1">1</a></sup> are single characters or words<sup class="footnote-ref" id="fnref-2"><a href="#fn-2">2</a></sup>. And can be referenced multiple<sup class="footnote-ref" id="fnref-1"><a href="#fn-1">1</a></sup> times.
+<hr/>
+<section class="footnotes">
+<ol>
+<li id="fn-1" style="font-size: 1.2rem;"><i class="fas fa-long-arrow-alt-up"></i> <a href="#fnref-1" class="footnote">a</a>, <a href="#fnref-3" class="footnote">b</a> Footnotes can be a single line.</li>
+<li id="fn-bignote" style="font-size: 1.2rem;"><a href="#fnref-2" class="footnote"><i class="fas fa-long-arrow-alt-up"></i></a><p style="display:inline; font-size: 1.2rem;"> Or more complex.</p>
+<p style="font-size: 1.2rem;">Indent paragraphs to include them
+in the footnote.</p>
+<p style="font-size: 1.2rem;">Add as many paragraphs as you like.</p></li>
+<li id="fn-x-clacks-overhead" style="font-size: 1.2rem;"><a href="#" class="footnote"><i class="fas fa-long-arrow-alt-up"></i></a> GNU Terry Pratchett.</li>
+</ol>
+</section>
+</div>
+</div> {# row #}
+
+{{ heading("Blocks") }}
+
+<div class="row">
+<div class="col-md-6 col-sm-12 p-5">
+<pre>
+::: info
+# Head of the block.
+With _formatted_ content.
+:::
+</pre>
+</div>
+<div class="col-md-6 col-sm-12 p-5">
+<div class="alert alert-primary mb-10"><h4 class="alert-heading">Head of the block</h4>
+With <em>formatted</em> content.</div>
+</div>
+</div> {# row #}
+Block styles available: <span class="alert alert-primary text-monospace" style="padding: 0.2rem">info</span>, <span class="alert alert-success text-monospace" style="padding: 0.2rem">success</span>, <span class="alert alert-secondary text-monospace" style="padding: 0.2rem">warning</span>, <span class="alert alert-danger text-monospace" style="padding: 0.2rem">danger</span> and <span class="alert text-monospace" style="padding: 0.2rem">none</span>.
 
 {{ heading("Remark") }}
 There's actually a lot more to Markdown than this. See the official

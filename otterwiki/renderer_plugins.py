@@ -332,6 +332,10 @@ class mistunePluginFancyBlocks:
             cls = "alert alert-secondary"
         elif family in ["danger", "red"]:
             cls = "alert alert-danger"
+        elif family in ["success", "green"]:
+            cls = "alert alert-success"
+        elif family in ["none", "empty"]:
+            cls = "alert"
         else:
             cls = "alert"
         if header is not None:
@@ -343,7 +347,7 @@ class mistunePluginFancyBlocks:
             text = text[3:]
         if text.endswith('</p>'):
             text = text[:-4]
-        return f'<div class="{cls} mb-10">{header}\n{text}</div>\n'
+        return f'<div class="{cls} mb-10" role="alert">{header}\n{text}</div>\n'
 
     def __call__(self, md):
         md.block.register_rule(

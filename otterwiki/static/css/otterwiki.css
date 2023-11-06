@@ -458,3 +458,20 @@ mark {
     color: #9e9e9e;
     background-color: rgba(255,255,255,0.2);
 }
+
+/* documentation */
+
+.help-button {
+    font-size: 1.2rem !important;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.8rem;
+    background-color: rgba(100, 100, 100, 0.1);
+    white-space: nowrap;
+    position: relative;
+    pointer-events: none;
+}
+
+.btn-hlp {
+    position: relative;
+    pointer-events: none;
+}

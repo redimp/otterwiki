@@ -83,7 +83,39 @@ def about():
 def syntax():
     return render_template(
         "syntax.html",
+        in_help = True,
     )
+
+@app.route("/-/help")
+@app.route("/-/help/<string:topic>")
+def help(topic=None):
+    print(topic)
+    toc = None
+    content = "TODO"
+    if (topic == "admin"):
+        with open(os.path.join(app.root_path, "help_admin.md")) as f:
+            md = f.read()
+            content, toc = render.markdown(md, sanitize=False)
+    elif (topic == "syntax"):
+        toc = [(None, '', 2, s, s.lower()) for s in [
+            'Emphasis',
+            'Headings',
+            'Lists',
+            'Links',
+            'Quotes',
+            'Images',
+            'Tables',
+            'Code',
+            'Mathjax',
+            ]
+        ]
+        return render_template("help_syntax.html", toc=toc, in_help=True)
+    else:
+        with open(os.path.join(app.root_path, "help.md")) as f:
+            md = f.read()
+            content, toc = render.markdown(md, sanitize=False)
+    # default help
+    return render_template("help.html", content=content, toc=toc)
 
 
 @app.route("/-/settings", methods=["POST", "GET"])

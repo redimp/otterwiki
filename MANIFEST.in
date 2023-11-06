@@ -1,5 +1,4 @@
 # include templates and static files in the package
 recursive-include otterwiki/templates *
 recursive-include otterwiki/static *
-include otterwiki/about.md
-include otterwiki/initial_home.md
+include otterwiki/*.md

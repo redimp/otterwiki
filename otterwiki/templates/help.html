@@ -1,0 +1,46 @@
+{#- vim: set et ts=8 sts=4 sw=4 ai: -#}
+{% extends "wiki.html" %}
+{% block menu %}
+<h5 class="sidebar-title">Documentation</h5>
+<div class="sidebar-divider"></div>
+<a href="{{ url_for("help") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+      <i class="fas fa-book"></i>
+    </span>
+    User Guide
+</a>
+{# ### #}
+<a href="{{ url_for("help", topic="syntax") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+      <i class="fab fa-markdown"></i>
+    </span>
+    Markdown Syntax
+</a>
+{# ### #}
+<a href="{{ url_for("help", topic="admin") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+      <i class="fas fa-cogs"></i>
+    </span>
+    Admin Guide
+</a>
+{% if toc %}
+<div class="sidebar-toc d-xl-none">
+<div class="sidebar-divider"></div>
+    {% for count, html, level, text, anchor in toc %}
+    <a href="#{{anchor}}" class="sidebar-link sidebar-toc-{{level}}">{{text}}</a>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_nav -%}
+    {% for count, html, level, text, anchor in toc %}
+    <a href="#{{anchor}}" class="sidebar-link sidebar-toc-{{level}}">{{text}}</a>
+    {% endfor %}
+{%- endblock %}
+
+{% block content %}
+<div class="page">
+{{content|safe}}
+</div>
+{% endblock %}

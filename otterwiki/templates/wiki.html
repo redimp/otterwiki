@@ -46,6 +46,12 @@
                     Changelog
                     </a>
 {% endif %}
+                    <a href="{{ url_for("help") }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </span>
+                    Documentation
+                    </a>
 {{ super() }}
 {% endblock %}
 {##}
