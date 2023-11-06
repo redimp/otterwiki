@@ -1,4 +1,12 @@
-<h4>Emphasis</h4>
+{% macro heading(name) %}
+{%if (in_help) %}
+<h3 id="{{name|lower}}">{{ name }}<a href="#{{name|lower}}" class="anchor"><i class="fas fa-link"></i></a></h3>
+{%else%}
+<h4>{{ name }}</h4>
+{% endif %}
+{% endmacro %}
+
+{{ heading("Emphasis") }}
 <div class="row">
 <div class="col-md-6 col-sm-12">
 <pre>**<strong>bold</strong>**
@@ -12,7 +20,7 @@
 </div>
 </div>
 
-<h4>Headers</h4>
+{{ heading("Headings") }}
 
 <div class="row align-bottom my-5">
 <div class="col-md-6 col-sm-12 align-bottom"><code># h1 - Large header</code></div>
@@ -31,14 +39,14 @@
 <div class="col-md-6 col-sm-12"><h4 class="p-0 m-0">h4 - Tiny Header</h4></div>
 </div>
 </table>
-<h4>Lists</h4>
+{{ heading("Lists") }}
 <div class="row">
 <div class="col-md-6 col-sm-12">
 <pre>- Generic list item
 - Generic list item
 - Generic list item</pre>
 </div>
-<div class="col-md-6 col-sm-12 pl-5">
+<div class="col-md-6 col-sm-12 pl-20">
 <ul class="p-0 m-0">
   <li class="p-0 m-0">Generic list item</li>
   <li class="p-0 m-0">Generic list item</li>
@@ -53,7 +61,7 @@
 2. Numbered list item
 3. Numbered list item</pre>
 </div>
-<div class="col-md-6 col-sm-12 pl-5">
+<div class="col-md-6 col-sm-12 pl-20">
 <ol class="p-0 m-0">
   <li class="p-0 m-0">Numbered list item</li>
   <li class="p-0 m-0">Numbered list item</li>
@@ -62,7 +70,7 @@
 </div>
 </div>
 
-<h4>Links</h4>
+{{ heading("Links") }}
 <div class="row">
 <div class="col-md-6 col-sm-12">
 <pre class="text-wrap">[[WikiPage]]</pre>
@@ -92,14 +100,14 @@
 
 <div class="row">
 <div class="col-md-6 col-sm-12">
-<pre class="text-wrap">[Example Link with text](http://example.com)</pre>
+<pre class="text-wrap">[Link with text](http://example.com)</pre>
 </div>
 <div class="col-md-6 col-sm-12 pl-5">
-  <a href="#">Example link with text</a>
+  <a href="#">Link with text</a>
 </div>
 </div>
 
-<h4>Quotes</h4>
+{{ heading("Quotes") }}
 <div class="row">
 <div class="col-md-6 col-sm-12">
 <pre>&gt; This is a quote.
@@ -117,12 +125,12 @@ It can span multiple lines!</p>
 </div>
 </div>
 
-<h4>Images &nbsp;</h4>
-<p>You can copy n paste images directly into the editor, theey will be uploaded as attachments.</p>
+{{ heading("Images") }}
+<p>You can copy n paste images directly into the editor, they will be uploaded as attachments.</p>
 <pre>![](http://www.example.com/image.jpg)</pre>
 <p>Check the attachments of a page, there are links for copy'n'paste.</p>
 
-<h4>Tables</h4>
+{{ heading("Tables") }}
 
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
@@ -155,7 +163,7 @@ It can span multiple lines!</p>
 </div>
 </div>
 
-<h4>Code</h4>
+{{ heading("Code") }}
 
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
@@ -190,7 +198,7 @@ print("Hello World!")```</pre>
 </div>
 </div>
 
-<h4>Mathjax</h4>
+{{ heading("Mathjax") }}
 
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
@@ -214,3 +222,11 @@ Math block:</br>
 \[a^2+b^2=c^2\]
 </div>
 </div>
+
+{{ heading("Remark") }}
+There's actually a lot more to Markdown than this. See the official
+<a href="http://daringfireball.net/projects/markdown/basics">introduction</a> and
+<a href="http://daringfireball.net/projects/markdown/syntax">syntax</a> for more information.
+
+Please Note: An Otter Wiki is not using the official implementation. This might lead to small differences in the little things.
+
