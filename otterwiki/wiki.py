@@ -72,9 +72,10 @@ class PageIndex:
         t_start = timer()
         files, directories = storage.list(p=self.path)
         app.logger.debug(
-            "PageIndex reading files took {:.3f} seconds.".format(timer() - t_start)
+            "PageIndex reading files and directories took {:.3f} seconds.".format(timer() - t_start)
         )
         self.toc = {}
+        page_indices = []
         t_start = timer()
         for fn in [f for f in files if f.endswith(".md")]: # filter .md files
             if self.path is None:
@@ -85,6 +86,24 @@ class PageIndex:
             firstletter = get_pagename(fn, full=True)[0]
             if firstletter not in self.toc.keys():
                 self.toc[firstletter] = []
+            if depth > 1:
+                # add entries for subdirectories to he page index
+                subdirectories = split_path(f)[:-1]
+                for l in range(len(subdirectories)):
+                    subdir_path = os.path.join(*subdirectories[l:])
+                    if path is not None and subdir_path.lower() == path.lower():
+                        continue
+                    if storage.exists(get_filename(subdir_path)):
+                        # if page exists don't add the directory
+                        continue
+                    if subdir_path not in page_indices:
+                        self.toc[firstletter].append(
+                                (depth,
+                                 get_pagename(subdir_path, full=True) + "/", # title
+                                 url_for("view", path=get_pagename(subdir_path, full=True)), # url
+                                 [])
+                            )
+                        page_indices.append(subdir_path)
             pagetoc = []
             # read file
             content = storage.load(f)
