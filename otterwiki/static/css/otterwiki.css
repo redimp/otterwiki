@@ -83,7 +83,7 @@ pre,
 .dark-mode code,
 .dark-mode pre,
 .dark-mode .code {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: #263238;
 }
 
 .revision-small {
