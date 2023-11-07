@@ -25,20 +25,18 @@ var otterwiki_editor = {
         if (!(syntax_chars instanceof Array)) {
             syntax_chars = [syntax_chars];
         }
-        text = cm_editor.getSelection();
+        var anythingSelected = true;
+        // store cursor
+        const cursor = cm_editor.getCursor();
         if (cm_editor.getSelection().length == 0) {
             // if nothing is selected, select the word under the cursor
+            anythingSelected = false;
             const word = cm_editor.findWordAt(cm_editor.getCursor());
             cm_editor.setSelection(word.anchor, word.head);
         }
-        if (cm_editor.getSelection().length == 0) {
+        if (cm_editor.getSelection().trim().length == 0) {
             // if still nothing is selected, just insert the syntax characters at the cursor
-            const cursor = cm_editor.getCursor();
             cm_editor.doc.replaceRange(syntax_chars[0]+syntax_chars[0], cursor);
-            setTimeout(() => {
-                cursor.ch += syntax_chars.length;
-                cm_editor.setCursor(cursor);
-            }, 0);
         } else {
             // selection that is supposed to be toggled
             const cursor_start = cm_editor.getCursor('start');
@@ -70,6 +68,12 @@ var otterwiki_editor = {
                 // select new area
                 cm_editor.setSelection(cursor_start, cursor_end);
             }
+        }
+        if (!anythingSelected) {
+            setTimeout(() => {
+                cursor.ch += syntax_chars[0].length;
+                cm_editor.setCursor(cursor);
+            }, 0);
         }
 
         cm_editor.focus();
