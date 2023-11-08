@@ -4,7 +4,7 @@
 <form action="{{url_for("create")}}" method="POST" class="form-inline">{# class="w-400 mw-full" <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
   <div class="form-group">
     <label for="pagename" class="required">Page name</label>
-    <input type="text" class="form-control" name="pagename" id="pagename" placeholder="Page name" required="required" value="{{ pagename if pagename }}">
+    <input type="text" class="form-control" name="pagename" id="pagename" placeholder="Page name" required="required" value="{{ pagename if pagename }}" autofocus>
   </div>
   <div class="form-group">
     <div class="form-text text-wrap">
