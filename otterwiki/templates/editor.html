@@ -110,9 +110,7 @@
             "Shift-Tab": "indentLess",
         },
       });
-{% if cursor_line and cursor_ch %}
-    cm_editor.setCursor({ line: {{cursor_line}}, ch: {{cursor_ch}} } );
-{% endif %}
+    cm_editor.setCursor({ line: {{cursor_line or 0}}, ch: {{cursor_ch or 0}} } );
     var bottom_panel = document.getElementById('editor-bottom-panel');
     bottom_panel.style.display = 'block';
     cm_editor.addPanel(bottom_panel, {position: "bottom", stable: true});

@@ -441,9 +441,11 @@ class Page:
         if content is None:
             try:
                 content, _ = self.load(revision=revision)
+                content = content.rstrip()
             except StorageNotFound:
-                content = ""
-            content = content.rstrip()
+                content = f"# {self.pagename}\n\n"
+                cursor_line = 2
+                cursor_ch = 0
 
         # get file listing
         files = [f.data for f in self._attachments() if f.metadata is not None]
