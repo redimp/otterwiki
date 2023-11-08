@@ -125,7 +125,7 @@ def template_debug_unixtime(s):
 
         return "{}?{}".format(s, datetime.now().strftime("%s"))
     else:
-        return "{}?{}".format(s, __version__)
+        return "{}?{}".format(s, os.getenv("GIT_TAG", None) or __version__)
 
 
 @app.template_filter("format_datetime")

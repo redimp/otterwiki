@@ -19,7 +19,7 @@ venv: pyproject.toml
 	venv/bin/pip install -e '.[dev]'
 
 run: venv settings.cfg
-	FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=$(PWD)/settings.cfg venv/bin/flask run --host 0.0.0.0 --port $(PORT)
+	GIT_TAG=$(shell git describe --long) FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=$(PWD)/settings.cfg venv/bin/flask run --host 0.0.0.0 --port $(PORT)
 
 debug: venv settings.cfg
 	FLASK_ENV=development FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask run --port $(PORT)
@@ -104,6 +104,7 @@ endif
 		-t redimp/otterwiki:latest \
 		-t redimp/otterwiki:$(VERSION) \
 		-t redimp/otterwiki:$(VERSION_MAJOR_MINOR) \
+		--build-arg GIT_TAG="$(shell git describe --long)" \
 		--push .
 else
 	@echo ""
@@ -111,7 +112,7 @@ else
 	@echo ""
 	docker buildx build --platform linux/arm64,linux/amd64 \
 		-t redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD) \
-		--build-arg DEV_BRANCH=$(shell git rev-parse --abbrev-ref HEAD) \
+		--build-arg GIT_TAG="$(shell git describe --long)_$(shell git rev-parse --abbrev-ref HEAD)" \
 		--push .
 	@echo ""
 	@echo "-- Done dev-image: redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD)"

@@ -14,7 +14,7 @@
 {% block content %}
 <div class="page">
 {{htmlcontent|safe}}
-Version {{__version__}} {{ os_getenv("DEV_BRANCH","") }}
+Version {{__version__}} {% if os_getenv("GIT_TAG", None) %} ({{ os_getenv("GIT_TAG","") }}) {% endif %}
 </div>
 {{content}}
 {% endblock %}
