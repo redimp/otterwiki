@@ -122,6 +122,8 @@ class SimpleAuth:
         return redirect(url_for("login"))
 
     def handle_login(self, email=None, password=None, remember=None):
+        if email is not None:
+            email = email.lower()
         # query user
         user = self.User.query.filter_by(email=email).first()
         next_page = request.form.get("next")
@@ -158,6 +160,8 @@ class SimpleAuth:
         return self.login_form(email, remember, next=next_page)
 
     def register_form(self, email=None, name=None):
+        if email is not None:
+            email = email.lower()
         # render template
         return render_template(
             "register.html",
@@ -167,6 +171,8 @@ class SimpleAuth:
         )
 
     def request_confirmation(self, email):
+        if email is not None:
+            email = email.lower()
         # check if email exists
         user = self.User.query.filter_by(email=email).first()
         token = serialize(email, salt="confirm-email")
@@ -192,6 +198,8 @@ class SimpleAuth:
         return redirect(url_for("login"))
 
     def create_user(self, email, name, password=None):
+        if email is not None:
+            email = email.lower()
         if password is None:
             # generate random password
             password = random_password()
@@ -201,10 +209,11 @@ class SimpleAuth:
         # first user is admin
         if len(self.User.query.all()) < 1:
             is_admin = True
+            is_approved = True
         else:
             is_admin = False
-        # handle auto approval
-        is_approved = app.config["AUTO_APPROVAL"] is True
+            # handle auto approval
+            is_approved = app.config["AUTO_APPROVAL"] is True
         # create user object
         user = self.User(
             name=name,
@@ -220,7 +229,7 @@ class SimpleAuth:
         db.session.commit()
         # log user creation
         app.logger.report("New user registered: {} <{}>".format(name, email))
-        if app.config["EMAIL_NEEDS_CONFIRMATION"]:
+        if app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin:
             self.request_confirmation(email)
         else:
             # notify user
