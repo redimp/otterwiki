@@ -56,6 +56,7 @@ configures the `settings.cfg` accordingly.
 | `SITE_NAME`      | `'Otterwiki'`   | The `SITE_NAME` displayed on every page and email |
 | `SITE_LOGO`      | `'/Home/a/logo.png'` | Customize navbar logo url (can be a page attachment) |
 | `SITE_DESCRIPTION` | `'A minimalistic wiki powered by python, markdown and git.'` | The default description used in `<meta>` tags |
+| `SITE_ICON`      | `'/Home/a/favicon-32x32.png'` | Configure via an url to the image that is displayed as favicon (tab icon, URL icon, bookmark icon). This can be an attachment |
 
 ### Permission configuration
 
