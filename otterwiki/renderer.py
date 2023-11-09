@@ -28,6 +28,8 @@ from otterwiki.renderer_plugins import (
         plugin_task_lists,
         plugin_footnotes,
         plugin_mark,
+        plugin_fancy_blocks,
+        plugin_spoiler,
         )
 
 # Please check https://github.com/lepture/mistune-contrib
@@ -188,6 +190,8 @@ class OtterwikiRenderer:
                 plugin_task_lists,
                 plugin_footnotes,
                 plugin_mark,
+                plugin_fancy_blocks,
+                plugin_spoiler,
             ],
         )
         self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")
@@ -249,7 +253,7 @@ class OtterwikiRenderer:
                 'img', 'input', 'ins', 'li', 'mark', 'ol', 'p', 'pre',
                 'span', 'strong', 'table', 'tbody', 'td', 'th', 'thead',
                 'tr', 'ul', 'video', 'audio', 'picture', 'source',
-                'dl', 'dt', 'dd', 'section', 'sup',
+                'dl', 'dt', 'dd', 'section', 'sup', 'button',
             },
             attributes={
                 '*': ['class', 'style', 'width', 'height', 'id'],
@@ -260,6 +264,7 @@ class OtterwikiRenderer:
                 'audio' : ['controls', 'loop', 'muted'],
                 'picture' : ['media','srcset'],
                 'source' : ['src', 'type', 'sizes'],
+                'button' : ['onclick'],
             },
             css_sanitizer=css_sanitizer,
         )

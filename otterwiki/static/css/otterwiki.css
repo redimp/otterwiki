@@ -421,3 +421,39 @@ mark {
     padding: 0.1rem;
     background-color: #ffcf00!important;
 }
+
+.spoiler {
+    background-color:rgba(0,0,0,0.2);
+    margin-bottom: 1rem;
+    padding: 0 1rem 0 1rem;
+}
+.dark-mode .spoiler {
+    background-color:rgba(0,0,0,0.2);
+}
+.nospoiler,
+.dark-mode .nospoiler {
+    background-color:rgba(0,0,0,0.05);
+    transition: opacity 0.1s ease-in;
+}
+.spoiler > * {
+    opacity: 0;
+    margin-block-start: 0;
+}
+.nospoiler > * {
+    opacity: 1;
+    transition: opacity 0.1s ease-in;
+    margin-block-start: 0;
+}
+
+.spoiler > .spoiler-button {
+    margin: 1rem 0;
+    width: 3rem;
+    opacity: 1;
+    background-color: rgba(0,0,0,0.2);
+    border: 0;
+    border-radius: 0.4rem;
+}
+.dark-mode .spoiler > .spoiler-button {
+    color: #9e9e9e;
+    background-color: rgba(255,255,255,0.2);
+}

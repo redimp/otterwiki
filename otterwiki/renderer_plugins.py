@@ -10,6 +10,9 @@ from mistune.util import unikey, escape_url, ESCAPE_TEXT
 
 __all__ = ['plugin_task_lists', 'plugin_footnotes']
 
+#
+# TODO: Consider how the md.block.rules work
+#
 
 class mistunePluginFootnotes:
     """
@@ -25,6 +28,7 @@ class mistunePluginFootnotes:
 
         Add as many paragraphs as you like.
     """
+
     #: inline footnote syntax looks like::
     #:
     #:    [^key]
@@ -61,8 +65,6 @@ class mistunePluginFootnotes:
 
     def parse_inline_footnote(self, inline, m, state):
         key = unikey(m.group(1))
-        print(f"{inline=} {m=}")
-        pprint(state)
         def_footnotes = state.get('def_footnotes')
         if not def_footnotes or key not in def_footnotes:
             return 'text', m.group(0)
@@ -108,7 +110,6 @@ class mistunePluginFootnotes:
 
     def md_footnotes_hook(self, md, result, state):
         footnotes = state.get('footnotes')
-        pprint(footnotes)
         if not footnotes:
             return result
 
@@ -283,9 +284,132 @@ class mistunePluginMark:
             md.renderer.register('mark', self.render_html_mark)
 
 
+class mistunePluginFancyBlocks:
+    """
+    ::: spoiler
+    :::
+    """
+
+    FANCY_BLOCK = re.compile(
+        r'( {0,3})(\:{3,}|~{3,})([^\:\n]*)\n'
+        r'(?:|([\s\S]*?)\n)'
+        r'(?: {0,3}\2[~\:]* *\n+|$)'
+    )
+    FANCY_BLOCK_HEADER = re.compile(r'^#{1,5}\s*(.*)\n+')
+
+    def parse_fancy_block(self, block, m, state):
+        # get text and the newline that has been eaten up
+        text = m.group(4) or "" + "\n"
+        family = m.group(3).strip().lower()
+
+        # find (and remove) the header from the text block
+        header = self.FANCY_BLOCK_HEADER.match(text)
+        if header is not None:
+            header = header.group(1)
+            text = self.FANCY_BLOCK_HEADER.sub('', text, 1)
+
+        # parse the text inside the block, remove headings from the rules
+        # -- we dont wont them in the toc so these are handled extra
+        rules = list(block.rules)
+        rules.remove('axt_heading')
+        rules.remove('setex_heading')
+
+        children = block.parse(text, state, rules)
+        if not isinstance(children, list):
+            children = [children]
+
+        return {
+            "type": "fancy_block",
+            "params": (family, header),
+            "text": text,
+            "children": children,
+        }
+
+    def render_html_fancy_block(self, text, family, header):
+        if family in ["info", "blue"]:
+            cls = "alert alert-primary"
+        elif family in ["warning", "yellow"]:
+            cls = "alert alert-secondary"
+        elif family in ["danger", "red"]:
+            cls = "alert alert-danger"
+        else:
+            cls = "alert"
+        if header is not None:
+            header = f'<h4 class="alert-heading">{header}</h4>'
+        else:
+            header = ""
+        text = text.strip()
+        if text.startswith('<p>'):
+            text = text[3:]
+        if text.endswith('</p>'):
+            text = text[:-4]
+        return f'<div class="{cls} mb-10">{header}\n{text}</div>\n'
+
+    def __call__(self, md):
+        md.block.register_rule(
+            'fancy_block', self.FANCY_BLOCK, self.parse_fancy_block
+        )
+
+        md.block.rules.append('fancy_block')
+
+        if md.renderer.NAME == "html":
+            md.renderer.register("fancy_block", self.render_html_fancy_block)
+
+
+class mistunePluginSpoiler:
+
+    SPOILER_LEADING = re.compile(
+        r'^ *\>\!',
+        flags = re.MULTILINE
+    )
+    SPOILER_BLOCK = re.compile(
+        r'(?: {0,3}>![^\n]*(\n|$))+'
+    )
+
+    def parse_spoiler_block(self, block, m, state):
+        text = m.group(0)
+
+        # we are searching for the complete bock, so we have to remove 
+        # the syntax >!
+        text = self.SPOILER_LEADING.sub('', text)
+
+        text = text.strip()
+
+        children = block.parse(text, state)
+        if not isinstance(children, list):
+            children = [children]
+
+        return {
+            "type": "spoiler_block",
+            "text": text,
+            "children": children,
+            }
+
+    def render_html_spoiler_block(self, text):
+        text = text.strip()
+        if text.startswith('<p>'):
+            text = text[3:]
+        if text.endswith('</p>'):
+            text = text[:-4]
+        return f'<div class="spoiler">\n  <button class="spoiler-button" onclick="otterwiki.toggle_spoiler(this)"><i class="far fa-eye"></i></button>\n  <p>{text}</p>\n</div>\n\n'
+
+    def __call__(self, md):
+        md.block.register_rule(
+            'spoiler_block', self.SPOILER_BLOCK, self.parse_spoiler_block
+        )
+
+        index = md.block.rules.index('block_quote')
+        if index != -1:
+            md.block.rules.insert(index, 'spoiler_block')
+        else:
+            md.block.rules.append('spoiler_block')
+
+        if md.renderer.NAME == "html":
+            md.renderer.register("spoiler_block", self.render_html_spoiler_block)
+
 
 plugin_task_lists = mistunePluginTaskLists()
 plugin_footnotes = mistunePluginFootnotes()
 plugin_mark = mistunePluginMark()
-
-
+plugin_fancy_blocks = mistunePluginFancyBlocks()
+plugin_spoiler = mistunePluginSpoiler()

@@ -38,6 +38,17 @@ var otterwiki = {
         {
             ehm.style.display = "none";
         }
+    },
+    toggle_spoiler: function(btn) {
+        btn.parentNode.classList.toggle('nospoiler');
+        if (btn.parentNode.classList.contains('nospoiler'))
+        {
+            btn.innerHTML = '<i class="far fa-eye-slash"></i>';
+        }
+        else
+        {
+            btn.innerHTML = '<i class="far fa-eye"></i>';
+        }
     }
 }
 
@@ -48,3 +59,4 @@ var MathJax = {
         processEscapes: true,
     }
 };
+
