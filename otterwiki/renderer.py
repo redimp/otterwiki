@@ -24,6 +24,11 @@ from pygments.util import ClassNotFound
 from flask import url_for
 from markupsafe import Markup
 from otterwiki.util import slugify, empty
+from otterwiki.renderer_plugins import (
+        plugin_task_lists,
+        plugin_footnotes,
+        plugin_mark,
+        )
 
 # Please check https://github.com/lepture/mistune-contrib
 # for mistune extensions.
@@ -73,82 +78,6 @@ def showmagicword(line, html):
 
 
 
-class mistunePluginTaskLists:
-    """
-    Rewrote plugin_task_lists from mistune/plugins/task_lists.py
-    """
-    TASK_LIST_ITEM = re.compile(r'^(\[[ xX]\])\s+')
-
-
-    def task_lists_hook(self, md, tokens, state):
-        return self._rewrite_all_list_items(tokens)
-
-
-    def render_ast_task_list_item(self, children, level, checked):
-        return {
-            'type': 'task_list_item',
-            'children': children,
-            'level': level,
-            'checked': checked,
-        }
-
-
-    def render_html_task_list_item(self, text, level, checked):
-        checkbox = (
-            '<input class="task-list-item-checkbox" '
-            'type="checkbox" '
-        )
-        if checked:
-            checkbox += ' checked/>'
-        else:
-            checkbox += '/>'
-
-        if text.startswith('<p>'):
-            text = text.replace('<p>', '<p>' + checkbox, 1)
-        else:
-            text = checkbox + text
-
-        return '<li class="task-list-item">' + text + '</li>\n'
-
-
-    def __call__(self, md):
-        md.before_render_hooks.append(self.task_lists_hook)
-
-        if md.renderer.NAME == 'html':
-            md.renderer.register('task_list_item', self.render_html_task_list_item)
-        elif md.renderer.NAME == 'ast':
-            md.renderer.register('task_list_item', self.render_ast_task_list_item)
-
-
-    def _rewrite_all_list_items(self, tokens):
-        for tok in tokens:
-            if tok['type'] == 'list_item':
-                self._rewrite_list_item(tok)
-            if 'children' in tok.keys():
-                self._rewrite_all_list_items(tok['children'])
-        return tokens
-
-
-    def _rewrite_list_item(self, item):
-        children = item['children']
-        if children:
-            first_child = children[0]
-            text = first_child.get('text', '')
-            m = self.TASK_LIST_ITEM.match(text)
-            if m:
-                mark = m.group(1)
-                first_child['text'] = text[m.end():]
-
-                params = item['params']
-                if mark == '[ ]':
-                    params = (params[0], False)
-                else:
-                    params = (params[0], True)
-
-                item['type'] = 'task_list_item'
-                item['params'] = params
-
-plugin_task_lists = mistunePluginTaskLists()
 
 # wiki links
 
@@ -257,6 +186,8 @@ class OtterwikiRenderer:
                 plugin_url,
                 plugin_strikethrough,
                 plugin_task_lists,
+                plugin_footnotes,
+                plugin_mark,
             ],
         )
         self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")
@@ -307,7 +238,7 @@ class OtterwikiRenderer:
                 'speak-punctuation', 'speech-rate', 'stress',
                 'text-align', 'text-decoration', 'text-indent',
                 'unicode-bidi', 'vertical-align', 'voice-family',
-                'volume', 'white-space', 'width',
+                'volume', 'white-space', 'width', 'id',
             ]
         )
         html = bleach.clean(
@@ -318,7 +249,7 @@ class OtterwikiRenderer:
                 'img', 'input', 'ins', 'li', 'mark', 'ol', 'p', 'pre',
                 'span', 'strong', 'table', 'tbody', 'td', 'th', 'thead',
                 'tr', 'ul', 'video', 'audio', 'picture', 'source',
-                'dl', 'dt', 'dd',
+                'dl', 'dt', 'dd', 'section', 'sup',
             },
             attributes={
                 '*': ['class', 'style', 'width', 'height', 'id'],
