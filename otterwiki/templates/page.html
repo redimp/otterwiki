@@ -4,6 +4,7 @@
 {{ super() }}
 <script src="{{ url_for("static", filename="js/polyfill.e6.min.js") | debug_unixtime }}"></script>
     <script id="MathJax-script" async src="{{ url_for("static", filename="mathjax/tex-chtml.js") | debug_unixtime }}"></script>
+<script src="{{ url_for("static", filename="js/otterwiki.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 {% endblock %}
 {% block menu %}
 {{ super() }}

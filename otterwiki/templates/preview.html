@@ -62,7 +62,6 @@ div.content-wrapper {
 {% block js %}
 {{ super() }}
 {# this fetches the editor/preview content #}
-<script src="{{ url_for("static", filename="js/otterwiki.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
     document.getElementById('saveform').onsubmit = function() {
         var content_editor = document.getElementById('content_editor').value;

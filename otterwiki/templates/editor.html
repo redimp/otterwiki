@@ -81,8 +81,8 @@
     Javascript
 #}
 {% block js %}
+{{ super() }}
 {# load the codemirror stuff #}
-<script src="{{ url_for("static", filename="js/otterwiki.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/codemirror.min.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-continuelist.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-panel.js") }}" type="text/javascript" charset="utf-8"></script>
