@@ -1,33 +1,5 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
-{% extends "wiki.html" %}
-{% block menu %}
-<a href="{{ url_for("settings") }}" class="sidebar-link sidebar-link-with-icon">
-    <span class="sidebar-icon">
-        <i class="fas fa-address-card"></i>
-    </span>
-    Settings
-</a>
-{% if has_permission("ADMIN") %}
-    <a href="{{ url_for("admin", _anchor="user_management") }}" class="sidebar-link sidebar-link-with-icon">
-    <span class="sidebar-icon">
-        <i class="fas fa-users"></i>
-    </span>
-    User Management
-</a>
-<a href="{{ url_for("admin", _anchor="application_preferences") }}" class="sidebar-link sidebar-link-with-icon">
-    <span class="sidebar-icon">
-        <i class="fas fa-cogs"></i>
-    </span>
-    Application Preferences
-</a>
-<a href="{{ url_for("admin", _anchor="mail_preferences") }}" class="sidebar-link sidebar-link-with-icon">
-    <span class="sidebar-icon">
-        <i class="far fa-envelope"></i>
-    </span>
-    Mail Preferences
-</a>
-{% endif %}
-{% endblock %}
+{% extends "settings.html" %}
 {% block content %}
 {#
 #}
@@ -137,7 +109,7 @@
     </div>
   </div>
 {##}
-<h3 class="card-title">Permissions and Registration Preferences</h3>
+<h3 class="card-title" id="permissions_and_registration">Permissions and Registration Preferences</h3>
 {% for permission in ["READ","WRITE","ATTACHMENT"] %}
   <div class="form-group">
       <label for="{{permission}}_permission" class="required">{{permission | capitalize}} Access</label>
