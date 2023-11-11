@@ -12,8 +12,6 @@ from mistune.plugins import (
     plugin_url,
     plugin_strikethrough,
 )
-import bleach
-from bleach.css_sanitizer import CSSSanitizer
 import urllib.parse
 
 from pygments import highlight
@@ -22,7 +20,7 @@ from pygments.formatters import html
 from pygments.util import ClassNotFound
 
 from flask import url_for
-from markupsafe import Markup
+from markupsafe import Markup, escape
 from otterwiki.util import slugify, empty
 from otterwiki.renderer_plugins import (
         plugin_task_lists,
@@ -31,9 +29,7 @@ from otterwiki.renderer_plugins import (
         plugin_fancy_blocks,
         plugin_spoiler,
         )
-
-# Please check https://github.com/lepture/mistune-contrib
-# for mistune extensions.
+from bs4 import BeautifulSoup
 
 # the cursor magic word which is ignored by the rendering
 cursormagicword = "CuRsoRm4g1cW0Rd"
@@ -47,8 +43,6 @@ mistune.plugins.plugin_table.TABLE_PATTERN = re.compile(
 mistune.plugins.plugin_table.NP_TABLE_PATTERN = re.compile(
     r' {0,3}(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n{0,1}'
 )
-
-
 
 def pygments_render(code, lang):
     try:
@@ -79,6 +73,26 @@ def showmagicword(line, html):
     return "".join(arr)
 
 
+def clean_html(html):
+    # use BeautifulSoup to identify tags we want to remove / escape
+    # since we get iincomplete tags via inline html we have to work
+    # with the html string and can not use what bs makes out of it
+    _escape = False
+    soup = BeautifulSoup(html, 'html.parser')
+    for element in soup:
+        if element.name in ['script', 'marque', 'blink']:
+            _escape = True
+            break
+        try:
+            if any(x in element.attrs.keys() for x in ['onclick','onload']):
+                _escape = True
+                break
+        except AttributeError:
+            break
+    if _escape:
+        # take nom prisoners
+       html = escape(html)
+    return html
 
 
 # wiki links
@@ -116,6 +130,15 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
     toc_count = 0
     toc_tree = []
     toc_anchors = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def inline_html(self, html):
+        return clean_html(html)
+
+    def block_html(self, html):
+        return clean_html(html)
 
     def reset_toc(self):
         self.toc_count = 0
@@ -179,7 +202,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
 
 class OtterwikiRenderer:
     def __init__(self):
-        self.md_renderer = OtterwikiMdRenderer(escape=False)
+        self.md_renderer = OtterwikiMdRenderer()
         # self.md_lexer = OtterwikiInlineLexer(self.md_renderer)
         self.mistune = mistune.create_markdown(
             renderer=self.md_renderer,
@@ -224,51 +247,6 @@ class OtterwikiRenderer:
                 text = "\n".join(text_arr)
 
         html = self.mistune(text)
-        # clean up html
-        css_sanitizer = CSSSanitizer(
-            allowed_css_properties=[
-                'azimuth', 'background-color', 'border-bottom-color',
-                'border-collapse', 'border-color', 'border-left-color',
-                'border-right-color', 'border-top-color', 'clear',
-                'color', 'cursor', 'direction', 'display', 'elevation',
-                'float', 'font', 'font-family', 'font-size',
-                'font-style', 'font-variant', 'font-weight', 'height',
-                'letter-spacing', 'line-height', 'overflow', 'margin',
-                'margin-bottom', 'margin-left', 'margin-right',
-                'margin-top', 'pause', 'pause-after', 'pause-before',
-                'padding', 'padding-bottom', 'padding-left',
-                'padding-right', 'padding-top', 'pitch', 'pitch-range',
-                'richness', 'speak', 'speak-header', 'speak-numeral',
-                'speak-punctuation', 'speech-rate', 'stress',
-                'text-align', 'text-decoration', 'text-indent',
-                'unicode-bidi', 'vertical-align', 'voice-family',
-                'volume', 'white-space', 'width', 'id',
-            ]
-        )
-        html = bleach.clean(
-            html,
-            tags={
-                'a', 'blockquote', 'br', 'code', 'del', 'div', 'em', 'h1',
-                'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'hr', 'i',
-                'img', 'input', 'ins', 'li', 'mark', 'ol', 'p', 'pre',
-                'span', 'strong', 'table', 'tbody', 'td', 'th', 'thead',
-                'tr', 'ul', 'video', 'audio', 'picture', 'source',
-                'dl', 'dt', 'dd', 'section', 'sup', 'button',
-            },
-            attributes={
-                '*': ['class', 'style', 'width', 'height', 'id'],
-                'a': ['href', 'rel'],
-                'img': ['alt', 'title', 'src'],
-                'input': ['type', 'disabled', 'checked'],
-                'video' : ['controls', 'loop', 'muted'],
-                'audio' : ['controls', 'loop', 'muted'],
-                'picture' : ['media','srcset'],
-                'source' : ['src', 'type', 'sizes'],
-                'button' : ['onclick'],
-            },
-            css_sanitizer=css_sanitizer,
-        )
-
         # generate the toc
         toc = self.md_renderer.toc_tree.copy()
         if cursor is not None and line > 0:

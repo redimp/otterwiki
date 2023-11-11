@@ -2,7 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import pytest
-from otterwiki.renderer import render, preprocess_wiki_links
+from otterwiki.renderer import render, preprocess_wiki_links, clean_html
 
 
 def test_lastword():
@@ -170,16 +170,21 @@ def test_table_align():
 """
     html, _ = render.markdown(text)
     # check header
-    assert '<th style="text-align:left;">left th</th>' in html
-    assert '<th style="text-align:center;">center th</th>' in html
-    assert '<th style="text-align:right;">right th</th>' in html
+    assert '<th style="text-align:left">left th</th>' in html
+    assert '<th style="text-align:center">center th</th>' in html
+    assert '<th style="text-align:right">right th</th>' in html
     # check cells
-    assert '<td style="text-align:left;">left td</td>' in html
-    assert '<td style="text-align:center;">center td</td>' in html
-    assert '<td style="text-align:right;">right td</td>' in html
+    assert '<td style="text-align:left">left td</td>' in html
+    assert '<td style="text-align:center">center td</td>' in html
+    assert '<td style="text-align:right">right td</td>' in html
+
+def test_clean_html_script():
+    assert clean_html("<script>") == "&lt;script&gt;"
+    assert clean_html("<script>alert(1)</script>") == "&lt;script&gt;alert(1)&lt;/script&gt;"
+    assert clean_html('<p onclick="alert(4)">PPPPP</p>') == '&lt;p onclick=&#34;alert(4)&#34;&gt;PPPPP&lt;/p&gt;'
 
 
-def test_sanitizer():
+def test_clean_html_render():
     text = """Preformatted script:
 
     <script>alert(1)</script>
@@ -189,7 +194,7 @@ def test_sanitizer():
 ```
 <script>alert(2)</script>
 
-And last an onlick example:
+And last an onclick example:
 <p onclick="alert(4)">PPPPP</p>
 
 <video width='80%' controls> <!-- this is updated to width="80%" -->
@@ -209,7 +214,7 @@ And last an onlick example:
     # but script code is removed
     assert '<script>alert(2)</script>' not in html
     # and that onlick is removed
-    assert 'alert(4)' not in html
+    assert '<p onclick="alert(4)"' not in html
     # check multimedia
-    assert "<video width=\"80%\" controls>" in html
+    assert "<video width='80%' controls>" in html
     assert "</video>" in html
