@@ -40,6 +40,25 @@ class mistunePluginFootnotes:
         r')'
     )
 
+    def _letter_from_index(self, num):
+        """
+        1->a, 2->b, 26->z, 27->aa, 28->ab, 54->bb
+        """
+
+        num2alphadict = dict(zip(range(1, 27), 'abcdefghijklmnopqrstuvwxyz'))
+        outval = ""
+        numloops = (num-1) //26
+
+        if numloops > 0:
+            outval = outval + self._letter_from_index(numloops)
+
+        remainder = num % 26
+        if remainder > 0:
+            outval = outval + num2alphadict[remainder]
+        else:
+            outval = outval + "z"
+        return outval
+
     def parse_inline_footnote(self, inline, m, state):
         key = unikey(m.group(1))
         print(f"{inline=} {m=}")
@@ -52,14 +71,16 @@ class mistunePluginFootnotes:
         index += 1
         state['footnote_index'] = index
         state['footnotes'].append(key)
-        return 'footnote_ref', key, index
+        # footnote number
+        fn = list(state['def_footnotes'].keys()).index(key) + 1
+        return 'footnote_ref', key, fn, index
 
     def parse_def_footnote(self, block, m, state):
         key = unikey(m.group(2))
         if key not in state['def_footnotes']:
             state['def_footnotes'][key] = m.group(3)
 
-    def parse_footnote_item(self, block, k, i, state):
+    def parse_footnote_item(self, block, k, refs, state):
         def_footnotes = state['def_footnotes']
         text = def_footnotes[k]
 
@@ -82,7 +103,7 @@ class mistunePluginFootnotes:
         return {
             'type': 'footnote_item',
             'children': children,
-            'params': (k, i),
+            'params': (k, refs),
         }
 
     def md_footnotes_hook(self, md, result, state):
@@ -91,18 +112,19 @@ class mistunePluginFootnotes:
         if not footnotes:
             return result
 
-        children = [
-            self.parse_footnote_item(md.block, k, i + 1, state)
-            for i, k in enumerate(footnotes)
-        ]
+        children = []
+        for k in state.get('def_footnotes'):
+            refs = [i+1 for i,j in enumerate(footnotes) if j == k]
+            children.append( self.parse_footnote_item(md.block, k, refs, state) )
+
         tokens = [{'type': 'footnotes', 'children': children}]
         output = md.block.render(tokens, md.inline, state)
         return result + output
 
-    def render_html_footnote_ref(self, key, index):
+    def render_html_footnote_ref(self, key, index, fn):
         i = str(index)
         html = '<sup class="footnote-ref" id="fnref-' + i + '">'
-        return html + '<a href="#fn-' + i + '">' + i + '</a></sup>'
+        return html + '<a href="#fn-' + str(i) + '">' + str(i) + '</a></sup>'
 
     def render_html_footnotes(self, text):
         return (
@@ -111,20 +133,26 @@ class mistunePluginFootnotes:
             + '</ol>\n</section>\n'
         )
 
-    def render_html_footnote_item(self, text, key, index):
-        i = str(index)
-        back = (
-            '<a href="#fnref-'
-            + i
-            + '" class="footnote"><i class="fas fa-long-arrow-alt-up"></i></a> '
-        )
+    def render_html_footnote_item(self, text, key, refs):
+        if len(refs) == 1:
+            back = (
+                '<a href="#fnref-'
+                + str(refs[0])
+                + '" class="footnote"><i class="fas fa-long-arrow-alt-up"></i></a> '
+            )
+        else:
+            ref_list = []
+            for i,r in enumerate(refs):
+                letter = self._letter_from_index(i+1)
+                ref_list.append(f'<a href="#fnref-{r}" class="footnote">{letter}</a>')
+            back = '<i class="fas fa-long-arrow-alt-up"></i> ' + ', '.join(ref_list) + ' '
 
         text = text.rstrip()
         if text.startswith('<p>'):
             text = '<p>' + back + text[3:]
         else:
             text = back + text
-        return '<li id="fn-' + i + '">' + text + '</li>\n'
+        return '<li id="fn-' + str(key) + '">' + text + '</li>\n'
 
     def __call__(self, md):
         md.inline.register_rule(
