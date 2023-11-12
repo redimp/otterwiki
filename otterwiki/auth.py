@@ -134,7 +134,7 @@ class SimpleAuth:
                         "<a href='{}'>Resend confirmation link.</a>".format(url_for("request_confirmation_link", email=email)),
                         "warning")
                 return redirect(url_for("login"))
-            if not user.is_admin and not user.is_approved:
+            if not user.is_admin and (self._user_needs_approvement() and not user.is_approved):
                 toast("You are not approved yet.", "warning")
                 return redirect(url_for("login"))
             # login
@@ -255,6 +255,15 @@ class SimpleAuth:
         subject = "New Account Registration - {} - An Otter Wiki".format(app.config["SITE_NAME"])
         send_mail(subject=subject, recipients=admin_emails, text_body=text_body)
 
+
+    def _user_needs_approvement(self):
+        # check if the user needs to be approved by checking
+        # if beeing REGISTERED is a lower requirement anywhere
+        return "REGISTERED" not in [
+                app.config[permission].upper()
+                for permission in ["READ_ACCESS", "WRITE_ACCESS", "ATTACHMENT_ACCESS"]
+                ]
+
     def user_confirmed_email(self, email):
         user = self.User.query.filter_by(email=email).first()
         if user is None or user.email_confirmed:
@@ -266,7 +275,7 @@ class SimpleAuth:
 
         if user.is_approved:
             toast("Your email address has been confirmed. You can log in now.")
-        else:
+        elif self._user_needs_approvement():
             toast("Your account is waiting for approval.", "warning")
         # notify admins
         if app.config['NOTIFY_ADMINS_ON_REGISTER']:
