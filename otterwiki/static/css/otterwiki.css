@@ -419,7 +419,8 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 
 mark {
     padding: 0.1rem;
-    background-color: #ffcf00!important;
+    background-color: #ffb100!important;
+    color: #000;
 }
 
 .spoiler {
