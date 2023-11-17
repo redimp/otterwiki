@@ -33,7 +33,7 @@ commit was made revision link in the line, e.g. <span class="help-button"><a hre
 
 #### Page rename
 
-You can rename a page using <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span> <i class="fas fa-caret-right"></i> <span class="btn btn-square btn-sm"><i class="fas fa-edit"></i></span> Rename</span>. For renaming the same rules apply as for [creating pages](#creating-and-editing-pages).
+You can rename a page using <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span> <i class="fas fa-caret-right"></i> <span class="btn btn-square btn-sm"><i class="fas fa-edit"></i></span> Rename</span>. For renaming the same rules apply as for [creating pages](#editing-and-creating-pages).
 
 Attachments will moved with the renamed page.
 
@@ -90,6 +90,8 @@ this with <span class="help-button"><input type="checkbox" style="display:inline
 Regular expression</span>. For case sensitive regex searches enable both <em>Match
 case</em> and <em>Regular expression</em>.</p>
 
+---
+
 ### Page index
 
 An overview about all pages is given by the Page index, you can open it with
@@ -103,6 +105,8 @@ To list the headings of all pages use the toggle on top of the page:
 </div>
 
 This can make the Page index look convoluted.
+
+---
 
 ### Changelog
 

@@ -8,7 +8,7 @@
 {% endmacro %}
 
 {{ heading("Emphasis") }}
-<div class="row">
+<div class="row mb-10">
 <div class="col-md-6 col-sm-12">
 <pre>**<strong>bold</strong>**
 *<em>italics</em>*
@@ -21,6 +21,17 @@
 <em>italics</em><br/>
 <strike>strikethrough</strike><br/>
 <mark>mark</mark>
+</div>
+</div>
+You can use backslash escapes to generate literal characters that are used for formatting otherwise, e.g.
+<div class="row">
+<div class="col-md-6 col-sm-12">
+<pre>
+\*literal asterisks\*
+</pre>
+</div>
+<div class="col-md-6 col-sm-12 pl-5">
+*literal asterisks*
 </div>
 </div>
 
