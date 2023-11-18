@@ -286,7 +286,7 @@ class mistunePluginMark:
 
 class mistunePluginFancyBlocks:
     """
-    ::: spoiler
+    ::: info
     :::
     """
 
@@ -412,8 +412,78 @@ class mistunePluginSpoiler:
             md.renderer.register("spoiler_block", self.render_html_spoiler_block)
 
 
+class mistunePluginFold:
+
+    FOLD_LEADING = re.compile(
+        r'^ *\>\|',
+        flags = re.MULTILINE
+    )
+    FOLD_BLOCK = re.compile(
+        r'(?: {0,3}>\|[^\n]*(\n|$))+'
+    )
+
+    FOLD_BLOCK_HEADER = re.compile(
+            r'^#{1,5}\s*(.*)\n+'
+    )
+
+    def parse_fold_block(self, block, m, state):
+        text = m.group(0)
+
+        # we are searching for the complete bock, so we have to remove
+        # the syntax >|
+        text = self.FOLD_LEADING.sub('', text).strip()
+
+        # find (and remove) the header from the text block
+        header = self.FOLD_BLOCK_HEADER.match(text)
+        if header is not None:
+            header = header.group(1)
+            text = self.FOLD_BLOCK_HEADER.sub('', text, 1)
+
+        # clean up trailing spaces
+        text = "\n".join([x.rstrip() for x in text.strip().splitlines()])
+
+
+        children = block.parse(text, state)
+        if not isinstance(children, list):
+            children = [children]
+
+        return {
+            "type": "fold_block",
+            "text": text,
+            "children": children,
+            "params": (header,),
+            }
+
+    def render_html_fold_block(self, text, header=None):
+        text = text.strip()
+        if text.startswith('<p>'):
+            text = text[3:]
+        if text.endswith('</p>'):
+            text = text[:-4]
+        return f'''<details class="collapse-panel">
+<summary class="collapse-header">
+{header}
+</summary>
+<div class="collapse-content"><p>{text}</p></div></details>'''
+
+    def __call__(self, md):
+        md.block.register_rule(
+            'fold_block', self.FOLD_BLOCK, self.parse_fold_block
+        )
+
+        index = md.block.rules.index('block_quote')
+        if index != -1:
+            md.block.rules.insert(index, 'fold_block')
+        else:
+            md.block.rules.append('fold_block')
+
+        if md.renderer.NAME == "html":
+            md.renderer.register("fold_block", self.render_html_fold_block)
+
+
 plugin_task_lists = mistunePluginTaskLists()
 plugin_footnotes = mistunePluginFootnotes()
 plugin_mark = mistunePluginMark()
 plugin_fancy_blocks = mistunePluginFancyBlocks()
 plugin_spoiler = mistunePluginSpoiler()
+plugin_fold = mistunePluginFold()

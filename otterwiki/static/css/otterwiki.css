@@ -490,3 +490,23 @@ mark {
     position: relative;
     pointer-events: none;
 }
+
+.collapse-header:focus::after {
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.dark-mode .collapse-header:focus::after {
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+details.collapse-panel {
+    margin-bottom: 2rem;
+}
+
+.collapse-content {
+    padding: 0.05rem 2rem 0rem 2rem;
+}
