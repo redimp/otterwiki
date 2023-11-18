@@ -291,6 +291,36 @@ With <em>formatted</em> content.</div>
 </div> {# row #}
 Block styles available: <span class="alert alert-primary text-monospace" style="padding: 0.2rem">info</span>, <span class="alert alert-success text-monospace" style="padding: 0.2rem">success</span>, <span class="alert alert-secondary text-monospace" style="padding: 0.2rem">warning</span>, <span class="alert alert-danger text-monospace" style="padding: 0.2rem">danger</span> and <span class="alert text-monospace" style="padding: 0.2rem">none</span>.
 
+<div class="row my-20">
+<div class="col-md-6 col-sm-12">
+<pre>
+&gt;! Spoiler blocks reveal their
+&gt;! content on click on the icon.
+</pre>
+</div>
+<div class="col-md-6 col-sm-12 pl-5">
+    <div class="spoiler">
+      <button class="spoiler-button"><i class="far fa-eye-slash"></i></button>
+    </div>
+</div>
+</div>
+
+<div class="row my-20 h-100">
+<div class="col-md-6 col-sm-12">
+<pre>
+&gt;| # Headline is used as summary
+&gt;| with the details folded.
+</pre>
+</div>
+<div class="col-md-6 col-sm-12 pl-5">
+<details class="collapse-panel">
+<summary class="collapse-header">
+Headline is used as summary
+</summary>
+<div class="collapse-content"><p>with the details folded.</p></div></details>
+</div>
+</div>
+
 {{ heading("Remark") }}
 There's actually a lot more to Markdown than this. See the official
 <a href="http://daringfireball.net/projects/markdown/basics">introduction</a> and
