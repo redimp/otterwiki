@@ -460,6 +460,8 @@ class mistunePluginFold:
             text = text[3:]
         if text.endswith('</p>'):
             text = text[:-4]
+        if header is None:
+            header = "..."
         return f'''<details class="collapse-panel">
 <summary class="collapse-header">
 {header}
