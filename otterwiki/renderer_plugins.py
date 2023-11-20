@@ -10,9 +10,6 @@ from mistune.util import unikey, escape_url, ESCAPE_TEXT
 
 __all__ = ['plugin_task_lists', 'plugin_footnotes']
 
-#
-# TODO: Consider how the md.block.rules work
-#
 
 class mistunePluginFootnotes:
     """
@@ -51,7 +48,7 @@ class mistunePluginFootnotes:
 
         num2alphadict = dict(zip(range(1, 27), 'abcdefghijklmnopqrstuvwxyz'))
         outval = ""
-        numloops = (num-1) //26
+        numloops = (num - 1) // 26
 
         if numloops > 0:
             outval = outval + self._letter_from_index(numloops)
@@ -115,8 +112,8 @@ class mistunePluginFootnotes:
 
         children = []
         for k in state.get('def_footnotes'):
-            refs = [i+1 for i,j in enumerate(footnotes) if j == k]
-            children.append( self.parse_footnote_item(md.block, k, refs, state) )
+            refs = [i + 1 for i, j in enumerate(footnotes) if j == k]
+            children.append(self.parse_footnote_item(md.block, k, refs, state))
 
         tokens = [{'type': 'footnotes', 'children': children}]
         output = md.block.render(tokens, md.inline, state)
@@ -143,10 +140,16 @@ class mistunePluginFootnotes:
             )
         else:
             ref_list = []
-            for i,r in enumerate(refs):
-                letter = self._letter_from_index(i+1)
-                ref_list.append(f'<a href="#fnref-{r}" class="footnote">{letter}</a>')
-            back = '<i class="fas fa-long-arrow-alt-up"></i> ' + ', '.join(ref_list) + ' '
+            for i, r in enumerate(refs):
+                letter = self._letter_from_index(i + 1)
+                ref_list.append(
+                    f'<a href="#fnref-{r}" class="footnote">{letter}</a>'
+                )
+            back = (
+                '<i class="fas fa-long-arrow-alt-up"></i> '
+                + ', '.join(ref_list)
+                + ' '
+            )
 
         text = text.rstrip()
         if text.startswith('<p>'):
@@ -347,7 +350,9 @@ class mistunePluginFancyBlocks:
             text = text[3:]
         if text.endswith('</p>'):
             text = text[:-4]
-        return f'<div class="{cls} mb-10" role="alert">{header}\n{text}</div>\n'
+        return (
+            f'<div class="{cls} mb-10" role="alert">{header}\n{text}</div>\n'
+        )
 
     def __call__(self, md):
         md.block.register_rule(
@@ -361,19 +366,13 @@ class mistunePluginFancyBlocks:
 
 
 class mistunePluginSpoiler:
-
-    SPOILER_LEADING = re.compile(
-        r'^ *\>\!',
-        flags = re.MULTILINE
-    )
-    SPOILER_BLOCK = re.compile(
-        r'(?: {0,3}>![^\n]*(\n|$))+'
-    )
+    SPOILER_LEADING = re.compile(r'^ *\>\!', flags=re.MULTILINE)
+    SPOILER_BLOCK = re.compile(r'(?: {0,3}>![^\n]*(\n|$))+')
 
     def parse_spoiler_block(self, block, m, state):
         text = m.group(0)
 
-        # we are searching for the complete bock, so we have to remove 
+        # we are searching for the complete bock, so we have to remove
         # the syntax >!
         text = self.SPOILER_LEADING.sub('', text)
 
@@ -387,7 +386,7 @@ class mistunePluginSpoiler:
             "type": "spoiler_block",
             "text": text,
             "children": children,
-            }
+        }
 
     def render_html_spoiler_block(self, text):
         text = text.strip()
@@ -409,22 +408,16 @@ class mistunePluginSpoiler:
             md.block.rules.append('spoiler_block')
 
         if md.renderer.NAME == "html":
-            md.renderer.register("spoiler_block", self.render_html_spoiler_block)
+            md.renderer.register(
+                "spoiler_block", self.render_html_spoiler_block
+            )
 
 
 class mistunePluginFold:
+    FOLD_LEADING = re.compile(r'^ *\>\|', flags=re.MULTILINE)
+    FOLD_BLOCK = re.compile(r'(?: {0,3}>\|[^\n]*(\n|$))+')
 
-    FOLD_LEADING = re.compile(
-        r'^ *\>\|',
-        flags = re.MULTILINE
-    )
-    FOLD_BLOCK = re.compile(
-        r'(?: {0,3}>\|[^\n]*(\n|$))+'
-    )
-
-    FOLD_BLOCK_HEADER = re.compile(
-            r'^#{1,5}\s*(.*)\n+'
-    )
+    FOLD_BLOCK_HEADER = re.compile(r'^#{1,5}\s*(.*)\n+')
 
     def parse_fold_block(self, block, m, state):
         text = m.group(0)
@@ -442,7 +435,6 @@ class mistunePluginFold:
         # clean up trailing spaces
         text = "\n".join([x.rstrip() for x in text.strip().splitlines()])
 
-
         children = block.parse(text, state)
         if not isinstance(children, list):
             children = [children]
@@ -452,7 +444,7 @@ class mistunePluginFold:
             "text": text,
             "children": children,
             "params": (header,),
-            }
+        }
 
     def render_html_fold_block(self, text, header=None):
         text = text.strip()
