@@ -264,7 +264,7 @@ class mistunePluginTaskLists:
 class mistunePluginMark:
     #: mark syntax looks like: ``==word==``
     MARK_PATTERN = (
-        r'==(?=[^\s~])(' r'(?:\\~|[^~])*' r'(?:' + ESCAPE_TEXT + r'|[^\s~]))=='
+        r'==(?=[^\s=])(' r'(?:\\=|[^=])*' r'(?:' + ESCAPE_TEXT + r'|[^\s=]))=='
     )
 
     def parse_mark(self, inline, m, state):
@@ -475,9 +475,49 @@ class mistunePluginFold:
             md.renderer.register("fold_block", self.render_html_fold_block)
 
 
+class mistunePluginMath:
+    # too aggressive
+    # MATH_BLOCK = re.compile(r'(\${1,2})((?:\\.|[\s\S])*)\1')
+    # MATH_BLOCK = re.compile(r'\${1,2}[^]*?[^\\]\${1,2}')
+    MATH_BLOCK = re.compile(r'(\${2})((?:\\.|.)*)\${2}')
+    MATH_INLINE_PATTERN = (
+        r'\$(?=[^\s\$])(' r'(?:\\\$|[^\$])*' r'(?:' + ESCAPE_TEXT + r'|[^\s\$]))\$'
+    )
+    def parse_block(self, block, m, state):
+        text = m.group(2)
+        return {
+            "type": "math_block",
+            "text": text,
+        }
+
+    def render_html_block(self, text):
+        return f'''\n\\[{text}\\]\n'''
+
+    def parse_inline(self, inline, m, state):
+        text = m.group(1)
+        return 'math_inline', text
+
+    def render_html_inline(self, text):
+        return '\\(' + text + '\\)'
+
+    def __call__(self, md):
+        md.block.register_rule(
+            'math_block', self.MATH_BLOCK, self.parse_block
+        )
+        md.inline.register_rule('math_inline', self.MATH_INLINE_PATTERN, self.parse_inline)
+
+        md.block.rules.append('math_block')
+        md.inline.rules.append('math_inline')
+
+        if md.renderer.NAME == "html":
+            md.renderer.register("math_block", self.render_html_block)
+            md.renderer.register('math_inline', self.render_html_inline)
+
+
 plugin_task_lists = mistunePluginTaskLists()
 plugin_footnotes = mistunePluginFootnotes()
 plugin_mark = mistunePluginMark()
 plugin_fancy_blocks = mistunePluginFancyBlocks()
 plugin_spoiler = mistunePluginSpoiler()
 plugin_fold = mistunePluginFold()
+plugin_math = mistunePluginMath()

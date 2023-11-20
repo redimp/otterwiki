@@ -29,6 +29,7 @@ from otterwiki.renderer_plugins import (
         plugin_fancy_blocks,
         plugin_spoiler,
         plugin_fold,
+        plugin_math,
         )
 from bs4 import BeautifulSoup
 
@@ -217,6 +218,7 @@ class OtterwikiRenderer:
                 plugin_fancy_blocks,
                 plugin_spoiler,
                 plugin_fold,
+                plugin_math,
             ],
         )
         self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")

@@ -70,21 +70,6 @@ n = 0
     assert '<pre class="code">non_existing_lexer' in html
 
 
-def test_latex_block():
-    text = """
-```math
-a^2+b^2=c^2
-```
-"""
-    html, _ = render.markdown(text)
-    assert "\\[a^2+b^2=c^2\\]" == html
-
-
-def test_latex_inline():
-    text = "$`a`$"
-    html, _ = render.markdown(text)
-    assert "$<code>a</code>$" in html
-
 
 def test_img():
     text = "![](/path/to/img.png)"
@@ -218,3 +203,94 @@ And last an onclick example:
     # check multimedia
     assert "<video width='80%' controls>" in html
     assert "</video>" in html
+
+def test_strikethrough():
+    md = """
+~~strike1~~
+alpha bravo ~~strike2~~ charlie
+~~s~t~r~i~k~e~3~~
+~~strike4~~"""
+    html, _ = render.markdown(md)
+    assert "<del>strike1</del>" in html
+    assert "<del>strike2</del>" in html
+    assert "<del>strike3</del>" not in html
+    assert "<del>strike4</del>" in html
+
+def test_mark():
+    md = """
+==mark1==
+alpha bravo ==mark2== charlie
+==m=a=r=k=3==
+
+inline code `alpha ==mark7== bravo` charlie
+
+- alpha
+- ==mark5==
+- charlie
+
+```
+==mark6===
+```
+
+==mark4=="""
+    html, _ = render.markdown(md)
+    assert "<mark>mark1</mark>" in html
+    assert "<mark>mark2</mark>" in html
+    assert "<mark>mark3</mark>" not in html
+    assert "<mark>mark4</mark>" in html
+    assert "<mark>mark5</mark>" in html
+    assert "<mark>mark6</mark>" not in html
+    assert "<mark>mark7</mark>" not in html
+
+
+def test_math_block():
+    md = """
+```math
+a^2+b^2=c^2
+```
+multiline
+```math
+a=b
+c=d
+```
+"""
+    html, _ = render.markdown(md)
+    assert "\\[a=b\\]" in html
+    assert "\\[c=d\\]" in html
+    assert "\\[a^2+b^2=c^2\\]" in html
+
+
+def test_math_code_inline():
+    text = "`$a$`"
+    html, _ = render.markdown(text)
+    assert "\\(a\\)" in html
+
+
+def test_latex_inline():
+    md ="""
+$latex1$
+Alpha bravo $latex2$ charlie
+
+```
+alpha bravo $latex4$ charlie
+```
+
+and a block
+
+    $latex5$
+
+and a list
+
+- alpha
+- $latex6$
+- charlie
+
+$latex3$"""
+
+    html, _ = render.markdown(md)
+    assert "\\(latex1\\)" in html
+    assert "\\(latex2\\)" in html
+    assert "\\(latex3\\)" in html
+    assert "\\(latex4\\)" not in html
+    assert "\\(latex5\\)" not in html
+    assert "\\(latex6\\)" in html
