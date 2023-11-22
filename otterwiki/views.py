@@ -365,6 +365,8 @@ def revert(revision):
 @app.route("/<path:pagepath>/a/<string:filename>/<string:revision>")
 def get_attachment(pagepath, filename, revision=None):
     p = Page(pagepath)
+    if revision is None:
+        revision = request.args.get("revision", None)
     return p.get_attachment(filename, revision)
 
 

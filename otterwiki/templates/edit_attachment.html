@@ -56,7 +56,12 @@
 {% for entry in log %}
           <tr class="align-top">
               <td class="font-size-12 min text-nowrap">{{entry.datetime|format_datetime}}
-&nbsp;<span class="btn revision-small">{{entry.revision}}</span>
+                  &nbsp;<a href="{{ url_for(
+                                        "get_attachment",
+                                        pagepath=pagepath,
+                                        filename=filename,
+                                        revision=entry.revision,
+                      ) }}" class="btn revision-small">{{entry.revision}}</a>
 {% if has_permission("UPLOAD") %}
 &nbsp;<a href="{{ url_for("revert", revision=entry.revision) }}"><i class="fas fa-undo" alt="revert" title="revert commit {{entry.revision}}"></i></a>
 </td>
