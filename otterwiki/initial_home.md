@@ -18,7 +18,8 @@ The first steps you might want to do:
 5. You can [attach](/Home/attachments) images and other files to any page,
    then display them and link to them in the page.
 6. [Create new pages](/-/create)! If you need help with the markdown syntax
-   check the [Markdown guide](/-/syntax).
+   check the [Markdown guide](/-/help/syntax).
+7. Read the [user guide](/-/help) and learn about An Otter Wikis features.
 
 We hope that you find an Otter Wiki useful. If you have any suggestions,
 feature requests or run into any issues, please reach out and report them
