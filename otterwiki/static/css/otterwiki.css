@@ -433,8 +433,13 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 }
 
 mark {
-    padding: 0.1rem;
+    padding: 0.1rem 0.2rem;
     background-color: #ffb100!important;
+    color: #000;
+}
+.dark-mode mark {
+    padding: 0.1rem 0.2rem;
+    background-color: #DB9A00!important;
     color: #000;
 }
 
