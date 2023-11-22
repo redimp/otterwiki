@@ -906,7 +906,7 @@ class Attachment:
             if not storage.exists(self.filepath):
                 return abort(404)
             # headers are already set correctly by send_file
-            return make_response(send_file(self.abspath))
+            response = make_response(send_file(self.abspath))
         else:
             # revision is given
             try:
@@ -923,13 +923,10 @@ class Attachment:
             buffer.seek(0)
             # create response
             response = make_response(send_file(buffer, mimetype=self.mimetype))
-
-        # set header, caching, etc
-        response.headers["Date"] = http_date(self.datetime.utctimetuple())
-        response.headers["Expires"] = http_date(
-            (self.datetime + timedelta(hours=1)).utctimetuple()
-        )
-        response.headers["Last-Modified"] = http_date(self.datetime.utctimetuple())
+            # set header, caching, etc
+            response.headers["Last-Modified"] = http_date(metadata['datetime'])
+            response.headers["Cache-Control"] = "max-age=7200"
+            response.headers["Date"] = http_date(self.datetime.utctimetuple())
 
         return response
 
