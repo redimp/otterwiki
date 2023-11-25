@@ -1,3 +1,11 @@
+#
+#
+# Makefile for developing and building An Otter Wiki
+#
+# Please read the Installation guide <https://otterwiki.com/Installation>
+# to get started.
+#
+#
 PORT ?= 8080
 VERSION := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.read());  print(__version__);")
 VERSION_MAJOR_MINOR := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.read()); print('.'.join(__version__.split('.')[0:2]));")
@@ -29,9 +37,6 @@ shell: venv
 
 test: venv
 	OTTERWIKI_SETTINGS="" venv/bin/pytest tests
-
-testpdb: venv
-	OTTERWIKI_SETTINGS="" venv/bin/pytest --pdb tests
 
 tox: venv
 	venv/bin/tox
@@ -78,9 +83,6 @@ docker-test:
 	# make sure the image is rebuild
 	DOCKER_BUILDKIT=1 docker build --no-cache -t otterwiki:_test --target test-stage .
 
-docker-build: docker-test
-	DOCKER_BUILDKIT=1 docker build -t otterwiki:_build .
-
 docker-run:
 	DOCKER_BUILDKIT=1 docker build -t otterwiki:_build .
 	docker run -p 8080:80 otterwiki:_build
@@ -92,11 +94,10 @@ else
 	docker buildx build --no-cache --platform linux/arm64,linux/amd64 --target test-stage .
 endif
 
-docker-buildx-push: venv
+docker-buildx-push: test
 # check if we are in the main branch (to avoid accidently pushing a feature branch
 ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
-# check if git is clean optional: --untracked-files=no
-# reconsider if -t redimp/otterwiki:$(shell git describe --tags) might be useful
+# check if git is clean
 ifneq ($(strip $(shell git status --porcelain)),)
 	$(error Error: Uncommitted changes in found)
 endif
