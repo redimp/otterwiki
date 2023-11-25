@@ -1,7 +1,7 @@
 #
 # compile stage
 #
-FROM nginx:1.25.2 AS compile-stage
+FROM nginx:1.25.3 AS compile-stage
 LABEL maintainer="Ralph Thesen <mail@redimp.de>"
 # install python environment
 RUN \
@@ -13,7 +13,7 @@ RUN \
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 # upgrade pip and install requirements not in otterwiki
-RUN pip install -U pip wheel && pip install "uWSGI==2.0.22"
+RUN pip install -U pip wheel
 # copy app
 COPY . /app
 WORKDIR /app
@@ -36,7 +36,7 @@ CMD ["tox"]
 #
 # production stage
 #
-FROM nginx:1.25.2
+FROM nginx:1.25.3
 # arg for marking dev images
 ARG GIT_TAG
 ENV GIT_TAG $GIT_TAG
@@ -48,7 +48,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
   apt-get upgrade -y && \
   apt-get install -y --no-install-recommends \
   supervisor git \
-  python3.11 python3.11-venv libpython3.11 \
+  python3.11 python3-wheel python3-venv libpython3.11 \
+  uwsgi uwsgi-plugin-python3 \
   && rm -rf /var/lib/apt/lists/*
 # copy virtual environment
 COPY --from=compile-stage /opt/venv /opt/venv
