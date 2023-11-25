@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vim:set et ts=8 sts=4 sw=4 ai fenc=utf-8:
 
-set -e -x
+set -e
 
 # take care of repository dictionary
 if [ ! -d ${OTTERWIKI_REPOSITORY} ]; then
@@ -12,10 +12,9 @@ if [ ! -d ${OTTERWIKI_REPOSITORY}/.git ]; then
     git init ${OTTERWIKI_REPOSITORY}
 fi
 
-RANDOM_SECRET_KEY=$(echo $RANDOM | md5sum | head -c 16)
-
 # take care of the otterwiki settings file
 if [ ! -f ${OTTERWIKI_SETTINGS} ]; then
+    RANDOM_SECRET_KEY=$(echo $RANDOM | md5sum | head -c 16)
     echo "DEBUG = False" >> ${OTTERWIKI_SETTINGS}
     echo "REPOSITORY = '/app-data/repository'" >> ${OTTERWIKI_SETTINGS}
     echo "SECRET_KEY = '${RANDOM_SECRET_KEY}'" >> ${OTTERWIKI_SETTINGS}
