@@ -1,12 +1,12 @@
 codemirror-theme.css
-codemirror.css linguist-detectable=false
-fontawesome-all.css linguist-detectable=false
-fontawesome-all.min.css linguist-detectable=false
-halfmoon-variables.css linguist-detectable=false
-halfmoon-variables.min.css linguist-detectable=false
-halfmoon.css linguist-detectable=false
-halfmoon.min.css linguist-detectable=false
+codemirror.css linguist-vendored
+fontawesome-all.css linguist-vendored
+fontawesome-all.min.css linguist-vendored
+halfmoon-variables.css linguist-vendored
+halfmoon-variables.min.css linguist-vendored
+halfmoon.css linguist-vendored
+halfmoon.min.css linguist-vendored
 otterwiki.css
 print.css
-pygments.css linguist-detectable=false
-roboto.css linguist-detectable=false
+pygments.css linguist-vendored
+roboto.css linguist-vendored

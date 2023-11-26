@@ -1,15 +1,15 @@
-cm-continuelist.js linguist-detectable=false
-cm-markdown.js linguist-detectable=false
-cm-modes.js linguist-detectable=false
-cm-modes.min.js linguist-detectable=false
-cm-panel.js linguist-detectable=false
+cm-continuelist.js linguist-vendored
+cm-markdown.js linguist-vendored
+cm-modes.js linguist-vendored
+cm-modes.min.js linguist-vendored
+cm-panel.js linguist-vendored
 codemirror-4.inline-attachment.js
-codemirror.js linguist-detectable=false
-codemirror.min.js linguist-detectable=false
-halfmoon-module.js linguist-detectable=false
-halfmoon.js linguist-detectable=false
-halfmoon.min.js linguist-detectable=false
-inline-attachment.js linguist-detectable=false
+codemirror.js linguist-vendored
+codemirror.min.js linguist-vendored
+halfmoon-module.js linguist-vendored
+halfmoon.js linguist-vendored
+halfmoon.min.js linguist-vendored
+inline-attachment.js linguist-vendored
 otterwiki.js
-polyfill.e6.min.js linguist-detectable=false
-polyfill.min.js linguist-detectable=false
+polyfill.e6.min.js linguist-vendored
+polyfill.min.js linguist-vendored
