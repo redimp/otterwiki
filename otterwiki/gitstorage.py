@@ -31,6 +31,9 @@ class GitStorage(object):
         self.path = str(pathlib.Path(path).absolute())
         if initialize:
             self.repo = git.Repo.init(self.path)
+        self._read_repo()
+
+    def _read_repo(self):
         try:
             self.repo = git.Repo(self.path)
         except git.InvalidGitRepositoryError:
@@ -41,6 +44,11 @@ class GitStorage(object):
                 )
             )
 
+    def _check_reload(self):
+        if os.path.exists(os.path.join(self.path, ".git/RELOAD_GIT")):
+            os.remove(os.path.join(self.path, ".git/RELOAD_GIT"))
+            self._read_repo()
+
     def exists(self, filename):
         return os.path.exists(os.path.join(self.path, filename))
 
@@ -48,6 +56,7 @@ class GitStorage(object):
         return os.path.isdir(os.path.join(self.path, dirname))
 
     def load(self, filename, mode="r", revision=None):
+        self._check_reload()
         if revision is not None:
             try:
                 content = self.repo.git.show("{}:{}".format(revision, filename))
@@ -83,6 +92,7 @@ class GitStorage(object):
         return metadata
 
     def _get_commit(self, filename, revision):
+        self._check_reload()
         commit = None
         if revision is None:
             try:
