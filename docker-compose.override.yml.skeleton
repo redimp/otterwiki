@@ -1,0 +1,54 @@
+---
+#
+# This docker-compose.yml is for building and running the development
+# version of An Otter Wiki.
+#
+# Please read the Installation guide <https://otterwiki.com/Installation>
+# to get started.
+#
+version: '3'
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      # forward the http port to 8080
+      - "8080:80"
+    volumes:
+      # mount the local app-data volume in the container
+      # (so settings, database and repository are persistent)
+      - app-data:/app-data
+    environment:
+      #
+      # Please note: These settings can be OVERWRITTEN in the admin interface
+      #
+      # configure Name and Logo of the Wiki
+      - SITE_NAME=Otter Wiki Dev
+      - SITE_DESCRIPTION=Otter Wiki Development
+      # Permissions allow everything (for development)
+      - READ_ACCESS=ANONYMOUS
+      - WRITE_ACCESS=ANONYMOUS
+      - ATTACHMENT_ACCESS=ANONYMOUS
+      - AUTO_APPROVAL=True
+      - NOTIFY_ADMINS_ON_REGISTER=False
+      - EMAIL_NEEDS_CONFIRMATION=False
+      # Mail configuration
+      - MAIL_DEFAULT_SENDER=otterwiki@mailserver-dummy
+      - MAIL_SERVER=python-smtp-debuggingserver
+      - MAIL_PORT=1025
+      - MAIL_USE_TLS=False
+      - MAIL_USE_SSL=False
+    links:
+      - python-smtp-debuggingserver:python-smtp-debuggingserver
+  python-smtp-debuggingserver:
+    image: python:3.10-alpine
+    environment:
+      - PYTHONWARNINGS=ignore::DeprecationWarning
+    command: >
+      python -u -m smtpd -n -c DebuggingServer 0.0.0.0:1025
+
+volumes:
+  app-data:
+    driver: local
+
+# vim:set et ts=8 sts=2 sw=2 ai fenc=utf-8:
