@@ -6,7 +6,7 @@ their <span class="help-button"><span class="btn btn-square btn-sm"><i class="fa
 ### Branding
 
 In the <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-cogs"></i></span> Application Preferences</span> the <span class="help-button">Site Name</span>, which is
-displayed in the navigation bar on the top of the site and in emaila, can be
+displayed in the navigation bar on the top of the site and in emails, can be
 configured.
 
 The <span class="help-button">Site Logo</span> is displayed next to the site
@@ -19,7 +19,11 @@ The <span class="help-button">Site Description</span> is used in the
 
 ### User management
 
-All users are listed in a table under <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-users"></i></span> User management</span>. You can update the flags of the users by checking and unchecking the checkboxes, whereby <span class="help-button"><input type="checkbox" style="display:inline;" id="true" checked></span> means the flag is set and <span class="help-button"><input type="checkbox" style="display:inline;" id="false"></span> means the flag is not set. A user with a <span class="help-button"><input type="checkbox" style="display:inline;" id="true-admin" checked></span> in the **Admin** column has Admin permissions. The changes are applied with <span class="btn btn-primary btn-sm btn-hlp">Update Permissions</span>.
+All users are listed in a table under <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-users"></i></span> User management</span>. You can update the flags of the users by checking and unchecking the checkboxes, whereby <span class="help-button"><input type="checkbox" style="display:inline;" id="true" checked></span> means the flag is set and <span class="help-button"><input type="checkbox" style="display:inline;" id="false"></span> means the flag is not set. A set flag grants a privilege to a user.
+
+Privileges granted per user add to the general permissions. For example, if in general only users with the **Admin** flag are allowed to upload attachments, the `user@example.org` can be allowed to Upload without being flagged as Admin.
+
+A user with a <span class="help-button"><input type="checkbox" style="display:inline;" id="true-admin" checked></span> in the **Admin** column has Admin permissions. The changes are applied with <span class="btn btn-primary btn-sm btn-hlp">Update Privileges</span>.
 
 #### Edit a user
 
@@ -59,10 +63,12 @@ Who can access what is defined via
 - `Approved` - Users have to be logged and the <span class="help-button">Approved</span> flag has to be set.
 - `Admin` - Users have to be logged and the <span class="help-button">Admin</span> flag has to be set.
 
+Additionally you can configure privileges per user. The privileges granted per user add to the general permissions. See [User Management](#user-management) above.
+
 <span class="help-button"><input type="checkbox" style="display:inline;" id="true-reg-req" checked> Registration requires email confirmation</span> is supposed to prevent users to register using fake mail addresses.
 
 If a user needs to be approved, an admin user has either set the flag manually
-or enable <span class="help-button"><input type="checkbox" style="display:inline;" id="true-auto-approve" checked> Auto approve of new registered users</span>. When admins need 
+or enable <span class="help-button"><input type="checkbox" style="display:inline;" id="true-auto-approve" checked> Auto approve of new registered users</span>. When admins need
 to approve users, <span class="help-button"><input type="checkbox" style="display:inline;" id="true-notify" checked> Notify admins on new user registration</span> helps with that.
 
 

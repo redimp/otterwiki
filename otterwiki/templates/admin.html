@@ -1,4 +1,4 @@
-{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{# vim: set et ts=8 sts=4 sw=4 ai ft=jinja.html: #}
 {% extends "settings.html" %}
 {% block content %}
 {#
@@ -71,13 +71,13 @@
   </table>
   </div>
   <div class="mt-10">
-      <em>Permission granted per user</em> add <em>to the general permissions. For example, if in general
-          only users with the <strong>Admin</strong> flag are allowed to upload attachments, the 
+      <em>Privileges granted per user</em> add <em>to the general permissions. For example, if in general
+          only users with the <strong>Admin</strong> flag are allowed to upload attachments, the
           <tt>user@example.org</tt> can be allowed to <strong>Upload</strong> without being flagged as Admin.
       </em>
   </div>
   <div class="mt-10">
-    <input class="btn btn-primary" name="update_permissions" type="submit" value="Update Permissions">
+    <input class="btn btn-primary" name="update_permissions" type="submit" value="Update Privileges">
   </div>
 </form>
 </div>
@@ -139,7 +139,7 @@
 <h3 class="card-title" id="permissions_and_registration">Permissions and Registration Preferences</h3>
   <div class="form-group">
     <div>
-        <em>Note:</em> To configure permissions per user, set Read Access, Write Access and Attachment 
+        <em>Note:</em> To configure privileges per user, set Read Access, Write Access and Attachment
         management to <strong>Admin</strong> and configure Read, Write, Upload per user via <a href="#user_management">User Management</a>.
     </div>
   </div>
