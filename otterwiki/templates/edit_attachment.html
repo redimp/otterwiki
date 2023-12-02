@@ -55,7 +55,7 @@
         <tbody>
 {% for entry in log %}
           <tr class="align-top">
-              <td class="font-size-12 min text-nowrap">{{entry.datetime|format_datetime}}
+              <td class="font-size-12 min text-nowrap"><span class="datetime">{{entry.datetime|format_datetime}}</span>
                   &nbsp;<a href="{{ url_for(
                                         "get_attachment",
                                         pagepath=pagepath,
