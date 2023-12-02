@@ -289,33 +289,46 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
     margin-left: 1.5rem;
 }
 
+/* may the li insanity begin */
+
 .page ul,
 .page ol {
     padding-left: 1rem;
     list-style-position: outside;
 }
 
+.page ol li ol li ol li ul li,
+.page ol li ol li ul li,
+.page ol li ul li,
 .page ul li {
     list-style-type: disc;
 }
 
-.page ul li li {
+.page ul li ol li ol li ul li,
+.page ol li ol li ul li ul li,
+.page ol li ol li ul li ul li,
+.page ol li ul li ul li,
+.page ul li ul li {
     list-style-type: circle;
 }
 
-.page ul li li li {
+.page ul li ul li ul li {
     list-style-type: square;
 }
 
+.page ul li ul li ul li ol li,
+.page ul li ul li ol li,
+.page ul li ol li,
 .page ol li {
     list-style-type: decimal;
 }
 
-.page ol li li {
+.page ul li ol li ol li,
+.page ol li ol li {
     list-style-type: lower-alpha;
 }
 
-.page ol li li li {
+.page ol li ol li ol li {
     list-style-type: lower-roman;
 }
 
