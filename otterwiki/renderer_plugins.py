@@ -351,7 +351,7 @@ class mistunePluginFancyBlocks:
         if text.endswith('</p>'):
             text = text[:-4]
         return (
-            f'<div class="{cls} mb-10" role="alert">{header}\n{text}</div>\n'
+            f'<div class="{cls} mb-20" role="alert">{header}\n{text}</div>\n'
         )
 
     def __call__(self, md):

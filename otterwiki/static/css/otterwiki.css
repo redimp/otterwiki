@@ -351,6 +351,7 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
 .page table {
     background-color: rgba(0, 0, 0, 0.1);
     border-collapse: collapse;
+    margin-bottom: 2rem;
 }
 .page th {
     background-color: rgba(0, 0, 0, 0.2);
