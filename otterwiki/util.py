@@ -9,6 +9,7 @@ import random
 import string
 import mimetypes
 import time
+import datetime
 from functools import lru_cache
 
 
@@ -271,4 +272,10 @@ def patchset2hunkdict(patchset):
                 )
             ] = lines
     return hunk_helper
+
+
+def get_local_timezone():
+    """get the timezone the server is running on"""
+    return datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo;
+
 # vim: set et ts=8 sts=4 sw=4 ai:
