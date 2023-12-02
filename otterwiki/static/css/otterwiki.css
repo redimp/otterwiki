@@ -295,6 +295,30 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
     list-style-position: outside;
 }
 
+.page ul li {
+    list-style-type: disc;
+}
+
+.page ul li li {
+    list-style-type: circle;
+}
+
+.page ul li li li {
+    list-style-type: square;
+}
+
+.page ol li {
+    list-style-type: decimal;
+}
+
+.page ol li li {
+    list-style-type: lower-alpha;
+}
+
+.page ol li li li {
+    list-style-type: lower-roman;
+}
+
 .page ul ol,
 .page ol ul,
 .page ol ol,
