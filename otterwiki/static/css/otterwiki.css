@@ -295,10 +295,18 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
     list-style-position: outside;
 }
 
+.page ul ol,
+.page ol ul,
+.page ol ol,
+.page ul ul
+{
+    margin: 1rem 0 1rem 0rem;
+}
+
 .page blockquote {
     border-left: 2px solid rgba(24,144,255,0.5);
     padding-left: 1rem;
-    margin-inline-start: 2rem;
+    margin-inline-start: 0rem;
     margin-inline-end: 0rem;
     background-color: rgba(200,200,200,0.1);
 }
