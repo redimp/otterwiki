@@ -474,7 +474,8 @@ a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
     margin-left: -2.3rem;
 }
 
-.task-list-item {
+.page ul li.task-list-item,
+.page li.task-list-item {
     list-style-type: none;
 }
 
