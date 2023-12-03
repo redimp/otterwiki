@@ -107,6 +107,8 @@ def help(topic=None):
             'Tables',
             'Code',
             'Mathjax',
+            'Footnotes',
+            'Blocks',
             ]
         ]
         return render_template("help_syntax.html", toc=toc, in_help=True)
