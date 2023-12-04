@@ -1,7 +1,8 @@
 # About An Otter Wiki
 
-[An Otter Wiki](https://github.com/redimp/otterwiki) is a software for collaborative content management, called a [wiki](https://en.wikipedia.org/wiki/Wiki). The content is stored in a git repository, which keeps track of all changes.  [Markdown](https://daringfireball.net/projects/markdown) is used as Markup language.
+[An Otter Wiki](https://otterwiki.com) is a software for collaborative content management, called a [wiki](https://en.wikipedia.org/wiki/Wiki). The content is stored in a git repository, which keeps track of all data and changes. [Markdown](https://daringfireball.net/projects/markdown) is used as Markup language.
 
+The project is available on [github](https://github.com/redimp/otterwiki). 
 It is written in [python](https://www.python.org/) using the microframework [Flask](http://flask.pocoo.org/). [halfmoon](https://www.gethalfmoon.com) is used as CSS framework and [CodeMirror](https://codemirror.net/) as editor. [Font Awesome Free](https://fontawesome.com/license/free) serves the icons. Roboto Font Copyright 2011 Google Inc. All Rights Reserved.
 
 The [otter logo](https://thenounproject.com/term/otter/27035) is drawn by [Christy Presler](http://christypresler.com/) and is licensed under [Creative Commons CCBY](https://creativecommons.org/licenses/by/3.0/us/legalcode).
