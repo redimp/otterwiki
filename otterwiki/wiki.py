@@ -925,7 +925,7 @@ class Attachment:
             response = make_response(send_file(buffer, mimetype=self.mimetype))
             # set header, caching, etc
             response.headers["Last-Modified"] = http_date(metadata['datetime'])
-            response.headers["Cache-Control"] = "max-age=7200"
+            response.headers["Cache-Control"] = "max-age=604800, immutable"
             response.headers["Date"] = http_date(self.datetime.utctimetuple())
 
         return response
