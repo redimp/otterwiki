@@ -127,13 +127,26 @@ def titleSs(s):
     return s.replace(magicword,'ß')
 
 
-def get_pagename(filepath, full=False):
+def get_pagename(filepath, full=False, header=None):
     '''This will derive the page name (displayed on the web page) from the url requested'''
     if filepath.endswith(".md"):
         filepath = filepath[:-3]
+
+    arr = split_path(filepath)
+    for i, part in enumerate(arr):
+        hint = part
+        # if basename use header as hint
+        if i == len(arr)-1 and header is not None:
+            hint = header
+        if (hint != part and hint.lower() == part.lower()) \
+                or (hint == part and hint != part.lower()):
+            arr[i] = hint
+        else:
+            arr[i] = titleSs(part)
+
     if not full:
-        return titleSs(os.path.basename(filepath))
-    return "/".join([titleSs(p) for p in split_path(filepath)])
+        return arr[-1]
+    return "/".join(arr)
 
 
 def get_pagepath(pagename):

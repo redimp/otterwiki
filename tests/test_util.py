@@ -108,9 +108,25 @@ def test_get_pagepath():
 
 def test_get_pagename():
     assert "Example" == get_pagename("subspace/example.md")
+    assert "Example" == get_pagename("subspace/example")
     assert "Subspace/Example" == get_pagename("subspace/example.md", full=True)
+    assert "Subspace/Example" == get_pagename("subspace/example", full=True)
     assert "Example" == get_pagename("example.md")
     assert "Example" == get_pagename("example.md", full=True)
+    # updated version wich respects upper and lowercase
+    assert "ExamplE" == get_pagename("ExamplE")
+    assert "Two Words" == get_pagename("two words.md")
+    assert "Two Words" == get_pagename("two words")
+    assert "Two words" == get_pagename("Two words")
+    assert "Two words" == get_pagename("two words", header="Two words")
+    # and with subdirectories
+    assert "Two words" == get_pagename("subdir/two words", header="Two words")
+    assert "Two words" == get_pagename("subdir/two words.md", header="Two words")
+    assert "Two words" == get_pagename("subdir1/subdir2/two words.md", header="Two words")
+    assert "Two Words" == get_pagename("subdir1/subdir2/two words.md")
+    assert "Two Words" == get_pagename("subdir1/subdir2/Two Words")
+    assert "Subdir/Two words" == get_pagename("subdir/Two words", full=True)
+    assert "Two words/Two words" == get_pagename("Two words/Two words", full=True)
 
 
 def test_mkdir(tmpdir):
