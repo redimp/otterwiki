@@ -105,21 +105,27 @@ class PageIndex:
                             )
                         page_indices.append(subdir_path)
             pagetoc = []
+            # default pagename is the pagename derived from the filename
+            pagename = get_pagename(f, full=True)
             # read file
             content = storage.load(f)
             # parse file contents
             htmlcontent, ftoc = render.markdown(content)
             # add headers to page toc
             # (4, '2 L <strong>bold</strong>', 1, '2 L bold', '2-l-bold')
-            for header in ftoc:
-                pagetoc.append((
-                        depth + header[2], # depth
+            for i,header in enumerate(ftoc):
+                if i == 0 and len(pagetoc)==0:
+                    # overwrite pagename with the first header found on the page as hint for upper/lower casing
+                    pagename = get_pagename(f, full=True, header=header[3])
+                else:
+                    pagetoc.append((
+                        depth + header[2] - 1, # depth
                         header[3], # title without formatting
                         url_for("view", path=get_pagename(f, full=True), _anchor=header[4])
                     ))
             self.toc[firstletter].append(
                     (depth,
-                     get_pagename(fn, full=True), # title
+                     pagename, # title
                      url_for("view", path=get_pagename(f, full=True)), # url
                      pagetoc)
                 )

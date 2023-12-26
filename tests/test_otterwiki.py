@@ -49,7 +49,7 @@ def test_create_page_sanitized(test_client):
 
 
 def test_create_page(test_client, req_ctx):
-    pagename = "CreateTest"
+    pagename = "createtest"
     html = test_client.post(
         "/-/create",
         data={
@@ -72,6 +72,41 @@ def test_create_page(test_client, req_ctx):
     ).data.decode()
     assert "Test test 12345678" in html
     assert "<title>{}".format(pagename.title()) in html
+    assert "<p><strong>strong</strong></p>" in html
+    # check exisiting page
+    html = test_client.post(
+        "/-/create",
+        data={
+            "pagename": pagename,
+        },
+        follow_redirects=True,
+    ).data.decode()
+    assert "exists already" in html
+
+def test_create_page_notlower(test_client, req_ctx):
+    pagename = "Create/Test page"
+    html = test_client.post(
+        "/-/create",
+        data={
+            "pagename": pagename,
+        },
+        follow_redirects=True,
+    ).data.decode()
+    # check form
+    assert 'action="{}"'.format(url_for("preview", path=pagename)) in html
+    assert "<textarea" in html
+    assert 'name="content_editor"' in html
+    # test save
+    html = test_client.post(
+        "/{}/save".format(pagename),
+        data={
+            "content_update": "Test test 12345678\n\n**strong**",
+            "commit": "Initial commit",
+        },
+        follow_redirects=True,
+    ).data.decode()
+    assert "Test test 12345678" in html
+    assert "<title>Test page" in html
     assert "<p><strong>strong</strong></p>" in html
     # check exisiting page
     html = test_client.post(
