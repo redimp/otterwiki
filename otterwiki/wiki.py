@@ -311,7 +311,7 @@ class Page:
             self.pagename = pagename
             self.pagepath = get_pagepath(pagename)
 
-        self.filename = get_filename(pagepath)
+        self.filename = get_filename(self.pagepath)
         self.attachment_directoryname = get_attachment_directoryname(self.filename)
 
     def breadcrumbs(self):

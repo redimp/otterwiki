@@ -176,7 +176,7 @@ def create():
         )
     else:
         # this is the creation of a new page
-        p = Page(pagename)
+        p = Page(pagename=pagename)
         return p.create()
 
 
