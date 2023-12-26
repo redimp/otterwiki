@@ -121,12 +121,12 @@ class PageIndex:
                     pagetoc.append((
                         depth + header[2] - 1, # depth
                         header[3], # title without formatting
-                        url_for("view", path=get_pagename(f, full=True), _anchor=header[4])
+                        url_for("view", path=get_pagename(f, full=True, header=pagename), _anchor=header[4])
                     ))
             self.toc[firstletter].append(
                     (depth,
                      pagename, # title
-                     url_for("view", path=get_pagename(f, full=True)), # url
+                     url_for("view", path=get_pagename(f, full=True, header=pagename)), # url
                      pagetoc)
                 )
 
