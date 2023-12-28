@@ -308,7 +308,7 @@ class Changelog:
 
 
 class Page:
-    def __init__(self, pagepath=None, pagename=None):
+    def __init__(self, pagepath=None, pagename=None, revision=None):
 
         if pagepath is not None:
             self.pagepath = pagepath
@@ -317,8 +317,19 @@ class Page:
             self.pagename = pagename
             self.pagepath = get_pagepath(pagename)
 
+        self.revision = revision
+
         self.filename = get_filename(self.pagepath)
         self.attachment_directoryname = get_attachment_directoryname(self.filename)
+
+        # load page content and metadata
+        try:
+            self.content, self.metadata = self.load(revision=self.revision)
+            self.exists = True
+        except StorageNotFound:
+            self.metadata = None
+            self.content = None
+            self.exists = False
 
     def breadcrumbs(self):
         return get_breadcrumbs(self.pagepath)
@@ -340,40 +351,48 @@ class Page:
 
         return content, metadata
 
-    def source(self, revision=None, raw=False):
+    def exists_or_404(self):
+        if not self.exists:
+            app.logger.warning("Not found {}".format(self.pagename))
+            response404 = make_response(
+                    render_template("page404.html",
+                        pagename=self.pagename,
+                        pagepath=self.pagepath),
+                    404)
+            abort(response404)
+            print("404")
+        return True
+
+    def source(self, raw=False):
         # handle permissions
         if not has_permission("READ"):
             abort(403)
-        # handle page
-        try:
-            content, metadata = self.load(revision=revision)
-        except StorageNotFound:
-            app.logger.warning("Not found {}".format(self.pagename))
-            return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath), 404
+        # handle case that the page doesn't exists
+        self.exists_or_404()
 
         # set title
         title = self.pagename
-        if revision is not None:
-            title = "{} ({})".format(self.pagename, revision)
+        if self.revision is not None:
+            title = "{} ({})".format(self.pagename, self.revision)
 
         if raw:
             # build a reference link that is appended to the content as markdown comment
             reference = f"\n[]: # ({url_for('source', pagepath=self.pagepath, _external=True)})"
-            return content+reference, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+            return self.content+reference, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
-        source = pygments_render(content, lang='markdown')
+        source = pygments_render(self.content, lang='markdown')
 
         return render_template(
             "source.html",
             title=title,
-            revision=revision,
+            revision=self.revision,
             pagename=self.pagename,
             pagepath=self.pagepath,
             source=source,
             breadcrumbs=self.breadcrumbs(),
         )
 
-    def view(self, revision=None):
+    def view(self):
         # handle permissions
         if not has_permission("READ"):
             if current_user.is_authenticated and not current_user.is_approved:
@@ -387,32 +406,34 @@ class Page:
             else:
                 toast("You lack the permissions to access this wiki. Please login.")
             return redirect(url_for("login"))
-        # handle page
-        try:
-            content, metadata = self.load(revision=revision)
-        except StorageNotFound:
-            app.logger.warning("Not found {}".format(self.pagename))
-            return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath), 404
+        # handle case that page doesn't exists
+        self.exists_or_404()
 
         danger_alert = False
-        if not metadata:
+        if not self.metadata:
             danger_alert = [
                 "Not under version control",
-                f"""This page was loaded from the repository but is not added under git version control. Make a commit on the <a href="{self.pagename}/edit" class="alert-link">Edit page</a> to add it."""
+                f"""This page was loaded from the repository but is not added under git version control. Make a commit on the <a href="/{self.pagepath}/edit" class="alert-link">Edit page</a> to add it."""
             ]
+
+        # render markdown
+        htmlcontent, toc = render.markdown(self.content)
+
+        if len(toc) > 0:
+            # use first headline to overwrite pagename
+            self.pagename = get_pagename(self.pagename, full=False, header=toc[0][3])
 
         # set title
         title = self.pagename
-        if revision is not None:
-            title = "{} ({})".format(self.pagename, revision)
-        # render markdown
-        htmlcontent, toc = render.markdown(content)
+        if self.revision is not None:
+            title = "{} ({})".format(self.pagename, self.revision)
+
 
         # render template
         return render_template(
             "page.html",
             title=title,
-            revision=revision,
+            revision=self.revision,
             pagename=self.pagename,
             pagepath=self.pagepath,
             htmlcontent=htmlcontent,
@@ -423,12 +444,17 @@ class Page:
 
     def preview(self, content=None, cursor_line=None, cursor_ch=None):
         if content is None:
-            try:
-                content, metadata = self.load(revision=None)
-            except StorageNotFound:
-                app.logger.warning("Not found {}".format(self.pagename))
-                return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath)
+            # handle case that the page doesn't exists
+            self.exists_or_404()
+            # no content in form use loaded page
+            content = self.content
+
+        # render preview
         content_html, toc = render.markdown(content, cursor=cursor_line)
+        # update pagename from toc
+        if len(toc) > 0:
+            # use first headline to overwrite pagename
+            self.pagename = get_pagename(self.pagename, full=False, header=toc[0][3])
 
         return render_template(
             "preview.html",
@@ -445,10 +471,9 @@ class Page:
         if not has_permission("WRITE"):
             abort(403)
         if content is None:
-            try:
-                content, _ = self.load(revision=revision)
-                content = content.rstrip()
-            except StorageNotFound:
+            if self.exists:
+                content = self.content
+            else:
                 content = f"# {self.pagename}\n\n"
                 cursor_line = 2
                 cursor_ch = 0
@@ -486,26 +511,21 @@ class Page:
     def create(self):
         if not has_permission("WRITE"):
             abort(403)
-        # check if page exists
-        try:
-            content, metadata = self.load(revision=None)
-        except StorageNotFound:
-            content, metadata = None, None
 
-        if content is not None:
+        if self.exists:
             toast("{} exists already.".format(self.pagename), "warning")
 
         return redirect(url_for("edit", path=self.pagepath))
 
-    def blame(self, revision=None):
+    def blame(self):
         if not has_permission("READ"):
             abort(403)
-        try:
-            data = storage.blame(self.filename, revision)
-            content, _ = self.load(revision=revision)
-        except StorageNotFound:
-            return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath), 404
-        markup_lines = render.hilight(content, lang="markdown")
+        # handle case that the page doesn't exists
+        self.exists_or_404()
+
+        data = storage.blame(self.filename, self.revision)
+
+        markup_lines = render.hilight(self.content, lang="markdown")
         # fix markup_lines
         markup_lines = markup_lines.replace(
             '<div class="highlight"><pre><span></span>', ""
@@ -529,7 +549,7 @@ class Page:
                 fdata.append(("", "", "", int(row[3]), line, oddeven))
         return render_template(
             "blame.html",
-            title="{} - blame {}".format(self.pagename, revision),
+            title="{} - blame {}".format(self.pagename, self.revision),
             pagepath=self.pagepath,
             pagename=self.pagename,
             blame=fdata,
@@ -539,6 +559,9 @@ class Page:
     def diff(self, rev_a=None, rev_b=None):
         if not has_permission("READ"):
             abort(403)
+        # handle case that the page doesn't exists
+        self.exists_or_404()
+
         diff = storage.diff(self.filename, rev_b, rev_a)
         patchset = PatchSet(diff)
         url_map = {}
@@ -588,6 +611,8 @@ class Page:
     def rename(self, new_pagename, message, author):
         if not has_permission("WRITE"):
             abort(403)
+        # handle case that the page doesn't exists
+        self.exists_or_404()
         # filename
         new_filename = get_filename(new_pagename)
         # check for attachments
@@ -686,6 +711,9 @@ class Page:
     def render_attachments(self):
         if not has_permission("READ"):
             abort(403)
+        # handle case that the page doesn't exists
+        self.exists_or_404()
+        # get all attachments with metadata
         files = [f.data for f in self._attachments() if f.metadata is not None]
         return render_template(
             "attachments.html",
@@ -1134,12 +1162,12 @@ class AutoRoute:
         except KeyError:
             revision = None
         # create page object
-        p = Page(self.path)
+        p = Page(self.path, revision=revision)
         # if page md doesn't exist, but the folder exists, show index
         if not storage.exists(p.filename) and storage.exists(p.attachment_directoryname):
-            pi = PageIndex(p.pagename)
+            pi = PageIndex(p.pagepath)
             return pi.render()
         # default to Page view
-        return p.view(revision=revision)
+        return p.view()
 
 # vim: set et ts=8 sts=4 sw=4 ai:

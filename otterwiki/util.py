@@ -129,6 +129,9 @@ def titleSs(s):
 
 def get_pagename(filepath, full=False, header=None):
     '''This will derive the page name (displayed on the web page) from the url requested'''
+    # remove trailing slashes from filepath
+    filepath=filepath.rstrip("/")
+
     if filepath.endswith(".md"):
         filepath = filepath[:-3]
 

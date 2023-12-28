@@ -244,8 +244,8 @@ def request_confirmation_link(email):
 @app.route("/<path:path>/view/<string:revision>")
 @app.route("/<path:path>/view")
 def pageview(path="Home", revision=None):
-    p = Page(path)
-    return p.view(revision)
+    p = Page(path, revision=revision)
+    return p.view()
 
 
 # last matching endpoint seems to be the default for url_for
@@ -293,14 +293,14 @@ def delete(path):
 @app.route("/<path:path>/blame", methods=["GET"])
 @app.route("/<path:path>/blame/<string:revision>", methods=["GET"])
 def blame(path, revision=None):
-    p = Page(path)
-    return p.blame(revision)
+    p = Page(path, revision=revision)
+    return p.blame()
 
 
 @app.route("/<path:path>/edit", methods=["POST", "GET"])
 @app.route("/<path:path>/edit/<string:revision>", methods=["GET"])
 def edit(path, revision=None):
-    p = Page(path)
+    p = Page(path, revision=revision)
     return p.editor(
             content=request.form.get("content_editor"),
             cursor_line=request.form.get("cursor_line"),
@@ -336,8 +336,8 @@ def preview(path):
 @app.route("/<path:pagepath>/source", methods=["GET"])
 def source(pagepath, revision=None):
     raw = 'raw' in request.args
-    p = Page(pagepath)
-    return p.source(revision=revision, raw=raw)
+    p = Page(pagepath, revision=revision)
+    return p.source(raw=raw)
 
 
 @app.route("/-/commit/<string:revision>", methods=["GET"])
