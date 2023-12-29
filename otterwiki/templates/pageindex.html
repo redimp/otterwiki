@@ -14,17 +14,20 @@
 <div class="container-lg">
 <div class="row">
 {% for letter, pagelist in pages.items()|sort %}
-<div class="col-xl-3 col-lg-4 col-md-6 pr-5 pb-10"><h2 class="content-title font-weight-bolder">{{letter}}</h2>
+<div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 pr-20 pb-20"><h2 class="content-title font-weight-bolder">{{letter}}</h2>
 {% for depth, title, url, page_toc in pagelist %}
-<div class="pb-5" style="word-break: break-all;">
+<div class="pb-5" style="word-break: break-all; padding-left:{{1 * depth}}rem;"><!-- depth {{depth}} -->
+
 <a href="{{ url }}" class="global-toc-link font-weight-semi-bold">{{title}}</a>
+{% if page_toc %}
 <div class="pagetoc" style="display: none;">
 {% for depth, title, url in page_toc %}
-<div style="word-break: all; padding-left:{{0.5 * depth}}rem;">
+<div style="word-break: all; padding-left:{{1 * depth}}rem;"><!-- depth {{depth}} -->
 <a href="{{ url }}" class="global-toc-link">{{title}}</a><br/>
 </div>
 {% endfor %}
 </div>
+{% endif %}{# page_toc #}
 </div>
 {% endfor %}
 </div>

@@ -47,11 +47,13 @@ from pprint import pprint, pformat
 
 
 def get_breadcrumbs(pagepath):
+    # strip trailing slashes
+    pagepath=pagepath.rstrip("/")
     parents = []
     crumbs = []
     for e in split_path(pagepath):
         parents.append(e)
-        crumbs.append((e, join_path(parents)))
+        crumbs.append((get_pagename(e), join_path(parents)))
     return crumbs
 
 
@@ -62,10 +64,12 @@ class PageIndex:
         '''
 
         if path is not None:
-            self.breadcrumbs = get_breadcrumbs(path)
-            self.path = path.lower()
+            self.path = path.lower().rstrip("/")
+            self.breadcrumbs = get_breadcrumbs(get_pagename(path, full=True))
+            self.index_depth = len(split_path(self.path))
         else:
             self.path, self.breadcrumbs = None, None
+            self.index_depth = 0
 
         from timeit import default_timer as timer
 
@@ -82,31 +86,32 @@ class PageIndex:
                 f = fn
             else:
                 f = os.path.join(self.path,fn)
-            depth = len(split_path(f))
+            page_depth = len(split_path(f)) - 1
             firstletter = get_pagename(fn, full=True)[0]
             if firstletter not in self.toc.keys():
                 self.toc[firstletter] = []
-            if depth > 1:
-                # add entries for subdirectories to he page index
-                subdirectories = split_path(f)[:-1]
-                for l in range(len(subdirectories)):
-                    subdir_path = os.path.join(*subdirectories[l:])
-                    if path is not None and subdir_path.lower() == path.lower():
-                        continue
-                    if storage.exists(get_filename(subdir_path)):
-                        # if page exists don't add the directory
-                        continue
-                    if subdir_path not in page_indices:
-                        self.toc[firstletter].append(
-                                (depth,
-                                 get_pagename(subdir_path, full=True) + "/", # title
-                                 url_for("view", path=get_pagename(subdir_path, full=True)), # url
-                                 [])
-                            )
-                        page_indices.append(subdir_path)
+            # add the subdirectories the page is in to the page index
+            subdirectories = split_path(fn)[:-1]
+            for subdir_depth in range(len(subdirectories)):
+                subdir_path = join_path(subdirectories[0:subdir_depth+1])
+                if self.path is None:
+                    subdir_path_full = subdir_path
+                else:
+                    subdir_path_full = join_path([self.path,subdir_path])
+                if storage.exists(get_filename(subdir_path)):
+                    # if page exists don't add the directory
+                    continue
+                if subdir_path not in page_indices:
+                    self.toc[firstletter].append(
+                            (subdir_depth - self.index_depth,
+                             get_pagename(subdir_path, full=False) + "/", # title
+                             url_for("view", path=get_pagename(subdir_path_full, full=True)), # url
+                             [])
+                        )
+                    page_indices.append(subdir_path)
             pagetoc = []
             # default pagename is the pagename derived from the filename
-            pagename = get_pagename(f, full=True)
+            pagename = get_pagename(f, full=False)
             # read file
             content = storage.load(f)
             # parse file contents
@@ -116,16 +121,20 @@ class PageIndex:
             for i,header in enumerate(ftoc):
                 if i == 0 and len(pagetoc)==0:
                     # overwrite pagename with the first header found on the page as hint for upper/lower casing
-                    pagename = get_pagename(f, full=True, header=header[3])
+                    pagename = get_pagename(f, full=False, header=header[3])
                 else:
                     pagetoc.append((
-                        depth + header[2] - 1, # depth
+                        header[2], # depth
                         header[3], # title without formatting
-                        url_for("view", path=get_pagename(f, full=True, header=pagename), _anchor=header[4])
+                        url_for("view", path=get_pagename(f, full=False, header=pagename), _anchor=header[4])
                     ))
+            # strip self.path from displayname
+            displayname = pagename
+            if self.path is not None and displayname.lower().startswith(self.path):
+                displayname=displayname[len(self.path)+1:]
             self.toc[firstletter].append(
-                    (depth,
-                     pagename, # title
+                    (page_depth - self.index_depth,
+                     displayname, # title
                      url_for("view", path=get_pagename(f, full=True, header=pagename)), # url
                      pagetoc)
                 )
@@ -1121,7 +1130,6 @@ class Search:
             if not empty(self.query)
             else "Search",
             query=self.query,
-            in_history=self.in_history,
             is_regexp=self.is_regexp,
             is_casesensitive=self.is_casesensitive,
             keys=keys,

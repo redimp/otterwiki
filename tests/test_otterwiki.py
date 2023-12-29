@@ -441,7 +441,7 @@ def test_move_page(test_client):
     )
     assert rv.status_code == 200
 
-    assert f'<a href="/{new_pagename}">{_new_file_name}</a>' in rv.data.decode()
+    assert f'<a href="/{new_pagename}">{_new_file_name}</a>'.lower() in rv.data.decode().lower()
 
 def test_nested_files(test_client):
     p = test_client.application._otterwiki_tempdir
