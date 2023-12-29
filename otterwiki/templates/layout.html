@@ -177,7 +177,11 @@
 
             <div class="container-fluid">
                 <div class="row">
+{% if ( self.extra_nav() | trim | length ) > 0 %}{# limit content when extra_nav is not empty #}
                 <div class="col-xl-9">
+{% else %}
+                <div class="col">
+{% endif %}
 {% block content_wrapper %}
                 <div class="content">
 {% block breadcrumbs %}
