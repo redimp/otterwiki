@@ -9,6 +9,7 @@
 PORT ?= 8080
 VERSION := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.read());  print(__version__);")
 VERSION_MAJOR_MINOR := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.read()); print('.'.join(__version__.split('.')[0:2]));")
+VERSION_MAJOR := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.read()); print('.'.join(__version__.split('.')[0:1]));")
 PLATFORM ?= "linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6"
 
 all: run
@@ -104,6 +105,7 @@ endif
 	docker buildx build --platform $(PLATFORM) \
 		-t redimp/otterwiki:latest \
 		-t redimp/otterwiki:$(VERSION) \
+		-t redimp/otterwiki:$(VERSION_MAJOR) \
 		-t redimp/otterwiki:$(VERSION_MAJOR_MINOR) \
 		--build-arg GIT_TAG="$(shell git describe --long)" \
 		--push .

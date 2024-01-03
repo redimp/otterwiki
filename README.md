@@ -48,7 +48,7 @@ detailed information.
 version: '3'
 services:
   otterwiki:
-    image: redimp/otterwiki:latest
+    image: redimp/otterwiki:2
     restart: unless-stopped
     ports:
       - 8080:80
