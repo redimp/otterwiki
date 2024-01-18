@@ -40,16 +40,23 @@
 {#
 #}
 {% if result %}
-<div class="content">
-    <h1 class="content-title">Search matched {{keys | length}} page{%if keys | length >1%}s{%endif%}:</h1>
-</div>
+<h1 class="content-title">Search matched {{keys | length}} page{%if keys | length >1%}s{%endif%}:</h1>
 {% for key in keys %}
-<div class="content">
-    <h2 class="content-title"><a href="{{ url_for('view', path=key[3]) }}">{{key[3]}}</a> ({{key[1]}} match{%if key[1]!=1%}es{%endif%} found)</h2>
+<h2 class="content-title mt-20"><a href="{{ url_for('view', path=key[3]) }}">{{key[4]|safe}}</a>
+{%- if key[0] == key[1] == 1 %}
+(Name matches)
+{% elif key[0] == 1  %}
+(Name and {{key[1] - 1}} match{%if key[1] -1 != 1%}es{%endif%} found)</h2>
+{% else %}
+({{key[1]}} match{%if key[1]!=1%}es{%endif%} found)</h2>
+{% endif -%}
 {% for match in result[key] %}
+{%- if match -%}
 <p>{{match|safe}}</p>
+{%- endif -%}
+{%- endfor -%}
 {% endfor %}
-</div>
-{% endfor %}
+{% else %}
+<h1 class="content-title">No match found.</h1>
 {% endif %}
 {% endblock %}

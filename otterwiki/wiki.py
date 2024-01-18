@@ -1082,10 +1082,12 @@ class Search:
                     n += len(self.rei.findall(line))
                 else:
                     n += len(self.re.findall(line))
-            key = (fnmatch, n, fn, get_pagename(fn, full=True))
+            key = [fnmatch, n, fn, get_pagename(fn, full=True), get_pagename(fn, full=True)]
             summary = []
             if fnmatch == 1:
                 summary = [matches.pop(0)]
+                # overwrite key[4]
+                key[4] = self.rei.sub(r'<span class="page-match">\1</span>', key[4])
             front, end = [], []
             while len("".join(front) + "".join(end)) < 200:
                 try:
@@ -1107,13 +1109,11 @@ class Search:
                 l = str(html_escape(l))
                 # filenames are not casesensitive ...
                 if i == 0 and fnmatch == 1:
-                    summary[i] = 'Name "{}" matches.'.format(
-                        self.rei.sub(r'<span class="text-match">\1</span>', l)
-                    )
+                    summary[i] = None
                 else:
                     summary[i] = self.re.sub(r'<span class="text-match">\1</span>', l)
             # store summary with key
-            result[key] = summary
+            result[tuple(key)] = summary
 
         return result
 

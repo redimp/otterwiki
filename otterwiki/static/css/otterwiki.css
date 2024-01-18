@@ -234,6 +234,21 @@ table.compact td {
 .text-match {
     background-color: #ffcf00 !important;
     color: rgba(0,0,0,.85);
+    padding: 0rem 0.2em 0rem 0.2rem;
+}
+a span.page-match {
+    /*color: #fff;
+    background-color: #1890ff;*/
+    background-color: #ffcf00 !important;
+    color: rgba(0,0,0,.85);
+    background-color: #FFCf00;
+    padding: 0.2em;
+}
+a:hover span.page-match {
+    background-color: #ffcf00 !important;
+    color: rgba(0,0,0,.85);
+    text-decoration: underline;
+    padding: 0.2em;
 }
 
 a.sidebar-toc-1 { padding-left: 2.5rem; padding-right: 0; }
