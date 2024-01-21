@@ -55,6 +55,9 @@ class GitStorage(object):
     def isdir(self, dirname):
         return os.path.isdir(os.path.join(self.path, dirname))
 
+    def isemptydir(self, dirname):
+        return len(os.listdir(os.path.join(self.path, dirname))) == 0
+
     def load(self, filename, mode="r", revision=None, size=-1):
         self._check_reload()
         if revision is not None:
@@ -275,12 +278,18 @@ class GitStorage(object):
         if not type(filename) == list:
             filename=[filename]
         # make sure we only try to delete what exists
-        filename = [f for f in filename if self.exists(f)]
+        filename_remove = [f for f in filename if self.exists(f) and not self.isdir(f)]
+        filename_remove += [d for d in filename if self.exists(d) and self.isdir(d) and not self.isemptydir(d)]
+        # remove empty directories via os
+        empty_dirs = [d for d in filename if self.exists(d) and self.isdir(d) and self.isemptydir(d)]
+        for dirname in empty_dirs:
+            os.rmdir(os.path.join(self.path, dirname))
+
         # or this will raise an exception
-        self.repo.index.remove(filename, working_tree=True, r=True)
+        self.repo.index.remove(filename_remove, working_tree=True, r=True)
         actor = git.Actor(author[0], author[1])
         if message is None:
-            message = "Deleted {}.".format(filename)
+            message = "Deleted {}.".format(filename_remove)
         self.repo.index.commit(message, author=actor)
 
     def rename(
