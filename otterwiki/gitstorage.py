@@ -55,7 +55,7 @@ class GitStorage(object):
     def isdir(self, dirname):
         return os.path.isdir(os.path.join(self.path, dirname))
 
-    def load(self, filename, mode="r", revision=None):
+    def load(self, filename, mode="r", revision=None, size=-1):
         self._check_reload()
         if revision is not None:
             try:
@@ -67,7 +67,7 @@ class GitStorage(object):
             return content
         try:
             with open(os.path.join(self.path, filename), mode=mode) as f:
-                content = f.read()
+                content = f.read(size)
         except (IOError, FileNotFoundError) as e:
             raise StorageNotFound("{} not found.".format(filename))
         return content
@@ -225,7 +225,7 @@ class GitStorage(object):
             message = ""
         dirname = os.path.dirname(filename)
         if dirname != "":
-            os.makedirs(os.path.join(self.path, dirname), mode=0o777, exist_ok=True)
+            os.makedirs(os.path.join(self.path, dirname), mode=0o775, exist_ok=True)
         # store file on filesystem
         with open(os.path.join(self.path, filename), mode) as f:
             f.write(content)
@@ -288,10 +288,13 @@ class GitStorage(object):
     ):
         if self.exists(new_filename):
             raise StorageError(f'The filename "{new_filename}" already exist. Please choose a new filename.')
-
+        # make sure the target directory exists
+        dirname = os.path.dirname(new_filename)
+        if dirname != "":
+            os.makedirs(os.path.join(self.path, dirname), mode=0o775, exist_ok=True)
         try:
             self.repo.git.mv(old_filename, new_filename)
-        except Exception:
+        except Exception as e:
             raise StorageError(
                 "Renaming {} to {} failed.".format(old_filename, new_filename)
             )
