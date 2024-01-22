@@ -604,3 +604,69 @@ details.collapse-panel {
     overflow-wrap: anywhere;
     margin-bottom: .2rem;
 }
+
+/* sidebar menu */
+.sidebarmenu {
+  --spacing : 1.5rem;
+  --radius  : 1rem;
+}
+
+.sidebarmenu ul {
+  margin-left  : calc(var(--radius) - var(--spacing));
+  margin-bottom: 0.5rem;
+  margin-top: 1.0rem;
+  padding-left : 0rem;
+}
+/*
+.sidebarenu ul ul {
+  margin: 0;
+}
+*/
+.sidebarmenu li {
+    line-height: 1;
+    display      : block;
+    position     : relative;
+    padding-left : calc(2 * var(--spacing) - var(--radius) + 0.5rem);
+    color: rgba(0,0,0,.7);
+    padding-top: 0.5rem;
+}
+
+.dark-mode .sidebarmenu li {
+    color: rgba(255,255,255,.65);
+}
+
+.sidebarmenu details > summary {
+    list-style: none;
+}
+
+.sidebarmenu details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sidebarmenu details > summary::before {
+    content: '▹ ';
+}
+
+.sidebarmenu details[open] > summary::before {
+    content: '▿ ';
+}
+
+.sidebarmenu a {
+    color: rgba(0,0,0,.7);
+    text-decoration: none;
+    background-color: transparent;
+    border-color: transparent;
+}
+.sidebarmenu a:hover {
+    color: rgba(0, 0, 0, 0.85);
+    text-decoration: none;
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.dark-mode .sidebarmenu a {
+    color: rgba(255,255,255,.65);
+}
+.dark-mode .sidebarmenu a:hover {
+    color: rgba(255, 255, 255, 0.8);
+}

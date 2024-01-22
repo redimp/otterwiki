@@ -18,6 +18,7 @@ from markupsafe import escape as html_escape
 from otterwiki.gitstorage import StorageNotFound, StorageError
 from otterwiki.server import app, db, storage
 from otterwiki.renderer import render, pygments_render
+from otterwiki.sidebar import SidebarNavigation
 from otterwiki.util import (
     split_path,
     join_path,
@@ -28,6 +29,7 @@ from otterwiki.util import (
     get_attachment_directoryname,
     get_pagename,
     get_pagepath,
+    get_page_directoryname,
     sanitize_pagename,
     patchset2hunkdict,
     get_header,
@@ -377,7 +379,6 @@ class Page:
                         pagepath=self.pagepath),
                     404)
             abort(response404)
-            print("404")
         return True
 
     def source(self, raw=False):
@@ -445,6 +446,7 @@ class Page:
         if self.revision is not None:
             title = "{} ({})".format(self.pagename, self.revision)
 
+        sidebarnav = SidebarNavigation(get_page_directoryname(self.pagepath))
 
         # render template
         return render_template(
@@ -456,7 +458,8 @@ class Page:
             htmlcontent=htmlcontent,
             toc=toc,
             breadcrumbs=self.breadcrumbs(),
-            danger_alert=danger_alert
+            danger_alert=danger_alert,
+            menutree=sidebarnav.query(),
         )
 
     def preview(self, content=None, cursor_line=None, cursor_ch=None):
