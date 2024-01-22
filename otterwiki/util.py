@@ -157,6 +157,8 @@ def get_pagepath(pagename):
 
 
 def join_path(path_arr):
+    if len(path_arr) < 1:
+        return ""
     return os.path.join(*path_arr)
 
 
