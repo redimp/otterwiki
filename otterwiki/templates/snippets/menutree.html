@@ -1,0 +1,21 @@
+{#- vim: set et ts=8 sts=4 sw=4 ai: -#}
+{% if menutree %}
+            <h5 class="sidebar-title" style="margin-top: 2rem;">Page Index</h5>
+            <div class="sidebar-divider"></div>
+<!-- menutree [[ -->
+<ul class="sidebarmenu">
+{%- for key, value in menutree.items() recursive -%}
+{%- if value["children"] %}
+<li><details {% if pagepath.lower().startswith(value.path.lower()) %}open{% endif %}><summary class="sidebarmenu"><a href="/{{value["path"]}}">{{value["header"]}}</a></summary>
+    <ul class="sidebarmenu">{{ loop(value["children"].items())}}
+    </ul>
+        </details>
+    </li>
+{%- else %}
+    <li><a href="/{{value["path"]}}">{{value["header"]}}</a></li>
+{%endif%}
+{%- endfor %}
+</ul>
+<!-- ]] menutree -->
+{% endif %}{# if menutreee #}
+
