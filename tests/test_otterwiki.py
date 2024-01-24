@@ -131,6 +131,21 @@ def save_shortcut(test_client, pagename, content, commit_message):
     assert rv.status_code == 200
 
 
+def test_pageindex(test_client):
+    save_shortcut(test_client, "Random page", "# Random page\nrandom text", "added random page")
+    save_shortcut(test_client, "Sub directory/Nested Page", "# Nested page\n\n## Nested header\n", "added nested page")
+    html = test_client.get("/-/index").data.decode()
+    # check captializing (from # Random page)
+    assert 'Random page' in html
+    assert 'href="/Random%20page"' in html
+    # Test nested page
+    assert '>Nested page<' in html
+    assert 'href="/Sub%20Directory/Nested%20page"' in html
+    # and nested header
+    assert '>Nested header<' in html
+    assert 'href="/Sub%20Directory/Nested%20page#nested-header"' in html
+
+
 def test_page_save(test_client):
     from otterwiki.server import storage
 

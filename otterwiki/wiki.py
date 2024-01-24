@@ -126,7 +126,7 @@ class PageIndex:
                     pagetoc.append((
                         header[2], # depth
                         header[3], # title without formatting
-                        url_for("view", path=get_pagename(f, full=False, header=pagename), _anchor=header[4])
+                        url_for("view", path=get_pagename(f, full=True, header=pagename), _anchor=header[4])
                     ))
             # strip self.path from displayname
             displayname = pagename
