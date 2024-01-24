@@ -15,6 +15,7 @@ from otterwiki.util import (
     get_attachment_directoryname,
     get_pagename,
     get_pagepath,
+    get_page_directoryname,
     random_password,
     mkdir,
     titleSs,
@@ -104,6 +105,13 @@ def test_get_attachment_directoryname():
 
 def test_get_pagepath():
     assert "Home" == get_pagepath("Home")
+
+
+def test_get_page_directoryname():
+    assert "" == get_page_directoryname("Home")
+    assert "Sub" == get_page_directoryname("Sub/Dir")
+    assert "Sub" == get_page_directoryname("/Sub/Dir")
+    assert "Sub/Dir" == get_page_directoryname("/Sub/Dir/Page")
 
 
 def test_get_pagename():

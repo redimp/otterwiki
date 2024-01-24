@@ -156,6 +156,11 @@ def get_pagepath(pagename):
     return pagename
 
 
+def get_page_directoryname(pagepath):
+    parts = split_path(pagepath)
+    return join_path(parts[:-1])
+
+
 def join_path(path_arr):
     if len(path_arr) < 1:
         return ""
