@@ -148,10 +148,14 @@ class PageIndex:
     def render(self):
         if not has_permission("READ"):
             abort(403)
+        sidebarnav = SidebarNavigation(get_page_directoryname(self.path or "/"))
+
         return render_template(
             "pageindex.html",
             title="Page Index",
             pages=self.toc,
+            pagepath=self.path or "/",
+            menutree=sidebarnav.query(),
             breadcrumbs=self.breadcrumbs
         )
 
