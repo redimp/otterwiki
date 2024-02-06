@@ -11,10 +11,10 @@
   <input type="checkbox" id="switch-headings" value="" onchange="otterwiki.toggleClass(event.target.checked,'pagetoc')">
   <label for="switch-headings">Toggle page headings</label>
 </div>
-<div class="container-lg">
+<div class="container-fluid">
 <div class="row">
 {% for letter, pagelist in pages.items()|sort %}
-<div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 pr-20 pb-20"><h2 class="content-title font-weight-bolder">{{letter}}</h2>
+<div class="col-auto pr-20 pb-20" style="min-width: 20rem"><h2 class="content-title font-weight-bolder">{{letter}}</h2>
 {% for depth, title, url, page_toc in pagelist %}
 <div class="pb-5" style="word-break: normal; hyphens: auto; overflow-wrap: anywhere; padding-left:{{1 * depth}}rem;">
 
