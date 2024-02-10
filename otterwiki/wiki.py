@@ -103,7 +103,7 @@ class PageIndex:
                     continue
                 if subdir_path not in page_indices:
                     self.toc[firstletter].append(
-                            (subdir_depth - self.index_depth,
+                            (subdir_depth,
                              get_pagename(subdir_path, full=False) + "/", # title
                              url_for("view", path=get_pagename(subdir_path_full, full=True)), # url
                              [])
