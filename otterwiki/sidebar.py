@@ -4,7 +4,7 @@ import os
 import re
 from pprint import pprint
 
-from otterwiki.server import storage
+from otterwiki.server import storage, app
 from otterwiki.util import (
     split_path,
     join_path,
@@ -18,9 +18,14 @@ class SidebarNavigation:
     )
     SETEX_HEADING = re.compile(r'([^\n]+)\n *(=|-){2,}[ \t]*\n+')
 
-    def __init__(self, path=None, depth=None):
+    def __init__(self, path: str = "/"):
         self.path = path.lower()
-        self.depth = depth
+        self.path_depth = len(split_path(self.path))
+        try:
+            self.max_depth = int(app.config["SIDEBAR_MENUTREE_MAXDEPTH"])
+        except ValueError:
+            self.max_depth = None
+        self.mode = app.config["SIDEBAR_MENUTREE_MODE"]
         # TODO load existing config file
         # TODO check for cached pages
         # load pages
@@ -59,8 +64,7 @@ class SidebarNavigation:
             )
 
     def load(self):
-        print(self.path)
-        files, directories = storage.list(p=self.path)
+        files, _ = storage.list(p=self.path)
 
         entries = []
         for filename in [
@@ -82,7 +86,7 @@ class SidebarNavigation:
                 header = self.read_header(entry)
                 entry = entry[:-3]
             parts = split_path(entry)
-            self.add_node(self.tree, [], parts)
+            self.add_node(self.tree, [], parts, header)
 
     def query(self):
         return self.tree
