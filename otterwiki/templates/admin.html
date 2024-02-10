@@ -176,13 +176,29 @@ selected="selected"
     </div>
   </div>
 {##}
-  <div class="form-group">
+  <div class="form-group form-text">
     <div class="custom-checkbox">
       <input {%if config.NOTIFY_ADMINS_ON_REGISTER %}checked{% endif %} type="checkbox" id="notify_admins" name="notify_admins_on_register" value="True">
       <label for="notify_admins">Notify admins on new user registration</label>
     </div>
   </div>
 {##}
+<h3 class="card-title" id="sidebar">Sidebar Preferences</h3>
+    <div class="form-group">
+        <label for="sidebar_menutree_mode" class="required">Menutree Mode</label>
+        <select class="form-control" id="sidebar_menutree_mode" name="sidebar_menutree_mode">
+{% for mode in [("", "Not displayed"),("SORTED","Directories and pages, sorted"),("DIRECTORIES_GROUPED","Directories and pages, with directories grouped first"),("DIRECTORIES_ONLY","Directories only")] %}
+            <option value="{{mode[0]}}"{%if config.SIDEBAR_MENUTREE_MODE == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
+{% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="sidebar_menutree_maxdepth">Maximal depth of pages and directories listed.</label>
+        <input name="sidebar_menutree_maxdepth" type="text" placeholder="unlimited" class="form-control" id="sidebar_menutree_maxdepth" value="{{ config.SIDEBAR_MENUTREE_MAXDEPTH or "" }}">
+        <div class="form-text">
+            With <code>MAXDEPTH=0</code> only the pages and directories of the same depth will be displayed. With <code>MAXDEPTH=n</code> childs up to depth <code>n</code> will be displayed. Without <code>MAXDEPTH</code> all childs will be displayed.
+        </div>
+    </div>
   <div class="mt-10">
     <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
   </div>

@@ -39,6 +39,8 @@ app.config.update(
     MAIL_USE_SSL=False,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     MINIFY_HTML=True,
+    SIDEBAR_MENUTREE_MODE="",
+    SIDEBAR_MENUTREE_MAXDEPTH="",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
