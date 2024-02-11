@@ -2,7 +2,7 @@
 
 import os
 import re
-from pprint import pprint
+from collections import OrderedDict
 
 from otterwiki.server import storage, app
 from otterwiki.util import (
@@ -26,12 +26,13 @@ class SidebarNavigation:
         except ValueError:
             self.max_depth = None
         self.mode = app.config["SIDEBAR_MENUTREE_MODE"]
-        # TODO load existing config file
+        # TODO load configs (yaml header in page?) (sidebar.yaml?)
         # TODO check for cached pages
         # load pages
-        self.tree = {}
+        self.tree = OrderedDict()
         self.load()
-        # TODO apply config file to pages
+        self.tree = self.order_tree(self.tree)
+        # TODO apply config to pages
         pass
 
     def read_header(self, filename):
@@ -43,10 +44,43 @@ class SidebarNavigation:
             return header[0]
         return None
 
+    def order_tree(
+        self,
+        tree: OrderedDict,
+    ):
+        # convert OrderedDict into list
+        entries = list(tree.items())
+        # decide sort_key lambda on mode
+        sort_key = None
+        if self.mode in ["DIRECTORIES_GROUPED"]:
+            sort_key = lambda k: (len(k[1]["children"]) == 0, k[0])
+        # sort entries
+        filtered_list = sorted(entries, key=sort_key)
+        # filter entries
+        if self.mode in ["DIRECTORIES_ONLY"]:
+            filtered_list = [
+                x for x in filtered_list if len(x[1]["children"]) > 0
+            ]
+        # after filtering and ordering: back to OrderedDict
+        stree = OrderedDict(filtered_list)
+        # recursivly take care of the child nodes
+        for key, values in stree.items():
+            if values["children"]:
+                stree[key]["children"] = self.order_tree(
+                    values["children"],
+                )
+        return stree
+
     def add_node(self, tree, prefix, parts, header=None):
+        # handle max_depth
+        if (
+            self.max_depth
+            and len(prefix) + len(parts) > self.path_depth + self.max_depth
+        ):
+            return
         if parts[0] not in tree:
             tree[parts[0]] = {
-                "children": {},
+                "children": OrderedDict(),
                 "path": get_pagename(
                     join_path(prefix + parts),
                     full=True,
