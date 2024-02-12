@@ -29,8 +29,8 @@ div.content-wrapper {
       <form id="saveform" action="{{ url_for('save', path=pagepath) }}" method="post" autocomplete="off">
       <input id="content_update" type="hidden" name="content_update" value="">
         <div class="form-group">
-          <label for="msg" class="required">Commit Message</label>
-          <input name="commit" id="commit-message" type="text" class="form-control" placeholder="You commit message here" required="required">
+            <label for="msg"{%if config["COMMIT_MESSAGE"] == "REQUIRED"%} class="required"{%endif%}>Commit Message</label>
+            <input name="commit" id="commit-message" type="text" class="form-control" placeholder="You commit message here"{%if config["COMMIT_MESSAGE"] == "REQUIRED"%} required="required"{%endif%}>
         </div>
         <input class="btn btn-primary btn-block" type="submit" value="Save">
       </form>

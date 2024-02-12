@@ -45,6 +45,11 @@ box and hit <span class="btn btn-danger btn-sm btn-hlp" style="border: None;" ro
 Please note that this neither changes any edit history nor 
 prevents the user from signing up again.
 
+### Content and Editing Preferences
+
+Per default An Otter Wiki requires users to add commit messages when updating a
+page. You can configure this with the <span class="help-button">Commit Message</span>
+setting. Setting this to `optional` will allow empty commit messages.
 
 ### Access Permissions and Registration Preferences
 

@@ -199,6 +199,16 @@ selected="selected"
             With <code>MAXDEPTH=0</code> only the pages and directories of the same depth will be displayed. With <code>MAXDEPTH=n</code> childs up to depth <code>n</code> will be displayed. Without <code>MAXDEPTH</code> all childs will be displayed.
         </div>
     </div>
+<h3 class="card-title" id="sidebar">Content and Editing Preferences</h3>
+    <div class="form-group">
+        <label for="commit_message" class="required">Commit message</label>
+        <select class="form-control" id="commit_message" name="commit_message">
+{% for mode in [("REQUIRED", "Required"),("OPTIONAL","Optional (empty commit messages are allowed)")] %}
+            <option value="{{mode[0]}}"{%if config.COMMIT_MESSAGE == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
+{% endfor %}
+        </select>
+    </div>
+{##}
   <div class="mt-10">
     <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
   </div>

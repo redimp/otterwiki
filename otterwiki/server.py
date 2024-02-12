@@ -41,6 +41,7 @@ app.config.update(
     MINIFY_HTML=True,
     SIDEBAR_MENUTREE_MODE="",
     SIDEBAR_MENUTREE_MAXDEPTH="",
+    COMMIT_MESSAGE="REQUIRED", # OPTIONAL
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
