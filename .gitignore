@@ -18,3 +18,4 @@ docker-compose.override.yml
 .env
 .flaskenv
 .tox
+.idea
