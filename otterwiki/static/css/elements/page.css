@@ -1,0 +1,116 @@
+/* page tweaks */
+.page h1, .page h2, .page h3,
+.page h4, .page h5, .page h6 {
+    font-weight: 400;
+}
+
+.page h1 { font-size: 3.6rem; }
+.page h2 { font-size: 3.2rem; }
+.page h3 { font-size: 2.8rem; }
+.page h4 { font-size: 2.4rem; }
+.page h5 { font-size: 2.0rem; }
+.page h6 { font-size: 1.6rem; }
+
+.page p,
+.page li {
+    font-size: 1.6rem;
+}
+
+.page li {
+    margin-bottom: 0.2rem;
+    margin-left: 1.5rem;
+}
+
+/* may the li insanity begin */
+
+.page ul,
+.page ol {
+    padding-left: 1rem;
+    list-style-position: outside;
+}
+
+.page ol li ol li ol li ul li,
+.page ol li ol li ul li,
+.page ol li ul li,
+.page ul li {
+    list-style-type: disc;
+}
+
+.page ul li ol li ol li ul li,
+.page ol li ol li ul li ul li,
+.page ol li ol li ul li ul li,
+.page ol li ul li ul li,
+.page ul li ul li {
+    list-style-type: circle;
+}
+
+.page ul li ul li ul li {
+    list-style-type: square;
+}
+
+.page ul li ul li ul li ol li,
+.page ul li ul li ol li,
+.page ul li ol li,
+.page ol li {
+    list-style-type: decimal;
+}
+
+.page ul li ol li ol li,
+.page ol li ol li {
+    list-style-type: lower-alpha;
+}
+
+.page ol li ol li ol li {
+    list-style-type: lower-roman;
+}
+
+.page ul ol,
+.page ol ul,
+.page ol ol,
+.page ul ul
+{
+    margin: 1rem 0 1rem 0rem;
+}
+
+.page blockquote {
+    border-left: 2px solid rgba(24,144,255,0.5);
+    padding-left: 1rem;
+    margin-inline-start: 0rem;
+    margin-inline-end: 0rem;
+    background-color: rgba(200,200,200,0.1);
+}
+/* table */
+.page table {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+.page th {
+    background-color: rgba(0, 0, 0, 0.2);
+    text-align:center;
+    padding: 1.0rem 1.2rem;
+}
+.page td {
+    padding: 0.8rem 1.0rem;
+}
+
+.page table > thead > tr > th,
+.page table > thead > tr > td,
+.page table > tbody > tr > th,
+.page table > tbody > tr > td,
+.page table > tfoot > tr > th,
+.page table > tfoot > tr > td {
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+    border-right: 1px solid rgba(255,255,255,0.5);
+}
+
+.page table > thead > tr > :last-child,
+.page table > tbody > tr > :last-child,
+.page table > tfoot > tr > :last-child {
+    border-right: 0;
+}
+
+.page table > :last-child > tr:last-child > td,
+.page table > :last-child > tr:last-child > th {
+    border-bottom: 0;
+}
