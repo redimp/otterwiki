@@ -1,0 +1,92 @@
+/* history diff */
+table.diff {
+    overflow-x: auto;
+    width: 100%;
+}
+table.diff td {
+    padding: 0.1rem 1.5rem;
+}
+table.diff td.filename {
+    padding-top: 1rem;
+    padding-left: 0;
+}
+table.diff tr.added,
+table.diff tr.removed,
+table.diff td.hunk {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+tr.removed {
+    color: rgba(0, 0, 0, 0.85);
+    background-color: #f8d0d9;
+    border-color: #ed586c;
+}
+tr.added {
+    color: rgba(0, 0, 0, 0.85);
+    background-color: #d5f9e5;
+    border-color: #0be881;
+}
+.dark-mode tr.removed {
+    color: #ff4d4f;
+    background-color: #301923;
+    border-color: #8c0e2e;
+}
+.dark-mode tr.added {
+    color: #0be881;
+    background-color: #17312a;
+    border-color: #0d8951;
+}
+.diff-decoration {
+    width: 0.5rem;
+}
+
+table .min {
+    width: 1%;
+}
+table .linenumber {
+    text-align: right;
+    vertical-align: top;
+}
+
+table.blame {
+    overflow-x: auto;
+    width: 100%;
+}
+table.blame td {
+    padding: 0.1rem 0.5rem;
+    /*border: 1px solid black;*/
+}
+table.blame .tt {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
+table.blame tr.odd {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+table.compact td {
+    padding: 0.5rem 0.2rem;
+}
+
+.dark-mode table.blame tr.odd {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.text-match {
+    background-color: #ffcf00 !important;
+    color: rgba(0,0,0,.85);
+    padding: 0rem 0.2em 0rem 0.2rem;
+}
+a span.page-match {
+    /*color: #fff;
+    background-color: #1890ff;*/
+    background-color: #ffcf00 !important;
+    color: rgba(0,0,0,.85);
+    background-color: #FFCf00;
+    padding: 0.2em;
+}
+a:hover span.page-match {
+    background-color: #ffcf00 !important;
+    color: rgba(0,0,0,.85);
+    text-decoration: underline;
+    padding: 0.2em;
+}

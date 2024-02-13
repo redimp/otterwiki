@@ -156,12 +156,13 @@
         <div class="sidebar-overlay" onclick="halfmoon.toggleSidebar()"></div>
 
         <!-- Sidebar start -->
-        <div class="sidebar d-flex flex-column">
+        <div class="sidebar d-flex flex-column relative">
             <div class="sidebar-menu w-full flex-grow-1">
                 {% block menu %}
                 {% endblock %}
             </div>
-            <div class="sidebar-menu text-center w-full" >
+
+            <div class="sidebar-otter" >
                 <a href=" {{ url_for("about") }}" class="sidebar-link">
                 <img class="sidebar-logo" src="{{ url_for("static", filename="img/otter.png") | debug_unixtime }}" alt=""/><br/>
                 An Otter Wiki

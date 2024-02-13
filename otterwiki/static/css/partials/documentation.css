@@ -1,0 +1,63 @@
+/* documentation */
+
+.help-button {
+    font-size: 1.2rem !important;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.8rem;
+    background-color: rgba(100, 100, 100, 0.1);
+    white-space: nowrap;
+    position: relative;
+    pointer-events: none;
+}
+
+.btn-hlp {
+    position: relative;
+    pointer-events: none;
+}
+
+.collapse-header:focus::after {
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.dark-mode .collapse-header:focus::after {
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+details.collapse-panel {
+    margin-bottom: 2rem;
+}
+
+.collapse-content {
+    padding: 0.05rem 2rem 0rem 2rem;
+}
+
+.pageindex-columns {
+    columns: 8 25rem;
+    column-gap: 3%;
+}
+
+.pageindex-header {
+    padding-left:.8rem;
+    border-bottom: 1px solid rgba(0,0,0,.3);
+}
+
+.dark-mode .pageindex-header {
+    border-bottom: 1px solid rgba(255,255,255,.3);
+}
+
+.pageindex-letterblock {
+    break-inside: avoid-column;
+    padding-bottom: 2rem;
+}
+
+.pageindex-pageblock {
+    margin-left:.8rem;
+    word-break: normal;
+    hyphens: auto;
+    overflow-wrap: anywhere;
+    margin-bottom: .2rem;
+}
