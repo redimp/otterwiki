@@ -19,7 +19,7 @@ The <span class="help-button">Site Description</span> is used in the
 
 ### User management
 
-All users are listed in a table under <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-users"></i></span> User management</span>. You can update the flags of the users by checking and unchecking the checkboxes, whereby <span class="help-button"><input type="checkbox" style="display:inline;" id="true" checked></span> means the flag is set and <span class="help-button"><input type="checkbox" style="display:inline;" id="false"></span> means the flag is not set. A set flag grants a privilege to a user.
+All users are listed in a table under <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-users"></i></span> User management</span>. You can update the flags of the users by checking and unchecking the checkboxes, where <span class="help-button"><input type="checkbox" style="display:inline;" id="true" checked></span> means the flag is set and <span class="help-button"><input type="checkbox" style="display:inline;" id="false"></span> means the flag is not set. A set flag grants a privilege to a user.
 
 Privileges granted per user add to the general permissions. For example, if in general only users with the **Admin** flag are allowed to upload attachments, the `user@example.org` can be allowed to Upload without being flagged as Admin.
 
@@ -30,25 +30,25 @@ A user with a <span class="help-button"><input type="checkbox" style="display:in
 With <span class="help-button"><a hre="#"><i class="fas fa-user-edit"></i></a></span>
 you can open up a single user for editing. Here you can update
 <span class="help-button">Name</span> and <span class="help-button">eMail</span>
-of a user, and set flags and permissions. Changing a users name or email doesn't change
+of a user, and set flags and permissions. Changing a users name or email does not change
 the commit history and only affects future commits.
 
-As in the User management table you can control the users flags using the
+Like in the User management table you can control the users flags using the
 checkboxes.
 
 The changes will be applied with <span class="btn btn-primary btn-sm btn-hlp">Update</span>.
 
 #### Delete a user
 
-On the Edit user page you can remove the user from the wikis database. Check the
+On the Edit user page you can remove a user from the wiki's database. Check the
 box and hit <span class="btn btn-danger btn-sm btn-hlp" style="border: None;" role="button">Delete</span>.
-Please note that this doesn't neither changes any edit history nor 
+Please note that this neither changes any edit history nor 
 prevents the user from signing up again.
 
 
 ### Access Permissions and Registration Preferences
 
-What is necessary so that a user can Read/Write pages or upload and modify
+What is necessary for a user to be able to Read/Write pages or upload and modify
 attachments is controlled in the <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-users-cog"></i></span> Permissions and Registration Preferences</span>.
 
 - `Read Access` enables users to display pages and attachments. Including the
@@ -58,17 +58,17 @@ attachments is controlled in the <span class="help-button"><span class="btn btn-
 
 Who can access what is defined via
 
-- `Anonymous` - Everyone who can access the wiki without log in.
+- `Anonymous` - Everyone can access the wiki without being logged in.
 - `Registered` - Users need an account and have to be logged in.
-- `Approved` - Users have to be logged and the <span class="help-button">Approved</span> flag has to be set.
-- `Admin` - Users have to be logged and the <span class="help-button">Admin</span> flag has to be set.
+- `Approved` - Users have to be logged in and the <span class="help-button">Approved</span> flag has to be set.
+- `Admin` - Users have to be logged in and the <span class="help-button">Admin</span> flag has to be set.
 
-Additionally you can configure privileges per user. The privileges granted per user add to the general permissions. See [User Management](#user-management) above.
+Additionally, you can configure privileges per user. The privileges granted per user add to the general permissions. See [User Management](#user-management) above.
 
-<span class="help-button"><input type="checkbox" style="display:inline;" id="true-reg-req" checked> Registration requires email confirmation</span> is supposed to prevent users to register using fake mail addresses.
+<span class="help-button"><input type="checkbox" style="display:inline;" id="true-reg-req" checked> Registration requires email confirmation</span>, which is supposed to prevent users to register using fake mail addresses.
 
-If a user needs to be approved, an admin user has either set the flag manually
-or enable <span class="help-button"><input type="checkbox" style="display:inline;" id="true-auto-approve" checked> Auto approve of new registered users</span>. When admins need
+If a user needs to be approved, an admin user either needs to set the flag manually
+or enable <span class="help-button"><input type="checkbox" style="display:inline;" id="true-auto-approve" checked> Auto approve of newly registered users</span>. When admins need
 to approve users, <span class="help-button"><input type="checkbox" style="display:inline;" id="true-notify" checked> Notify admins on new user registration</span> helps with that.
 
 
