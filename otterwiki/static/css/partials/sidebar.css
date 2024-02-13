@@ -1,0 +1,179 @@
+.sidebar {
+    width: 20rem;
+    background: #e2e2e2;
+}
+
+#toggle-sidebar-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.page-wrapper.with-sidebar > .content-wrapper
+{
+    left: 20rem;
+    width: calc(100% - 20rem);
+}
+
+.page-wrapper.with-sidebar[data-sidebar-type~="full-height"] > .navbar:not(.navbar-fixed-bottom) {
+    left: 20rem;
+    width: calc(100% - 20rem);
+}
+
+.page-wrapper.with-sidebar[data-sidebar-type~="full-height"] > .navbar.navbar-fixed-bottom
+{
+    left: 20rem;
+    width: calc(100% - 20rem);
+}
+
+img.sidebar-logo {
+    max-width: 75%;
+}
+
+a.sidebar-toc-1 { padding-left: 2.5rem; padding-right: 0; }
+a.sidebar-toc-2 { padding-left: 3.0rem; padding-right: 0; }
+a.sidebar-toc-3 { padding-left: 3.5rem; padding-right: 0; }
+a.sidebar-toc-4 { padding-left: 4.0rem; padding-right: 0; }
+a.sidebar-toc-5 { padding-left: 4.5rem; padding-right: 0; }
+a.sidebar-toc-6 { padding-left: 5.0rem; padding-right: 0; }
+
+.sidebar-title {
+    margin-left: 1rem;
+}
+
+.sidebar-title-link {
+    color: rgba(0, 0, 0, 0.7);
+    background-color: transparent;
+    border: 0 solid transparent;
+    border-radius: 0;
+}
+.sidebar-title-link:hover {
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.85);
+    background-color: transparent;
+    border-color: transparent;
+}
+.dark-mode .sidebar-title-link {
+    color: rgba(255, 255, 255, 0.65);
+    background-color: transparent;
+    border-color: transparent;
+}
+.dark-mode .sidebar-title-link:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background-color: transparent;
+    border-color: transparent;
+}
+
+/* sidebar menu */
+.sidebarmenu {
+  --spacing : 1.5rem;
+  --radius  : 1rem;
+}
+
+.sidebarmenu ul {
+  margin-left  : calc(var(--radius) - var(--spacing));
+  margin-bottom: 0.5rem;
+  margin-top: 1.0rem;
+  padding-left : 0rem;
+}
+
+.sidebarmenu li {
+    line-height: 1;
+    display      : block;
+    position     : relative;
+    padding-left : calc(2 * var(--spacing) - var(--radius) + 0.5rem);
+    color: rgba(0,0,0,.7);
+    padding-top: 0.5rem;
+}
+
+.parent-sidebar-menu > li {
+    padding-left: 2rem;
+}
+
+.dark-mode .sidebarmenu li {
+    color: rgba(255,255,255,.65);
+}
+
+.sidebarmenu details > summary {
+    list-style: none;
+}
+
+.sidebarmenu details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sidebarmenu details > summary::before {
+    content: '▹ ';
+}
+
+.sidebarmenu details[open] > summary::before {
+    content: '▿ ';
+}
+
+.sidebarmenu a {
+    color: rgba(0,0,0,.7);
+    text-decoration: none;
+    background-color: transparent;
+    border-color: transparent;
+}
+.sidebarmenu a:hover {
+    color: rgba(0, 0, 0, 0.85);
+    text-decoration: none;
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.dark-mode .sidebarmenu a {
+    color: rgba(255,255,255,.65);
+}
+.dark-mode .sidebarmenu a:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.sidebar-link {
+    padding-left: 1rem;
+}
+
+.sidebar-divider {
+    margin-left: 1rem;
+}
+
+.parent-sidebar-menu {
+    overflow-y: auto;
+}
+
+.sidebar-otter {
+    position: relative;
+    bottom: 0;
+    text-align: center;
+    background-color: var(--dark-color-dark);
+}
+
+.sidebarmenu-loop-1 a {
+    opacity: .8;
+}
+
+.sidebarmenu-loop-2 a {
+    opacity: .6;
+}
+
+.sidebarmenu-loop-3 a {
+    opacity: .4;
+}
+
+.sidebarmenu-loop-0 a {
+    opacity: .3;
+}
+
+.sidebarmenu details > summary::before {
+    vertical-align: text-top;
+}
+
+@media screen and (min-height: 800px) {
+    .sidebar-otter {
+        position: absolute;
+    }
+
+    .parent-sidebar-menu {
+        /* Visible height - The Otter - Top Bar - Buttons - Spacing */
+        max-height: calc(100vh - 260px - var(--navbar-height) - (var(--sidebar-link-height) * 3) - 120px);
+    }
+}

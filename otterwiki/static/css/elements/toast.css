@@ -1,0 +1,16 @@
+/* toasts */
+.alert.alert-secondary a,
+.dark-mode .alert.alert-secondary a {
+    color: black;
+    text-decoration: underline;
+}
+
+.global-toc-link
+{
+    font-size: 1.6rem;
+}
+
+.global-toc-link:hover
+{
+    text-decoration: none;
+}
