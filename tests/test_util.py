@@ -60,6 +60,8 @@ def test_is_valid_email():
         assert is_valid_email(e) is True
     for e in ["@example.com", "mail@", "mail@.example.com", "john"]:
         assert is_valid_email(e) is False
+    for e in ["", " ", None]:
+        assert is_valid_email(e) is False
 
 
 def test_empty():

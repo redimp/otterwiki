@@ -161,6 +161,8 @@ def join_path(path_arr):
 
 
 def is_valid_email(email):
+    if not type(email) == str:
+        return False
     mail_regexp = re.compile(
         r"([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])"
     )
