@@ -1,10 +1,10 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "form.html" %}
 {% block formcontent %}
-<form action="{{ url_for("rename", path=pagepath) }}" method="POST" class="form-inline">{# class="w-400 mw-full" <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
+<form action="{{ url_for("rename", path=pagepath) }}" method="POST" class="form-inline">
   <div class="form-group">
     <label for="new_pagename" class="required w-150">New name</label>
-    <input type="text" class="form-control" name="new_pagename" id="new_pagename" value="{{new_pagename if new_pagename else pagename}}" placeholder="{{pagename}}" autofocus>
+    <input type="text" class="form-control" name="new_pagename" id="new_pagename" value="{{new_pagename if new_pagename else pagename}}" placeholder="{{pagename}}" autofocus="" onfocus="this.setSelectionRange(this.value.length,this.value.length);">
   </div>
   <div class="form-group">
     <label for="message" class="w-150">Commit message</label>

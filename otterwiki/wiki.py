@@ -30,6 +30,7 @@ from otterwiki.util import (
     get_pagepath,
     sanitize_pagename,
     patchset2hunkdict,
+    get_header,
 )
 from otterwiki.helper import toast, auto_url
 from otterwiki.auth import has_permission, current_user
@@ -326,6 +327,7 @@ class Page:
             self.pagename = pagename
             self.pagepath = get_pagepath(pagename)
 
+        self.pagename_full = get_pagename(self.pagepath, full=True)
         self.revision = revision
 
         self.filename = get_filename(self.pagepath)
@@ -339,6 +341,12 @@ class Page:
             self.metadata = None
             self.content = None
             self.exists = False
+
+        if self.content is not None:
+            header = get_header(self.content)
+            self.pagename = get_pagename(self.pagepath, full=False, header=header)
+            self.pagename_full = get_pagename(self.pagepath, full=True, header=header)
+
 
     def breadcrumbs(self):
         return get_breadcrumbs(self.pagepath)
@@ -674,7 +682,7 @@ class Page:
             "rename.html",
             title="Rename {}".format(self.pagename),
             pagepath=self.pagepath,
-            pagename=self.pagename,
+            pagename=self.pagename_full,
             new_pagename=new_pagename,
             message=message,
         )
