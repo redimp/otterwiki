@@ -47,6 +47,7 @@ text
     assert "<h1 id=\"head-2\"" in html
     assert "<h1 id=\"head-2-1\"" in html
 
+
 def test_code():
     html, _ = render.markdown(
         """```
@@ -68,7 +69,6 @@ n = 0
 ```"""
     )
     assert '<pre class="code">non_existing_lexer' in html
-
 
 
 def test_img():
@@ -139,12 +139,15 @@ def test_preprocess_wiki_links():
     assert '[Page](/Page)' == preprocess_wiki_links("[[Page]]")
     assert '[Title](/Link)' == preprocess_wiki_links("[[Title|Link]]")
     assert '[Text with space](/Link%20with%20space)' == preprocess_wiki_links(
-            "[[Text with space|Link with space]]")
+        "[[Text with space|Link with space]]"
+    )
     assert '[Text with space](/Link%20with%20space)' == preprocess_wiki_links(
-            "[[Text with space|Link%20with%20space]]")
+        "[[Text with space|Link%20with%20space]]"
+    )
     # make sure fragment identifier of the URL survived the parser
     assert '[Random#Title](/Random#Title)' == preprocess_wiki_links(
-            "[[Random#Title]]")
+        "[[Random#Title]]"
+    )
 
 
 def test_table_align():
@@ -163,10 +166,17 @@ def test_table_align():
     assert '<td style="text-align:center">center td</td>' in html
     assert '<td style="text-align:right">right td</td>' in html
 
+
 def test_clean_html_script():
     assert clean_html("<script>") == "&lt;script&gt;"
-    assert clean_html("<script>alert(1)</script>") == "&lt;script&gt;alert(1)&lt;/script&gt;"
-    assert clean_html('<p onclick="alert(4)">PPPPP</p>') == '&lt;p onclick=&#34;alert(4)&#34;&gt;PPPPP&lt;/p&gt;'
+    assert (
+        clean_html("<script>alert(1)</script>")
+        == "&lt;script&gt;alert(1)&lt;/script&gt;"
+    )
+    assert (
+        clean_html('<p onclick="alert(4)">PPPPP</p>')
+        == '&lt;p onclick=&#34;alert(4)&#34;&gt;PPPPP&lt;/p&gt;'
+    )
 
 
 def test_clean_html_render():
@@ -204,6 +214,7 @@ And last an onclick example:
     assert "<video width='80%' controls>" in html
     assert "</video>" in html
 
+
 def test_strikethrough():
     md = """
 ~~strike1~~
@@ -215,6 +226,7 @@ alpha bravo ~~strike2~~ charlie
     assert "<del>strike2</del>" in html
     assert "<del>strike3</del>" not in html
     assert "<del>strike4</del>" in html
+
 
 def test_mark():
     md = """
@@ -267,7 +279,7 @@ def test_math_code_inline():
 
 
 def test_latex_inline():
-    md ="""
+    md = """
 $latex1$
 Alpha bravo $latex2$ charlie
 
@@ -294,3 +306,127 @@ $latex3$"""
     assert "\\(latex4\\)" not in html
     assert "\\(latex5\\)" not in html
     assert "\\(latex6\\)" in html
+
+
+def test_footnote():
+    md = """Footnote identifier[^1] are single characters or words[^bignote].
+And can be referenced multiple[^1] times.
+
+[^1]: Footnotes test
+
+[^bignote]: Or more complex.
+
+    Indent paragraphs to include them
+    in the footnote.
+
+    Add as many paragraphs as you like.
+"""
+    html, _ = render.markdown(md)
+    assert 'id="fn-1"' in html
+    assert 'href="#fn-1"' in html
+    assert 'id="fnref-1"' in html
+    assert 'href="#fnref-1" ' in html
+
+
+def test_footnote_multiref():
+    md = "\n".join(["Hello World [^1]" for _ in range(27)])
+    md += "\n\n[^1]: Footnotes test"
+    html, _ = render.markdown(md)
+    assert '<a href="#fnref-27" class="footnote">aa</a>' in html
+
+
+def test_footnote_not_found():
+    md = "Footnote[^1]"
+    html, _ = render.markdown(md)
+    assert '<p>Footnote[^1]</p>' in html
+
+
+def test_tasklist():
+    md = """- [ ] a
+- [x] b
+- [ ] c"""
+    html, _ = render.markdown(md)
+    assert 3 == html.count("<li ") == html.count("</li>")
+    assert 1 == html.count("checked")
+
+    md = """<p>
+
+- [ ] a
+- [x] b
+- [ ] c
+
+</p>"""
+    html, _ = render.markdown(md)
+    assert 3 == html.count("<li ") == html.count("</li>")
+    assert 1 == html.count("checked")
+
+
+def test_fancy_blocks():
+    md = """::: info
+# Head of the block.
+With _formatted_ content.
+:::"""
+    html, _ = render.markdown(md)
+    assert '<h4 class="alert-heading">Head of the block.</h4>' in html
+    assert '<em>formatted</em>' in html
+    assert '<div class="alert alert-primary' in html
+    assert 'role="alert"' in html
+
+    md = """::: warning
+a warning without header
+:::"""
+    html, _ = render.markdown(md)
+    assert "<h4>" not in html
+    assert 'class="alert alert-secondary' in html
+    assert 'role="alert"' in html
+
+    md = """::: success
+good news everybody
+:::"""
+    html, _ = render.markdown(md)
+    assert "<h4>" not in html
+    assert 'class="alert alert-success' in html
+    assert 'role="alert"' in html
+
+    md = """::: red
+**red alert**
+:::"""
+    html, _ = render.markdown(md)
+    assert "<h4>" not in html
+    assert "<strong>red alert</strong>" in html
+    assert 'class="alert alert-danger' in html
+    assert 'role="alert"' in html
+    print(html)
+
+    md = """:::
+# Head of the block
+_unspecified alert_
+:::"""
+    html, _ = render.markdown(md)
+    assert '<h4 class="alert-heading">Head of the block</h4>' in html
+    assert '<em>unspecified alert</em>' in html
+
+
+def test_spoiler():
+    md = """>! Spoiler blocks reveal their
+>! content on click on the icon."""
+    html, _ = render.markdown(md)
+    # easier testing
+    html = html.replace("\n", "")
+    assert (
+        '<p>Spoiler blocks reveal their content on click on the icon.</p>'
+        in html
+    )
+    assert 'spoiler-button' in html
+
+
+def test_fold():
+    md = """>| # Headline is used as summary
+>| with the details folded."""
+    html, _ = render.markdown(md)
+    # easier testing
+    html = html.replace("\n", "")
+    # check headline
+    assert '>Headline is used as summary</summary>' in html
+    # check fold
+    assert "<p>with the details folded.</p>" in html
