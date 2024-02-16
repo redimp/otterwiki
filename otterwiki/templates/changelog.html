@@ -58,7 +58,7 @@
             <th>Date</th>
             <th>Author</th>
             <th>Files</th>
-            <th class="w-half">Comment</th>
+            <th class="w-half">Commit Message</th>
           </tr>
         </thead>
         <tbody>
@@ -77,7 +77,7 @@
 {{details.name}}
 {% endif %}
 {% endfor %}</td>
-            <td class="text-wrap">{{entry.message}}</td>
+            <td class="text-wrap">{{entry.message or '-/-'|safe}}</td>
           </tr>
 {% endfor %}
         </tbody>

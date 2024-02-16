@@ -45,7 +45,7 @@
             <td></td>
             <th>Date</th>
             <th>Author</th>
-            <th class="w-half">Comment</th>
+            <th class="w-half">Commit Message</th>
           </tr>
         </thead>
         <tbody>
@@ -68,7 +68,7 @@
 {# author #}
             <td class="min" style="white-space:nowrap">{%if not entry.author_email%}{{entry.author_name}}{%else%}<a href="mailto:{{entry.author_email}}">{{entry.author_name}}</a>{%endif%}</td>
 {# files #}
-            <td class="text-wrap">{{entry.message}}</td>
+            <td class="text-wrap">{{entry.message or '-/-'|safe}}</td>
           </tr>
 {% endfor %}
         </tbody>
