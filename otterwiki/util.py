@@ -296,4 +296,20 @@ def get_local_timezone():
     """get the timezone the server is running on"""
     return datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo;
 
+AXT_HEADING = re.compile(
+    r' {0,3}(#{1,6})(?!#+)(?: *\n+|' r'\s+([^\n]*?)(?:\n+|\s+?#+\s*\n+))'
+)
+SETEX_HEADING = re.compile(r'([^\n]+)\n *(=|-){2,}[ \t]*\n+')
+
+def get_header(content):
+    filehead = content[:512]
+    # find first markdown header in filehead
+    heading = [line for (_, line) in AXT_HEADING.findall(filehead)]
+    heading += [line for (line, _) in SETEX_HEADING.findall(filehead)]
+    if len(heading):
+        return heading[0]
+    return None
+
+
+
 # vim: set et ts=8 sts=4 sw=4 ai:

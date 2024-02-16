@@ -19,6 +19,7 @@ from otterwiki.util import (
     mkdir,
     titleSs,
     patchset2hunkdict,
+    get_header,
 )
 
 
@@ -179,3 +180,51 @@ index 72943a1..f761ec1 100644
     assert line[1]['style'] == "added"
     assert line[0]['value'] == "aaa\n"
     assert line[1]['value'] == "bbb\n"
+
+
+def test_get_header():
+    md = """# simple
+
+random text.
+"""
+    assert "simple" == get_header(md)
+
+    md = """#    simple with spaces
+
+random text.
+"""
+    assert "simple with spaces" == get_header(md)
+
+    md = """random block
+
+# first header
+
+random text.
+"""
+    assert "first header" == get_header(md)
+
+    md = """random block
+
+# first header
+
+random text.
+
+## second header
+
+random text.
+"""
+    assert "first header" == get_header(md)
+
+    md = """random block
+
+some header
+===========
+
+random text.
+
+second header
+-------------
+
+random text.
+"""
+    assert "some header" == get_header(md)
