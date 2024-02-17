@@ -118,9 +118,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 .sidebar-menu .summary-details::before {
     width: 13px;
     display: inline-block;
-    font-size: 8px;
-    vertical-align: middle;
-    content: '● ';
+    content: '▪  ';
 }
 
 .sidebar-menu li {
