@@ -1,21 +1,34 @@
 {#- vim: set et ts=8 sts=4 sw=4 ai: -#}
 {% if menutree %}
-            <h5 class="sidebar-title">Page Index</h5>
-            <div class="sidebar-divider"></div>
-<!-- menutree [[ -->
-<ul class="sidebarmenu parent-sidebar-menu">
-{%- for key, value in menutree.items() recursive -%}
-{%- if value["children"] %}
-<li><details {% if pagepath.lower().startswith(value.path.lower()) %}open{% endif %}><summary class="sidebarmenu"><a href="/{{value["path"]}}">{{value["header"]}}</a></summary>
-    <ul class="sidebarmenu sidebarmenu-loop-{{ loop.depth % 4 }}">{{ loop(value["children"].items())}}
-    </ul>
-        </details>
-    </li>
-{%- else %}
-    <li><a href="/{{value["path"]}}">{{value["header"]}}</a></li>
-{%endif%}
-{%- endfor %}
-</ul>
-<!-- ]] menutree -->
+    <details class="collapse-panel" open>
+
+        <summary class="collapse-header">Page Index</summary>
+
+        <div class="collapse-content">
+            <!-- menutree [[ -->
+            <ul class="sidebarmenu parent-sidebar-menu">
+            {%- for key, value in menutree.items() recursive -%}
+            {%- if value["children"] %}
+            <li>
+                <details {% if pagepath.lower().startswith(value.path.lower()) %}open{% endif %}>
+                    <summary class="sidebarmenu">
+                        <a href="/{{value["path"]}}">{{value["header"]}}</a>
+                    </summary>
+                    <ul class="sidebarmenu sidebarmenu-loop-{{ loop.depth % 4 }}">{{ loop(value["children"].items())}}
+                    </ul>
+                </details>
+            </li>
+            {%- else %}
+                <li>
+                    <div class="summary-details">
+                        <a href="/{{value["path"]}}">{{value["header"]}}</a>
+                    </div>
+                </li>
+            {%endif%}
+            {%- endfor %}
+            </ul>
+            <!-- ]] menutree -->
+        </div>
+    </details>
 {% endif %}{# if menutreee #}
 
