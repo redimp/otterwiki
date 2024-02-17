@@ -188,7 +188,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 
 .dark-mode .collapse-header,
 .dark-mode .collapse-header:focus {
-    border-bottom: 1px solid rgba(255,255,255,.65) !important;
+    border-bottom: 1px solid var(--dm-dropdown-divider-bg-color) !important;
 }
 
 .collapse-content {
