@@ -79,7 +79,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 
 .sidebarmenu li {
     line-height: 1;
-    display: block;
+    display      : block;
     position     : relative;
     padding-left : calc(2 * var(--spacing) - var(--radius) + 0.5rem);
     color: rgba(0,0,0,.7);
