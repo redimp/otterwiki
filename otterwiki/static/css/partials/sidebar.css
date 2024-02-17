@@ -123,6 +123,14 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     content: '● ';
 }
 
+.sidebar-menu li {
+    margin-bottom: .5rem;
+}
+
+.sidebar-menu a {
+    line-height: 2rem;
+}
+
 .sidebarmenu a {
     color: rgba(0,0,0,.7);
     text-decoration: none;
