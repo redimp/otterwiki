@@ -11,11 +11,20 @@
     background: #d2d2d2;
 }
 
+.navbar-content .dropdown button {
+    margin-right: 1rem;
+    margin-left: 1rem;
+}
+
+.navbar-content .btn {
+    min-width: 4.6rem;
+}
+
 /* Headlines and anchors */
 h1, h2, h3, h4, h5, h6 {
     margin-top: 1.5rem;
     margin-bottom: 1rem;
-    display:block;
+    display: block;
 }
 
 .relative {
@@ -25,7 +34,7 @@ h1, h2, h3, h4, h5, h6 {
 a.anchor,
 a.anchor:hover {
     text-decoration: none;
-    font-size:40%;
+    font-size: 40%;
     position: relative;
     margin-left: 1rem;
     bottom: 0.4rem;
@@ -62,6 +71,7 @@ pre,
     margin: 0 0.1rem;
     overflow: auto;
 }
+
 .dark-mode code,
 .dark-mode pre,
 .dark-mode .code {
@@ -69,7 +79,7 @@ pre,
 }
 
 .revision-small {
-    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     text-decoration: none;
     padding: 0 0.5rem;
     line-height: 2rem;
@@ -92,17 +102,21 @@ pre,
     border: 0 solid transparent;
     border-radius: 0.4rem;
 }
+
 .dropdown-icon:hover {
     color: rgba(0, 0, 0, 1.0);
 }
+
 .dark-mode .dropdown-icon {
     color: rgba(255, 255, 255, 0.65);
     background-color: rgba(255, 255, 255, 0.05);
     border-color: transparent;
 }
+
 .dark-mode .dropdown-icon:hover {
     color: rgba(255, 255, 255, 1.0);
 }
+
 .dropdown-item-with-icon {
     display: -ms-flexbox;
     display: flex;
@@ -112,14 +126,17 @@ pre,
     color: rgba(0, 0, 0, 0.85);
     border-color: transparent;
 }
+
 .dark-mode .dropdown-item-with-icon {
     color: rgba(255, 255, 255, 0.8);
     border-color: transparent;
 }
+
 .dropdown-item-with-icon:hover {
     color: rgba(0, 0, 0, 1.0);
     text-decoration: none;
 }
+
 .dark-mode .dropdown-item-with-icon:hover {
     color: rgba(255, 255, 255, 1.0);
 }
@@ -148,8 +165,24 @@ pre,
     padding: 2rem 4rem 0rem 1rem;
     overflow-x: hidden;
     overflow-y: auto;
-    scrollbar-width: thin;
+    scrollbar-width: none;
     max-height: 95%;
+
+    -ms-overflow-style: none; /* for Internet Explorer, Edge */
+    scrollbar-width: none; /* for Firefox */
+    scrollbar-color: transparent transparent;
+}
+
+.extra-nav::-webkit-scrollbar {
+    width: 1px;
+}
+
+.extra-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.extra-nav::-webkit-scrollbar-thumb {
+    background-color: transparent;
 }
 
 .dark-mode .extra-nav {
@@ -160,10 +193,10 @@ pre,
 }
 
 .btn-xsm {
-  height: 2.2rem;
-  line-height: 2.2rem;
-  padding: 0 1rem;
-  font-size: 1rem;
+    height: 2.2rem;
+    line-height: 2.2rem;
+    padding: 0 1rem;
+    font-size: 1rem;
 }
 
 .btn-editor {
@@ -178,7 +211,7 @@ pre,
 }
 
 .font-size-10 {
-  font-size: 1rem !important;
+    font-size: 1rem !important;
 }
 
 .break-all {
@@ -186,7 +219,7 @@ pre,
 }
 
 .right-02 {
-    right: 0.2rem!important;
+    right: 0.2rem !important;
 }
 
 /* dark mode button tweaks */
@@ -221,32 +254,37 @@ pre,
 
 mark {
     padding: 0.1rem 0.2rem;
-    background-color: #ffb100!important;
+    background-color: #ffb100 !important;
     color: #000;
 }
+
 .dark-mode mark {
     padding: 0.1rem 0.2rem;
-    background-color: #DB9A00!important;
+    background-color: #DB9A00 !important;
     color: #000;
 }
 
 .spoiler {
-    background-color:rgba(0,0,0,0.2);
+    background-color: rgba(0, 0, 0, 0.2);
     margin-bottom: 1rem;
     padding: 0 1rem 0 1rem;
 }
+
 .dark-mode .spoiler {
-    background-color:rgba(0,0,0,0.2);
+    background-color: rgba(0, 0, 0, 0.2);
 }
+
 .nospoiler,
 .dark-mode .nospoiler {
-    background-color:rgba(0,0,0,0.05);
+    background-color: rgba(0, 0, 0, 0.05);
     transition: opacity 0.1s ease-in;
 }
+
 .spoiler > * {
     opacity: 0;
     margin-block-start: 0;
 }
+
 .nospoiler > * {
     opacity: 1;
     transition: opacity 0.1s ease-in;
@@ -257,11 +295,12 @@ mark {
     margin: 1rem 0;
     width: 3rem;
     opacity: 1;
-    background-color: rgba(0,0,0,0.2);
+    background-color: rgba(0, 0, 0, 0.2);
     border: 0;
     border-radius: 0.4rem;
 }
+
 .dark-mode .spoiler > .spoiler-button {
     color: #9e9e9e;
-    background-color: rgba(255,255,255,0.2);
+    background-color: rgba(255, 255, 255, 0.2);
 }
