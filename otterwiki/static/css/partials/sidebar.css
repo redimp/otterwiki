@@ -186,6 +186,16 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     border-bottom-right-radius: 0;
 }
 
+.sidebar .collapse-panel {
+    padding-left: .5rem;
+    padding-right: .5rem;
+}
+
+.collapse-header,
+.collapse-header:focus {
+    border-bottom: 1px solid var(--lm-dropdown-divider-bg-color) !important;
+}
+
 .dark-mode .collapse-header,
 .dark-mode .collapse-header:focus {
     border-bottom: 1px solid var(--dm-dropdown-divider-bg-color) !important;
