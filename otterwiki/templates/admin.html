@@ -185,7 +185,7 @@ selected="selected"
 {##}
 <h3 class="card-title" id="sidebar">Sidebar Preferences</h3>
     <div class="form-group">
-        <label for="sidebar_menutree_mode" class="required">Menutree Mode</label>
+        <label for="sidebar_menutree_mode" class="required">Page Index Mode</label>
         <select class="form-control" id="sidebar_menutree_mode" name="sidebar_menutree_mode">
 {% for mode in [("", "Not displayed"),("SORTED","Directories and pages, sorted"),("DIRECTORIES_GROUPED","Directories and pages, with directories grouped first"),("DIRECTORIES_ONLY","Directories only")] %}
             <option value="{{mode[0]}}"{%if config.SIDEBAR_MENUTREE_MODE == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
@@ -196,7 +196,7 @@ selected="selected"
         <label for="sidebar_menutree_maxdepth">Maximal depth of pages and directories listed.</label>
         <input name="sidebar_menutree_maxdepth" type="text" placeholder="unlimited" class="form-control" id="sidebar_menutree_maxdepth" value="{{ config.SIDEBAR_MENUTREE_MAXDEPTH or "" }}">
         <div class="form-text">
-            With <code>MAXDEPTH=0</code> only the pages and directories of the same depth will be displayed. With <code>MAXDEPTH=n</code> childs up to depth <code>n</code> will be displayed. Without <code>MAXDEPTH</code> all childs will be displayed.
+            With <code>MAXDEPTH=0</code> only the pages and directories of the same depth will be displayed. With <code>MAXDEPTH=n</code> childes up to depth <code>n</code> will be displayed. Without <code>MAXDEPTH</code> all childes will be displayed.
         </div>
     </div>
 <h3 class="card-title" id="sidebar">Content and Editing Preferences</h3>

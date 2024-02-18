@@ -45,6 +45,12 @@ box and hit <span class="btn btn-danger btn-sm btn-hlp" style="border: None;" ro
 Please note that this neither changes any edit history nor 
 prevents the user from signing up again.
 
+### Sidebar Preferences
+
+The Sidebar can be configured to display the Page Index in different modes.
+You can display pages and directories either alphabetical, or with directories first,
+or only the directories. Alternatively you choose to not display the Page Index at all.
+
 ### Content and Editing Preferences
 
 Per default An Otter Wiki requires users to add commit messages when updating a
