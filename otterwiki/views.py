@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 
 import os
-import pathlib
 
 from flask import (
-    redirect,
     request,
     send_from_directory,
     abort,
-    url_for,
     render_template,
     make_response,
 )
@@ -19,7 +16,7 @@ import otterwiki.preferences
 from otterwiki.helper import toast, health_check
 from otterwiki.version import __version__
 from otterwiki.util import sanitize_pagename
-from otterwiki.auth import login_required
+from flask_login import login_required
 
 #
 # techninal views/routes/redirects
@@ -27,12 +24,6 @@ from otterwiki.auth import login_required
 @app.route("/")
 def index():
     return view()
-
-
-# @app.route('/robots.txt')
-# @app.route('/sitemap.xml')
-# def static_from_root():
-#    return send_from_directory(app.static_folder, request.path[1:])
 
 
 @app.route("/robots.txt")
@@ -94,7 +85,7 @@ def help(topic=None):
     if (topic == "admin"):
         with open(os.path.join(app.root_path, "help_admin.md")) as f:
             md = f.read()
-            content, toc = render.markdown(md, sanitize=False)
+            content, toc = render.markdown(md)
     elif (topic == "syntax"):
         toc = [(None, '', 2, s, s.lower()) for s in [
             'Emphasis',
@@ -114,7 +105,7 @@ def help(topic=None):
     else:
         with open(os.path.join(app.root_path, "help.md")) as f:
             md = f.read()
-            content, toc = render.markdown(md, sanitize=False)
+            content, toc = render.markdown(md)
     # default help
     return render_template("help.html", content=content, toc=toc)
 
@@ -127,7 +118,7 @@ def settings():
     else:
         return otterwiki.auth.handle_settings(request.form)
 
-@app.route("/-/admin", methods=["POST","GET"])
+@app.route("/-/admin", methods=["POST", "GET"]) # pyright: ignore -- false positive
 @login_required
 def admin():
     if request.method == "GET":
@@ -310,8 +301,8 @@ def edit(path, revision=None):
 @app.route("/<path:path>/save", methods=["POST"])
 def save(path):
     # fetch form
-    content = request.form.get("content_update")
-    commit = request.form.get("commit").strip()
+    content = request.form.get("content_update", "")
+    commit = request.form.get("commit", "").strip()
     # clean form data (make sure last character is a newline
     content = content.replace("\r\n", "\n").strip() + "\n"
     commit = commit.strip()

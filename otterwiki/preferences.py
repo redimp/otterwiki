@@ -14,18 +14,21 @@ from flask_login import (
     current_user,
 )
 from otterwiki.server import app, db, update_app_config, Preferences
-from otterwiki.helper import toast, send_mail, serialize, deserialize, SerializeError
-from otterwiki.util import random_password, empty, is_valid_email
-from otterwiki.auth import has_permission, current_user, get_all_user, get_user, update_user, delete_user
+from otterwiki.helper import toast, send_mail
+from otterwiki.util import empty, is_valid_email
+from flask_login import current_user
+from otterwiki.auth import has_permission, get_all_user, get_user, update_user, delete_user
 from pprint import pprint
 
-def _update_preference(name, value, delay_commit=False):
+def _update_preference(name, value, commit=False):
     entry = Preferences.query.filter_by(name=name).first()
-    try:
-        entry.value = value
-    except AttributeError:
-        entry = Preferences(name=name, value=value)
+    if entry is None:
+        # create entry
+        entry = Preferences(name=name, value=value) # pyright: ignore
+    entry.value = value
     db.session.add(entry)
+    if commit:
+        db.session.commit()
 
 def handle_mail_preferences(form):
     error = 0

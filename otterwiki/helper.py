@@ -9,12 +9,12 @@ lightweight as utils.
 
 """
 
-from otterwiki.server import app, mail, storage, db, Preferences
+from otterwiki.server import app, mail, storage, Preferences
 from otterwiki.gitstorage import StorageError
 from flask import flash, url_for
 from threading import Thread
 from flask_mail import Message
-from itsdangerous import URLSafeTimedSerializer, BadSignature, BadData, SignatureExpired
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from otterwiki.util import get_pagename, split_path, join_path
 
 
@@ -89,12 +89,12 @@ def health_check():
     msg = []
     # storage check
     try:
-        log = storage.log(fail_on_git_error=True)
+        storage.log(fail_on_git_error=True)
     except StorageError as e:
-        msg += [f"StorageError in {storage.path}"]
+        msg += [f"StorageError in {storage.path}: {e}"]
     # db check
     try:
-        p = Preferences.query.all()
+        Preferences.query.all()
     except:
         msg += [f"DB Error: Unable to query Preferences from DB."]
     if len(msg) == 0:

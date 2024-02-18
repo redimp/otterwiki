@@ -34,7 +34,7 @@ from otterwiki.util import (
 )
 from otterwiki.helper import toast, auto_url
 from otterwiki.auth import has_permission, current_user
-from datetime import timedelta
+from datetime import timedelta, datetime
 from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
 from io import BytesIO
@@ -674,6 +674,7 @@ class Page:
                 #   "Note that browsers and sometimes web servers enforce a limit on cookie sizes. This means that
                 #    flashing messages that are too large for session cookies causes message flashing to fail silently."
                 toast("Renaming failed.", "error")
+                app.logger.error("Renaming failed: {e}")
             else:
                 return redirect(url_for("view", path=new_pagename))
         return self.rename_form(new_pagename, message)
@@ -695,7 +696,7 @@ class Page:
             abort(403)
         if empty(message):
             message = "{} deleted.".format(self.pagename)
-        storage.delete([self.filename, self.attachment_directoryname], 
+        storage.delete([self.filename, self.attachment_directoryname],
                         message=message, author=author)
         toast("{} deleted.".format(self.pagename))
         return redirect(url_for("changelog"))
@@ -781,7 +782,7 @@ class Page:
                 toast(toastmsg)
         if inline:
             attachment_url = url_for(
-                "get_attachment", pagepath=self.pagepath, filename=fn
+                "get_attachment", pagepath=self.pagepath, filename=fn # pyright: ignore
             )
             return jsonify(filename=attachment_url)
         return redirect(url_for("attachments", pagepath=self.pagepath))
@@ -790,7 +791,9 @@ class Page:
         return Attachment(self.pagepath, filename, revision).get()
 
     def get_attachment_thumbnail(self, filename, size=None, revision=None):
-        if empty(size):
+        try:
+            size=int(size) # pyright: ignore -- the except takes care of None
+        except (TypeError, ValueError):
             size=80
         return Attachment(self.pagepath, filename, revision).get_thumbnail(size=size)
 
@@ -839,7 +842,7 @@ class Attachment:
             self.message = None
             self.author_name = None
             self.author_email = None
-            self.datetime = None
+            self.datetime = datetime.utcnow()
             self._revision = None
 
     def exists(self):
@@ -989,6 +992,7 @@ class Attachment:
             abort(403)
         if (
             not self.exists()
+            or not self.mimetype
             or not self.mimetype.startswith("image")
             or self.metadata is None
         ):

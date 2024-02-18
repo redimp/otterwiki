@@ -1,21 +1,19 @@
 #!/usr/bin/env python
 
-from otterwiki import fatal_error
 from otterwiki.util import is_valid_email
 from werkzeug.security import generate_password_hash, check_password_hash
 from urllib.parse import urlsplit
 from flask import (
     redirect,
     request,
-    abort,
     url_for,
     render_template,
+    abort,
 )
 from flask_login import (
     LoginManager,
     UserMixin,
     login_user,
-    login_required,
     logout_user,
     current_user,
 )
@@ -23,7 +21,6 @@ from otterwiki.server import app, db
 from otterwiki.helper import toast, send_mail, serialize, deserialize, SerializeError
 from otterwiki.util import random_password, empty
 from datetime import datetime
-from pprint import pprint
 import hmac
 
 def check_password_hash_backport(pwhash, password):
@@ -110,10 +107,10 @@ class SimpleAuth:
 
     def login_form(self, email, remember=None, next=None):
         if next is None:
-            next_page = request.args.get("next")
+            next = request.args.get("next")
         # render template
         return render_template(
-            "login.html", title="Login", email=email, remember=remember, next=next_page
+            "login.html", title="Login", email=email, remember=remember, next=next
         )
 
     def handle_logout(self):
@@ -122,6 +119,7 @@ class SimpleAuth:
         return redirect(url_for("login"))
 
     def handle_login(self, email=None, password=None, remember=None):
+        print(f"{remember=}")
         if email is not None:
             email = email.lower()
         # query user
@@ -138,7 +136,7 @@ class SimpleAuth:
                 toast("You are not approved yet.", "warning")
                 return redirect(url_for("login"))
             # login
-            login_user(user, remember=remember)
+            login_user(user, remember=remember is not None)
             # set next_page
             if not next_page or urlsplit(next_page).netloc != "":
                 next_page = url_for("index")
@@ -175,6 +173,9 @@ class SimpleAuth:
             email = email.lower()
         # check if email exists
         user = self.User.query.filter_by(email=email).first()
+        if not user:
+            app.logger.warning(f"request of confirmation for non existing email: {email}")
+            abort(404)
         token = serialize(email, salt="confirm-email")
         # generate mail
         subject = "Request confirmation - {} - An Otter Wiki".format(app.config["SITE_NAME"])
@@ -215,7 +216,7 @@ class SimpleAuth:
             # handle auto approval
             is_approved = app.config["AUTO_APPROVAL"] is True
         # create user object
-        user = self.User(
+        user = self.User( # pyright: ignore
             name=name,
             email=email,
             password_hash=hashed_password,
@@ -228,7 +229,7 @@ class SimpleAuth:
         db.session.add(user)
         db.session.commit()
         # log user creation
-        app.logger.report("New user registered: {} <{}>".format(name, email))
+        app.logger.report("New user registered: {} <{}>".format(name, email)) # pyright: ignore
         if app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin:
             self.request_confirmation(email)
         else:
@@ -324,7 +325,7 @@ class SimpleAuth:
         if app.config['NOTIFY_ADMINS_ON_REGISTER']:
             self.activated_user_notify_admins(user.name, email)
         # log activation
-        app.logger.report("New user activated: {} <{}>".format(user.name, user.email))
+        app.logger.report("New user activated: {} <{}>".format(user.name, user.email)) # pyright: ignore
         # redirect
         return redirect(url_for("login"))
 
@@ -396,7 +397,7 @@ class SimpleAuth:
             # send mail
             send_mail(subject=subject, recipients=[email], text_body=text_body)
             # log recovery attempt
-            app.logger.report("auth: Password recovery for: {}".format(email))
+            app.logger.report("auth: Password recovery for: {}".format(email)) # pyright: ignore
             # notify user
             toast(
                 "A recovery link been sent to {}. Please check your mailbox.".format(
@@ -418,7 +419,7 @@ class SimpleAuth:
         user = self.User.query.filter_by(email=email).first()
         if user is not None:
             login_user(user, remember=True)
-            app.logger.report("auth: Password recovery successful: {}".format(email))
+            app.logger.report("auth: Password recovery successful: {}".format(email)) # pyright: ignore
             toast("Welcome {}, please update your password.".format(user.name))
             return redirect(url_for("settings"))
         else:
@@ -429,7 +430,7 @@ class SimpleAuth:
 # create login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "login"
+login_manager.login_view = "login" # pyright: ignore
 
 # create auth_manaeger
 if app.config.get("AUTH_METHOD") in ["", "SIMPLE"]:

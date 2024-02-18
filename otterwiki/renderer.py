@@ -225,7 +225,7 @@ class OtterwikiRenderer:
         # we can enable tables in lists
         self.mistune.block.list_rules += ['table', 'nptable']  # pyright:ignore
 
-    def markdown(self, text, cursor=None, sanitize=True):
+    def markdown(self, text, cursor=None):
         self.md_renderer.reset_toc()
         # do the preparsing
         text = preprocess_wiki_links(text)
