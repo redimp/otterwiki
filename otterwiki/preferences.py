@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 
-from otterwiki import fatal_error
 from otterwiki.util import is_valid_email
 from flask import (
     redirect,
-    request,
     abort,
     url_for,
     render_template,
 )
 from flask_login import (
-    login_required,
     current_user,
 )
 from otterwiki.server import app, db, update_app_config, Preferences
@@ -18,7 +15,6 @@ from otterwiki.helper import toast, send_mail
 from otterwiki.util import empty, is_valid_email
 from flask_login import current_user
 from otterwiki.auth import has_permission, get_all_user, get_user, update_user, delete_user
-from pprint import pprint
 
 def _update_preference(name, value, commit=False):
     entry = Preferences.query.filter_by(name=name).first()
@@ -82,7 +78,7 @@ def handle_app_preferences(form):
     for name in ["READ_access", "WRITE_access", "ATTACHMENT_access"]:
         _update_preference(name.upper(),form.get(name, "ANONYMOUS"))
     for checkbox in ["auto_approval", "email_needs_confirmation",
-                     "notify_admins_on_register"]:
+                     "notify_admins_on_register", "notify_user_on_approval"]:
         _update_preference(checkbox.upper(),form.get(checkbox, "False"))
     # commit changes to the database
     db.session.commit()
@@ -119,6 +115,18 @@ def handle_preferences(form):
     if not empty(form.get("update_permissions")):
         return handle_user_management(form)
 
+
+def send_approvement_mail(user):
+    text_body = render_template(
+            "approvement_notification.txt",
+            sitename=app.config["SITE_NAME"],
+            name=user.name,
+            url=url_for("login", _external=True),
+            )
+    subject = "Your account has been approved - {} - An Otter Wiki".format(app.config["SITE_NAME"])
+    send_mail(subject=subject, recipients=[user.email], text_body=text_body)
+
+
 def handle_user_management(form):
     if not has_permission("ADMIN"):
         return abort(403)
@@ -127,6 +135,8 @@ def handle_user_management(form):
     allow_read = [int(x) for x in form.getlist("allow_read")]
     allow_write = [int(x) for x in form.getlist("allow_write")]
     allow_upload = [int(x) for x in form.getlist("allow_upload")]
+    # track users that have been approved to send a notification
+    # Make sure that nobody accidentally locks themselves out.
     if len(is_admin) < 1:
         toast("You can't remove all admins", "error")
     elif len(is_approved) < 1:
@@ -134,6 +144,7 @@ def handle_user_management(form):
     else:
         # update users
         for user in get_all_user():
+            user_was_just_approved = False
             msgs = []
             # approval
             if user.is_approved and not user.id in is_approved:
@@ -141,6 +152,7 @@ def handle_user_management(form):
                 msgs.append("disapproved")
             elif not user.is_approved and user.id in is_approved:
                 user.is_approved = True
+                user_was_just_approved = True
                 msgs.append("approved")
             # read
             if user.allow_read and not user.id in allow_read:
@@ -172,12 +184,17 @@ def handle_user_management(form):
                 msgs.append("enabled admin")
             if len(msgs):
                 toast("{} {} flag".format(user.email, " and ".join(msgs)))
-                app.logger.report(
+                app.logger.report( # pyright: ignore
                     "{} updated {} <{}>: {}".format(
                         current_user, user.name, user.email, " and ".join(msgs)
                     )
                 )
+                # update database
                 update_user(user)
+                # send notification mail
+                if user_was_just_approved:
+                    send_approvement_mail(user)
+
     return redirect(url_for("admin", _anchor="user_management"))
 
 def admin_form():
@@ -218,7 +235,7 @@ def handle_user_edit(uid, form):
             toast(f"Unable to delete yourself.","error")
             return redirect(url_for("user", uid=user.id))
         toast(f"User '{user.name} &lt;{user.email}&gt;' deleted.")
-        app.logger.report(f"deleted user '{user.name} &lt;{user.email}&gt;'")
+        app.logger.report(f"deleted user '{user.name} &lt;{user.email}&gt;'") # pyright: ignore
         delete_user(user)
         return redirect(url_for("admin", _anchor="user_management"))
     if form.get("name") is None:
@@ -234,6 +251,7 @@ def handle_user_edit(uid, form):
             user.email = form.get("email").strip()
         else:
             toast(f"'{form.get('email').strip()}' is not a valid email address","danger")
+    user_was_already_approved = user.is_approved
     # handle all the flags
     for value, label in [
             ("is_admin", "admin"),
@@ -252,15 +270,19 @@ def handle_user_edit(uid, form):
     if len(flags):
         msgs.append("{} flag".format(" and ".join(flags)))
     if len(msgs):
+        msgs[0] = msgs[0].capitalize()
+        msgs[-1] += "."
         toast(" and ".join(msgs))
-        app.logger.report(
+        app.logger.report( # pyright: ignore
             "{} updated {} <{}>: {}".format(
                 current_user, user.name, user.email, " and ".join(msgs)
             ))
     try:
         update_user(user)
-    except:
-        pass
+        if user.is_approved and not user_was_already_approved:
+            send_approvement_mail(user)
+    except Exception as e:
+        app.logger.error(f"Unable to update user: {e}")
     return redirect(url_for("user", uid=user.id))
 
 

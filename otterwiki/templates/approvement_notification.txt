@@ -1,0 +1,7 @@
+Hello {{name}},
+
+Your account at {{sitename}} (An Otter Wiki) has been approved.
+
+You can log in here: {{url}}
+
+Cheers!

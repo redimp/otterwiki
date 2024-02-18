@@ -176,12 +176,21 @@ selected="selected"
     </div>
   </div>
 {##}
-  <div class="form-group form-text">
+  <div class="form-group">
     <div class="custom-checkbox">
       <input {%if config.NOTIFY_ADMINS_ON_REGISTER %}checked{% endif %} type="checkbox" id="notify_admins" name="notify_admins_on_register" value="True">
       <label for="notify_admins">Notify admins on new user registration</label>
     </div>
   </div>
+{##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.NOTIFY_USER_ON_APPROVAL %}checked="checked"{% endif %} type="checkbox" id="notify_user_on_approval" name="notify_user_on_approval" value="True">
+      <label for="notify_user_on_approval">Notify users when their account was approved</label>
+    </div>
+  </div>
+{##}
+<div class="form-text pt-0 mt-0 mb-20"></div>
 {##}
 <h3 class="card-title" id="sidebar">Sidebar Preferences</h3>
     <div class="form-group">
@@ -195,10 +204,13 @@ selected="selected"
     <div class="form-group">
         <label for="sidebar_menutree_maxdepth">Maximal depth of pages and directories listed.</label>
         <input name="sidebar_menutree_maxdepth" type="text" placeholder="unlimited" class="form-control" id="sidebar_menutree_maxdepth" value="{{ config.SIDEBAR_MENUTREE_MAXDEPTH or "" }}">
-        <div class="form-text">
+        <div class="mt-5">
             With <code>MAXDEPTH=0</code> only the pages and directories of the same depth will be displayed. With <code>MAXDEPTH=n</code> childes up to depth <code>n</code> will be displayed. Without <code>MAXDEPTH</code> all childes will be displayed.
         </div>
     </div>
+{##}
+<div class="form-text pt-0 mt-0 mb-20"></div>
+{##}
 <h3 class="card-title" id="sidebar">Content and Editing Preferences</h3>
     <div class="form-group">
         <label for="commit_message" class="required">Commit message</label>

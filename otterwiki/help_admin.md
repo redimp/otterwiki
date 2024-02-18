@@ -81,6 +81,9 @@ Additionally, you can configure privileges per user. The privileges granted per 
 If a user needs to be approved, an admin user either needs to set the flag manually
 or enable <span class="help-button"><input type="checkbox" style="display:inline;" id="true-auto-approve" checked> Auto approve of newly registered users</span>. When admins need
 to approve users, <span class="help-button"><input type="checkbox" style="display:inline;" id="true-notify" checked> Notify admins on new user registration</span> helps with that.
+For more convenience, enable <span class="help-button"><input type="checkbox" style="display:inline;" id="true-notify" checked> Notify users when their account has been approved</span> so
+that users are notified automatically and there is no need to notify them
+yourself.
 
 
 ### Mail Preferences
