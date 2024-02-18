@@ -4,12 +4,11 @@
 import os
 import re
 import git
+import git.exc
 from datetime import datetime
-from pprint import pprint
 from otterwiki.util import split_path, ttl_lru_cache
 import pathlib
 import os
-import typing
 
 class StorageError(Exception):
     pass
@@ -31,13 +30,12 @@ class GitStorage(object):
         self.path = str(pathlib.Path(path).absolute())
         if initialize:
             self.repo = git.Repo.init(self.path)
-        self._read_repo()
+        self.repo = self._read_repo()
 
     def _read_repo(self):
         try:
-            self.repo = git.Repo(self.path)
+            return git.Repo(self.path)
         except git.InvalidGitRepositoryError:
-            self.repo = None
             raise StorageError(
                 "No valid git repository in '{}'. Did you run 'git init'?".format(
                     self.path
@@ -65,13 +63,13 @@ class GitStorage(object):
                 content = self.repo.git.show("{}:{}".format(revision, filename))
                 if mode == "rb":
                     content = content.encode("utf8", "surrogateescape")
-            except git.exc.GitCommandError as e:
+            except git.exc.GitCommandError:
                 raise StorageNotFound
             return content
         try:
             with open(os.path.join(self.path, filename), mode=mode) as f:
                 content = f.read(size)
-        except (IOError, FileNotFoundError) as e:
+        except (IOError, FileNotFoundError):
             raise StorageNotFound("{} not found.".format(filename))
         return content
 
@@ -122,7 +120,7 @@ class GitStorage(object):
         if revision is None:
             revision = "HEAD"
         try:
-            commits = self.repo.blame(revision, filename)
+            commits = list(self.repo.blame(revision, filename))
         except (ValueError, IndexError, git.exc.GitCommandError):
             raise StorageNotFound
         # initialize data and helper
@@ -223,7 +221,7 @@ class GitStorage(object):
         # build and return logfile
         return [self._get_metadata_of_commit(commit) for commit in commits]
 
-    def store(self, filename, content, message="", author=None, mode="w"):
+    def store(self, filename, content, message="", author=("",""), mode="w"):
         if message is None:
             message = ""
         dirname = os.path.dirname(filename)
@@ -243,7 +241,7 @@ class GitStorage(object):
         index.commit(message, author=actor)
         return True
 
-    def commit(self, filenames, message="", author=None, no_add=False):
+    def commit(self, filenames, message="", author=("",""), no_add=False):
         index = self.repo.index
         # add and commit to git
         if no_add == False:
@@ -256,7 +254,7 @@ class GitStorage(object):
         actor = git.Actor(author[0], author[1])
         index.commit(message, author=actor)
 
-    def revert(self, revision, message="", author=None):
+    def revert(self, revision, message="", author=("","")):
         actor = git.Actor(author[0], author[1])
         try:
             self.repo.git.revert(revision, "--no-commit")
@@ -274,7 +272,7 @@ class GitStorage(object):
         # https://docs.python.org/2/library/difflib.html
         return self.repo.git.diff(rev_a, rev_b, filename)
 
-    def delete(self, filename, message=None, author=None):
+    def delete(self, filename, message=None, author=("","")):
         if not type(filename) == list:
             filename=[filename]
         # make sure we only try to delete what exists
@@ -305,7 +303,7 @@ class GitStorage(object):
             self.repo.git.mv(old_filename, new_filename)
         except Exception as e:
             raise StorageError(
-                "Renaming {} to {} failed.".format(old_filename, new_filename)
+                "Renaming {} to {} failed: {}.".format(old_filename, new_filename, e)
             )
         if message is None:
             message = "{} renamed to {}.".format(old_filename, new_filename)
@@ -355,7 +353,7 @@ class GitStorage(object):
             commit = self.repo.commit(revision)
         except git.exc.BadName as e:
             raise StorageError(
-                f"No commit found for ref '{revision}"
+                f"No commit found for ref {revision}"
                 )
         # fetch metadata
         metadata = self._get_metadata_of_commit(commit)
