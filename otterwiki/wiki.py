@@ -5,8 +5,6 @@ import re
 from unidiff import PatchSet
 from flask import (
     redirect,
-    request,
-    send_from_directory,
     abort,
     url_for,
     render_template,
@@ -16,7 +14,7 @@ from flask import (
 )
 from markupsafe import escape as html_escape
 from otterwiki.gitstorage import StorageNotFound, StorageError
-from otterwiki.server import app, db, storage
+from otterwiki.server import app, storage
 from otterwiki.renderer import render, pygments_render
 from otterwiki.sidebar import SidebarNavigation
 from otterwiki.util import (
@@ -36,17 +34,14 @@ from otterwiki.util import (
 )
 from otterwiki.helper import toast, auto_url
 from otterwiki.auth import has_permission, current_user
-from datetime import datetime, timedelta
+from datetime import timedelta
 from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
 from io import BytesIO
-import pathlib
 
 import PIL.Image
 if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
     PIL.Image.Resampling = PIL.Image
-
-from pprint import pprint, pformat
 
 
 def get_breadcrumbs(pagepath):
@@ -77,7 +72,7 @@ class PageIndex:
         from timeit import default_timer as timer
 
         t_start = timer()
-        files, directories = storage.list(p=self.path)
+        files, _ = storage.list(p=self.path)
         app.logger.debug(
             "PageIndex reading files and directories took {:.3f} seconds.".format(timer() - t_start)
         )
@@ -118,7 +113,7 @@ class PageIndex:
             # read file
             content = storage.load(f)
             # parse file contents
-            htmlcontent, ftoc = render.markdown(content)
+            _, ftoc = render.markdown(content)
             # add headers to page toc
             # (4, '2 L <strong>bold</strong>', 1, '2 L bold', '2-l-bold')
             for i,header in enumerate(ftoc):
@@ -198,7 +193,7 @@ class Changelog:
         if self.commit_count is not None:
             log_page = []
             started = False
-            start_n = None
+            start_n = 0
             for n, entry in enumerate(log):
                 if entry["revision"] == self.commit_start:
                     started = True
@@ -305,8 +300,9 @@ class Changelog:
         if not has_permission("READ"):
             abort(403)
         try:
-            metadata, diff = storage.show_commit(revision)
+            _, diff = storage.show_commit(revision)
         except StorageError as e:
+            app.logger.error(e)
             abort(404)
         patchset = PatchSet(diff)
         url_map = {}
@@ -491,7 +487,7 @@ class Page:
             cursor_ch=cursor_ch,
         )
 
-    def editor(self, revision=None, content=None, cursor_line=None, cursor_ch=None):
+    def editor(self, content=None, cursor_line=None, cursor_ch=None):
         if not has_permission("WRITE"):
             abort(403)
         if content is None:
@@ -708,7 +704,7 @@ class Page:
         if not has_permission("WRITE"):
             abort(403)
         # count attachments and subpages
-        files, directories = storage.list(self.attachment_directoryname)
+        files, _ = storage.list(self.attachment_directoryname)
         if len(files)>0:
             title="Delete {} and the {} file(s) attached?".format(self.pagename, len(files))
         else:
@@ -721,7 +717,7 @@ class Page:
         )
 
     def _attachments(self, maximum=None):
-        files, directories = storage.list(self.attachment_directoryname, depth=0)
+        files, _ = storage.list(self.attachment_directoryname, depth=0)
         if maximum:
             files = files[:maximum]
         # currently only attached files are handled
@@ -1047,7 +1043,7 @@ class Search:
                 self.re = re.compile(self.needle, re.IGNORECASE)
             self.rei = re.compile(self.needle, re.IGNORECASE)
         except Exception as e:
-            toast("Error in search term: {}".format(e.msg), "error")
+            toast("Error in search term: {}".format(e), "error")
             return
 
     def search(self):

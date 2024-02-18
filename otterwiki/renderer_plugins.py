@@ -3,10 +3,9 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import re
-from pprint import pprint
 
 from mistune.inline_parser import LINK_LABEL
-from mistune.util import unikey, escape_url, ESCAPE_TEXT
+from mistune.util import unikey, ESCAPE_TEXT
 
 __all__ = ['plugin_task_lists', 'plugin_footnotes']
 
@@ -88,10 +87,10 @@ class mistunePluginFootnotes:
             children = [{'type': 'paragraph', 'text': stripped_text}]
         else:
             lines = text.splitlines()
+            second_line = ""
             for second_line in lines[1:]:
                 if second_line:
                     break
-
             spaces = len(second_line) - len(second_line.lstrip())
             pattern = re.compile(r'^ {' + str(spaces) + r',}', flags=re.M)
             text = pattern.sub('', text)

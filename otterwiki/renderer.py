@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: set et ts=8 sts=4 sw=4 ai:
 
-import os
 import re
-import git
 
 import mistune
 from mistune.plugins import (
@@ -39,10 +37,10 @@ cursormagicword = "CuRsoRm4g1cW0Rd"
 #
 # patch mistune table_plugin so that not all the newlines at the end of a table are removed
 #
-mistune.plugins.plugin_table.TABLE_PATTERN = re.compile(
+mistune.plugins.plugin_table.TABLE_PATTERN = re.compile( # pyright: ignore
     r' {0,3}\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n{0,1}'
 )
-mistune.plugins.plugin_table.NP_TABLE_PATTERN = re.compile(
+mistune.plugins.plugin_table.NP_TABLE_PATTERN = re.compile( # pyright: ignore
     r' {0,3}(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n{0,1}'
 )
 
@@ -82,11 +80,11 @@ def clean_html(html):
     _escape = False
     soup = BeautifulSoup(html, 'html.parser')
     for element in soup:
-        if element.name in ['script', 'marque', 'blink']:
+        if element.name in ['script', 'marque', 'blink']: # pyright: ignore
             _escape = True
             break
         try:
-            if any(x in element.attrs.keys() for x in ['onclick','onload']):
+            if any(x in element.attrs.keys() for x in ['onclick','onload']): # pyright: ignore
                 _escape = True
                 break
         except AttributeError:
@@ -147,15 +145,15 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         self.toc_tree = []
         self.toc_anchors = {}
 
-    def image(self, src, alt_text, title):
+    def image(self, src, alt="", title=None):
         if not empty(title):
             return (
                 '<img src="{}" class="img-fluid" title="{}" alt="{}">'.format(
-                    src, title, alt_text
+                    src, title, alt
                 )
             )
         return '<img src="{}" class="img-fluid" alt="{}">'.format(
-            src, alt_text
+            src, alt
         )
 
     def codespan(self, text):
@@ -163,22 +161,22 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             return "\\(" + mistune.escape(text[1:-1]) + "\\)"
         return "<code>" + mistune.escape(text) + "</code>"
 
-    def block_code(self, code, lang=None):
+    def block_code(self, code, info=None):
         prefix = ""
-        if not lang:
+        if not info:
             return '\n<pre class="code">{}</pre>\n'.format(
                 mistune.escape(code.strip())
             )
-        if cursormagicword in lang:
-            lang = lang.replace(cursormagicword, "")
+        if cursormagicword in info:
+            info = info.replace(cursormagicword, "")
             prefix = cursormagicword
         cursorline, code = hidemagicword(code)
-        if lang == "math":
+        if info == "math":
             html = "".join(
                 ["\\[{}\\]".format(line) for line in code.strip().splitlines()]
             )
         else:
-            html = prefix + pygments_render(code, lang)
+            html = prefix + pygments_render(code, info)
         html = showmagicword(cursorline, html)
         return prefix + html
 
@@ -225,7 +223,7 @@ class OtterwikiRenderer:
         self.htmlcursor = "<span id=\"cursor\"></span>"
         # thanks to https://github.com/lepture/mistune/issues/158#issuecomment-830481284
         # we can enable tables in lists
-        self.mistune.block.list_rules += ['table', 'nptable']
+        self.mistune.block.list_rules += ['table', 'nptable']  # pyright:ignore
 
     def markdown(self, text, cursor=None, sanitize=True):
         self.md_renderer.reset_toc()
@@ -249,6 +247,8 @@ class OtterwikiRenderer:
                     r"\1{}".format(cursormagicword), text_arr[line], count=1
                 )
                 text = "\n".join(text_arr)
+        else:
+            line = 0
 
         html = self.mistune(text)
         # generate the toc

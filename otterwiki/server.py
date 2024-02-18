@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import logging
 from flask import Flask
 from flask_htmlmin import HTMLMIN
@@ -72,16 +71,16 @@ else:
 
 
 # check if the git repository is empty
-if (len(storage.list()[0]) < 1) and (len(storage.log()) < 1):
+if (len(storage.list()[0]) < 1) and (len(storage.log()) < 1):  # pyright: ignore
     # we have a brand new repository here
     with open(os.path.join(app.root_path, "initial_home.md")) as f:
         content = f.read()
-        storage.store(
+        storage.store(  # pyright: ignore
             filename="home.md", content=content,
             author=("Otterwiki Robot", "noreply@otterwiki"),
             message="Initial commit",
         )
-        app.logger.report("Initial /Home created.")
+        app.logger.report("Initial /Home created.")     # pyright: ignore
 
 
 #
