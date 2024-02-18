@@ -1,6 +1,6 @@
 Hello {{name}},
 
-thank you for registering your account at {{sitename}} (an Otter Wiki).
+Thank you for registering your account at {{sitename}} (An Otter Wiki).
 
 The password generated for you is: {{password}}
 
