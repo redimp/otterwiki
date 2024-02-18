@@ -1,5 +1,9 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "form.html" %}
+{% block menu %}
+{{ super() }}
+{% include 'snippets/menutree.html' %}
+{% endblock %}
 {% block formcontent %}
 <form action="{{ url_for("rename", path=pagepath) }}" method="POST" class="form-inline">
   <div class="form-group">

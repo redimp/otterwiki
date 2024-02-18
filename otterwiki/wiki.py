@@ -144,14 +144,14 @@ class PageIndex:
     def render(self):
         if not has_permission("READ"):
             abort(403)
-        sidebarnav = SidebarNavigation(get_page_directoryname(self.path or "/"))
+        menutree = SidebarNavigation(get_page_directoryname(self.path or "/"))
 
         return render_template(
             "pageindex.html",
             title="Page Index",
             pages=self.toc,
             pagepath=self.path or "/",
-            menutree=sidebarnav.query(),
+            menutree=menutree.query(),
             breadcrumbs=self.breadcrumbs
         )
 
@@ -399,6 +399,7 @@ class Page:
             return self.content+reference, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
         source = pygments_render(self.content, lang='markdown')
+        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
 
         return render_template(
             "source.html",
@@ -406,6 +407,7 @@ class Page:
             revision=self.revision,
             pagename=self.pagename,
             pagepath=self.pagepath,
+            menutree=menutree.query(),
             source=source,
             breadcrumbs=self.breadcrumbs(),
         )
@@ -446,7 +448,7 @@ class Page:
         if self.revision is not None:
             title = "{} ({})".format(self.pagename, self.revision)
 
-        sidebarnav = SidebarNavigation(get_page_directoryname(self.pagepath))
+        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
 
         # render template
         return render_template(
@@ -459,7 +461,7 @@ class Page:
             toc=toc,
             breadcrumbs=self.breadcrumbs(),
             danger_alert=danger_alert,
-            menutree=sidebarnav.query(),
+            menutree=menutree.query(),
         )
 
     def preview(self, content=None, cursor_line=None, cursor_ch=None):
@@ -567,12 +569,14 @@ class Page:
                 last = row[0]
             else:
                 fdata.append(("", "", "", int(row[3]), line, oddeven))
+        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
         return render_template(
             "blame.html",
             title="{} - blame {}".format(self.pagename, self.revision),
             pagepath=self.pagepath,
             pagename=self.pagename,
             blame=fdata,
+            menutree=menutree.query(),
             breadcrumbs=self.breadcrumbs(),
         )
 
@@ -617,6 +621,7 @@ class Page:
                 "view", path=self.pagepath, revision=entry["revision"]
             )
             log.append(entry)
+        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
         return render_template(
             "history.html",
             title="{} - History".format(self.pagename),
@@ -625,6 +630,7 @@ class Page:
             log=log,
             rev_a=rev_a,
             rev_b=rev_b,
+            menutree=menutree.query(),
             breadcrumbs=self.breadcrumbs(),
         )
 
@@ -682,6 +688,7 @@ class Page:
     def rename_form(self, new_pagename=None, message=None):
         if not has_permission("WRITE"):
             abort(403)
+        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
         return render_template(
             "rename.html",
             title="Rename {}".format(self.pagename),
@@ -689,6 +696,7 @@ class Page:
             pagename=self.pagename_full,
             new_pagename=new_pagename,
             message=message,
+            menutree=menutree.query(),
         )
 
     def delete(self, message, author):
