@@ -29,11 +29,12 @@ class SidebarNavigation:
         # TODO load configs (yaml header in page?) (sidebar.yaml?)
         # TODO check for cached pages
         # load pages
-        self.tree = OrderedDict()
-        self.load()
-        self.tree = self.order_tree(self.tree)
-        # TODO apply config to pages
-        pass
+        if self.mode == "":
+            self.tree = None
+        else:
+            self.tree = OrderedDict()
+            self.load()
+            self.tree = self.order_tree(self.tree)
 
     def read_header(self, filename):
         filehead = storage.load(filename, size=512)
