@@ -73,7 +73,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 .sidebarmenu ul {
   margin-left  : calc(var(--radius) - var(--spacing));
   margin-bottom: 0.5rem;
-  margin-top: 1.0rem;
+  margin-top: 0.2rem;
   padding-left : 0;
 }
 
