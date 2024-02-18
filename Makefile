@@ -33,6 +33,11 @@ run: venv settings.cfg
 debug: venv settings.cfg
 	FLASK_ENV=development FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask run --port $(PORT)
 
+profiler: venv settings.cfg
+	FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg \
+        venv/bin/python otterwiki/profiler.py
+
+
 shell: venv
 	FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask shell
 
