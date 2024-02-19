@@ -1,4 +1,5 @@
 {#- vim: set et ts=8 sts=4 sw=4 ai: -#}
+{% if has_permission('READ') %}
 {% if menutree %}
     <details class="collapse-panel" open>
 
@@ -33,4 +34,4 @@
         </div>
     </details>
 {% endif %}{# if menutreee #}
-
+{% endif %}{# if has_permission('READ') #}
