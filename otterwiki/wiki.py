@@ -416,7 +416,7 @@ class Page:
             self.pagename = pagename
             self.pagepath = get_pagepath(pagename)
 
-        self.pagename_full = get_pagename(self.pagepath, full=True)
+        self.pagename_full = get_pagename(self.pagepath, full=True, raw_page_names=app.config["RAW_PAGE_NAMES"])
         self.revision = revision
 
         self.filename = get_filename(
@@ -438,10 +438,10 @@ class Page:
         if self.content is not None:
             header = get_header(self.content)
             self.pagename = get_pagename(
-                self.pagepath, full=False, header=header
+                self.pagepath, full=False, header=header, raw_page_names=app.config["RAW_PAGE_NAMES"]
             )
             self.pagename_full = get_pagename(
-                self.pagepath, full=True, header=header
+                self.pagepath, full=True, header=header, raw_page_names=app.config["RAW_PAGE_NAMES"]
             )
 
     def breadcrumbs(self):
