@@ -119,7 +119,6 @@ class SimpleAuth:
         return redirect(url_for("login"))
 
     def handle_login(self, email=None, password=None, remember=None):
-        print(f"{remember=}")
         if email is not None:
             email = email.lower()
         # query user
