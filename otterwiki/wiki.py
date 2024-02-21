@@ -40,18 +40,24 @@ from werkzeug.utils import secure_filename
 from io import BytesIO
 
 import PIL.Image
+
 if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
     PIL.Image.Resampling = PIL.Image
 
 
 def get_breadcrumbs(pagepath):
     # strip trailing slashes
-    pagepath=pagepath.rstrip("/")
+    pagepath = pagepath.rstrip("/")
     parents = []
     crumbs = []
     for e in split_path(pagepath):
         parents.append(e)
-        crumbs.append((get_pagename(e), join_path(parents)))
+        crumbs.append(
+            (
+                get_pagename(e, raw_page_names=app.config["RAW_PAGE_NAMES"]),
+                join_path(parents),
+            )
+        )
     return crumbs
 
 
@@ -62,8 +68,15 @@ class PageIndex:
         '''
 
         if path is not None:
-            self.path = path.lower().rstrip("/")
-            self.breadcrumbs = get_breadcrumbs(get_pagename(path, full=True))
+            self.path = path if app.config["RAW_PAGE_NAMES"] else path.lower()
+            self.path = self.path.rstrip("/")
+            self.breadcrumbs = get_breadcrumbs(
+                get_pagename(
+                    path,
+                    full=True,
+                    raw_page_names=app.config["RAW_PAGE_NAMES"],
+                )
+            )
             self.index_depth = len(split_path(self.path))
         else:
             self.path, self.breadcrumbs = None, None
@@ -74,71 +87,130 @@ class PageIndex:
         t_start = timer()
         files, _ = storage.list(p=self.path)
         app.logger.debug(
-            "PageIndex reading files and directories took {:.3f} seconds.".format(timer() - t_start)
+            "PageIndex reading files and directories took {:.3f} seconds.".format(
+                timer() - t_start
+            )
         )
         self.toc = {}
         page_indices = []
         t_start = timer()
-        for fn in [f for f in files if f.endswith(".md")]: # filter .md files
+        for fn in [f for f in files if f.endswith(".md")]:  # filter .md files
             if self.path is None:
                 f = fn
             else:
-                f = os.path.join(self.path,fn)
+                f = os.path.join(self.path, fn)
             page_depth = len(split_path(f)) - 1
-            firstletter = get_pagename(fn, full=True)[0]
+            firstletter = get_pagename(
+                fn, full=True, raw_page_names=app.config["RAW_PAGE_NAMES"]
+            )[0].upper()
             if firstletter not in self.toc.keys():
                 self.toc[firstletter] = []
             # add the subdirectories the page is in to the page index
             subdirectories = split_path(fn)[:-1]
             for subdir_depth in range(len(subdirectories)):
-                subdir_path = join_path(subdirectories[0:subdir_depth+1])
+                subdir_path = join_path(subdirectories[0 : subdir_depth + 1])
                 if self.path is None:
                     subdir_path_full = subdir_path
                 else:
-                    subdir_path_full = join_path([self.path,subdir_path])
-                if storage.exists(get_filename(subdir_path)):
+                    subdir_path_full = join_path([self.path, subdir_path])
+                if storage.exists(
+                    get_filename(
+                        subdir_path,
+                        raw_page_names=app.config["RAW_PAGE_NAMES"],
+                    )
+                ):
                     # if page exists don't add the directory
                     continue
                 if subdir_path not in page_indices:
                     self.toc[firstletter].append(
-                            (subdir_depth,
-                             get_pagename(subdir_path, full=False) + "/", # title
-                             url_for("view", path=get_pagename(subdir_path_full, full=True)), # url
-                             [])
+                        (
+                            subdir_depth,
+                            get_pagename(
+                                subdir_path,
+                                full=False,
+                                raw_page_names=app.config["RAW_PAGE_NAMES"],
+                            )
+                            + "/",  # title
+                            url_for(
+                                "view",
+                                path=get_pagename(
+                                    subdir_path_full,
+                                    full=True,
+                                    raw_page_names=app.config[
+                                        "RAW_PAGE_NAMES"
+                                    ],
+                                ),
+                            ),  # url
+                            [],
                         )
+                    )
                     page_indices.append(subdir_path)
             pagetoc = []
             # default pagename is the pagename derived from the filename
-            pagename = get_pagename(f, full=False)
+            pagename = get_pagename(
+                f, full=False, raw_page_names=app.config["RAW_PAGE_NAMES"]
+            )
             # read file
             content = storage.load(f)
             # parse file contents
             _, ftoc = render.markdown(content)
             # add headers to page toc
             # (4, '2 L <strong>bold</strong>', 1, '2 L bold', '2-l-bold')
-            for i,header in enumerate(ftoc):
-                if i == 0 and len(pagetoc)==0:
+            for i, header in enumerate(ftoc):
+                if i == 0 and len(pagetoc) == 0:
                     # overwrite pagename with the first header found on the page as hint for upper/lower casing
-                    pagename = get_pagename(f, full=False, header=header[3])
+                    pagename = get_pagename(
+                        f,
+                        full=False,
+                        header=header[3],
+                        raw_page_names=app.config["RAW_PAGE_NAMES"],
+                    )
                 else:
-                    pagetoc.append((
-                        header[2], # depth
-                        header[3], # title without formatting
-                        url_for("view", path=get_pagename(f, full=True, header=pagename), _anchor=header[4])
-                    ))
+                    pagetoc.append(
+                        (
+                            header[2],  # depth
+                            header[3],  # title without formatting
+                            url_for(
+                                "view",
+                                path=get_pagename(
+                                    f,
+                                    full=True,
+                                    header=pagename,
+                                    raw_page_names=app.config[
+                                        "RAW_PAGE_NAMES"
+                                    ],
+                                ),
+                                _anchor=header[4],
+                            ),
+                        )
+                    )
             # strip self.path from displayname
             displayname = pagename
-            if self.path is not None and displayname.lower().startswith(self.path):
-                displayname=displayname[len(self.path)+1:]
+            if self.path is not None and displayname.lower().startswith(
+                self.path.lower()
+            ):
+                displayname = displayname[len(self.path) + 1 :]
             self.toc[firstletter].append(
-                    (page_depth - self.index_depth,
-                     displayname, # title
-                     url_for("view", path=get_pagename(f, full=True, header=pagename)), # url
-                     pagetoc)
+                (
+                    page_depth - self.index_depth,
+                    displayname,  # title
+                    url_for(
+                        "view",
+                        path=get_pagename(
+                            f,
+                            full=True,
+                            header=pagename,
+                            raw_page_names=app.config["RAW_PAGE_NAMES"],
+                        ),
+                    ),  # url
+                    pagetoc,
                 )
+            )
 
         app.logger.debug(
-            "PageIndex parsing files took {:.3f} seconds.".format(timer() - t_start)
+            "PageIndex parsing files took {:.3f} seconds.".format(
+                timer() - t_start
+            )
         )
 
     def render(self):
@@ -152,8 +224,9 @@ class PageIndex:
             pages=self.toc,
             pagepath=self.path or "/",
             menutree=menutree.query(),
-            breadcrumbs=self.breadcrumbs
+            breadcrumbs=self.breadcrumbs,
         )
+
 
 class Changelog:
     def __init__(self, commit_start=None):
@@ -169,8 +242,14 @@ class Changelog:
             entry["files"] = {}
             for filename in orig_entry["files"]:
                 entry["files"][filename] = {}
-                entry["files"][filename]["name"], entry["files"][filename]["url"] = \
-                        auto_url(filename, entry["revision"])
+                (
+                    entry["files"][filename]["name"],
+                    entry["files"][filename]["url"],
+                ) = auto_url(
+                    filename,
+                    entry["revision"],
+                    raw_page_names=app.config["RAW_PAGE_NAMES"],
+                )
             log.append(entry)
         return log
 
@@ -207,7 +286,9 @@ class Changelog:
             commit_i = 0
             page_i = 1
             while commit_i < len(log):
-                if (commit_i >= start_n) and (commit_i < start_n + self.commit_count):
+                if (commit_i >= start_n) and (
+                    commit_i < start_n + self.commit_count
+                ):
                     active_page = page_i
                     try:
                         previous_page = pages[-1]["revision"]
@@ -239,7 +320,7 @@ class Changelog:
             # calculate how many pages would be displayed left and right of the active page
             l_len = active_page - max(1, active_page - page_span)
             r_len = min(active_page + page_span, len(pages)) - active_page
-            # to have a fixed length of displayed pages add the missing 
+            # to have a fixed length of displayed pages add the missing
             # lengths to the respectively other side
             if l_len < page_span:
                 r_len += page_span - l_len
@@ -252,12 +333,12 @@ class Changelog:
             pages_short = pages[l_pos:active_page]
             if l_pos > 0:
                 # insert dummy (and remove page to not break the layout)
-                pages_short = [{"dummy":True}] + pages_short[1:]
+                pages_short = [{"dummy": True}] + pages_short[1:]
             # right of active page
-            pages_short += pages[active_page : r_pos]
+            pages_short += pages[active_page:r_pos]
             if r_pos < len(pages):
                 # insert dummy (and remove page to not break the layout)
-                pages_short = pages_short[:-1] + [{"dummy":True}]
+                pages_short = pages_short[:-1] + [{"dummy": True}]
             # use the shorter page list
             pages = pages_short
 
@@ -307,12 +388,16 @@ class Changelog:
         patchset = PatchSet(diff)
         url_map = {}
         for file in patchset:
-            url_map[file.path] = auto_url(file.path, revision=revision)
+            url_map[file.path] = auto_url(
+                file.path,
+                revision=revision,
+                raw_page_names=app.config["RAW_PAGE_NAMES"],
+            )
         hunk_helper = patchset2hunkdict(patchset)
         return render_template(
             "diff.html",
             title="commit {}".format(revision),
-            url_map = url_map,
+            url_map=url_map,
             patchset=patchset,
             hunk_helper=hunk_helper,
             revision=revision,
@@ -324,7 +409,9 @@ class Page:
 
         if pagepath is not None:
             self.pagepath = pagepath
-            self.pagename = get_pagename(pagepath)
+            self.pagename = get_pagename(
+                pagepath, raw_page_names=app.config["RAW_PAGE_NAMES"]
+            )
         elif pagename is not None:
             self.pagename = pagename
             self.pagepath = get_pagepath(pagename)
@@ -332,8 +419,12 @@ class Page:
         self.pagename_full = get_pagename(self.pagepath, full=True)
         self.revision = revision
 
-        self.filename = get_filename(self.pagepath)
-        self.attachment_directoryname = get_attachment_directoryname(self.filename)
+        self.filename = get_filename(
+            self.pagepath, raw_page_names=app.config["RAW_PAGE_NAMES"]
+        )
+        self.attachment_directoryname = get_attachment_directoryname(
+            self.filename, raw_page_names=app.config["RAW_PAGE_NAMES"]
+        )
 
         # load page content and metadata
         try:
@@ -346,9 +437,12 @@ class Page:
 
         if self.content is not None:
             header = get_header(self.content)
-            self.pagename = get_pagename(self.pagepath, full=False, header=header)
-            self.pagename_full = get_pagename(self.pagepath, full=True, header=header)
-
+            self.pagename = get_pagename(
+                self.pagepath, full=False, header=header
+            )
+            self.pagename_full = get_pagename(
+                self.pagepath, full=True, header=header
+            )
 
     def breadcrumbs(self):
         return get_breadcrumbs(self.pagepath)
@@ -360,10 +454,7 @@ class Page:
             content = storage.load(self.filename, revision=revision)
             metadata = storage.metadata(self.filename, revision=revision)
         except StorageNotFound as e:
-            if all([
-                not metadata,
-                not content
-            ]):
+            if all([not metadata, not content]):
                 # If both are None, raise the exception. Otherwise, a warning will show on the page that
                 # the file is not under version control.
                 raise
@@ -374,10 +465,13 @@ class Page:
         if not self.exists:
             app.logger.warning("Not found {}".format(self.pagename))
             response404 = make_response(
-                    render_template("page404.html",
-                        pagename=self.pagename,
-                        pagepath=self.pagepath),
-                    404)
+                render_template(
+                    "page404.html",
+                    pagename=self.pagename,
+                    pagepath=self.pagepath,
+                ),
+                404,
+            )
             abort(response404)
         return True
 
@@ -396,7 +490,11 @@ class Page:
         if raw:
             # build a reference link that is appended to the content as markdown comment
             reference = f"\n[]: # ({url_for('source', pagepath=self.pagepath, _external=True)})"
-            return self.content+reference, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+            return (
+                self.content + reference,
+                200,
+                {'Content-Type': 'text/plain; charset=utf-8'},
+            )
 
         source = pygments_render(self.content, lang='markdown')
         menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
@@ -424,7 +522,9 @@ class Page:
                     "You are logged in but lack READ permissions. Please wait for an administrator to grant access."
                 )
             else:
-                toast("You lack the permissions to access this wiki. Please login.")
+                toast(
+                    "You lack the permissions to access this wiki. Please login."
+                )
             return redirect(url_for("login"))
         # handle case that page doesn't exists
         self.exists_or_404()
@@ -433,7 +533,7 @@ class Page:
         if not self.metadata:
             danger_alert = [
                 "Not under version control",
-                f"""This page was loaded from the repository but is not added under git version control. Make a commit on the <a href="/{self.pagepath}/edit" class="alert-link">Edit page</a> to add it."""
+                f"""This page was loaded from the repository but is not added under git version control. Make a commit on the <a href="/{self.pagepath}/edit" class="alert-link">Edit page</a> to add it.""",
             ]
 
         # render markdown
@@ -441,7 +541,12 @@ class Page:
 
         if len(toc) > 0:
             # use first headline to overwrite pagename
-            self.pagename = get_pagename(self.pagename, full=False, header=toc[0][3])
+            self.pagename = get_pagename(
+                self.pagename,
+                full=False,
+                header=toc[0][3],
+                raw_page_names=app.config["RAW_PAGE_NAMES"],
+            )
 
         # set title
         title = self.pagename
@@ -476,7 +581,12 @@ class Page:
         # update pagename from toc
         if len(toc) > 0:
             # use first headline to overwrite pagename
-            self.pagename = get_pagename(self.pagename, full=False, header=toc[0][3])
+            self.pagename = get_pagename(
+                self.pagename,
+                full=False,
+                header=toc[0][3],
+                raw_page_names=app.config["RAW_PAGE_NAMES"],
+            )
 
         return render_template(
             "preview.html",
@@ -510,7 +620,7 @@ class Page:
             content_editor=content,
             cursor_line=cursor_line,
             cursor_ch=cursor_ch,
-            files = files
+            files=files,
         )
 
     def save(self, content, commit, author):
@@ -565,7 +675,9 @@ class Page:
             # line = row[4] # markup_lines[int(row[3])-1]
             if row[0] != last:
                 oddeven = "odd" if oddeven == "even" else "even"
-                fdata.append((row[0], row[1], row[2], int(row[3]), line, oddeven))
+                fdata.append(
+                    (row[0], row[1], row[2], int(row[3]), line, oddeven)
+                )
                 last = row[0]
             else:
                 fdata.append(("", "", "", int(row[3]), line, oddeven))
@@ -590,7 +702,11 @@ class Page:
         patchset = PatchSet(diff)
         url_map = {}
         for file in patchset:
-            url_map[file.path] = auto_url(file.path, revision=rev_a)
+            url_map[file.path] = auto_url(
+                file.path,
+                revision=rev_a,
+                raw_page_names=app.config["RAW_PAGE_NAMES"],
+            )
         hunk_helper = patchset2hunkdict(patchset)
         return render_template(
             "diff.html",
@@ -610,7 +726,14 @@ class Page:
         try:
             orig_log = storage.log(self.filename)
         except StorageNotFound:
-            return render_template("page404.html", pagename=self.pagename, pagepath=self.pagepath), 404
+            return (
+                render_template(
+                    "page404.html",
+                    pagename=self.pagename,
+                    pagepath=self.pagepath,
+                ),
+                404,
+            )
         if rev_a is not None and rev_b is not None and rev_a != rev_b:
             return self.diff(rev_a=rev_a, rev_b=rev_b)
 
@@ -640,12 +763,16 @@ class Page:
         # handle case that the page doesn't exists
         self.exists_or_404()
         # filename
-        new_filename = get_filename(new_pagename)
+        new_filename = get_filename(
+            new_pagename, raw_page_names=app.config["RAW_PAGE_NAMES"]
+        )
         # check for attachments
         files, directories = storage.list(self.attachment_directoryname)
         if (len(files) + len(directories)) > 0:
             # rename attachment directory
-            new_attachment_directoryname = get_attachment_directoryname(new_filename)
+            new_attachment_directoryname = get_attachment_directoryname(
+                new_filename, raw_page_names=app.config["RAW_PAGE_NAMES"]
+            )
             # rename attachment directory
             storage.rename(
                 self.attachment_directoryname,
@@ -655,7 +782,9 @@ class Page:
                 no_commit=True,
             )
         # rename page
-        storage.rename(self.filename, new_filename, message=message, author=author)
+        storage.rename(
+            self.filename, new_filename, message=message, author=author
+        )
 
     def handle_rename(self, new_pagename, message, author):
         if not has_permission("WRITE"):
@@ -670,7 +799,9 @@ class Page:
         else:
             # rename
             if empty(message):
-                message = "Renamed {} to {}.".format(self.pagename, new_pagename)
+                message = "Renamed {} to {}.".format(
+                    self.pagename, new_pagename
+                )
             try:
                 self.rename(new_pagename, message, author)
             except Exception as e:
@@ -704,8 +835,11 @@ class Page:
             abort(403)
         if empty(message):
             message = "{} deleted.".format(self.pagename)
-        storage.delete([self.filename, self.attachment_directoryname],
-                        message=message, author=author)
+        storage.delete(
+            [self.filename, self.attachment_directoryname],
+            message=message,
+            author=author,
+        )
         toast("{} deleted.".format(self.pagename))
         return redirect(url_for("changelog"))
 
@@ -714,10 +848,12 @@ class Page:
             abort(403)
         # count attachments and subpages
         files, _ = storage.list(self.attachment_directoryname)
-        if len(files)>0:
-            title="Delete {} and the {} file(s) attached?".format(self.pagename, len(files))
+        if len(files) > 0:
+            title = "Delete {} and the {} file(s) attached?".format(
+                self.pagename, len(files)
+            )
         else:
-            title="Delete {} ?".format(self.pagename)
+            title = "Delete {} ?".format(self.pagename)
         return render_template(
             "delete.html",
             title=title,
@@ -730,12 +866,7 @@ class Page:
         if maximum:
             files = files[:maximum]
         # currently only attached files are handled
-        return [
-            Attachment(
-                self.pagepath, f
-            )
-            for f in files
-        ]
+        return [Attachment(self.pagepath, f) for f in files]
 
     def render_attachments(self):
         if not has_permission("READ"):
@@ -753,7 +884,9 @@ class Page:
             breadcrumbs=self.breadcrumbs(),
         )
 
-    def upload_attachments(self, files, message, filename, author, inline=False):
+    def upload_attachments(
+        self, files, message, filename, author, inline=False
+    ):
         if not has_permission("UPLOAD"):
             abort(403)
         # attachments to commit in the second step
@@ -790,7 +923,9 @@ class Page:
                 toast(toastmsg)
         if inline:
             attachment_url = url_for(
-                "get_attachment", pagepath=self.pagepath, filename=fn # pyright: ignore
+                "get_attachment",
+                pagepath=self.pagepath,
+                filename=fn,  # pyright: ignore
             )
             return jsonify(filename=attachment_url)
         return redirect(url_for("attachments", pagepath=self.pagepath))
@@ -800,12 +935,18 @@ class Page:
 
     def get_attachment_thumbnail(self, filename, size=None, revision=None):
         try:
-            size=int(size) # pyright: ignore -- the except takes care of None
+            size = int(
+                size
+            )  # pyright: ignore -- the except takes care of None
         except (TypeError, ValueError):
-            size=80
-        return Attachment(self.pagepath, filename, revision).get_thumbnail(size=size)
+            size = 80
+        return Attachment(self.pagepath, filename, revision).get_thumbnail(
+            size=size
+        )
 
-    def edit_attachment(self, filename, author, new_filename=None, message=None, delete=None):
+    def edit_attachment(
+        self, filename, author, new_filename=None, message=None, delete=None
+    ):
         if not has_permission("READ"):
             abort(403)
         a = Attachment(self.pagepath, filename)
@@ -831,15 +972,28 @@ class Attachment:
         self.filename = filename
         self.revision = revision
         self.absdirectory = os.path.join(
-            storage.path, get_attachment_directoryname(get_filename(pagepath))
+            storage.path,
+            get_attachment_directoryname(
+                get_filename(
+                    pagepath, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                ),
+                raw_page_names=app.config["RAW_PAGE_NAMES"],
+            ),
         )
         self.fullpath = os.path.join(pagepath, filename)
-        self.directory = get_attachment_directoryname(get_filename(pagepath))
+        self.directory = get_attachment_directoryname(
+            get_filename(
+                pagepath, raw_page_names=app.config["RAW_PAGE_NAMES"]
+            ),
+            raw_page_names=app.config["RAW_PAGE_NAMES"],
+        )
         self.filepath = os.path.join(self.directory, filename)
         self.abspath = os.path.join(storage.path, self.filepath)
         self.mimetype = guess_mimetype(self.filepath)
         try:
-            self.metadata = storage.metadata(self.filepath, revision=self.revision)
+            self.metadata = storage.metadata(
+                self.filepath, revision=self.revision
+            )
             self.message = self.metadata["message"]
             self._revision = self.metadata["revision"]
             self.author_name = self.metadata["author_name"]
@@ -858,10 +1012,13 @@ class Attachment:
 
     def get_thumbnail_url(self):
         if self.mimetype is not None and self.mimetype.startswith("image"):
-            return url_for(
-                "view",
-                path=self.fullpath,
-            ) + "?thumbnail"
+            return (
+                url_for(
+                    "view",
+                    path=self.fullpath,
+                )
+                + "?thumbnail"
+            )
         return None
 
     def get_url(self):
@@ -881,9 +1038,13 @@ class Attachment:
     def get_thumbnail_icon(self):
         if self.mimetype is not None:
             if self.mimetype == "application/pdf":
-                return '<i class="far fa-file-pdf" style="font-size:48px;"></i>'
+                return (
+                    '<i class="far fa-file-pdf" style="font-size:48px;"></i>'
+                )
             if self.mimetype.startswith("text"):
-                return '<i class="far fa-file-alt" style="font-size:48px;"></i>'
+                return (
+                    '<i class="far fa-file-alt" style="font-size:48px;"></i>'
+                )
         return '<i class="far fa-file" style="font-size:48px;"></i>'
 
     @property
@@ -914,15 +1075,19 @@ class Attachment:
         if empty(message):
             message = toast_message
         try:
-            storage.rename(self.filepath, new_filepath, message=message, author=author)
+            storage.rename(
+                self.filepath, new_filepath, message=message, author=author
+            )
         except StorageError:
             toast("Renaming failed", "error")
-            return redirect(
-                url_for("attachments", pagepath=self.pagepath)
-            )
+            return redirect(url_for("attachments", pagepath=self.pagepath))
         toast(toast_message)
         return redirect(
-            url_for("edit_attachment", pagepath=self.pagepath, filename=new_filename)
+            url_for(
+                "edit_attachment",
+                pagepath=self.pagepath,
+                filename=new_filename,
+            )
         )
 
     def delete(self, message, author):
@@ -937,7 +1102,6 @@ class Attachment:
         except StorageError:
             toast("Deleting failed", "error")
         return redirect(url_for("attachments", pagepath=self.pagepath))
-
 
     def edit(self):
         if not has_permission("READ"):
@@ -975,8 +1139,12 @@ class Attachment:
         else:
             # revision is given
             try:
-                content = storage.load(self.filepath, revision=self.revision, mode="rb")
-                metadata = storage.metadata(self.filepath, revision=self.revision)
+                content = storage.load(
+                    self.filepath, revision=self.revision, mode="rb"
+                )
+                metadata = storage.metadata(
+                    self.filepath, revision=self.revision
+                )
             except StorageNotFound:
                 abort(404)
             # create buffer
@@ -1017,7 +1185,9 @@ class Attachment:
         image.save(buffer, format=image.format, quality=80)
         buffer.seek(0)
         app.logger.info(
-            "Thumbnail generation took {:.3f} seconds.".format(timer() - t_start)
+            "Thumbnail generation took {:.3f} seconds.".format(
+                timer() - t_start
+            )
         )
         # build response
         response = make_response(send_file(buffer, mimetype=self.mimetype))
@@ -1025,7 +1195,9 @@ class Attachment:
         response.headers["Expires"] = http_date(
             (self.datetime + timedelta(hours=1)).utctimetuple()
         )
-        response.headers["Last-Modified"] = http_date(self.datetime.utctimetuple())
+        response.headers["Last-Modified"] = http_date(
+            self.datetime.utctimetuple()
+        )
 
         return response
 
@@ -1070,7 +1242,16 @@ class Search:
             # check if pagename matches
             mi = self.rei.search(get_pagename(fn))
             if mi is not None:
-                fn_result[fn] = [True, "{}".format(get_pagename(fn, full=True))]
+                fn_result[fn] = [
+                    True,
+                    "{}".format(
+                        get_pagename(
+                            fn,
+                            full=True,
+                            raw_page_names=app.config["RAW_PAGE_NAMES"],
+                        )
+                    ),
+                ]
             # open file, read file
             haystack = storage.load(fn)
             lastlinematched = False
@@ -1105,12 +1286,24 @@ class Search:
                     n += len(self.rei.findall(line))
                 else:
                     n += len(self.re.findall(line))
-            key = [fnmatch, n, fn, get_pagename(fn, full=True), get_pagename(fn, full=True)]
+            key = [
+                fnmatch,
+                n,
+                fn,
+                get_pagename(
+                    fn, full=True, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                ),
+                get_pagename(
+                    fn, full=True, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                ),
+            ]
             summary = []
             if fnmatch == 1:
                 summary = [matches.pop(0)]
                 # overwrite key[4]
-                key[4] = self.rei.sub(r'<span class="page-match">\1</span>', key[4])
+                key[4] = self.rei.sub(
+                    r'<span class="page-match">\1</span>', key[4]
+                )
             front, end = [], []
             while len("".join(front) + "".join(end)) < 200:
                 try:
@@ -1134,7 +1327,9 @@ class Search:
                 if i == 0 and fnmatch == 1:
                     summary[i] = None
                 else:
-                    summary[i] = self.re.sub(r'<span class="text-match">\1</span>', l)
+                    summary[i] = self.re.sub(
+                        r'<span class="text-match">\1</span>', l
+                    )
             # store summary with key
             result[tuple(key)] = summary
 
@@ -1149,15 +1344,18 @@ class Search:
         keys = sorted(result.keys(), key=lambda x: (-x[0], -x[1], x[2]))
         return render_template(
             "search.html",
-            title="Search '{}'".format(self.query)
-            if not empty(self.query)
-            else "Search",
+            title=(
+                "Search '{}'".format(self.query)
+                if not empty(self.query)
+                else "Search"
+            ),
             query=self.query,
             is_regexp=self.is_regexp,
             is_casesensitive=self.is_casesensitive,
             keys=keys,
             result=result,
         )
+
 
 class AutoRoute:
     def __init__(self, path, values={}):
@@ -1169,36 +1367,55 @@ class AutoRoute:
             self.pagepath = join_path(prefix)
         else:
             self.pagepath = ""
+
         # glue together storage path
-        self.storage_path = join_path([self.pagepath.lower(),self.filename])
+        if app.config["RAW_PAGE_NAMES"]:
+            self.storage_path = join_path([self.pagepath, self.filename])
+        else:
+            self.storage_path = join_path(
+                [self.pagepath.lower(), self.filename]
+            )
 
     def view(self):
         # check if the path leads to an attachment
-        if not empty(self.pagepath) and not self.filename.lower().endswith(".md") and \
-                not storage.isdir(self.path.lower()) and storage.exists(self.storage_path):
+        if (
+            not empty(self.pagepath)
+            and not self.filename.lower().endswith(".md")
+            and not storage.isdir(
+                self.path
+                if app.config["RAW_PAGE_NAMES"]
+                else self.path.lower()
+            )
+            and storage.exists(self.storage_path)
+        ):
             # create page
             p = Page(self.pagepath)
             # is this a thumbnail?
             if 'thumbnail' in self.values:
                 # handle size parameter
                 try:
-                    size=int(self.values['thumbnail'])
+                    size = int(self.values['thumbnail'])
                 except:
-                    size=None
-                return p.get_attachment_thumbnail(filename=self.filename, size=size, revision=None)
+                    size = None
+                return p.get_attachment_thumbnail(
+                    filename=self.filename, size=size, revision=None
+                )
             # this is an attachment
             return p.get_attachment(self.filename)
         try:
-            revision=self.values['revision']
+            revision = self.values['revision']
         except KeyError:
             revision = None
         # create page object
         p = Page(self.path, revision=revision)
         # if page md doesn't exist, but the folder exists, show index
-        if not storage.exists(p.filename) and storage.exists(p.attachment_directoryname):
+        if not storage.exists(p.filename) and storage.exists(
+            p.attachment_directoryname
+        ):
             pi = PageIndex(p.pagepath)
             return pi.render()
         # default to Page view
         return p.view()
+
 
 # vim: set et ts=8 sts=4 sw=4 ai:

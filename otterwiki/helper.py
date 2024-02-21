@@ -101,19 +101,30 @@ def health_check():
         return True, ["ok"]
     return False, msg
 
-def auto_url(filename, revision=None):
+
+def auto_url(filename, revision=None, raw_page_names=False):
     # handle attachments and pages
     arr = split_path(filename)
     if filename.endswith(".md"):
         # page
-        return (get_pagename(filename, full=True),
-                url_for(
-                    "view", path=get_pagename(filename, full=True),
-                    revision=revision
-               ))
+        return (
+            get_pagename(filename, full=True, raw_page_names=raw_page_names),
+            url_for(
+                "view",
+                path=get_pagename(
+                    filename, full=True, raw_page_names=raw_page_names
+                ),
+                revision=revision,
+            ),
+        )
     else:
         # attachment
-        pagename, attached_filename = get_pagename(join_path(arr[:-1]), full=True), arr[-1]
+        pagename, attached_filename = (
+            get_pagename(
+                join_path(arr[:-1]), full=True, raw_page_names=raw_page_names
+            ),
+            arr[-1],
+        )
         return (filename,
                 url_for('get_attachment',
                     pagepath=pagename,

@@ -101,3 +101,16 @@ def test_auto_url(create_app, req_ctx):
     name, path = otterwiki.helper.auto_url("page/example.mp4")
     assert name == "page/example.mp4"
     assert path == "/Page/a/example.mp4"
+    name, path = otterwiki.helper.auto_url("home.md", raw_page_names=True)
+    assert name == "home"
+    assert path == "/home"
+    name, path = otterwiki.helper.auto_url(
+        "subspace/example.md", raw_page_names=True
+    )
+    assert name == "subspace/example"
+    assert path == "/subspace/example"
+    name, path = otterwiki.helper.auto_url(
+        "page/example.mp4", raw_page_names=True
+    )
+    assert name == "page/example.mp4"
+    assert path == "/page/a/example.mp4"

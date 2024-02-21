@@ -29,6 +29,7 @@ app.config.update(
     EMAIL_NEEDS_CONFIRMATION=True,
     NOTIFY_ADMINS_ON_REGISTER=False,
     NOTIFY_USER_ON_APPROVAL=False,
+    RAW_PAGE_NAMES=False,
     SQLALCHEMY_DATABASE_URI="sqlite:///:memory:",
     MAIL_DEFAULT_SENDER="otterwiki@YOUR.ORGANIZATION.TLD",
     MAIL_SERVER="",
@@ -100,9 +101,15 @@ def update_app_config():
     global mail
     with app.app_context():
         for item in Preferences.query:
-            if item.name.upper() in ["MAIL_USE_TLS", "MAIL_USE_SSL", "AUTO_APPROVAL",
-                                     "EMAIL_NEEDS_CONFIRMATION", "NOTIFY_ADMINS_ON_REGISTER",
-                                     "NOTIFY_USER_ON_APPROVAL"]:
+            if item.name.upper() in [
+                "MAIL_USE_TLS",
+                "MAIL_USE_SSL",
+                "AUTO_APPROVAL",
+                "EMAIL_NEEDS_CONFIRMATION",
+                "NOTIFY_ADMINS_ON_REGISTER",
+                "NOTIFY_USER_ON_APPROVAL",
+                "RAW_PAGE_NAMES",
+            ]:
                 item.value = item.value.lower() in ["true","yes"]
             if item.name.upper() in ["MAIL_PORT"]:
                 try:

@@ -77,8 +77,13 @@ def handle_app_preferences(form):
         _update_preference(name.upper(),form.get(name, ""))
     for name in ["READ_access", "WRITE_access", "ATTACHMENT_access"]:
         _update_preference(name.upper(),form.get(name, "ANONYMOUS"))
-    for checkbox in ["auto_approval", "email_needs_confirmation",
-                     "notify_admins_on_register", "notify_user_on_approval"]:
+    for checkbox in [
+        "auto_approval",
+        "email_needs_confirmation",
+        "notify_admins_on_register",
+        "notify_user_on_approval",
+        "raw_page_names",
+    ]:
         _update_preference(checkbox.upper(),form.get(checkbox, "False"))
     # commit changes to the database
     db.session.commit()

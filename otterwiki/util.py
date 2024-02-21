@@ -93,12 +93,12 @@ def split_path(path):
     return split_path(head) + [tail]
 
 
-def get_filename(pagepath):
+def get_filename(pagepath, raw_page_names=False):
     '''This is the actual filepath on disk (not via URL) relative to the repository root
     This function will attempt to determine if this is a 'folder' or a 'page'.
     '''
 
-    p = pagepath.lower()
+    p = pagepath if raw_page_names else pagepath.lower()
     p = clean_slashes(p)
 
     if not p.endswith(".md"):
@@ -107,11 +107,12 @@ def get_filename(pagepath):
     return p
 
 
-def get_attachment_directoryname(filename):
-    filename = filename.lower()
+def get_attachment_directoryname(filename, raw_page_names=False):
+    filename = filename if raw_page_names else filename.lower()
     if filename[-3:] != ".md":
         raise ValueError
     return filename[:-3]
+
 
 def titleSs(s):
     """
@@ -127,7 +128,7 @@ def titleSs(s):
     return s.replace(magicword,'ß')
 
 
-def get_pagename(filepath, full=False, header=None):
+def get_pagename(filepath, full=False, header=None, raw_page_names=False):
     '''This will derive the page name (displayed on the web page) from the url requested'''
     # remove trailing slashes from filepath
     filepath=filepath.rstrip("/")
@@ -145,7 +146,7 @@ def get_pagename(filepath, full=False, header=None):
                 or (hint == part and hint != part.lower()):
             arr[i] = hint
         else:
-            arr[i] = titleSs(part)
+            arr[i] = part if raw_page_names else titleSs(part)
 
     if not full:
         return arr[-1]

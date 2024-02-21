@@ -221,6 +221,14 @@ selected="selected"
         </select>
     </div>
 {##}
+    <div class="form-group">
+      <div class="custom-checkbox">
+        <input {%if config.RAW_PAGE_NAMES %}checked{% endif %} type="checkbox" id="raw_page_names" name="raw_page_names"
+          value="True">
+        <label for="raw_page_names">Preserve "raw" page names when saving and displaying markdown files</label>
+      </div>
+    </div>
+{##}
   <div class="mt-10">
     <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
   </div>
