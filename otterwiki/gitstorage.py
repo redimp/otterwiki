@@ -45,7 +45,7 @@ class GitStorage(object):
     def _check_reload(self):
         if os.path.exists(os.path.join(self.path, ".git/RELOAD_GIT")):
             os.remove(os.path.join(self.path, ".git/RELOAD_GIT"))
-            self._read_repo()
+            self.repo = self._read_repo()
 
     def exists(self, filename):
         return os.path.exists(os.path.join(self.path, filename))
