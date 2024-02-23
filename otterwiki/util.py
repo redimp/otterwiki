@@ -93,27 +93,6 @@ def split_path(path):
     return split_path(head) + [tail]
 
 
-def get_filename(pagepath, raw_page_names=False):
-    '''This is the actual filepath on disk (not via URL) relative to the repository root
-    This function will attempt to determine if this is a 'folder' or a 'page'.
-    '''
-
-    p = pagepath if raw_page_names else pagepath.lower()
-    p = clean_slashes(p)
-
-    if not p.endswith(".md"):
-        return "{}.md".format(p)
-
-    return p
-
-
-def get_attachment_directoryname(filename, raw_page_names=False):
-    filename = filename if raw_page_names else filename.lower()
-    if filename[-3:] != ".md":
-        raise ValueError
-    return filename[:-3]
-
-
 def titleSs(s):
     """
     This function is a workaround for str.title() not knowing upercase 'ß'.
@@ -126,31 +105,6 @@ def titleSs(s):
     s = s.replace('ß',magicword)
     s = s.title()
     return s.replace(magicword,'ß')
-
-
-def get_pagename(filepath, full=False, header=None, raw_page_names=False):
-    '''This will derive the page name (displayed on the web page) from the url requested'''
-    # remove trailing slashes from filepath
-    filepath=filepath.rstrip("/")
-
-    if filepath.endswith(".md"):
-        filepath = filepath[:-3]
-
-    arr = split_path(filepath)
-    for i, part in enumerate(arr):
-        hint = part
-        # if basename use header as hint
-        if i == len(arr)-1 and header is not None:
-            hint = header
-        if (hint != part and hint.lower() == part.lower()) \
-                or (hint == part and hint != part.lower()):
-            arr[i] = hint
-        else:
-            arr[i] = part if raw_page_names else titleSs(part)
-
-    if not full:
-        return arr[-1]
-    return "/".join(arr)
 
 
 def get_pagepath(pagename):

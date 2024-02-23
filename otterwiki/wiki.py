@@ -23,16 +23,19 @@ from otterwiki.util import (
     empty,
     guess_mimetype,
     sizeof_fmt,
-    get_filename,
-    get_attachment_directoryname,
-    get_pagename,
     get_pagepath,
     get_page_directoryname,
     sanitize_pagename,
     patchset2hunkdict,
     get_header,
 )
-from otterwiki.helper import toast, auto_url
+from otterwiki.helper import (
+    toast,
+    auto_url,
+    get_filename,
+    get_attachment_directoryname,
+    get_pagename,
+)
 from otterwiki.auth import has_permission, current_user
 from datetime import timedelta, datetime
 from werkzeug.http import http_date
@@ -54,7 +57,7 @@ def get_breadcrumbs(pagepath):
         parents.append(e)
         crumbs.append(
             (
-                get_pagename(e, raw_page_names=app.config["RAW_PAGE_NAMES"]),
+                get_pagename(e),
                 join_path(parents),
             )
         )
@@ -74,7 +77,6 @@ class PageIndex:
                 get_pagename(
                     path,
                     full=True,
-                    raw_page_names=app.config["RAW_PAGE_NAMES"],
                 )
             )
             self.index_depth = len(split_path(self.path))
@@ -101,7 +103,7 @@ class PageIndex:
                 f = os.path.join(self.path, fn)
             page_depth = len(split_path(f)) - 1
             firstletter = get_pagename(
-                fn, full=True, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                fn, full=True
             )[0].upper()
             if firstletter not in self.toc.keys():
                 self.toc[firstletter] = []
@@ -116,7 +118,6 @@ class PageIndex:
                 if storage.exists(
                     get_filename(
                         subdir_path,
-                        raw_page_names=app.config["RAW_PAGE_NAMES"],
                     )
                 ):
                     # if page exists don't add the directory
@@ -128,7 +129,6 @@ class PageIndex:
                             get_pagename(
                                 subdir_path,
                                 full=False,
-                                raw_page_names=app.config["RAW_PAGE_NAMES"],
                             )
                             + "/",  # title
                             url_for(
@@ -136,9 +136,6 @@ class PageIndex:
                                 path=get_pagename(
                                     subdir_path_full,
                                     full=True,
-                                    raw_page_names=app.config[
-                                        "RAW_PAGE_NAMES"
-                                    ],
                                 ),
                             ),  # url
                             [],
@@ -148,7 +145,7 @@ class PageIndex:
             pagetoc = []
             # default pagename is the pagename derived from the filename
             pagename = get_pagename(
-                f, full=False, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                f, full=False,
             )
             # read file
             content = storage.load(f)
@@ -163,7 +160,6 @@ class PageIndex:
                         f,
                         full=False,
                         header=header[3],
-                        raw_page_names=app.config["RAW_PAGE_NAMES"],
                     )
                 else:
                     pagetoc.append(
@@ -176,9 +172,6 @@ class PageIndex:
                                     f,
                                     full=True,
                                     header=pagename,
-                                    raw_page_names=app.config[
-                                        "RAW_PAGE_NAMES"
-                                    ],
                                 ),
                                 _anchor=header[4],
                             ),
@@ -200,7 +193,6 @@ class PageIndex:
                             f,
                             full=True,
                             header=pagename,
-                            raw_page_names=app.config["RAW_PAGE_NAMES"],
                         ),
                     ),  # url
                     pagetoc,
@@ -248,7 +240,6 @@ class Changelog:
                 ) = auto_url(
                     filename,
                     entry["revision"],
-                    raw_page_names=app.config["RAW_PAGE_NAMES"],
                 )
             log.append(entry)
         return log
@@ -391,7 +382,6 @@ class Changelog:
             url_map[file.path] = auto_url(
                 file.path,
                 revision=revision,
-                raw_page_names=app.config["RAW_PAGE_NAMES"],
             )
         hunk_helper = patchset2hunkdict(patchset)
         return render_template(
@@ -410,20 +400,20 @@ class Page:
         if pagepath is not None:
             self.pagepath = pagepath
             self.pagename = get_pagename(
-                pagepath, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                pagepath
             )
         elif pagename is not None:
             self.pagename = pagename
             self.pagepath = get_pagepath(pagename)
 
-        self.pagename_full = get_pagename(self.pagepath, full=True, raw_page_names=app.config["RAW_PAGE_NAMES"])
+        self.pagename_full = get_pagename(self.pagepath, full=True)
         self.revision = revision
 
         self.filename = get_filename(
-            self.pagepath, raw_page_names=app.config["RAW_PAGE_NAMES"]
+            self.pagepath
         )
         self.attachment_directoryname = get_attachment_directoryname(
-            self.filename, raw_page_names=app.config["RAW_PAGE_NAMES"]
+            self.filename
         )
 
         # load page content and metadata
@@ -438,10 +428,10 @@ class Page:
         if self.content is not None:
             header = get_header(self.content)
             self.pagename = get_pagename(
-                self.pagepath, full=False, header=header, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                self.pagepath, full=False, header=header
             )
             self.pagename_full = get_pagename(
-                self.pagepath, full=True, header=header, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                self.pagepath, full=True, header=header
             )
 
     def breadcrumbs(self):
@@ -488,6 +478,8 @@ class Page:
             title = "{} ({})".format(self.pagename, self.revision)
 
         if raw:
+            if self.content is None:
+                self.content = ""
             # build a reference link that is appended to the content as markdown comment
             reference = f"\n[]: # ({url_for('source', pagepath=self.pagepath, _external=True)})"
             return (
@@ -545,7 +537,6 @@ class Page:
                 self.pagename,
                 full=False,
                 header=toc[0][3],
-                raw_page_names=app.config["RAW_PAGE_NAMES"],
             )
 
         # set title
@@ -585,7 +576,6 @@ class Page:
                 self.pagename,
                 full=False,
                 header=toc[0][3],
-                raw_page_names=app.config["RAW_PAGE_NAMES"],
             )
 
         return render_template(
@@ -705,7 +695,6 @@ class Page:
             url_map[file.path] = auto_url(
                 file.path,
                 revision=rev_a,
-                raw_page_names=app.config["RAW_PAGE_NAMES"],
             )
         hunk_helper = patchset2hunkdict(patchset)
         return render_template(
@@ -764,14 +753,14 @@ class Page:
         self.exists_or_404()
         # filename
         new_filename = get_filename(
-            new_pagename, raw_page_names=app.config["RAW_PAGE_NAMES"]
+            new_pagename
         )
         # check for attachments
         files, directories = storage.list(self.attachment_directoryname)
         if (len(files) + len(directories)) > 0:
             # rename attachment directory
             new_attachment_directoryname = get_attachment_directoryname(
-                new_filename, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                new_filename
             )
             # rename attachment directory
             storage.rename(
@@ -936,8 +925,8 @@ class Page:
     def get_attachment_thumbnail(self, filename, size=None, revision=None):
         try:
             size = int(
-                size
-            )  # pyright: ignore -- the except takes care of None
+                size  # pyright: ignore -- the except takes care of None
+            )
         except (TypeError, ValueError):
             size = 80
         return Attachment(self.pagepath, filename, revision).get_thumbnail(
@@ -975,17 +964,15 @@ class Attachment:
             storage.path,
             get_attachment_directoryname(
                 get_filename(
-                    pagepath, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                    pagepath
                 ),
-                raw_page_names=app.config["RAW_PAGE_NAMES"],
             ),
         )
         self.fullpath = os.path.join(pagepath, filename)
         self.directory = get_attachment_directoryname(
             get_filename(
-                pagepath, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                pagepath
             ),
-            raw_page_names=app.config["RAW_PAGE_NAMES"],
         )
         self.filepath = os.path.join(self.directory, filename)
         self.abspath = os.path.join(storage.path, self.filepath)
@@ -1244,13 +1231,10 @@ class Search:
             if mi is not None:
                 fn_result[fn] = [
                     True,
-                    "{}".format(
-                        get_pagename(
-                            fn,
-                            full=True,
-                            raw_page_names=app.config["RAW_PAGE_NAMES"],
-                        )
-                    ),
+                    get_pagename(
+                        fn,
+                        full=True,
+                    )
                 ]
             # open file, read file
             haystack = storage.load(fn)
@@ -1291,10 +1275,10 @@ class Search:
                 n,
                 fn,
                 get_pagename(
-                    fn, full=True, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                    fn, full=True
                 ),
                 get_pagename(
-                    fn, full=True, raw_page_names=app.config["RAW_PAGE_NAMES"]
+                    fn, full=True
                 ),
             ]
             summary = []

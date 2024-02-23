@@ -8,6 +8,8 @@ from otterwiki.server import storage, app
 from otterwiki.util import (
     split_path,
     join_path,
+)
+from otterwiki.helper import (
     get_pagename,
 )
 
@@ -86,16 +88,13 @@ class SidebarNavigation:
                     join_path(prefix + parts),
                     full=True,
                     header=header if len(parts) == 1 else None,
-                    raw_page_names=app.config["RAW_PAGE_NAMES"],
                 ),
                 "header": get_pagename(
                     join_path(prefix + parts),
                     full=False,
                     header=header if len(parts) == 1 else None,
-                    raw_page_names=app.config["RAW_PAGE_NAMES"],
                 ),
             }
-            print(tree)
         if len(parts) > 1:
             self.add_node(
                 tree[parts[0]]["children"], prefix + [parts[0]], parts[1:]

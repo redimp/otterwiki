@@ -3,11 +3,8 @@
 
 import pytest
 import flask
-import os
-import contextlib
 import otterwiki
 import otterwiki.gitstorage
-
 
 @pytest.fixture
 def test_client(create_app):
@@ -92,25 +89,127 @@ def test_health_check_error_storage(create_app, req_ctx, tmpdir):
     create_app.storage.repo.git._working_dir = _working_dir
 
 def test_auto_url(create_app, req_ctx):
-    name, path = otterwiki.helper.auto_url("home.md")
+    from otterwiki.helper import auto_url
+
+    name, path = auto_url("home.md")
     assert name == "Home"
     assert path == "/Home"
-    name, path = otterwiki.helper.auto_url("subspace/example.md")
+    name, path = auto_url("subspace/example.md")
     assert name == "Subspace/Example"
     assert path == "/Subspace/Example"
-    name, path = otterwiki.helper.auto_url("page/example.mp4")
+    name, path = auto_url("page/example.mp4")
     assert name == "page/example.mp4"
     assert path == "/Page/a/example.mp4"
-    name, path = otterwiki.helper.auto_url("home.md", raw_page_names=True)
+
+
+
+@pytest.fixture
+def create_app_raw_filenames(create_app):
+    create_app.config["RAW_PAGE_NAMES"] = True
+    yield create_app
+    create_app.config["RAW_PAGE_NAMES"] = False
+
+
+def test_auto_url_raw(create_app_raw_filenames, req_ctx):
+    from otterwiki.helper import auto_url
+
+    name, path = auto_url("home.md")
     assert name == "home"
     assert path == "/home"
-    name, path = otterwiki.helper.auto_url(
-        "subspace/example.md", raw_page_names=True
+    name, path = auto_url(
+        "subspace/example.md"
     )
     assert name == "subspace/example"
     assert path == "/subspace/example"
-    name, path = otterwiki.helper.auto_url(
-        "page/example.mp4", raw_page_names=True
+    name, path = auto_url(
+        "page/example.mp4"
     )
     assert name == "page/example.mp4"
     assert path == "/page/a/example.mp4"
+
+
+def test_get_filename(create_app, req_ctx):
+    from otterwiki.helper import get_filename
+
+    assert get_filename("Home") == "home.md"
+    assert get_filename("hOme") == "home.md"
+    assert get_filename("Home.md") == "home.md"
+    assert get_filename("HOME.MD") == "home.md"
+
+def test_get_filename_raw(create_app_raw_filenames, req_ctx):
+    from otterwiki.helper import get_filename
+
+    assert get_filename("Home") == "Home.md"
+    assert get_filename("hOme") == "hOme.md"
+    assert get_filename("Home.md") == "Home.md"
+    assert get_filename("HOME.MD") == "HOME.MD.md"
+
+
+def test_get_attachment_directoryname(create_app, req_ctx):
+    from otterwiki.helper import get_attachment_directoryname
+
+    assert get_attachment_directoryname("Home.md") == "home"
+    with pytest.raises(ValueError):
+        assert get_attachment_directoryname("Home")
+    assert get_attachment_directoryname("Another/Test.md") == "another/test"
+
+def test_get_attachment_directoryname_raw(create_app_raw_filenames, req_ctx):
+
+    from otterwiki.helper import get_attachment_directoryname
+
+    assert get_attachment_directoryname("Home.md") == "Home"
+    with pytest.raises(ValueError):
+        assert get_attachment_directoryname("Home")
+    assert get_attachment_directoryname("Another/Test.md") == "Another/Test"
+
+
+def test_get_pagename(create_app, req_ctx):
+    from otterwiki.helper import get_pagename
+
+    assert "Example" == get_pagename("subspace/example.md")
+    assert "Example" == get_pagename("subspace/example")
+    assert "Subspace/Example" == get_pagename("subspace/example.md", full=True)
+    assert "Subspace/Example" == get_pagename("subspace/example", full=True)
+    assert "Example" == get_pagename("example.md")
+    assert "Example" == get_pagename("example.md", full=True)
+    # updated version wich respects upper and lowercase
+    assert "ExamplE" == get_pagename("ExamplE")
+    assert "Two Words" == get_pagename("two words.md")
+    assert "Two Words" == get_pagename("two words")
+    assert "Two words" == get_pagename("Two words")
+    assert "Two words" == get_pagename("two words", header="Two words")
+    # and with subdirectories
+    assert "Two words" == get_pagename("subdir/two words", header="Two words")
+    assert "Two words" == get_pagename("subdir/two words.md", header="Two words")
+    assert "Two words" == get_pagename("subdir1/subdir2/two words.md", header="Two words")
+    assert "Two Words" == get_pagename("subdir1/subdir2/two words.md")
+    assert "Two Words" == get_pagename("subdir1/subdir2/Two Words")
+    assert "Subdir/Two words" == get_pagename("subdir/Two words", full=True)
+    assert "Two words/Two words" == get_pagename("Two words/Two words", full=True)
+
+
+def test_get_pagename_raw(create_app_raw_filenames, req_ctx):
+    from otterwiki.helper import get_pagename
+
+    # testing raw page name functionality
+    assert "example" == get_pagename("subspace/example.md")
+    assert "example" == get_pagename("subspace/example",)
+    assert "subspace/example" == get_pagename("subspace/example.md", full=True)
+    assert "subspace/example" == get_pagename("subspace/example", full=True)
+    assert "example" == get_pagename("example.md")
+    assert "example" == get_pagename("example.md", full=True)
+    # updated version wich respects upper and lowercase
+    assert "ExamplE" == get_pagename("ExamplE")
+    assert "two words" == get_pagename("two words.md")
+    assert "two words" == get_pagename("two words")
+    assert "Two words" == get_pagename("Two words")
+    assert "Two words" == get_pagename("two words", header="Two words")
+    # and with subdirectories
+    assert "Two words" == get_pagename("subdir/two words", header="Two words")
+    assert "Two words" == get_pagename("subdir/two words.md", header="Two words")
+    assert "Two words" == get_pagename("subdir1/subdir2/two words.md", header="Two words")
+    assert "two words" == get_pagename("subdir1/subdir2/two words.md")
+    assert "Two Words" == get_pagename("subdir1/subdir2/Two Words")
+    assert "subdir/Two words" == get_pagename("subdir/Two words", full=True)
+    assert "Two words/Two words" == get_pagename("Two words/Two words", full=True)
+
