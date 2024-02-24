@@ -223,9 +223,12 @@ selected="selected"
 {##}
     <div class="form-group">
       <div class="custom-checkbox">
-        <input {%if config.RAW_PAGE_NAMES %}checked{% endif %} type="checkbox" id="raw_page_names" name="raw_page_names"
+        <input {%if config.RETAIN_PAGE_NAME_CASE %}checked{% endif %} type="checkbox" id="raw_page_names" name="raw_page_names"
           value="True">
-        <label for="raw_page_names">Preserve "raw" page names when saving and displaying markdown files</label>
+        <label for="raw_page_names">Retain page name case.</label>
+        <div class="mt-5">
+            Enable this to retain upper and lower case of the page name in the filename used for storing the page.
+        </div>
       </div>
     </div>
 {##}

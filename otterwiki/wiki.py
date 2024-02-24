@@ -71,7 +71,7 @@ class PageIndex:
         '''
 
         if path is not None:
-            self.path = path if app.config["RAW_PAGE_NAMES"] else path.lower()
+            self.path = path if app.config["RETAIN_PAGE_NAME_CASE"] else path.lower()
             self.path = self.path.rstrip("/")
             self.breadcrumbs = get_breadcrumbs(
                 get_pagename(
@@ -1353,7 +1353,7 @@ class AutoRoute:
             self.pagepath = ""
 
         # glue together storage path
-        if app.config["RAW_PAGE_NAMES"]:
+        if app.config["RETAIN_PAGE_NAME_CASE"]:
             self.storage_path = join_path([self.pagepath, self.filename])
         else:
             self.storage_path = join_path(
@@ -1367,7 +1367,7 @@ class AutoRoute:
             and not self.filename.lower().endswith(".md")
             and not storage.isdir(
                 self.path
-                if app.config["RAW_PAGE_NAMES"]
+                if app.config["RETAIN_PAGE_NAME_CASE"]
                 else self.path.lower()
             )
             and storage.exists(self.storage_path)

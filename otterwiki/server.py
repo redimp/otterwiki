@@ -29,7 +29,7 @@ app.config.update(
     EMAIL_NEEDS_CONFIRMATION=True,
     NOTIFY_ADMINS_ON_REGISTER=False,
     NOTIFY_USER_ON_APPROVAL=False,
-    RAW_PAGE_NAMES=False,
+    RETAIN_PAGE_NAME_CASE=False,
     SQLALCHEMY_DATABASE_URI="sqlite:///:memory:",
     MAIL_DEFAULT_SENDER="otterwiki@YOUR.ORGANIZATION.TLD",
     MAIL_SERVER="",
@@ -77,8 +77,9 @@ if (len(storage.list()[0]) < 1) and (len(storage.log()) < 1):  # pyright: ignore
     # we have a brand new repository here
     with open(os.path.join(app.root_path, "initial_home.md")) as f:
         content = f.read()
+        filename = "Home.md" if app.config["RETAIN_PAGE_NAME_CASE"] else "home.md"
         storage.store(  # pyright: ignore
-            filename="home.md", content=content,
+            filename=filename, content=content,
             author=("Otterwiki Robot", "noreply@otterwiki"),
             message="Initial commit",
         )
@@ -108,7 +109,7 @@ def update_app_config():
                 "EMAIL_NEEDS_CONFIRMATION",
                 "NOTIFY_ADMINS_ON_REGISTER",
                 "NOTIFY_USER_ON_APPROVAL",
-                "RAW_PAGE_NAMES",
+                "RETAIN_PAGE_NAME_CASE",
             ]:
                 item.value = item.value.lower() in ["true","yes"]
             if item.name.upper() in ["MAIL_PORT"]:

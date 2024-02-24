@@ -137,7 +137,7 @@ def get_filename(pagepath):
     This function will attempt to determine if this is a 'folder' or a 'page'.
     '''
 
-    p = pagepath if app.config["RAW_PAGE_NAMES"] else pagepath.lower()
+    p = pagepath if app.config["RETAIN_PAGE_NAME_CASE"] else pagepath.lower()
     p = clean_slashes(p)
 
     if not p.endswith(".md"):
@@ -147,7 +147,7 @@ def get_filename(pagepath):
 
 
 def get_attachment_directoryname(filename):
-    filename = filename if app.config["RAW_PAGE_NAMES"] else filename.lower()
+    filename = filename if app.config["RETAIN_PAGE_NAME_CASE"] else filename.lower()
     if filename[-3:] != ".md":
         raise ValueError
     return filename[:-3]
@@ -171,7 +171,7 @@ def get_pagename(filepath, full=False, header=None):
                 or (hint == part and hint != part.lower()):
             arr[i] = hint
         else:
-            arr[i] = part if app.config["RAW_PAGE_NAMES"] else titleSs(part)
+            arr[i] = part if app.config["RETAIN_PAGE_NAME_CASE"] else titleSs(part)
 
     if not full:
         return arr[-1]

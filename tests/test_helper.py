@@ -105,9 +105,9 @@ def test_auto_url(create_app, req_ctx):
 
 @pytest.fixture
 def create_app_raw_filenames(create_app):
-    create_app.config["RAW_PAGE_NAMES"] = True
+    create_app.config["RETAIN_PAGE_NAME_CASE"] = True
     yield create_app
-    create_app.config["RAW_PAGE_NAMES"] = False
+    create_app.config["RETAIN_PAGE_NAME_CASE"] = False
 
 
 def test_auto_url_raw(create_app_raw_filenames, req_ctx):

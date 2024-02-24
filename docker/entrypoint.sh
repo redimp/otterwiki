@@ -36,7 +36,7 @@ for EV in READ_ACCESS WRITE_ACCESS ATTACHMENT_ACCESS; do
         echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
     fi
 done
-for EV in AUTO_APPROVAL EMAIL_NEEDS_CONFIRMATION RAW_PAGE_NAMES; do
+for EV in AUTO_APPROVAL EMAIL_NEEDS_CONFIRMATION RETAIN_PAGE_NAME_CASE; do
     if [ ! -z "${!EV}" ]; then
         sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
         echo "${EV} = ${!EV}" >> ${OTTERWIKI_SETTINGS}
