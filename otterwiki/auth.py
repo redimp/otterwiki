@@ -118,13 +118,20 @@ class SimpleAuth:
         toast("You logged out successfully.")
         return redirect(url_for("login"))
 
+    def check_credentials(self, email, password):
+        user = self.User.query.filter_by(email=email).first()
+        if not user or not check_password_hash_backport(user.password_hash, password):
+            return None
+        return user
+
     def handle_login(self, email=None, password=None, remember=None):
         if email is not None:
             email = email.lower()
         # query user
         user = self.User.query.filter_by(email=email).first()
         next_page = request.form.get("next")
-        if user is not None and check_password_hash_backport(user.password_hash, password):
+        user = self.check_credentials(email, password)
+        if user is not None:
             if app.config["EMAIL_NEEDS_CONFIRMATION"] and not user.is_admin \
                     and not user.email_confirmed:
                 toast("Please confirm your email address. "+\
@@ -431,7 +438,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login" # pyright: ignore
 
-# create auth_manaeger
+# create auth_manager
 if app.config.get("AUTH_METHOD") in ["", "SIMPLE"]:
     auth_manager = SimpleAuth()
 else:
@@ -508,11 +515,15 @@ def update_user(user):
 
 def delete_user(user):
     return auth_manager.delete_user(user)
+
+def check_credentials(email, password):
+    return auth_manager.check_credentials(email, password)
+
 #
 # utils
 #
-def has_permission(permission):
-    if current_user.is_authenticated and current_user.is_admin:
+def has_permission(permission, user=current_user):
+    if user.is_authenticated and user.is_admin:
         return True
     # check page read permission
     if permission.upper() == "READ":
@@ -520,25 +531,25 @@ def has_permission(permission):
             return True
         if (
             app.config["READ_ACCESS"].upper() == "REGISTERED"
-            and current_user.is_authenticated
+            and user.is_authenticated
         ):
             return True
         if (
             app.config["READ_ACCESS"].upper() == "APPROVED"
-            and current_user.is_authenticated
-            and current_user.is_approved
+            and user.is_authenticated
+            and user.is_approved
         ):
             return True
         if (
-            current_user.is_authenticated
-            and current_user.is_approved
-            and current_user.allow_read
+            user.is_authenticated
+            and user.is_approved
+            and user.allow_read
         ):
             return True
         # admins have permissions for everything
         if (
-            current_user.is_authenticated
-            and current_user.is_admin
+            user.is_authenticated
+            and user.is_admin
         ):
             return True
     # check page edit permission
@@ -550,25 +561,25 @@ def has_permission(permission):
             return True
         if (
             app.config["WRITE_ACCESS"].upper() == "REGISTERED"
-            and current_user.is_authenticated
+            and user.is_authenticated
         ):
             return True
         if (
             app.config["WRITE_ACCESS"].upper() == "APPROVED"
-            and current_user.is_authenticated
-            and current_user.is_approved
+            and user.is_authenticated
+            and user.is_approved
         ):
             return True
         if (
-            current_user.is_authenticated
-            and current_user.is_approved
-            and current_user.allow_write
+            user.is_authenticated
+            and user.is_approved
+            and user.allow_write
         ):
             return True
         # admins have permissions for everything
         if (
-            current_user.is_authenticated
-            and current_user.is_admin
+            user.is_authenticated
+            and user.is_admin
         ):
             return True
     # check upload permission
@@ -579,31 +590,31 @@ def has_permission(permission):
             return True
         if (
             app.config["ATTACHMENT_ACCESS"] == "REGISTERED"
-            and current_user.is_authenticated
+            and user.is_authenticated
         ):
             return True
         if (
             app.config["ATTACHMENT_ACCESS"] == "APPROVED"
-            and current_user.is_authenticated
-            and current_user.is_approved
+            and user.is_authenticated
+            and user.is_approved
         ):
             return True
         if (
-            current_user.is_authenticated
-            and current_user.is_approved
-            and current_user.allow_upload
+            user.is_authenticated
+            and user.is_approved
+            and user.allow_upload
         ):
             return True
         # admins have permissions for everything
         if (
-            current_user.is_authenticated
-            and current_user.is_admin
+            user.is_authenticated
+            and user.is_admin
         ):
             return True
     if permission.upper() == "ADMIN":
-        if current_user.is_anonymous:
+        if user.is_anonymous:
             return False
-        return True == current_user.is_admin
+        return True == user.is_admin
 
     return False
 

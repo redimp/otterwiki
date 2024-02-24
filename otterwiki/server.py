@@ -43,6 +43,7 @@ app.config.update(
     SIDEBAR_MENUTREE_MODE="SORTED",
     SIDEBAR_MENUTREE_MAXDEPTH="",
     COMMIT_MESSAGE="REQUIRED", # OPTIONAL
+    GIT_WEB_SERVER=False,
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
@@ -149,6 +150,10 @@ def format_datetime(value, format="medium"):
     return value.strftime(format)
 
 app.jinja_env.globals.update(os_getenv=os.getenv)
+
+# initialize git via http
+import otterwiki.remote
+githttpserver = otterwiki.remote.GitHttpServer(path=app.config["REPOSITORY"])
 
 import otterwiki.views
 

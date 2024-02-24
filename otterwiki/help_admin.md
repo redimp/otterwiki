@@ -42,8 +42,7 @@ The changes will be applied with <span class="btn btn-primary btn-sm btn-hlp">Up
 
 On the Edit user page you can remove a user from the wiki's database. Check the
 box and hit <span class="btn btn-danger btn-sm btn-hlp" style="border: None;" role="button">Delete</span>.
-Please note that this neither changes any edit history nor 
-prevents the user from signing up again.
+Note that this will not change any edit history or prevent the user from signing up again.
 
 ### Sidebar Preferences
 
@@ -56,6 +55,11 @@ or only the directories. Alternatively you choose to not display the Page Index 
 Per default An Otter Wiki requires users to add commit messages when updating a
 page. You can configure this with the <span class="help-button">Commit Message</span>
 setting. Setting this to `optional` will allow empty commit messages.
+
+An Otter Wiki stores pages in files with names of all lowercase names. To retain
+the upper and lower case of the filenames, check <span class="help-button"><input type="checkbox" style="display:inline;" id="true-retain-page-name" checked> Retain page name case</span>.
+
+With <span class="help-button"><input type="checkbox" style="display:inline;" id="true-git-webserver" checked> Enable Git Server</span> allow users with the permission to READ to clone and pull the wiki content via git and users with UPLOAD/Attachment management permissions to push content. HTTP Basic authentication is used for non anonymous access. There is no option for using git via ssh.
 
 ### Access Permissions and Registration Preferences
 

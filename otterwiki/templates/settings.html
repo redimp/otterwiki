@@ -85,4 +85,30 @@
 </div>
 {#
 #}
+{% if config.GIT_WEB_SERVER %}
+<div class="card">
+<div class="mw-full w-600">
+<h2 class="card-title">Git Repository Access</h2>
+
+ <div class="form-inline">
+    <label for="git-url" class="text-monospace">git clone</label>
+    <div class="input-group">
+        <input type="text" class="form-control" value="{{url_for("dotgit", _external=True)}}" id="git-url">
+      <div class="input-group-append">
+        <button class="btn" onclick="navigator.clipboard.writeText('{{url_for("dotgit", _external=True)}}')"><i class="fas fa-copy"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="form-text">
+      {% if has_permission('READ') %}
+      Your current permissions grant you pull {% if has_permission('UPLOAD') %} and push
+      {%- endif %} access. Use your email address as username and your password as password
+      when asked by your git client.
+      {% endif %}
+    </div>
+</div>
+</div>
+{% endif %}
+{#
+#}
 {% endblock %}

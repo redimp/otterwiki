@@ -73,7 +73,8 @@ def handle_mail_preferences(form):
 
 def handle_app_preferences(form):
     for name in ["site_name", "site_logo", "site_description", "site_icon",
-                 "sidebar_menutree_maxdepth","sidebar_menutree_mode", "commit_message"]:
+                 "sidebar_menutree_maxdepth","sidebar_menutree_mode", "commit_message",
+                 "git_web_server"]:
         _update_preference(name.upper(),form.get(name, ""))
     for name in ["READ_access", "WRITE_access", "ATTACHMENT_access"]:
         _update_preference(name.upper(),form.get(name, "ANONYMOUS"))

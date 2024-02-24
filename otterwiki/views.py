@@ -8,14 +8,17 @@ from flask import (
     abort,
     render_template,
     make_response,
+    redirect,
+    url_for,
 )
-from otterwiki.server import app
+from otterwiki.server import app, storage, githttpserver
 from otterwiki.wiki import Page, PageIndex, Changelog, Search, render, AutoRoute
 import otterwiki.auth
 import otterwiki.preferences
 from otterwiki.helper import toast, health_check
 from otterwiki.version import __version__
 from otterwiki.util import sanitize_pagename
+
 from flask_login import login_required
 
 #
@@ -424,10 +427,28 @@ def search(query=None):
     )
     return s.render()
 
-@app.route("/.git", methods=["POST", "GET"])
-@app.route("/.git/<path:path>", methods=["POST", "GET"])
-def dotgit(path=None):
-    abort(404)
+#
+# git remote http server
+#
+@app.route("/.git", methods=["GET"])
+def dotgit():
+    return redirect(url_for("index"))
 
+@app.route("/.git/info/refs", methods=["POST", "GET"])
+def git_info_refs():
+    service = request.args.get("service")
+    if service in ["git-upload-pack", "git-receive-pack"]:
+        return githttpserver.advertise_refs(service)
+    else:
+        abort(400)
+
+@app.route("/.git/git-upload-pack", methods=["POST"])
+def git_upload_pack():
+    return githttpserver.git_upload_pack(request.stream)
+
+
+@app.route("/.git/git-receive-pack", methods=["POST"])
+def git_receive_pack():
+    return githttpserver.git_receive_pack(request.stream)
 
 # vim: set et ts=8 sts=4 sw=4 ai:
