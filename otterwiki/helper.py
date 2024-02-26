@@ -15,7 +15,7 @@ from flask import flash, url_for
 from threading import Thread
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from otterwiki.util import get_pagename, split_path, join_path
+from otterwiki.util import split_path, join_path, clean_slashes, titleSs
 
 
 class SerializeError(ValueError):
@@ -101,22 +101,80 @@ def health_check():
         return True, ["ok"]
     return False, msg
 
+
 def auto_url(filename, revision=None):
     # handle attachments and pages
     arr = split_path(filename)
     if filename.endswith(".md"):
         # page
-        return (get_pagename(filename, full=True),
-                url_for(
-                    "view", path=get_pagename(filename, full=True),
-                    revision=revision
-               ))
+        return (
+            get_pagename(filename, full=True),
+            url_for(
+                "view",
+                path=get_pagename(
+                    filename, full=True
+                ),
+                revision=revision,
+            ),
+        )
     else:
         # attachment
-        pagename, attached_filename = get_pagename(join_path(arr[:-1]), full=True), arr[-1]
+        pagename, attached_filename = (
+            get_pagename(
+                join_path(arr[:-1]), full=True
+            ),
+            arr[-1],
+        )
         return (filename,
                 url_for('get_attachment',
                     pagepath=pagename,
                     filename=attached_filename, revision=revision)
                )
+
+
+def get_filename(pagepath):
+    '''This is the actual filepath on disk (not via URL) relative to the repository root
+    This function will attempt to determine if this is a 'folder' or a 'page'.
+    '''
+
+    p = pagepath if app.config["RETAIN_PAGE_NAME_CASE"] else pagepath.lower()
+    p = clean_slashes(p)
+
+    if not p.endswith(".md"):
+        return "{}.md".format(p)
+
+    return p
+
+
+def get_attachment_directoryname(filename):
+    filename = filename if app.config["RETAIN_PAGE_NAME_CASE"] else filename.lower()
+    if filename[-3:] != ".md":
+        raise ValueError
+    return filename[:-3]
+
+
+def get_pagename(filepath, full=False, header=None):
+    '''This will derive the page name (displayed on the web page) from the url requested'''
+    # remove trailing slashes from filepath
+    filepath=filepath.rstrip("/")
+
+    if filepath.endswith(".md"):
+        filepath = filepath[:-3]
+
+    arr = split_path(filepath)
+    for i, part in enumerate(arr):
+        hint = part
+        # if basename use header as hint
+        if i == len(arr)-1 and header is not None:
+            hint = header
+        if (hint != part and hint.lower() == part.lower()) \
+                or (hint == part and hint != part.lower()):
+            arr[i] = hint
+        else:
+            arr[i] = part if app.config["RETAIN_PAGE_NAME_CASE"] else titleSs(part)
+
+    if not full:
+        return arr[-1]
+    return "/".join(arr)
+
 

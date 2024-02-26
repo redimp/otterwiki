@@ -8,6 +8,8 @@ from otterwiki.server import storage, app
 from otterwiki.util import (
     split_path,
     join_path,
+)
+from otterwiki.helper import (
     get_pagename,
 )
 
@@ -19,7 +21,7 @@ class SidebarNavigation:
     SETEX_HEADING = re.compile(r'([^\n]+)\n *(=|-){2,}[ \t]*\n+')
 
     def __init__(self, path: str = "/"):
-        self.path = path.lower()
+        self.path = path if app.config["RETAIN_PAGE_NAME_CASE"] else path.lower()
         self.path_depth = len(split_path(self.path))
         try:
             self.max_depth = int(app.config["SIDEBAR_MENUTREE_MAXDEPTH"])

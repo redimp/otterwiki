@@ -19,6 +19,7 @@ ATTACHMENT_ACCESS = 'REGISTERED'
 AUTO_APPROVAL     = True
 EMAIL_NEEDS_CONFIRMATION = True
 # NOTIFY_ADMINS_ON_REGISTER = True
+# RETAIN_PAGE_NAME_CASE = False
 
 # Database Configuration
 # e.g. SQLALCHEMY_DATABASE_URI='sqlite:////absolute/path/to/the/sqlite/database/file'
