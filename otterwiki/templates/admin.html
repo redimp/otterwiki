@@ -223,9 +223,10 @@ selected="selected"
 {##}
     <div class="form-group">
       <div class="custom-checkbox">
-        <input {%if config.RETAIN_PAGE_NAME_CASE %}checked{% endif %} type="checkbox" id="raw_page_names" name="raw_page_names"
+        <input {%if config.RETAIN_PAGE_NAME_CASE %}checked{% endif %} type="checkbox" id="retain_page_name_case"
+          name="retain_page_name_case"
           value="True">
-        <label for="raw_page_names">Retain page name case.</label>
+        <label for="retain_page_name_case">Retain page name case.</label>
         <div class="mt-5">
             Enable this to retain upper and lower case of the page name in the filename used for storing the page.
         </div>

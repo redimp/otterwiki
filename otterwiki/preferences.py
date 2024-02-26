@@ -82,7 +82,7 @@ def handle_app_preferences(form):
         "email_needs_confirmation",
         "notify_admins_on_register",
         "notify_user_on_approval",
-        "raw_page_names",
+        "retain_page_name_case",
     ]:
         _update_preference(checkbox.upper(),form.get(checkbox, "False"))
     # commit changes to the database
