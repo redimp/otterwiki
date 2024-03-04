@@ -8,26 +8,62 @@
 </style>
 <link href="{{ url_for("static", filename="css/codemirror.css") | debug_unixtime }}" rel="stylesheet" />
 <link href="{{ url_for("static", filename="css/codemirror-theme.css") | debug_unixtime }}" rel="stylesheet" />
+<link href="{{ url_for("static", filename="css/codemirror-dialog.css") | debug_unixtime }}" rel="stylesheet" />
 {% endblock %}
 {% block navbar_editor %}
 <button onclick="otterwiki_editor.undo()" class="btn btn-editor btn-xs ml-10" title="Undo"><i class="fas fa-undo"></i></button>
 <button onclick="otterwiki_editor.redo()" class="btn btn-editor btn-xs" style="margin-left: 0.1rem;" title="Redo"><i class="fas fa-redo"></i></button>
+{##}
+<button onclick="CodeMirror.commands.find(cm_editor)" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Search"><i class="fas fa-search"></i></button>
+<button onclick="CodeMirror.commands.replace(cm_editor)" class="btn btn-editor btn-xs mr-5 hidden-sm-and-down" title="Find and Replace"><i class="fas fa-search fa-flip-both"></i></button>
+{##}
+<button onclick="otterwiki_editor.italic()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Italic"><i class="fa fa-italic"></i></button>
 <button onclick="otterwiki_editor.bold()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Bold"><i class="fa fa-bold"></i></button>
 <button onclick="otterwiki_editor.italic()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Italic"><i class="fa fa-italic"></i></button>
 <button onclick="otterwiki_editor.strikethrough()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Strikethrough"><i class="fa fa-strikethrough"></i></button>
 <button onclick="otterwiki_editor.code()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Code"><i class="fa fa-code"></i></button>
 <button onclick="otterwiki_editor.header()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Header"><i class="fa fa-heading"></i></button>
-<button onclick="otterwiki_editor.ul()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="List"><i class="fas fa-list-ul"></i></button>
-<button onclick="otterwiki_editor.ol()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Ordered List"><i class="fas fa-list-ol"></i></button>
-<button onclick="otterwiki_editor.cl()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Checklist"><i class="far fa-check-square"></i></button>
+{##}
+<div class="dropdown">
+  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-list">
+    <i class="fas fa-list-ul"></i>
+  </button>
+  <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-list">
+    <a onclick="otterwiki_editor.ul()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-list-ul"></i>
+        </span>
+        Unordered List
+    </a>
+    <a onclick="otterwiki_editor.ol()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-list-ul"></i>
+        </span>
+        Ordered List
+    </a>
+    <a onclick="otterwiki_editor.cl()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-check-square"></i>
+        </span>
+        Checklist
+    </a>
+  </div>
+</div>
+{##}
 <button onclick="otterwiki_editor.link()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Link"><i class="fas fa-link"></i></button>
 <button onclick="otterwiki_editor.img()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Picture"><i class="far fa-image"></i></button>
-<button onclick="otterwiki_editor.table()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Table"><i class="fas fa-table"></i></button>
+{##}
 <div class="dropdown">
-  <button class="btn btn-editor mr-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-table">
-    <i class="fas fa-th fa-rotate-90"></i>
+  <button class="btn btn-editor ml-5 mr-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-table">
+    <i class="fas fa-table"></i>
   </button>
   <div class="dropdown-menu dropdown-menu-right w-200" aria-labelledby="navbar-dropdown-toggle-table">
+    <a onclick="otterwiki_editor.table()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-table"></i>
+        </span>
+        Add Table
+    </a>
     <a onclick="otterwiki_editor.table_add_row()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-plus-circle"></i>
@@ -184,6 +220,9 @@
 <script src="{{ url_for("static", filename="js/inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/codemirror-4.inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-modes.min.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for("static", filename="js/cm-search.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for("static", filename="js/cm-searchcursor.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for("static", filename="js/cm-dialog.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
     var cm_editor = CodeMirror.fromTextArea(document.getElementById("content_editor"), {
         mode: 'markdown',

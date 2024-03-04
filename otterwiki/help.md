@@ -8,6 +8,16 @@ To create a page use the <span class="help-button"><span class="btn btn-square b
 
 You can preview your changes using <span class="btn btn-primary btn-sm btn-hlp"><i class="far fa-eye"></i></span>. Either while editing or from previewing the article your changes can be committed via <span class="btn btn-success btn-sm btn-hlp"> <i class="fas fa-save"></i></span>. This will open a modal where you can enter a commit message. To discard your changes use <span class="btn btn-danger btn-sm btn-hlp" style="border: None;" role="button"><i class="fas fa-window-close"></i></span> and return to the view of the page.
 
+#### Editor Shortcuts
+
+| Operation     | Linux/Windows                | MacOS                       |
+|---------------|------------------------------|-----------------------------|
+| Search        | <kbd>Ctrl</kbd>-<kbd>F</kbd> | <kbd>Cmd</kbd>-<kbd>F</kbd> |
+| Find next     | <kbd>Ctrl</kbd>-<kbd>G</kbd> | <kbd>Cmd</kbd>-<kbd>G</kbd> |
+| Find previous | <kbd>Shift</kbd>-<kbd>Ctrl</kbd>-<kbd>G</kbd> | <kbd>Shift</kbd>-<kbd>Cmd</kbd>-<kbd>G</kbd> |
+| Replace       | <kbd>Shift</kbd>-<kbd>Ctrl</kbd>-<kbd>F</kbd> | <kbd>Cmd</kbd>-<kbd>Option</kbd>-<kbd>F</kbd> |
+| Replace all   | <kbd>Shift</kbd>-<kbd>Ctrl</kbd>-<kbd>R</kbd> | <kbd>Shift</kbd>-<kbd>Cmd</kbd>-<kbd>Option</kbd>-<kbd>F</kbd> |
+
 #### Page history
 
 You can view the history of a page with <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span> <i class="fas fa-caret-right"></i> <span class="btn btn-square btn-sm"><i class="far fa-file-alt"></i></span> History</span>. All edits of the page will be listed in order. The date of the commit, the Author and the commit message are displayed.
