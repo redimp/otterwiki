@@ -21,17 +21,30 @@ var otterwiki_editor = {
                   { line: n, ch: 999999, }
         );
     },
+    _findWordAt: function(pos) {
+        var line = cm_editor.getLine(pos.line);
+        var start = pos.ch, end = pos.ch;
+        if (line) {
+            var check = function(ch) {
+                return !(/\s|[,\.!\?]/.test(ch));
+            }
+            while (start > 0 && check(line.charAt(start - 1))) { --start; }
+            while (end < line.length && check(line.charAt(end))) { ++end; }
+        }
+        return { anchor: {line: pos.line, ch: start}, head: { line: pos.line, ch: end }};
+    },
     _toggleBlock: function(syntax_chars, token) {
         if (!(syntax_chars instanceof Array)) {
             syntax_chars = [syntax_chars];
         }
         var anythingSelected = true;
+        var toggle_off = false;
         // store cursor
         const cursor = cm_editor.getCursor();
         if (cm_editor.getSelection().length == 0) {
             // if nothing is selected, select the word under the cursor
             anythingSelected = false;
-            const word = cm_editor.findWordAt(cm_editor.getCursor());
+            const word = otterwiki_editor._findWordAt(cm_editor.getCursor());
             cm_editor.setSelection(word.anchor, word.head);
         }
         if (cm_editor.getSelection().trim().length == 0) {
@@ -43,10 +56,10 @@ var otterwiki_editor = {
             const cursor_end = cm_editor.getCursor('end');
             var text = cm_editor.getSelection()
             // check if block starts with syntax_chars
-            toggle_on = true;
+            toggle_off = false;
             for (const chars of syntax_chars) {
                 if (text.startsWith(chars) && text.endsWith(chars)) {
-                    toggle_on = false;
+                    toggle_off = true;
                     // slice off syntax chars
                     text = text.slice(chars.length, text.length - chars.length);
                     cm_editor.replaceSelection(text);
@@ -58,7 +71,7 @@ var otterwiki_editor = {
                     cm_editor.setSelection(cursor_start, cursor_end);
                 }
             }
-            if (toggle_on) {
+            if (!toggle_off) {
                 text = syntax_chars[0] + text + syntax_chars[0];
                 cm_editor.replaceSelection(text);
                 // update end cursor (start cursor is fine)
@@ -70,10 +83,17 @@ var otterwiki_editor = {
             }
         }
         if (!anythingSelected) {
-            setTimeout(() => {
-                cursor.ch += syntax_chars[0].length;
-                cm_editor.setCursor(cursor);
-            }, 0);
+            if (toggle_off) {
+                setTimeout(() => {
+                    cursor.ch -= syntax_chars[0].length;
+                    cm_editor.setCursor(cursor);
+                }, 0);
+            } else {
+                setTimeout(() => {
+                    cursor.ch += syntax_chars[0].length;
+                    cm_editor.setCursor(cursor);
+                }, 0);
+            }
         }
 
         cm_editor.focus();
