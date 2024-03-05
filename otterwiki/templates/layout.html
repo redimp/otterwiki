@@ -1,4 +1,4 @@
-{#- vim: set et ts=8 sts=4 sw=4 ai ft=htmldjango: -#}
+{#- vim: set et ts=8 sts=4 sw=4 ai: -#}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,7 +83,7 @@
 {%- else %}
                 <img src="{{ url_for("static", filename="img/otterhead.png") }}" alt="" id="site_logo"/>
 {%- endif %}
-                <span class="d-none d-sm-flex">{{ config.SITE_NAME }}</span>
+                <span class="d-none d-sm-flex text-truncate">{{ config.SITE_NAME }}</span>
             </a>
 {% block navbar_editor %}
 {% endblock %}
