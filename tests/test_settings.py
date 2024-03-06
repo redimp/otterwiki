@@ -21,7 +21,10 @@ def test_settings_update_name(app_with_user, test_client):
     # check name
     rv = test_client.get("/-/settings")
     assert 200 == rv.status_code
-    assert '<input name="name" type="text" class="form-control" id="name" value="Test User">' in rv.data.decode()
+    assert (
+        '<input name="name" type="text" class="form-control" id="name" value="Test User"'
+        in rv.data.decode()
+    )
 
     # update name
     rv = test_client.post(
@@ -31,7 +34,10 @@ def test_settings_update_name(app_with_user, test_client):
         },
         follow_redirects=True,
     )
-    assert '<input name="name" type="text" class="form-control" id="name" value="Updated Name">' in rv.data.decode()
+    assert (
+        '<input name="name" type="text" class="form-control" id="name" value="Updated Name"'
+        in rv.data.decode()
+    )
     assert 'Your name was updated successfully' in rv.data.decode()
     # restore name
     rv = test_client.post(
@@ -42,7 +48,10 @@ def test_settings_update_name(app_with_user, test_client):
         follow_redirects=True,
     )
     assert 200 == rv.status_code
-    assert '<input name="name" type="text" class="form-control" id="name" value="Test User">' in rv.data.decode()
+    assert (
+        '<input name="name" type="text" class="form-control" id="name" value="Test User"'
+        in rv.data.decode()
+    )
 
 
 def test_settings_update_name_failed(app_with_user, test_client):
@@ -59,7 +68,10 @@ def test_settings_update_name_failed(app_with_user, test_client):
     # check name
     rv = test_client.get("/-/settings")
     assert 200 == rv.status_code
-    assert '<input name="name" type="text" class="form-control" id="name" value="Test User">' in rv.data.decode()
+    assert (
+        '<input name="name" type="text" class="form-control" id="name" value="Test User"'
+        in rv.data.decode()
+    )
 
     # update name
     rv = test_client.post(
@@ -69,7 +81,10 @@ def test_settings_update_name_failed(app_with_user, test_client):
         },
         follow_redirects=True,
     )
-    assert '<input name="name" type="text" class="form-control" id="name" value="Test User">' in rv.data.decode()
+    assert (
+        '<input name="name" type="text" class="form-control" id="name" value="Test User"'
+        in rv.data.decode()
+    )
     assert 'Your name must be at least one character.' in rv.data.decode()
 
 

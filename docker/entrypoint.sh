@@ -30,7 +30,7 @@ for EV in SITE_NAME SITE_LOGO SITE_DESCRIPTION SITE_ICON; do
     fi
 done
 # permissions
-for EV in READ_ACCESS WRITE_ACCESS ATTACHMENT_ACCESS; do
+for EV in AUTH_METHOD READ_ACCESS WRITE_ACCESS ATTACHMENT_ACCESS; do
     if [ ! -z "${!EV}" ]; then
         sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
         echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
