@@ -38,6 +38,7 @@ from otterwiki.helper import (
 )
 from otterwiki.auth import has_permission, current_user
 from datetime import timedelta, datetime
+from timeit import default_timer as timer
 from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
 from io import BytesIO
@@ -84,15 +85,11 @@ class PageIndex:
             self.path, self.breadcrumbs = None, None
             self.index_depth = 0
 
-        from timeit import default_timer as timer
-
         t_start = timer()
         files, _ = storage.list(p=self.path)
         app.logger.debug(
-            "PageIndex reading files and directories took {:.3f} seconds.".format(
-                timer() - t_start
+                f"PageIndex({self.path}) storage.list() files took {timer() - t_start:.3f} seconds."
             )
-        )
         self.toc = {}
         page_indices = []
         t_start = timer()
@@ -200,10 +197,8 @@ class PageIndex:
             )
 
         app.logger.debug(
-            "PageIndex parsing files took {:.3f} seconds.".format(
-                timer() - t_start
+                f"PageIndex({self.path}) parsing files took {timer() - t_start:.3f} seconds."
             )
-        )
 
     def render(self):
         if not has_permission("READ"):
@@ -1221,10 +1216,14 @@ class Search:
         if self.re is None:
             return {}
         # find all markdown files
+        t_start = timer()
         files, _ = storage.list()
         md_files = [filename for filename in files if filename.endswith(".md")]
+        app.logger.debug(
+            f"Search storage.list() and filter took {timer() - t_start:.3f} seconds.")
         fn_result = {}
 
+        t_start = timer()
         for fn in md_files:
             # check if pagename matches
             mi = self.rei.search(get_pagename(fn))
@@ -1251,6 +1250,8 @@ class Search:
                     lastlinematched = True
                 else:
                     lastlinematched = False
+        app.logger.debug(
+            f"Search storage.load() and re.search('{self.needle}') took {timer() - t_start:.3f} seconds.")
         if self.in_history:
             # TODO
             # use git log -S
@@ -1258,6 +1259,7 @@ class Search:
             # search trough commits to find the one that added the string
             pass
 
+        t_start = timer()
         result = {}
         # simplify result
         for fn, matches in fn_result.items():
@@ -1316,6 +1318,8 @@ class Search:
                     )
             # store summary with key
             result[tuple(key)] = summary
+        app.logger.debug(
+            f"Search simplify result took {timer() - t_start:.3f} seconds.")
 
         return result
 
