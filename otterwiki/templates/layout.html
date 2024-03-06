@@ -90,7 +90,7 @@
             <div class="navbar-content ml-auto">
 {% block navbarsearch %}
                 <form action="{{ url_for("search") }}" method="post">
-                <input name="query" type="text" class="form-control mr-5" placeholder="Search">
+                <input name="query" id="searchBar" type="text" class="form-control mr-5" placeholder="Search">
                 </form>
 {% endblock %}
 {% block navbardropdown_outer %}
@@ -235,6 +235,17 @@
     });
   {% endfor %}
 {% endwith %}
+
+// Enable Search bar toogle shortcut with CTRL + /
+
+    document.addEventListener("keydown", function(event) {
+        var searchBar = document.getElementById("searchBar");
+        if (event.ctrlKey && event.key === "/") {
+            searchBar.focus(); 
+            event.preventDefault(); // Prevent the default action of the key combination (usually opening the browser's search)
+        }
+    });
+  
 </script>
 </body>
 </html>
