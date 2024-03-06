@@ -16,6 +16,7 @@ app = Flask(__name__)
 app.config.update(
     DEBUG=False,  # make sure DEBUG is off unless enabled explicitly otherwise
     TESTING=False,
+    LOG_LEVEL="INFO",
     REPOSITORY=None,
     SECRET_KEY="CHANGE ME",
     SITE_NAME="An Otter Wiki",
@@ -49,8 +50,7 @@ app.config.update(
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
-# add log level
-otterwiki.util.addLoggingLevel('REPORT',logging.ERROR + 5)
+app.logger.setLevel(app.config["LOG_LEVEL"])
 
 # setup database
 db = SQLAlchemy(app)
@@ -86,7 +86,7 @@ if (len(storage.list()[0]) < 1) and (len(storage.log()) < 1):  # pyright: ignore
             author=("Otterwiki Robot", "noreply@otterwiki"),
             message="Initial commit",
         )
-        app.logger.report("Initial /Home created.")     # pyright: ignore
+        app.logger.info("server: Created initial /Home.")
 
 
 #
@@ -120,7 +120,7 @@ def update_app_config():
                 try:
                     item.value = int(item.value)
                 except ValueError:
-                    app.logger.warning("ignored invalid value app.config[\"{}\"]={}".format(
+                    app.logger.warning("server: Ignored invalid value app.config[\"{}\"]={}".format(
                         item.name, item.value))
             # update app settings
             app.config[item.name] = item.value
@@ -136,7 +136,7 @@ update_app_config()
 #
 plugininfo = plugin_manager.list_plugin_distinfo()
 for plugin, dist in plugininfo:
-    app.logger.info(f"loaded plugin: {dist.project_name}-{dist.version}")
+    app.logger.info(f"server: Loaded plugin: {dist.project_name}-{dist.version}")
 
 #
 # template extensions

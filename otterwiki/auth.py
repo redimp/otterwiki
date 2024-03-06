@@ -69,7 +69,7 @@ class SimpleAuth:
                 try:
                     sqlc = db.text("ALTER TABLE user ADD COLUMN {} BOOLEAN;".format(column))
                     r = conn.execute(sqlc)
-                    app.logger.report("_db_migrate: Altered table 'user' added '{}'".format(column))
+                    app.logger.warning("_db_migrate: Altered table 'user' added '{}'".format(column))
                 except OperationalError:
                     pass
 
@@ -236,7 +236,7 @@ class SimpleAuth:
         db.session.add(user)
         db.session.commit()
         # log user creation
-        app.logger.report("New user registered: {} <{}>".format(name, email)) # pyright: ignore
+        app.logger.info("auth: New user registered: {} <{}>".format(name, email))
         if app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin:
             self.request_confirmation(email)
         else:
@@ -332,8 +332,8 @@ class SimpleAuth:
         if app.config['NOTIFY_ADMINS_ON_REGISTER']:
             self.activated_user_notify_admins(user.name, email)
         # log activation
-        app.logger.report("New user activated: {} <{}>".format(user.name, user.email)) # pyright: ignore
-        # redirect
+        app.logger.info("auth: New user activated: {} <{}>".format(user.name, user.email))
+        # redirect user back to login
         return redirect(url_for("login"))
 
     def settings_form(self):
@@ -404,7 +404,7 @@ class SimpleAuth:
             # send mail
             send_mail(subject=subject, recipients=[email], text_body=text_body)
             # log recovery attempt
-            app.logger.report("auth: Password recovery for: {}".format(email)) # pyright: ignore
+            app.logger.info("auth: Password recovery for: {}".format(email))
             # notify user
             toast(
                 "A recovery link been sent to {}. Please check your mailbox.".format(
@@ -426,7 +426,7 @@ class SimpleAuth:
         user = self.User.query.filter_by(email=email).first()
         if user is not None:
             login_user(user, remember=True)
-            app.logger.report("auth: Password recovery successful: {}".format(email)) # pyright: ignore
+            app.logger.info("auth: Password recovery successful: {}".format(email))
             toast("Welcome {}, please update your password.".format(user.name))
             return redirect(url_for("settings"))
         else:

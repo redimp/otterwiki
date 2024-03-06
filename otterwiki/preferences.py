@@ -191,7 +191,7 @@ def handle_user_management(form):
                 msgs.append("enabled admin")
             if len(msgs):
                 toast("{} {} flag".format(user.email, " and ".join(msgs)))
-                app.logger.report( # pyright: ignore
+                app.logger.info( # pyright: ignore
                     "{} updated {} <{}>: {}".format(
                         current_user, user.name, user.email, " and ".join(msgs)
                     )
@@ -242,7 +242,7 @@ def handle_user_edit(uid, form):
             toast(f"Unable to delete yourself.","error")
             return redirect(url_for("user", uid=user.id))
         toast(f"User '{user.name} &lt;{user.email}&gt;' deleted.")
-        app.logger.report(f"deleted user '{user.name} &lt;{user.email}&gt;'") # pyright: ignore
+        app.logger.info(f"deleted user '{user.name} &lt;{user.email}&gt;'")
         delete_user(user)
         return redirect(url_for("admin", _anchor="user_management"))
     if form.get("name") is None:
@@ -280,7 +280,7 @@ def handle_user_edit(uid, form):
         msgs[0] = msgs[0].capitalize()
         msgs[-1] += "."
         toast(" and ".join(msgs))
-        app.logger.report( # pyright: ignore
+        app.logger.info(
             "{} updated {} <{}>: {}".format(
                 current_user, user.name, user.email, " and ".join(msgs)
             ))
