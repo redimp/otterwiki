@@ -29,6 +29,7 @@ from otterwiki.renderer_plugins import (
         plugin_fold,
         plugin_math,
         )
+from otterwiki.otterwiki_plugins import chain_hooks_single_arg
 from bs4 import BeautifulSoup
 
 # the cursor magic word which is ignored by the rendering
@@ -91,39 +92,8 @@ def clean_html(html):
             break
     if _escape:
         # take nom prisoners
-       html = escape(html)
+        html = escape(html)
     return html
-
-
-# wiki links
-
-
-wiki_link_outer = re.compile(
-    r'\[\[' r'([^\]]+)' r'\]\](?!\])'  # [[  # ...  # ]]
-)
-wiki_link_inner = re.compile(r'([^\|]+)\|?(.*)')
-
-
-def preprocess_wiki_links(md):
-    """
-    pre-mistune-parser for wiki links. Will turn
-        [[Page]]
-        [[Title|Link]]
-    into
-        [Page](/Page)
-        [Title](/Link)
-    """
-    for m in wiki_link_outer.finditer(md):
-        title, link = wiki_link_inner.findall(m.group(1))[0]
-        if link == '':
-            link = title
-        if not link.startswith("/"):
-            link = f"/{link}"
-        # quote link (and just in case someone encoded already: unquote)
-        link = urllib.parse.quote(urllib.parse.unquote(link), safe="/#")
-        md = md.replace(m.group(0), f'[{title}]({link})')
-
-    return md
 
 
 class OtterwikiMdRenderer(mistune.HTMLRenderer):
@@ -228,7 +198,7 @@ class OtterwikiRenderer:
     def markdown(self, text, cursor=None):
         self.md_renderer.reset_toc()
         # do the preparsing
-        text = preprocess_wiki_links(text)
+        text = chain_hooks_single_arg("preprocess_markdown", md=text)
         # add cursor position
         if cursor is not None:
             text_arr = text.splitlines()
