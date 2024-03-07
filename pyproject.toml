@@ -25,9 +25,24 @@ dependencies = [
     "flask-htmlmin==2.2.1",
     "beautifulsoup4==4.12.3",
 ]
+keywords = ["wiki", "git", "markdown"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Wiki",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+    "Topic :: Text Processing :: Markup",
+    "Topic :: Text Processing :: Markup :: Markdown",
+    "Topic :: Software Development :: Version Control :: Git",
+]
 
 [project.urls]
-repository = "https://github.com/redimp/otterwiki"
+Homepage = "https://otterwiki.com"
+Github = "https://github.com/redimp/otterwiki"
+Issues = "https://github.com/redimp/otterwiki/issues/"
+"Demo" = "https://demo.otterwiki.com"
 
 [project.optional-dependencies]
 dev = [

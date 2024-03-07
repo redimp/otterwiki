@@ -126,3 +126,9 @@ else
 	@echo "-- Done dev-image: redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD)"
 	@echo ""
 endif
+
+pypi: test
+	./venv/bin/python3 -m pip install --upgrade build
+	./venv/bin/python3 -m pip install --upgrade twine
+	python3 -m build
+	python3 -m twine upload dist/*
