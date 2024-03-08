@@ -164,6 +164,13 @@ selected="selected"
 {##}
   <div class="form-group">
     <div class="custom-checkbox">
+      <input {%if config.DISABLE_REGISTRATION %}checked{% endif %} type="checkbox" id="disable_registration" name="disable_registration" value="True">
+      <label for="disable_registration">Disable registration</label>
+    </div>
+  </div>
+  {##}
+  <div class="form-group">
+    <div class="custom-checkbox">
       <input {%if config.EMAIL_NEEDS_CONFIRMATION %}checked{% endif %} type="checkbox" id="email_confirmation" name="email_needs_confirmation" value="True">
       <label for="email_confirmation">Registration requires email confirmation</label>
     </div>
