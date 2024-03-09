@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import os
 import sys
 from .version import __version__
+
+__all__ = ["fatal_error"]
 
 
 def fatal_error(msg):
