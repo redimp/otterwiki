@@ -1,9 +1,13 @@
-# This file contains both the "plugin spec" for OtterWiki, and several
-# plugins included with the app itself.
+# This file contains both the "plugin spec" for An Otter Wiki, and several
+# plugins included with the app itself. For now this is a proof of concept
+# that will be expanded in the future.
+#
+# See docs/plugin_examples for examples.
+#
 
 import pluggy
 import re
-import urllib
+import urllib.parse
 
 hookspec = pluggy.HookspecMarker("otterwiki")
 hookimpl = pluggy.HookimplMarker("otterwiki")
@@ -13,10 +17,26 @@ class OtterWikiPluginSpec:
     """A hook specification namespace for OtterWiki."""
 
     @hookspec
-    def preprocess_markdown(self, md):
+    def renderer_markdown_preprocess(self, md):
         """
         This hook receives a markdown string, and can transform it any way it
         sees fit. It is called before the markdown is rendered into HTML.
+
+        If multiple hooks exits, they will be chained, the output of
+        each hook will be fed into the next one.
+        """
+
+    @hookspec
+    def renderer_html_postprocess(self, html):
+        """
+        This hooks receive a html string. It is called after the pages
+        markdown has been rendered into html.
+        """
+
+    @hookspec
+    def page_view_htmlcontent_postprocess(self, html, page):
+        """
+        This hooks receives a html string containing the page content.
         """
 
 
@@ -31,7 +51,7 @@ class WikiLinkPlugin:
     wiki_link_inner = re.compile(r'([^\|]+)\|?(.*)')
 
     @hookimpl
-    def preprocess_markdown(self, md):
+    def renderer_markdown_preprocess(self, md):
         """
         Will turn
             [[Page]]
@@ -54,21 +74,14 @@ class WikiLinkPlugin:
 
 
 # pluggy doesn't by default handle chaining the output of one plugin into
-# another, so this is a small utility function to do this. it likely does not
-# support hook wrappers correctly.
-def chain_hooks_single_arg(hook_name, **kwargs):
-    if len(kwargs.keys()) > 1:
-        raise "chain_hooks_single_arg is designed to handle a single argument."
-
-    [(arg_name, arg)] = list(kwargs.items())
-    impls = getattr(plugin_manager.hook, hook_name).get_hookimpls()
-
-    result = arg
-    for impl in impls:
+# another, so this is a small utility function to do this.
+# this utility function will chain the result of each hook into the first
+# argument of the next hook.
+def chain_hooks(hook_name, value, *args, **kwargs):
+    for impl in getattr(plugin_manager.hook, hook_name).get_hookimpls():
         fn = getattr(impl, 'function')
-        result = fn(**{arg_name: result})
-
-    return result
+        value = fn(value, *args, **kwargs)
+    return value
 
 
 # this plugin_manager is exported so the normal pluggy API can be used in

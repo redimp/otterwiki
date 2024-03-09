@@ -10,14 +10,12 @@ from mistune.plugins import (
     plugin_url,
     plugin_strikethrough,
 )
-import urllib.parse
 
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import html
 from pygments.util import ClassNotFound
 
-from flask import url_for
 from markupsafe import Markup, escape
 from otterwiki.util import slugify, empty
 from otterwiki.renderer_plugins import (
@@ -29,7 +27,7 @@ from otterwiki.renderer_plugins import (
         plugin_fold,
         plugin_math,
         )
-from otterwiki.otterwiki_plugins import chain_hooks_single_arg
+from otterwiki.plugins import chain_hooks
 from bs4 import BeautifulSoup
 
 # the cursor magic word which is ignored by the rendering
@@ -198,7 +196,7 @@ class OtterwikiRenderer:
     def markdown(self, text, cursor=None):
         self.md_renderer.reset_toc()
         # do the preparsing
-        text = chain_hooks_single_arg("preprocess_markdown", md=text)
+        text = chain_hooks("renderer_markdown_preprocess", text)
         # add cursor position
         if cursor is not None:
             text_arr = text.splitlines()
@@ -228,6 +226,8 @@ class OtterwikiRenderer:
             html = html.replace(cursormagicword, self.htmlcursor)
         elif cursor is not None:
             html = self.htmlcursor + html
+
+        text = chain_hooks("renderer_html_postprocess", text)
 
         # clean magicword out of toc
         toc = [

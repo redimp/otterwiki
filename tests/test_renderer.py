@@ -2,7 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import pytest
-from otterwiki.otterwiki_plugins import WikiLinkPlugin
+from otterwiki.plugins import WikiLinkPlugin
 from otterwiki.renderer import render, clean_html
 
 
