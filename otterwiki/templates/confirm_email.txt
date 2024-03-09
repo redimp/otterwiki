@@ -1,7 +1,11 @@
 Hello {{name}},
 
-Thank you for registering your account at {{sitename}} (An Otter Wiki).
+Someone, perhaps you, registered this email address ({{email}}) for an account
+at {{sitename}} (An Otter Wiki).
 
-Please confirm your email address here: {{url}}
+If you wish to proceed with this request, please confirm your email
+address here: {{url}}
+
+If you did not make this request, you can safely ignore this email.
 
 Cheers!

@@ -189,6 +189,7 @@ class SimpleAuth:
             "confirm_email.txt",
             sitename=app.config["SITE_NAME"],
             name=user.name,
+            email=email,
             url=url_for("confirm_email", token=token, _external=True),
         )
         # send mail

@@ -82,7 +82,7 @@ Additionally, you can configure privileges per user. The privileges granted per 
 
 With <span class="help-button"><input type="checkbox" style="display:inline;" id="true-reg-req" checked> Disable registration</span> you can disable that anyone can sign up for a new account.
 
-<span class="help-button"><input type="checkbox" style="display:inline;" id="true-reg-req" checked> Registration requires email confirmation</span>, which is supposed to prevent users to register using fake mail addresses.
+Configure <span class="help-button"><input type="checkbox" style="display:inline;" id="true-reg-req" checked> Registration requires email confirmation</span>, to ask users to confirm their email address, before their account is enabled. This is supposed to prevent users to register with a typo in their address or even using a fake mail address.
 
 If a user needs to be approved, an admin user either needs to set the flag manually
 or enable <span class="help-button"><input type="checkbox" style="display:inline;" id="true-auto-approve" checked> Auto approve of newly registered users</span>. When admins need
