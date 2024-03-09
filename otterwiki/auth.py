@@ -465,10 +465,18 @@ def handle_confirmation(*args, **kwargs):
 
 
 def register_form(*args, **kwargs):
+    if app.config['DISABLE_REGISTRATION']:
+        toast("Registration is disabled.", "error")
+        return redirect(url_for("index"))
+
     return auth_manager.register_form(*args, **kwargs)
 
 
 def handle_register(*args, **kwargs):
+    if app.config['DISABLE_REGISTRATION']:
+        # Bad Request
+        return abort(400, "Registration is disabled.")
+
     return auth_manager.handle_register(*args, **kwargs)
 
 

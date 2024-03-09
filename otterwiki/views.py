@@ -191,10 +191,6 @@ def login():
 
 @app.route("/-/register", methods=["POST", "GET"])
 def register():
-    if app.config['DISABLE_REGISTRATION']:
-        toast("Registration is disabled.", "error")
-        return redirect(url_for("index"))
-
     if request.method == "GET":
         return otterwiki.auth.register_form()
     else:
