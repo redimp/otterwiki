@@ -37,6 +37,7 @@ from otterwiki.helper import (
     get_pagename,
 )
 from otterwiki.auth import has_permission, current_user
+from otterwiki.plugins import chain_hooks
 from datetime import timedelta, datetime
 from timeit import default_timer as timer
 from werkzeug.http import http_date
@@ -540,6 +541,8 @@ class Page:
             title = "{} ({})".format(self.pagename, self.revision)
 
         menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
+
+        htmlcontent = chain_hooks("page_view_htmlcontent_postprocess", htmlcontent, self)
 
         # render template
         return render_template(

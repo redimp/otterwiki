@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "otterwiki_noemojis"
+description = "An example plugin for An Otter Wiki that removes all emojis."
+version  = "0.1.0"
+authors = [
+    { name = "Ralph Thesen", email = "mail@redimp.de" }
+    ]
+
+[project.entry-points.otterwiki]
+noemojis = "otterwiki_noemojis"

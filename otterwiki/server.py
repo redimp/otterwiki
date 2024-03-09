@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from otterwiki import fatal_error, __version__
 import otterwiki.gitstorage
 import otterwiki.util
+from otterwiki.plugins import plugin_manager
 
 app = Flask(__name__)
 # default configuration settings
@@ -127,6 +128,13 @@ def update_app_config():
 with app.app_context():
     db.create_all()
 update_app_config()
+
+#
+# plugins
+#
+plugininfo = plugin_manager.list_plugin_distinfo()
+for plugin, dist in plugininfo:
+    app.logger.info(f"loaded plugin: {dist.project_name}-{dist.version}")
 
 #
 # template extensions

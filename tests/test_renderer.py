@@ -2,7 +2,8 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import pytest
-from otterwiki.renderer import render, preprocess_wiki_links, clean_html
+from otterwiki.plugins import WikiLinkPlugin
+from otterwiki.renderer import render, clean_html
 
 
 def test_lastword():
@@ -127,25 +128,30 @@ def test_wiki_link_in_table(req_ctx):
 
 
 def test_preprocess_wiki_links():
-    md = preprocess_wiki_links(
+    plugin = WikiLinkPlugin()
+    md = plugin.preprocess_markdown(
         """
-        [[Page]]
-        [[Title|Link]]
-        [[Text with space|Link with space]]
-        """
+         [[Page]]
+         [[Title|Link]]
+         [[Text with space|Link with space]]
+         """
     )
     assert '[Page](/Page)' in md
     assert '[Title](/Link)' in md
-    assert '[Page](/Page)' == preprocess_wiki_links("[[Page]]")
-    assert '[Title](/Link)' == preprocess_wiki_links("[[Title|Link]]")
-    assert '[Text with space](/Link%20with%20space)' == preprocess_wiki_links(
-        "[[Text with space|Link with space]]"
+    assert '[Page](/Page)' == plugin.preprocess_markdown("[[Page]]")
+    assert '[Title](/Link)' == plugin.preprocess_markdown("[[Title|Link]]")
+    assert (
+        '[Text with space](/Link%20with%20space)'
+        == plugin.preprocess_markdown("[[Text with space|Link with space]]")
     )
-    assert '[Text with space](/Link%20with%20space)' == preprocess_wiki_links(
-        "[[Text with space|Link%20with%20space]]"
+    assert (
+        '[Text with space](/Link%20with%20space)'
+        == plugin.preprocess_markdown(
+            "[[Text with space|Link%20with%20space]]"
+        )
     )
     # make sure fragment identifier of the URL survived the parser
-    assert '[Random#Title](/Random#Title)' == preprocess_wiki_links(
+    assert '[Random#Title](/Random#Title)' == plugin.preprocess_markdown(
         "[[Random#Title]]"
     )
 
