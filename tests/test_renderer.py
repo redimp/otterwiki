@@ -129,7 +129,7 @@ def test_wiki_link_in_table(req_ctx):
 
 def test_preprocess_wiki_links():
     plugin = WikiLinkPlugin()
-    md = plugin.preprocess_markdown(
+    md = plugin.renderer_markdown_preprocess(
         """
          [[Page]]
          [[Title|Link]]
@@ -138,20 +138,20 @@ def test_preprocess_wiki_links():
     )
     assert '[Page](/Page)' in md
     assert '[Title](/Link)' in md
-    assert '[Page](/Page)' == plugin.preprocess_markdown("[[Page]]")
-    assert '[Title](/Link)' == plugin.preprocess_markdown("[[Title|Link]]")
+    assert '[Page](/Page)' == plugin.renderer_markdown_preprocess("[[Page]]")
+    assert '[Title](/Link)' == plugin.renderer_markdown_preprocess("[[Title|Link]]")
     assert (
         '[Text with space](/Link%20with%20space)'
-        == plugin.preprocess_markdown("[[Text with space|Link with space]]")
+        == plugin.renderer_markdown_preprocess("[[Text with space|Link with space]]")
     )
     assert (
         '[Text with space](/Link%20with%20space)'
-        == plugin.preprocess_markdown(
+        == plugin.renderer_markdown_preprocess(
             "[[Text with space|Link%20with%20space]]"
         )
     )
     # make sure fragment identifier of the URL survived the parser
-    assert '[Random#Title](/Random#Title)' == plugin.preprocess_markdown(
+    assert '[Random#Title](/Random#Title)' == plugin.renderer_markdown_preprocess(
         "[[Random#Title]]"
     )
 
