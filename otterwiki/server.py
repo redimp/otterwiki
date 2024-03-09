@@ -27,6 +27,7 @@ app.config.update(
     WRITE_ACCESS="ANONYMOUS",
     ATTACHMENT_ACCESS="ANONYMOUS",
     AUTO_APPROVAL=True,
+    DISABLE_REGISTRATION=False,
     EMAIL_NEEDS_CONFIRMATION=True,
     NOTIFY_ADMINS_ON_REGISTER=False,
     NOTIFY_USER_ON_APPROVAL=False,
@@ -107,6 +108,7 @@ def update_app_config():
             if item.name.upper() in [
                 "MAIL_USE_TLS",
                 "MAIL_USE_SSL",
+                "DISABLE_REGISTRATION",
                 "AUTO_APPROVAL",
                 "EMAIL_NEEDS_CONFIRMATION",
                 "NOTIFY_ADMINS_ON_REGISTER",

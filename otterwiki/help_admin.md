@@ -80,6 +80,8 @@ Who can access what is defined via
 
 Additionally, you can configure privileges per user. The privileges granted per user add to the general permissions. See [User Management](#user-management) above.
 
+With <span class="help-button"><input type="checkbox" style="display:inline;" id="true-reg-req" checked> Disable registration</span> you can disable that anyone can sign up for a new account.
+
 <span class="help-button"><input type="checkbox" style="display:inline;" id="true-reg-req" checked> Registration requires email confirmation</span>, which is supposed to prevent users to register using fake mail addresses.
 
 If a user needs to be approved, an admin user either needs to set the flag manually

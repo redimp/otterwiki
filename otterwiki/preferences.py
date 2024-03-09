@@ -79,6 +79,7 @@ def handle_app_preferences(form):
     for name in ["READ_access", "WRITE_access", "ATTACHMENT_access"]:
         _update_preference(name.upper(),form.get(name, "ANONYMOUS"))
     for checkbox in [
+        "disable_registration",
         "auto_approval",
         "email_needs_confirmation",
         "notify_admins_on_register",

@@ -20,7 +20,11 @@
     </div>
   </div>
   <input class="btn btn-primary" type="submit" value="Login">
+
+  {% if not config.DISABLE_REGISTRATION %}
   <a href="{{ url_for("register") }}" class="btn btn-link" role="button">Register</a>
+  {% endif %}
+
   <a href="{{ url_for("lost_password") }}" class="btn btn-link" role="button">Lost your password?</a>
 </form>
 {% endblock %}
