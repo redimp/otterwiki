@@ -1,10 +1,5 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
-{% block js %}
-{{ super() }}
-{# this fetches the editor/preview content #}
-<script src="{{ url_for("static", filename="js/otterwiki.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
-{% endblock js %}
 {% block menu %}
 {{ super() }}
 {% include 'snippets/menutree.html' %}
