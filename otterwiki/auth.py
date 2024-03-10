@@ -583,6 +583,7 @@ class ProxyHeaderAuth:
         return [current_user]
 
     def has_permission(self, permission, user):
+        if not user.is_authenticated: return False
         return permission.upper() in user.permissions
 
 

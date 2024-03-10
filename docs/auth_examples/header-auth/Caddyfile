@@ -1,0 +1,17 @@
+{
+	http_port 8081
+	auto_https off
+	log {
+		format console
+	}
+	servers {
+		log_credentials
+	}
+}
+:8081 {
+	reverse_proxy otterwiki:80 {
+		header_up x-otterwiki-name "Otter Example"
+		header_up x-otterwiki-email "mail@example.com"
+		header_up x-otterwiki-permissions "READ,WRITE,UPLOAD,ADMIN"
+	}
+}
