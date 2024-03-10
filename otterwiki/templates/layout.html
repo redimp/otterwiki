@@ -72,7 +72,7 @@
 {% block navbarmain %}
         <!-- Navbar start -->
         <nav class="navbar">
-            <div class="navbar-content">
+            <div class="navbar-content relative">
                 <button id="toggle-sidebar-btn" class="btn btn-action" type="button" onclick="halfmoon.toggleSidebar()">
                     <i class="fas fa-bars"></i>
                 </button>
@@ -89,8 +89,10 @@
 {% endblock %}
             <div class="navbar-content ml-auto">
 {% block navbarsearch %}
-                <form action="{{ url_for("search") }}" method="post">
-                <input name="query" type="text" class="form-control mr-5" placeholder="Search">
+                <form action="{{ url_for("search") }}" method="post" class="relative">
+                <span class="top-search">
+                <input id="search-query" name="query" type="text" class="form-control mr-5" placeholder="Search" style="padding-right: 3.5rem;">
+                </span>
                 </form>
 {% endblock %}
 {% block navbardropdown_outer %}

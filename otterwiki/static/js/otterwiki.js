@@ -660,3 +660,17 @@ var MathJax = {
     }
 };
 
+/* Hot Keys */
+window.addEventListener("keypress", function() {
+    var isInputElement = event.srcElement instanceof HTMLInputElement;
+    var isTextAreaElement = event.srcElement instanceof HTMLTextAreaElement;
+
+    if(isInputElement || isTextAreaElement) {
+        return;
+    }
+
+	if (document.getElementById("search-query") != null && event.key === '/') {
+        document.getElementById("search-query").focus();
+        event.preventDefault();
+    }
+});
