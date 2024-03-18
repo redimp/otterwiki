@@ -1,0 +1,18 @@
+---
+#
+# This docker-compose.yaml is for running the latest development version
+#
+version: '3'
+services:
+  web:
+    build: ../..
+    restart: unless-stopped
+    ports:
+      # forward the http port to 8080
+      - "8080:80"
+    volumes:
+      # mount the local custom.css
+      -  ./custom:/app/otterwiki/static/custom:ro
+      # For this example we do not persist any data
+      # - ./app-data:/app-data
+

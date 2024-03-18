@@ -42,6 +42,8 @@
     <link href="{{ url_for("static", filename="css/pygments.css") | debug_unixtime }}" rel="stylesheet" />
     <!-- Roboto font (Used when Apple system fonts are not available) -->
     <link href="{{ url_for("static", filename="css/roboto.css") | debug_unixtime }}" rel="stylesheet"/>
+    <!-- custom.css for tweaking the default themes -->
+    <link href="{{ url_for("static", filename="custom/custom.css") }}" rel="stylesheet" media="screen" />
     <!-- Documentation styles -->
 {%- block head %}
 {% endblock -%}
@@ -238,5 +240,7 @@
   {% endfor %}
 {% endwith %}
 </script>
+  <!-- custom js for tweaking an otter wiki -->
+  <script src="{{ url_for("static", filename="custom/custom.js") }}"></script>
 </body>
 </html>
