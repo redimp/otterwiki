@@ -50,6 +50,14 @@ app.config.update(
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
+# check if any config option exists as environment variable
+for key in app.config:
+    if key in os.environ:
+        if type(app.config[key]) == bool:
+            app.config[key] = os.environ[key].lower in ["true","yes"]
+        else:
+            app.config[key] = os.environ[key]
+
 app.logger.setLevel(app.config["LOG_LEVEL"])
 
 # setup database
