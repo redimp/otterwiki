@@ -21,41 +21,6 @@ if [ ! -f ${OTTERWIKI_SETTINGS} ]; then
     echo "SQLALCHEMY_DATABASE_URI = 'sqlite:////app-data/db.sqlite'" >> ${OTTERWIKI_SETTINGS}
 fi
 
-# handle environment variables
-# branding
-for EV in SITE_NAME SITE_LOGO SITE_DESCRIPTION SITE_ICON; do
-    if [ ! -z "${!EV}" ]; then
-        sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
-        echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
-    fi
-done
-# permissions
-for EV in AUTH_METHOD READ_ACCESS WRITE_ACCESS ATTACHMENT_ACCESS; do
-    if [ ! -z "${!EV}" ]; then
-        sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
-        echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
-    fi
-done
-for EV in LOG_LEVEL AUTO_APPROVAL EMAIL_NEEDS_CONFIRMATION RETAIN_PAGE_NAME_CASE GIT_WEB_SERVER DISABLE_REGISTRATION; do
-    if [ ! -z "${!EV}" ]; then
-        sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
-        echo "${EV} = ${!EV}" >> ${OTTERWIKI_SETTINGS}
-    fi
-done
-# mail
-for EV in MAIL_SERVER MAIL_USERNAME MAIL_PASSWORD MAIL_DEFAULT_SENDER; do
-    if [ ! -z "${!EV}" ]; then
-        sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
-        echo "${EV} = '${!EV}'" >> ${OTTERWIKI_SETTINGS}
-    fi
-done
-for EV in MAIL_PORT MAIL_USE_TLS MAIL_USE_SSL; do
-    if [ ! -z "${!EV}" ]; then
-        sed -i "/^${EV}.*/d" ${OTTERWIKI_SETTINGS}
-        echo "${EV} = ${!EV}" >> ${OTTERWIKI_SETTINGS}
-    fi
-done
-
 chown -R www-data:www-data /app-data
 
 # Get the maximum upload file size for Nginx, default to 0: unlimited

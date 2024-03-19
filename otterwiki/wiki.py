@@ -38,7 +38,7 @@ from otterwiki.helper import (
 )
 from otterwiki.auth import has_permission, current_user
 from otterwiki.plugins import chain_hooks
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, UTC
 from timeit import default_timer as timer
 from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
@@ -989,7 +989,7 @@ class Attachment:
             self.message = None
             self.author_name = None
             self.author_email = None
-            self.datetime = datetime.utcnow()
+            self.datetime = datetime.now(UTC)
             self._revision = None
 
     def exists(self):
