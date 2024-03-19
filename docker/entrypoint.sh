@@ -9,7 +9,7 @@ if [ ! -d ${OTTERWIKI_REPOSITORY} ]; then
 fi
 
 if [ ! -d ${OTTERWIKI_REPOSITORY}/.git ]; then
-    git init ${OTTERWIKI_REPOSITORY}
+    git init -b main ${OTTERWIKI_REPOSITORY}
 fi
 
 # take care of the otterwiki settings file

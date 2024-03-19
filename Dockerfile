@@ -68,6 +68,6 @@ COPY --chmod=0755 ./docker/entrypoint.sh /entrypoint.sh
 # configure the entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
 # and the default command: supervisor which takes care of nginx and uWSGI
-CMD ["/usr/bin/supervisord"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 
 # vim:set et ts=8 sts=2 sw=2 ai fenc=utf-8:
