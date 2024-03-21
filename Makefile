@@ -74,12 +74,12 @@ tmp/codemirror-5.65.15:
 	test -f codemirror.zip || wget https://codemirror.net/5/codemirror.zip && \
 	unzip codemirror.zip
 
-otterwiki/static/js/cm-modes.min.js: tmp/codemirror-5.65.15
+otterwiki/static/js/cm-modes.min.js: Makefile tmp/codemirror-5.65.15
 	cat tmp/codemirror-5.65.15/addon/mode/simple.js > otterwiki/static/js/cm-modes.js
 	cat tmp/codemirror-5.65.15/mode/meta.js >> otterwiki/static/js/cm-modes.js
 	for MODE in shell clike xml python javascript markdown yaml php sql \
 		toml cmake perl http go rust dockerfile powershell properties \
-		stex nginx; do \
+		stex nginx haskell lua jinja2 ruby; do \
 		cat tmp/codemirror-5.65.15/mode/$$MODE/$$MODE.js \
 			>> otterwiki/static/js/cm-modes.js; \
 	done
