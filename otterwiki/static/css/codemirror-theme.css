@@ -65,7 +65,7 @@ height:calc(100vh - 8rem);
 .dark-mode .cm-s-otterwiki .CodeMirror-linenumber { color: #4c566a; }
 .dark-mode .cm-s-otterwiki .CodeMirror-cursor { border-left: 1px solid #f8f8f0; }
 
-.dark-mode .cm-s-otterwiki span.cm-comment { color: #4c566a; }
+.dark-mode .cm-s-otterwiki span.cm-comment { color: #6BBAFF; }
 .dark-mode .cm-s-otterwiki span.cm-atom { color: #b48ead; }
 .dark-mode .cm-s-otterwiki span.cm-number { color: #b48ead; }
 
