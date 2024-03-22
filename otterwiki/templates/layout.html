@@ -136,12 +136,14 @@
                         </span>
                         Settings
                     </a>
+  {% if auth_supported_features['logout'] %}
                     <a href="{{ url_for("logout") }}"  class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="fas fa-sign-out-alt"></i>
                         </span>
                         Logout
                     </a>
+  {% endif %}
 {% endif %}
 {% endblock %}
                   </div> <!-- inner dropdown -->

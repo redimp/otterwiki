@@ -263,7 +263,6 @@ class SimpleAuth:
         subject = "New Account Registration - {} - An Otter Wiki".format(app.config["SITE_NAME"])
         send_mail(subject=subject, recipients=admin_emails, text_body=text_body)
 
-
     def _user_needs_approvement(self):
         # check if the user needs to be approved by checking
         # if beeing REGISTERED is a lower requirement anywhere
@@ -288,7 +287,6 @@ class SimpleAuth:
         # notify admins
         if app.config['NOTIFY_ADMINS_ON_REGISTER']:
             self.activated_user_notify_admins(user.name, user.email)
-
 
     def handle_register(self, email, name, password1, password2):
         # check if email exists
@@ -433,24 +431,192 @@ class SimpleAuth:
             toast("Invalid email address.")
         return lost_password_form()
 
+    def has_permission(self, permission, user):
+        if user.is_authenticated and user.is_admin:
+            return True
+        # check page read permission
+        if permission.upper() == "READ":
+            if app.config["READ_ACCESS"].upper() == "ANONYMOUS":
+                return True
+            if (
+                app.config["READ_ACCESS"].upper() == "REGISTERED"
+                and user.is_authenticated
+            ):
+                return True
+            if (
+                app.config["READ_ACCESS"].upper() == "APPROVED"
+                and user.is_authenticated
+                and user.is_approved
+            ):
+                return True
+            if user.is_authenticated and user.is_approved and user.allow_read:
+                return True
+            # admins have permissions for everything
+            if user.is_authenticated and user.is_admin:
+                return True
+        # check page edit permission
+        if permission.upper() == "WRITE":
+            # if you are not allowed to read, you are not allowed to write
+            if not has_permission("READ"):
+                return False
+            if app.config["WRITE_ACCESS"].upper() == "ANONYMOUS":
+                return True
+            if (
+                app.config["WRITE_ACCESS"].upper() == "REGISTERED"
+                and user.is_authenticated
+            ):
+                return True
+            if (
+                app.config["WRITE_ACCESS"].upper() == "APPROVED"
+                and user.is_authenticated
+                and user.is_approved
+            ):
+                return True
+            if user.is_authenticated and user.is_approved and user.allow_write:
+                return True
+            # admins have permissions for everything
+            if user.is_authenticated and user.is_admin:
+                return True
+        # check upload permission
+        if permission.upper() == "UPLOAD":
+            if not has_permission("WRITE"):
+                return False
+            if app.config["ATTACHMENT_ACCESS"] == "ANONYMOUS":
+                return True
+            if (
+                app.config["ATTACHMENT_ACCESS"] == "REGISTERED"
+                and user.is_authenticated
+            ):
+                return True
+            if (
+                app.config["ATTACHMENT_ACCESS"] == "APPROVED"
+                and user.is_authenticated
+                and user.is_approved
+            ):
+                return True
+            if (
+                user.is_authenticated
+                and user.is_approved
+                and user.allow_upload
+            ):
+                return True
+            # admins have permissions for everything
+            if user.is_authenticated and user.is_admin:
+                return True
+        if permission.upper() == "ADMIN":
+            if user.is_anonymous:
+                return False
+            return True == user.is_admin
+
+        return False
+
+    def supported_features(self):
+        return {'passwords': True, 'editing': True, 'logout': True}
+
+
+class ProxyHeaderAuth:
+    # if logout_link is not provided, hide the logout button
+    def __init__(self, logout_link=None):
+        self.logout_link = logout_link
+
+    class User(UserMixin):
+        def __init__(self, name, email, permissions):
+            self.name = name
+            self.email = email
+            self.is_approved = True
+            self.allow_read = 'READ' in permissions
+            self.allow_write = 'WRITE' in permissions
+            self.allow_upload = 'UPLOAD' in permissions
+            self.is_admin = 'ADMIN' in permissions
+            self.permissions = permissions
+
+        def __repr__(self):
+            return f"<User '{self.name} <{self.email}>' a:{self.is_admin}>"
+
+    def supported_features(self):
+        return {'passwords': False, 'editing': False, 'logout': False}
+
+    # called on every page load
+    def request_loader(self, req):
+        if 'x-otterwiki-name' not in req.headers:
+            return None
+
+        if 'x-otterwiki-email' not in req.headers:
+            return None
+
+        if 'x-otterwiki-permissions' in req.headers:
+            permissions = (
+                req.headers.get('x-otterwiki-permissions').upper().split(',')
+            )
+        else:
+            permissions = []
+
+        return self.User(
+            name=req.headers.get('x-otterwiki-name'),
+            email=req.headers.get('x-otterwiki-email'),
+            permissions=permissions,
+        )
+
+    # we can use the same implementation as above
+    def get_author(self):
+        if not current_user.is_authenticated:
+            return ("Anonymous", "")
+        return (current_user.name, current_user.email)
+
+    # user will be directed to login form first, we should redirect them to handle_login automatically (just a POST to /-/login)
+    def login_form(self, *args, **kwargs):
+        if current_user.is_authenticated and self.has_permission(
+            'READ', current_user
+        ):
+            return redirect(url_for("index"))
+        else:
+            return abort(403)
+
+    def settings_form(self):
+        return render_template(
+            "settings.html",
+            title="Settings",
+            user_list=None,  # no users are stored in the database anyways
+        )
+
+    def get_all_user(self):
+        return [current_user]
+
+    def has_permission(self, permission, user):
+        if not user.is_authenticated: return False
+        return permission.upper() in user.permissions
+
 
 # create login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "login" # pyright: ignore
+login_manager.login_view = "login"  # pyright: ignore
 
 # create auth_manager
 if app.config.get("AUTH_METHOD") in ["", "SIMPLE"]:
     auth_manager = SimpleAuth()
+elif app.config.get("AUTH_METHOD") == "PROXY_HEADER":
+    auth_manager = ProxyHeaderAuth()
 else:
-    raise RuntimeError("Unknown AUTH_METHOD '{}'".format(app.config.get("AUTH_METHOD")))
+    raise RuntimeError(
+        "Unknown AUTH_METHOD '{}'".format(app.config.get("AUTH_METHOD"))
+    )
 
 #
 # proxies
 #
-@login_manager.user_loader
-def user_load_proxy(id):
-    return auth_manager.user_loader(id)
+if hasattr(auth_manager, "user_loader"):
+
+    @login_manager.user_loader
+    def user_load_proxy(id):
+        return auth_manager.user_loader(id)
+
+
+elif hasattr(auth_manager, "request_loader"):
+
+    @login_manager.request_loader
+    def request_load_proxy(req):
+        return auth_manager.request_loader(req)
 
 
 def login_form(*args, **kwargs):
@@ -532,102 +698,14 @@ def check_credentials(email, password):
 # utils
 #
 def has_permission(permission, user=current_user):
-    if user.is_authenticated and user.is_admin:
-        return True
-    # check page read permission
-    if permission.upper() == "READ":
-        if app.config["READ_ACCESS"].upper() == "ANONYMOUS":
-            return True
-        if (
-            app.config["READ_ACCESS"].upper() == "REGISTERED"
-            and user.is_authenticated
-        ):
-            return True
-        if (
-            app.config["READ_ACCESS"].upper() == "APPROVED"
-            and user.is_authenticated
-            and user.is_approved
-        ):
-            return True
-        if (
-            user.is_authenticated
-            and user.is_approved
-            and user.allow_read
-        ):
-            return True
-        # admins have permissions for everything
-        if (
-            user.is_authenticated
-            and user.is_admin
-        ):
-            return True
-    # check page edit permission
-    if permission.upper() == "WRITE":
-        # if you are not allowed to read, you are not allowed to write
-        if not has_permission("READ"):
-            return False
-        if app.config["WRITE_ACCESS"].upper() == "ANONYMOUS":
-            return True
-        if (
-            app.config["WRITE_ACCESS"].upper() == "REGISTERED"
-            and user.is_authenticated
-        ):
-            return True
-        if (
-            app.config["WRITE_ACCESS"].upper() == "APPROVED"
-            and user.is_authenticated
-            and user.is_approved
-        ):
-            return True
-        if (
-            user.is_authenticated
-            and user.is_approved
-            and user.allow_write
-        ):
-            return True
-        # admins have permissions for everything
-        if (
-            user.is_authenticated
-            and user.is_admin
-        ):
-            return True
-    # check upload permission
-    if permission.upper() == "UPLOAD":
-        if not has_permission("WRITE"):
-            return False
-        if app.config["ATTACHMENT_ACCESS"] == "ANONYMOUS":
-            return True
-        if (
-            app.config["ATTACHMENT_ACCESS"] == "REGISTERED"
-            and user.is_authenticated
-        ):
-            return True
-        if (
-            app.config["ATTACHMENT_ACCESS"] == "APPROVED"
-            and user.is_authenticated
-            and user.is_approved
-        ):
-            return True
-        if (
-            user.is_authenticated
-            and user.is_approved
-            and user.allow_upload
-        ):
-            return True
-        # admins have permissions for everything
-        if (
-            user.is_authenticated
-            and user.is_admin
-        ):
-            return True
-    if permission.upper() == "ADMIN":
-        if user.is_anonymous:
-            return False
-        return True == user.is_admin
-
-    return False
+    return auth_manager.has_permission(permission, user)
 
 
 app.jinja_env.globals.update(has_permission=has_permission)
+
+# these features help enable / disable the relevant parts of the UI
+app.jinja_env.globals.update(
+    auth_supported_features=auth_manager.supported_features()
+)
 
 # vim: set et ts=8 sts=4 sw=4 ai:

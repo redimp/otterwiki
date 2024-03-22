@@ -25,9 +25,11 @@
 {% for user in user_list %}
       <tr>
         <td>
+            {% if auth_supported_features['editing'] %}
             <a href="{{ url_for("user", uid=user.id) }}">
                 <i class="fas fa-user-edit"></i>
             </a>
+            {% endif %}
         </td>
         <td>
             {{user.email}}
@@ -37,31 +39,36 @@
         </td>
         <td>
           <div class="custom-checkbox">
-              <input type="checkbox" id="checkbox-a-{{user.id}}" name="is_approved" value="{{user.id}}" {{"checked=\"checked\"" if user.is_approved  }}>
+              <input type="checkbox" id="checkbox-a-{{user.id}}" name="is_approved" value="{{user.id}}" {{"checked=\"checked\"" if
+                user.is_approved }} {% if not auth_supported_features['editing'] %}disabled{% endif %}>
             <label for="checkbox-a-{{user.id}}"></label>
           </div>
         </td>
         <td>
           <div class="custom-checkbox">
-              <input type="checkbox" id="checkbox-b-{{user.id}}" name="allow_read" value="{{user.id}}" {{ "checked=\"checked\"" if user.allow_read }}>
+              <input type="checkbox" id="checkbox-b-{{user.id}}" name="allow_read" value="{{user.id}}" {{ "checked=\" checked\"" if
+                user.allow_read }} {% if not auth_supported_features['editing'] %}disabled{% endif %}>
             <label for="checkbox-b-{{user.id}}"></label>
           </div>
         </td>
         <td>
           <div class="custom-checkbox">
-              <input type="checkbox" id="checkbox-c-{{user.id}}" name="allow_write" value="{{user.id}}" {{ "checked=\"checked\"" if user.allow_write }}>
+              <input type="checkbox" id="checkbox-c-{{user.id}}" name="allow_write" value="{{user.id}}" {{ "checked=\" checked\"" if
+                user.allow_write }} {% if not auth_supported_features['editing'] %}disabled{% endif %}>
             <label for="checkbox-c-{{user.id}}"></label>
           </div>
         </td>
         <td>
           <div class="custom-checkbox">
-              <input type="checkbox" id="checkbox-d-{{user.id}}" name="allow_upload" value="{{user.id}}" {{ "checked=\"checked\"" if user.allow_upload }}>
+              <input type="checkbox" id="checkbox-d-{{user.id}}" name="allow_upload" value="{{user.id}}" {{ "checked=\" checked\"" if
+                user.allow_upload }} {% if not auth_supported_features['editing'] %}disabled{% endif %}>
             <label for="checkbox-d-{{user.id}}"></label>
           </div>
         </td>
         <td>
           <div class="custom-checkbox">
-              <input type="checkbox" id="checkbox-e-{{user.id}}" name="is_admin" value="{{user.id}}" {{ "checked=\"checked\"" if user.is_admin }}>
+              <input type="checkbox" id="checkbox-e-{{user.id}}" name="is_admin" value="{{user.id}}" {{ "checked=\" checked\"" if
+                user.is_admin }} {% if not auth_supported_features['editing'] %}disabled{% endif %}>
             <label for="checkbox-e-{{user.id}}"></label>
           </div>
         </td>
@@ -77,7 +84,8 @@
       </em>
   </div>
   <div class="mt-10">
-    <input class="btn btn-primary" name="update_permissions" type="submit" value="Update Privileges">
+    <input class="btn btn-primary" name="update_permissions" type="submit" value="Update Privileges" {% if not
+      auth_supported_features['editing'] %}disabled{% endif %}>
   </div>
 </form>
 </div>

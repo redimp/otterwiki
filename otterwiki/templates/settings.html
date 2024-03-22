@@ -44,17 +44,20 @@
 <form action="{{url_for("settings")}}" method="POST">
   <div class="form-group">
   <label for="name" class="required">First and Lastname</label>
-  <input name="name" type="text" class="form-control" id="name" value="{{current_user.name if current_user.name}}">
+  <input name="name" type="text" class="form-control" id="name" value="{{current_user.name if current_user.name}}" {% if
+    not auth_supported_features['editing'] %}disabled{% endif %}>
     <div class="form-text">
       Please note that changing the Name doesn't not change anything in the edit history.
     </div>
   </div>
-  <input class="btn btn-primary" type="submit" value="Update Name">
+  <input class="btn btn-primary" type="submit" value="Update Name" {% if not auth_supported_features['editing']
+    %}disabled{% endif %}>
 </form>
 </div>
 </div>
 {#
 #}
+{% if auth_supported_features['passwords'] %}
 <div class="card">
 <div class="mw-full w-600">
 <h2 class="card-title">Change Password</h2>
@@ -83,6 +86,7 @@
 </form>
 </div>
 </div>
+{% endif %}
 {#
 #}
 {% if config.GIT_WEB_SERVER %}
