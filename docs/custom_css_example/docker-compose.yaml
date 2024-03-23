@@ -6,6 +6,7 @@ version: '3'
 services:
   web:
     build: ../..
+    image: redimp/otterwiki:2
     restart: unless-stopped
     ports:
       # forward the http port to 8080
