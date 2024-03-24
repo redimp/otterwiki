@@ -798,7 +798,7 @@ class Page:
                 #   "Note that browsers and sometimes web servers enforce a limit on cookie sizes. This means that
                 #    flashing messages that are too large for session cookies causes message flashing to fail silently."
                 toast("Renaming failed.", "error")
-                app.logger.error("Renaming failed: {e}")
+                app.logger.error(f"Renaming failed: {e}")
             else:
                 return redirect(url_for("view", path=new_pagename))
         return self.rename_form(new_pagename, message)
