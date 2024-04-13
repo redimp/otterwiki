@@ -11,6 +11,7 @@ VERSION := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.re
 VERSION_MAJOR_MINOR := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.read()); print('.'.join(__version__.split('.')[0:2]));")
 VERSION_MAJOR := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.read()); print('.'.join(__version__.split('.')[0:1]));")
 PLATFORM ?= "linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6"
+PLATFORM_QUICK ?= "linux/arm64,linux/amd64"
 
 all: run
 
@@ -97,7 +98,7 @@ docker-buildx-test:
 ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
 	docker buildx build --no-cache --platform $(PLATFORM) --target test-stage .
 else
-	docker buildx build --no-cache --platform linux/arm64,linux/amd64 --target test-stage .
+	docker buildx build --no-cache --platform $(PLATFORM_QUICK) --target test-stage .
 endif
 
 docker-buildx-push: test
