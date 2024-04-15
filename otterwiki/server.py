@@ -54,7 +54,7 @@ app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 for key in app.config:
     if key in os.environ:
         if type(app.config[key]) == bool:
-            app.config[key] = os.environ[key].lower in ["true","yes"]
+            app.config[key] = os.environ[key].lower() in ["true","yes"]
         else:
             app.config[key] = os.environ[key]
 
