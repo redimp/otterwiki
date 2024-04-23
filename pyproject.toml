@@ -6,7 +6,7 @@ authors = [
     ]
 readme = "README.md"
 license = {file = "LICENSE"}
-requires-python = ">=3.7"
+requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
     "Werkzeug==3.0.1",
@@ -79,7 +79,7 @@ skip-string-normalization = true
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py3{11,10,9}
+envlist = py3{11}
 isolated_build = True
 [testenv]
 deps = pytest
