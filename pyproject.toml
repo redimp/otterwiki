@@ -24,7 +24,7 @@ dependencies = [
     "unidiff==0.7.5",
     "flask-htmlmin==2.2.1",
     "beautifulsoup4==4.12.3",
-    "pluggy==1.4.0",
+    "pluggy==1.5.0",
 ]
 keywords = ["wiki", "git", "markdown"]
 classifiers = [
@@ -79,7 +79,7 @@ skip-string-normalization = true
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py3{11}
+envlist = py3{11,12}
 isolated_build = True
 [testenv]
 deps = pytest
