@@ -19,3 +19,4 @@ docker-compose.override.yml
 .flaskenv
 .tox
 .idea
+otterwiki*.tgz

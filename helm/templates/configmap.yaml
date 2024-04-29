@@ -1,0 +1,13 @@
+{{- $nonsecrets := omit $.Values.config "SECRET_KEY" "MAIL_PASSWORD" }}
+{{ if gt (len (keys $nonsecrets)) 0 }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "otterwiki.fullname" . }}-config
+  labels:
+    {{- include "otterwiki.labels" . | nindent 4 }}
+data:
+  {{- range $key, $val := $nonsecrets }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end}}
+{{- end }}

@@ -12,6 +12,7 @@ VERSION_MAJOR_MINOR := $(shell python3 -c "with open('otterwiki/version.py') as 
 VERSION_MAJOR := $(shell python3 -c "with open('otterwiki/version.py') as f: exec(f.read()); print('.'.join(__version__.split('.')[0:1]));")
 PLATFORM ?= "linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6"
 PLATFORM_QUICK ?= "linux/arm64,linux/amd64"
+HELM_VERSION := $(shell grep ^version helm/Chart.yaml | awk '{print $$2}')
 
 all: run
 
@@ -133,3 +134,10 @@ pypi: test
 	./venv/bin/python3 -m pip install --upgrade twine
 	python3 -m build
 	python3 -m twine upload dist/*
+
+helm-build:
+	cd helm/ && helm lint ./
+	cd helm/ && helm package ./
+
+helm-push: helm-build
+	helm push helm/otterwiki-$(HELM_VERSION).tgz oci://registry-1.docker.io/redimp

@@ -1,137 +1,103 @@
+# An Otter Wiki
 
-# An Otter Wiki Helm Chart
+An Otter Wiki is a minimalistic wiki powered by python, markdown and git.
 
-This Helm chart simplifies the deployment of An Otter Wiki on Kubernetes. Tested on k3s. 
+## Introduction
+
+This chart bootstraps An [OtterWiki](https://github.com/redimp/otterwiki) deployment
+on a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh)
+package manager.
+
+If you run into any issues, please report them via [github](https://github.com/redimp/otterwiki/issues).
+
+## Prerequisites
+
+- Kubernetes 1.23+
+- Helm 3.8.0+
+- PV provisioner support in the underlying infrastructure
 
 ## Installing the Chart
 
-To install the chart with the release name `my-otterwiki`:
+To install the chart with the release name `my-otterwiki` run:
 
-```shell
-helm install my-otterwiki ./path/to/otterwiki/chart
+```bash
+helm install my-otterwiki oci://registry-1.docker.io/redimp/otterwiki
 ```
 
-For example:
-```shell
-[~/otterwiki] $ helm install my-otterwiki ./helm/
-NAME: my-otterwiki
-LAST DEPLOYED: Fri Apr 12 09:43:54 2024
-NAMESPACE: default
-STATUS: deployed
-REVISION: 1
-NOTES:
-1. Get the application URL by running these commands:
-  http://otterwiki.local
+The command deploys An Otter Wiki on the kubernetes cluster in the default namespace
+with the default configuration. See the [Parameters](#parameters) section for anything
+that can be configured during installation.
+
+## Parameters
+
+| Name                              | Description                                          | Value                                       |
+| --------------------------------- | ---------------------------------------------------- | ------------------------------------------- |
+| `config`                          | configure Otter Wiki environment variables           | `{}`                                        |
+| `image.repository`                | Otter Wiki image repository                          | `redimp/otterwiki`                          |
+| `image.pullPolicy`                | Image pull policy                                    | `Always`                                    |
+| `image.tag`                       | Otter Wiki image tag, overrides the charts appVersion | `""`                                       |
+| `service.type`                    | Kubernetes Service type                              | `ClusterIP`                                 |
+| `service.port`                    | Service HTTP port                                    | `80`                                        |
+| `ingress.enabled`                 | Enable ingress controller resource                   | `false`                                     |
+| `ingress.hosts[0].host`           | Hostname to your OtterWiki installation              | `otterwiki.local`                           |
+| `ingress.hosts[0].paths.path`     | Path within the url structure                        | `/`                                         |
+| `ingress.hosts[0].paths.pathType` | Path matching rule                                   | `ImplementationSpecific`                    |
+| `ingress.hosts[0].tls[0].hosts[0]`  |  Hostname for which TLS will be configured         | `otterwiki.local`                           |
+| `ingress.hosts[0].tls[0].secretName` | TLS Secret (certificates)                         | `otterwiki-local-tls`                       |
+| `persistence.enabled`             | Enable persistence using PVC                         | `true`                                      |
+| `persistence.storageClass`        | PVC Storage Class for OtterWiki volume               | `nil` (uses alpha storage class annotation) |
+| `persistence.accessMode`          | PVC Access Mode for OtterWiki volume                 | `ReadWriteOnce`                             |
+| `persistence.size`                | PVC Storage Request for OtterWiki volume             | `512Mi`                                     |
+| `resources`                       | CPU/Memory resource requests/limits                  | `{}`                                        |
+| `nodeSelector`                    | Node labels for pod assignment                       | `{}`                                        |
+| `affinity`                        | Affinity settings for pod assignment                 | `{}`                                        |
+| `tolerations`                     | Toleration labels for pod assignment                 | `[]`                                        |
+| `podAnnotations`                  | Pod annotations                                      | `{}`                                        |
+
+
+The parameters can be specified using `--set key=value[,key=value]` as argument to `helm install`, e.g.
+
+```bash
+helm install my-otterwiki \
+  --set config.SITE_DESCRIPTION="An Otter Wiki deployed with Helm" \
+  --set ingress.enabled=true \
+  --set ingress.hosts[0].host="helm.otterwiki.com" \
+  oci://registry-1.docker.io/redimp/otterwiki
 ```
 
-This command deploys An Otter Wiki on the Kubernetes cluster with the default configuration. 
+Alternatively, you can use a yaml-file to set the parameters, for example when creating a `values.yaml` with
 
-## Uninstalling the Chart
-
-To uninstall/delete the `my-otterwiki` deployment:
-
-```shell
-helm delete my-otterwiki
+```yaml
+config:
+  SITE_DESCRIPTION: "An Otter Wiki deployed with Helm"
+ingress:
+  enabled: true
+  hosts:
+  - helm.otterwiki.com
 ```
 
-This command removes all the Kubernetes components associated with the chart and deletes the release.
+and deploy it with
 
-## Service Types
-
-OtterWiki can be exposed externally using different types of services. Here’s how to configure the service type:
-
-### Ingress
-
-The most likely service to use and enabled by default. Requires the Kubernetes cluster to have an Ingress controller configured. 
-
-```shell
-$ helm install my-otterwiki ./helm/ --set ingress.enabled=true
+```bash
+helm install my-otterwiki \
+  --values values.yaml \
+  oci://registry-1.docker.io/redimp/otterwiki
 ```
 
-If .local domains are setup and working, you can then connect using ```http://otterwiki.local```
+The most recent default `values.yaml` can be fetched using
 
-```shell
- $ curl http://otterwiki.local
-<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta name="viewport" content="width=device-width"><meta property="og:title" content="Home - An Otter Wiki">
+```bash
+helm show values oci://registry-1.docker.io/redimp/otterwiki > values.yaml
 ```
 
-#### Ingress with specified hostname
-To use your own hostname 
+### Application configuration
 
-```shell
-helm install my-otterwiki ./helm/ --set ingress.hostname=otterwiki.example.com
-```
+The app is configured via the `config` mapping, with the keys being the variable names
+used in the `settings.cfg`, see [Configuration](https://otterwiki.com/Configuration). The configuration
+will be stored in a configMap or those variables considered as a secret in a Secret.
 
-Example output:
+### Persistence
 
-```shell
-$ helm install my-otterwiki ./helm/ --set ingress.hostname=otterwiki.example.com
-NAME: my-otterwiki
-LAST DEPLOYED: Fri Apr 12 10:08:23 2024
-NAMESPACE: default
-STATUS: deployed
-REVISION: 1
-NOTES:
-1. Get the application URL by running these commands:
-  http://otterwiki.example.com
-$ curl http://otterwiki.example.com
-<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta name="viewport" content="width=device-width"><meta property="og:title" content="Home - An Otter Wiki">
-...
-```
-
-### NodePort
-
-To use a NodePort service:
-
-```shell
-helm install my-otterwiki ./helm/ --set service.type=NodePort
-```
-
-NodePort exposes OtterWiki on each node’s IP at a static port. You can access the service from outside the cluster by requesting `<NodeIP>:<NodePort>`.
-
-For example, where one of the Kubernetes nodes is 192.168.200.22 and NodePort is 30353 : 
-```shell
-$ kubectl get service | grep my-otterwiki-helm
-my-otterwiki-helm   NodePort       10.43.148.5    <none>           80:30353/TCP     5m28s
-$ curl  192.168.200.22:30353
-<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta name="viewport" content="width=device-width"><meta property="og:title" content="Home - An Otter Wiki"><meta property="og:type" content="website"><meta property="og:url" content="http://192.168.200.22:30353/Home"><meta property="og:description" content="A minimalistic wiki powered by python, markdown and git.">
-..
-```
-
-### ClusterIP
-
-For internal access only, you can use ClusterIP:
-
-```shell
-helm install my-otterwiki ./helm/ --set service.type=ClusterIP
-```
-
-ClusterIP exposes OtterWiki internally within the cluster, making it accessible only from within.
-To connect to ClusterIP
-
-```shell
-$ export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=helm,app.kubernetes.io/instance=my-otterwiki" -o jsonpath="{.items[0].metadata.name}")
-$ export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
-kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
-```
-Then connect to localhost 8080
-```shell
-$ curl localhost:8080
-<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta name="viewport" content="width=device-width"><meta property="og:title" content="Home - An Otter Wiki">
-...
-```
-
-## Customizing the Chart Before Installing
-
-To edit or customize the default configuration, you can use the `helm show values` command to generate a `values.yaml` file:
-
-```shell
-helm show values ./helm/ > myvalues.yaml
-```
-
-Edit `myvalues.yaml` as needed, then install the chart with the updated values:
-
-```shell
-helm install my-otterwiki ./helm/ -f myvalues.yaml 
-```
-
+The [redimp/otterwiki](https://hub.docker.com/r/redimp/otterwiki) image stores the wikis
+data at the `/app-data` path of the container. Persistent Volume Claims are used to keep the
+data across deployments.
