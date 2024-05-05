@@ -649,6 +649,26 @@ var otterwiki = {
         {
             btn.innerHTML = '<i class="far fa-eye"></i>';
         }
+    },
+    toggle_preview: function(preview) {
+        const preview_block = document.querySelector("#preview_block");
+        const preview_btn = document.querySelector("#preview_btn");
+        const editor_block = document.querySelector("#editor_block");
+        const editor_btn = document.querySelector("#editor_btn");
+        if (!preview_block || !preview_btn || !editor_block || !editor_btn) return;
+
+        if (preview) {
+            preview_block.style.display = 'block';
+            editor_block.style.display = 'none';
+            editor_btn.style.display = '';
+            preview_btn.style.display = 'none';
+        } else {
+            preview_block.style.display = 'none';
+            editor_block.style.display = 'block';
+            editor_btn.style.display = 'none';
+            preview_btn.style.display = '';
+
+        }
     }
 }
 

@@ -1,22 +1,15 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
-{% extends "preview.html" %}
+{% extends "page.html" %}
 {#
     Head
 #}
 {% block head %}
-<style type="text/css" media="screen">
-/* Set editor dimensions */
-        #editor {
-            height: 500px;
-            width: 50%;
-        }
-
-        /* Stretch editor to fit inside its containing div */
-        .cm-editor {
-            height: 100%;
-            width: 100%;
-        }
-</style>
+{% endblock %}
+{% block navbarsearch %}
+{#- disable search block #}
+{% endblock %}
+{% block navbardropdown_outer %}
+{#- disable page drop down #}
 {% endblock %}
 {% block navbar_editor %}
 <button onclick="otterwiki_editor.undo()" class="btn btn-editor btn-xs ml-10" title="Undo"><i class="fas fa-undo"></i></button>
@@ -70,7 +63,7 @@
         <span class="dropdown-icon">
             <i class="fas fa-table"></i>
         </span>
-        Add Table
+        Add / Format Table
     </a>
     <a onclick="otterwiki_editor.table_add_row()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
@@ -144,12 +137,32 @@
 </div>
 {% endblock %}
 {#
-    Navbar
+    Commit Modal
 #}
-{% block navbar %}
-<a href="{{ url_for('view', path=pagepath) }}" class="btn btn-danger mr-5" role="button"><i class="fas fa-window-close"></i></a>
-<button class="btn btn-success mr-5" onclick="otterwiki.toggleModal('modal-commit')"><i class="fas fa-save"></i></button>
-<button type="submit" class="btn btn-primary" form="pagecontent"><i class="far fa-eye"></i></button>
+{% block bodytop %}
+<div class="modal" id="modal-commit" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <a href="#" class="close" onclick="otterwiki.toggleModal('modal-commit')" role="button" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </a>
+      <h5 class="modal-title">Save {{pagename}}</h5>
+      <form id="saveform" action="{{ url_for('save', path=pagepath) }}" method="post" autocomplete="off">
+      <input id="content_update" type="hidden" name="content_update" value="">
+        <div class="form-group">
+{%if config["COMMIT_MESSAGE"] == "REQUIRED"%}
+            <label for="commit-message" class="required">Commit Message</label>
+            <input name="commit" id="commit-message" type="text" class="form-control" placeholder="Your commit message here" required="required">
+{% else %}
+            <label for="commit-message">Commit Message</label>
+            <input name="commit" id="commit-message" type="text" class="form-control" placeholder="Your (optional) commit message here">
+{% endif %}
+        </div>
+        <input class="btn btn-primary btn-block" type="submit" value="Save">
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}
 {#
     Sidebar Menu
@@ -157,12 +170,11 @@
 {% block menu %}
 {{ super() }}
 {% endblock %}
-{% block navbardropdown_outer %}
-{% endblock %}
 {#
     extra-navbar
 #}
 {% block extra_nav -%}
+<div id="extranav-attachments">
 <h5 class="sidebar-title"><a class="sidebar-title-link" href="{{ url_for('attachments', pagepath=pagepath ) }}">Attachments <i class="fa fa-paperclip"></i></a></h5>
                     <div class="sidebar-divider" ></div>
                     {% for f in files %}
@@ -192,21 +204,19 @@
                         </details>
                         {% endfor %}
                         <p class="font-size-12 p-15 text-muted">Additional media can be added via the 'Attachments' of this page, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.</p>
+</div>
+{{ super() }}
 {%- endblock extra_nav %}
 {#
     Content
 #}
 {% block content_wrapper %}
 <!-- Content wrapper start -->
-{#
 <form id="pagecontent" action="{{ url_for('preview', path=pagepath) }}" method="post">
-<input id="pc_cursor_line" type="hidden" name="cursor_line" value="" />
-<input id="pc_cursor_ch" type="hidden" name="cursor_ch" value="" />
-#}
 <textarea id="content_editor" name="content_editor">{{ content_editor }}</textarea>
-<div id="editor_target"></div>
-{#
+<div id="editor_block" style="display: block;"></div>
 </form>
+<div id="preview_block" style="display: none; background-image: url('{{ url_for("static", filename="img/preview.png") | debug_unixtime }}');"></div>
 <div id="editor-bottom-panel" class="editor-bottom-panel" style="display:none;">
     <a href="#" onclick="otterwiki.toggleMarkdownHelp()" class="btn btn-xsm"><i class="fab fa-markdown"></i> Markdown Syntax</a>
     <div id="editor-help-markdown" class="content card border rounded-top p-5" style="display: none;">
@@ -218,8 +228,16 @@
           {% include "snippets/syntax.html" %}
     </div>
 </div>
-#}
 <!-- Content wrapper end -->
+{% endblock %}
+{#
+    Navbar
+#}
+{% block navbar %}
+<a href="{{ url_for('view', path=pagepath) }}" class="btn btn-danger mr-5" role="button"><i class="fas fa-window-close"></i></a>
+<button class="btn btn-success mr-5" onclick="otterwiki.toggleModal('modal-commit')"><i class="fas fa-save"></i></button>
+<button id="preview_btn" class="btn btn-primary" style="width: 1rem;" onclick="otterwiki.toggle_preview(true);"><i class="far fa-eye" ></i></button>
+<button id="editor_btn" class="btn btn-primary" style="width: 1rem; display:none;" onclick="otterwiki.toggle_preview(false);"><i class="fas fa-pencil-alt"></i></button>
 {% endblock %}
 {#
     Javascript
@@ -230,20 +248,73 @@
 <script src="{{ url_for("static", filename="js/cm6/cm6.bundle.min.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
     const editorSource = document.querySelector("#content_editor");
-    const editorTarget = document.querySelector("#editor_target");
+    const editor_block = document.querySelector("#editor_block");
+    const preview_block = document.querySelector("#preview_block");
     const initialState = cm6.createEditorState(
-        editorSource.value
+        {# strip trailing new line to prevent cm6 to add an empty line #}
+        editorSource.value.replace(/^\s+|\s+$/g, '')
     );
-    const view = cm6.createEditorView(initialState, editorTarget );
-    console.log("After:\n", view.state.doc.toString())
-    document.getElementById('pagecontent').onsubmit = function() {
-        // var cm_cursor = cm_editor.getCursor();
-        document.getElementById('pc_cursor_line').value = cm_cursor.line;
-        document.getElementById('pc_cursor_ch').value = cm_cursor.ch;
-    }
+    const cm_editor = cm6.createEditorView(initialState, editor_block );
+    {# Get the doc from the editor and copy it into the modals form hidden input #}
     document.getElementById('saveform').onsubmit = function() {
-        var content_editor = cm_editor.getValue();
-        document.getElementById('content_update').value = content_editor;
+        document.getElementById('content_update').value = cm_editor.state.doc.toString();
     };
+    const preview_btn = document.querySelector("#preview_btn");
+    const editor_btn = document.querySelector("#editor_btn");
+    const sidebar_toc = document.querySelector("#sidebar-toc");
+    const extranav_toc = document.querySelector("#extranav-toc");
+    const extranav_attachments = document.querySelector("#extranav-attachments");
+
+    preview_btn.onclick = function() {
+        {# toggle preview/edit #}
+        preview_block.style.display = 'block';
+        editor_block.style.display = 'none';
+        editor_btn.style.display = '';
+        preview_btn.style.display = 'none';
+        extranav_attachments.style.display = 'none';
+
+        const formData = new FormData();
+        formData.append("content", cm_editor.state.doc.toString());
+        formData.append("cursor_line",
+            cm_editor.state.doc.lineAt(cm_editor.state.selection.main.head).number
+            )
+
+        /* FIXME: display loader */
+        //preview_block.innerHTML = cm_editor.state.doc.toString();
+        fetch("{{ url_for('preview', path=pagepath) }}", {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                preview_block.innerHTML = data.content;
+                sidebar_toc.innerHTML = data.toc;
+                extranav_toc.innerHTML = data.toc;
+            })
+            .then(function () {
+                cursor = document.getElementById("otterwiki_cursor");
+                console.log(cursor);
+                if (cursor) {
+                    cursor.scrollIntoView();
+                }
+            })
+            .catch(function () {
+                console.log('Error fetching preview ...');
+            });
+    }
+    editor_btn.onclick = function() {
+        {# toggle preview/edit #}
+        preview_block.style.display = 'none';
+        editor_block.style.display = 'block';
+        extranav_attachments.style.display = 'block';
+        editor_btn.style.display = 'none';
+        preview_btn.style.display = '';
+        sidebar_toc.innerHTML = '';
+        extranav_toc.innerHTML = '';
+        // TODO: focus editor
+        cm_editor.focus()
+    }
 </script>
 {% endblock %}

@@ -573,14 +573,14 @@ class Page:
             menutree=menutree.query(),
         )
 
-    def preview(self, content=None, cursor_line=None, cursor_ch=None):
+    def preview(self, content=None, cursor_line=None):
         if content is None:
             # handle case that the page doesn't exists
             self.exists_or_404()
             # no content in form use loaded page
             content = self.content
 
-        # render preview
+        # render preview from markdown
         content_html, toc = render.markdown(content, cursor=cursor_line)
         # update pagename from toc
         if len(toc) > 0:
@@ -590,17 +590,33 @@ class Page:
                 full=False,
                 header=toc[0][3],
             )
-
-        return render_template(
+        # render page and toc from templates
+        toc_html = render_template(
+            "snippets/toc.html",
+            toc=toc,
+        )
+        preview_html = render_template(
             "preview.html",
             pagename=self.pagename,
             pagepath=self.pagepath,
             content_html=content_html,
-            toc=toc,
-            content_editor=content,
-            cursor_line=cursor_line,
-            cursor_ch=cursor_ch,
+            breadcrumbs=self.breadcrumbs(),
         )
+        return {
+            "content" : preview_html,
+            "toc" : toc_html,
+        }
+
+        # return render_template(
+        #     "preview.html",
+        #     pagename=self.pagename,
+        #     pagepath=self.pagepath,
+        #     content_html=content_html,
+        #     toc=toc,
+        #     content_editor=content,
+        #     cursor_line=cursor_line,
+        #     cursor_ch=cursor_ch,
+        # )
 
     def editor(self, content=None, cursor_line=None, cursor_ch=None):
         if not has_permission("WRITE"):
@@ -617,12 +633,10 @@ class Page:
         files = [f.data for f in self._attachments() if f.metadata is not None]
 
         return render_template(
-            "editor.html",
+            "editor6.html",
             pagename=self.pagename,
             pagepath=self.pagepath,
             content_editor=content,
-            cursor_line=cursor_line,
-            cursor_ch=cursor_ch,
             files=files,
         )
 

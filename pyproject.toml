@@ -22,7 +22,6 @@ dependencies = [
     "pygments==2.17.2",
     "Pillow==10.4.0",
     "unidiff==0.7.5",
-    "flask-htmlmin==2.2.1",
     "beautifulsoup4==4.12.3",
     "pluggy==1.5.0",
 ]

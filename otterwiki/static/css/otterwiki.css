@@ -145,11 +145,6 @@ pre,
     color: rgba(255, 255, 255, 1.0);
 }
 
-#editor {
-    background: transparent;
-    display: none;
-}
-
 #editor-help-markdown {
     position: absolute;
     bottom: 3rem;

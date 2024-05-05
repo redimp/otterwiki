@@ -87,6 +87,19 @@ otterwiki/static/js/cm-modes.min.js: Makefile tmp/codemirror-5.65.15
 	done
 	./venv/bin/python -m rjsmin -p < otterwiki/static/js/cm-modes.js > otterwiki/static/js/cm-modes.min.js
 
+otterwiki/static/js/cm6/cm6.bundle.js: otterwiki/static/js/cm6/bundle.config.js Makefile
+	npm i rollup @rollup/plugin-node-resolve
+	npm i codemirror @codemirror/lang-markdown
+	npm i codemirror @codemirror/language-data
+	npx rollup $< --inlineDynamicImports -f iife -o $@ -p @rollup/plugin-node-resolve --output.name cm6
+	# npx rollup $< -f esm -d otterwiki/static/js/cm6 -p @rollup/plugin-node-resolve --output.name cm6
+	ls -lh $@
+
+otterwiki/static/js/cm6/cm6.bundle.min.js: otterwiki/static/js/cm6/cm6.bundle.js
+	./venv/bin/python -m rjsmin -p < $< > $@
+	ls -lh $@
+
+
 docker-test:
 	# make sure the image is rebuild
 	docker build -t otterwiki:_test --target test-stage .

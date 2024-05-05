@@ -334,9 +334,8 @@ def save(path):
 def preview(path):
     p = Page(path)
     return p.preview(
-            content=request.form.get("content_editor"),
+            content=request.form.get("content"),
             cursor_line=request.form.get("cursor_line"),
-            cursor_ch=request.form.get("cursor_ch"),
             )
 
 
