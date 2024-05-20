@@ -97,7 +97,7 @@ class SidebarNavigation:
             }
         if len(parts) > 1:
             self.add_node(
-                tree[parts[0]]["children"], prefix + [parts[0]], parts[1:]
+                tree[parts[0]]["children"], prefix + [parts[0]], parts[1:], header
             )
 
     def load(self):
