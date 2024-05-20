@@ -24,6 +24,7 @@ def create_app(tmpdir):
                 "DEBUG = True\n", # enable test and debug settings
                 "TESTING = True\n",
                 "MAIL_SUPPRESS_SEND = True\n",
+                "SECRET_KEY = 'Testing Testing Testing'\n",
             ]
         )
     # configure environment
