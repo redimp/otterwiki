@@ -64,4 +64,12 @@ echo "    location / {
 # close the server block
 echo "}" >> /etc/nginx/conf.d/default.conf
 
+# install plugins found in /app-data/plugins and /plugins
+for PLUGIN in /app-data/plugins/*/ /plugins/*/; do
+    test -d "$PLUGIN" || continue
+    echo Installing: $PLUGIN
+    cd "$PLUGIN"
+    pip install -U . || echo "Error: Installation of plugin in $PLUGIN failed." >&2
+done
+
 exec "$@"

@@ -1,0 +1,12 @@
+version: '3'
+services:
+  otterwiki:
+    image: redimp/otterwiki:2
+    # for testing local versions via 'docker-compose up --build'
+    build: ../..
+    restart: unless-stopped
+    ports:
+      # forward the http port to 8080
+      - "8080:80"
+    volumes:
+      - ./:/plugins:ro
