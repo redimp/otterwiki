@@ -4,7 +4,8 @@
 FROM nginx:1.25.3 AS compile-stage
 LABEL maintainer="Ralph Thesen <mail@redimp.de>"
 # install python environment
-RUN \
+RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    rm /etc/apt/apt.conf.d/docker-clean && \
     apt-get update -y && \
     apt-get upgrade -y && \
     apt-get install -y python3.11 python3.11-venv python3-pip \
@@ -13,22 +14,32 @@ RUN \
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 # upgrade pip and install requirements not in otterwiki
-RUN pip install -U pip wheel
-# copy app
-COPY . /app
-WORKDIR /app
-# install the otterwiki and its requirements
+RUN pip install -U pip wheel uv
+# copy src files
+COPY pyproject.toml MANIFEST.in README.md /src/
+WORKDIR /src
+
+# install requirements
+RUN --mount=type=cache,target=/root/.cache \
+    uv pip compile pyproject.toml >requirements.txt && \
+    pip install -r requirements.txt
+
+# copy otterwiki source and tests
+COPY otterwiki /src/otterwiki
+COPY tests /src/tests
+
+# install the otterwiki
 RUN pip install .
 #
 # test stage
 #
 FROM compile-stage AS test-stage
 # install git (not needed for compiling)
-RUN apt-get update -y && apt-get install -y --no-install-recommends git
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    apt-get update -y && apt-get install -y --no-install-recommends git
 # install the dev environment
-RUN pip install '.[dev]'
-# run tox (which builds a new environemnt and runs pytest)
-RUN tox
+RUN --mount=type=cache,target=/root/.cache \
+    pip install '.[dev]'
 # configure tox as default command when the test-stage is executed
 CMD ["tox"]
 #
@@ -42,13 +53,14 @@ ENV GIT_TAG $GIT_TAG
 ENV OTTERWIKI_SETTINGS=/app-data/settings.cfg
 ENV OTTERWIKI_REPOSITORY=/app-data/repository
 # install supervisord and python
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
-  apt-get upgrade -y && \
-  apt-get install -y --no-install-recommends \
-  supervisor git \
-  python3.11 python3-wheel python3-venv libpython3.11 \
-  uwsgi uwsgi-plugin-python3 \
-  && rm -rf /var/lib/apt/lists/*
+RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    apt-get -y update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+    supervisor git \
+    python3.11 python3-wheel python3-venv libpython3.11 \
+    uwsgi uwsgi-plugin-python3 \
+    && rm -rf /var/lib/apt/lists/*
 # copy virtual environment
 COPY --from=compile-stage /opt/venv /opt/venv
 # Make sure we use the virtualenv:

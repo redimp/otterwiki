@@ -89,20 +89,21 @@ otterwiki/static/js/cm-modes.min.js: Makefile tmp/codemirror-5.65.15
 
 docker-test:
 	# make sure the image is rebuild
-	DOCKER_BUILDKIT=1 docker build --no-cache -t otterwiki:_test --target test-stage .
+	docker build -t otterwiki:_test --target test-stage .
+	docker run -it --rm otterwiki:_test
 
 docker-run:
-	DOCKER_BUILDKIT=1 docker build -t otterwiki:_build .
+	docker build -t otterwiki:_build .
 	docker run -p 8080:80 otterwiki:_build
 
-docker-buildx-test:
+docker-platform-test:
 ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
 	docker buildx build --no-cache --platform $(PLATFORM) --target test-stage .
 else
 	docker buildx build --no-cache --platform $(PLATFORM_QUICK) --target test-stage .
 endif
 
-docker-buildx-push: test
+docker-push: test
 # check if we are in the main branch (to avoid accidently pushing a feature branch
 ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
 # check if git is clean
