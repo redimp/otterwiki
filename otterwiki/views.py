@@ -10,6 +10,7 @@ from flask import (
     make_response,
     redirect,
     url_for,
+    session,
 )
 from otterwiki.server import app, storage, githttpserver
 from otterwiki.wiki import Page, PageIndex, Changelog, Search, render, AutoRoute
@@ -17,7 +18,7 @@ import otterwiki.auth
 import otterwiki.preferences
 from otterwiki.helper import toast, health_check
 from otterwiki.version import __version__
-from otterwiki.util import sanitize_pagename
+from otterwiki.util import sanitize_pagename, split_path, join_path
 
 from flask_login import login_required
 
@@ -158,14 +159,28 @@ def pageindex():
 def create():
     pagename = request.form.get("pagename")
     pagename_sanitized = sanitize_pagename(pagename)
+    pagename_prefixes = []
+
+    if "pagecrumbs" in session:
+        for crumb in session["pagecrumbs"][::-1]:
+            if len(crumb) == 0 or crumb.lower() == "home": continue
+            crumb_parent = join_path(split_path(crumb)[:-1])
+            if len(crumb_parent)>0 and crumb_parent not in pagename_prefixes:
+                pagename_prefixes.append(crumb_parent)
+            if crumb not in pagename_prefixes:
+                pagename_prefixes.append(crumb)
+            if len(pagename_prefixes)>3: break
     if pagename is None:
         # This is the default create page view
-        return render_template("create.html", title="Create Page")
+        return render_template("create.html", title="Create Page",
+                               pagename_prefixes=pagename_prefixes)
     elif pagename != pagename_sanitized:
         if pagename is not None and pagename != pagename_sanitized:
             toast("Please check the pagename ...", "warning")
         return render_template(
-            "create.html", title="Create Page", pagename=pagename_sanitized
+            "create.html", title="Create Page",
+            pagename=pagename_sanitized,
+            pagename_prefixes=pagename_prefixes
         )
     else:
         # this is the creation of a new page

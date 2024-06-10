@@ -2,15 +2,45 @@
 {% extends "form.html" %}
 {% block formcontent %}
 <form action="{{url_for("create")}}" method="POST" class="form-inline">{# class="w-400 mw-full" <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
-  <div class="form-group">
-    <label for="pagename" class="required">Page name</label>
+  <div class="form-group mb-10">
+    <label for="pagename" class="required w-100">Page name</label>
     <input type="text" class="form-control" name="pagename" id="pagename" placeholder="Page name" required="required" value="{{ pagename if pagename }}" autofocus>
   </div>
+  {% if pagename_prefixes and pagename_prefixes|length > 0  %}
+  <div class="form-group mb-5">
+    <div class="w-100 mr-10">
+    Create page in subdirectory:
+    </div>
+    <div style="position: relative; -ms-flex: 1 1 0%; flex: 1 1 0%; min-width: 0;">
+    {% for prefix in pagename_prefixes %}
+    <button class="btn btn-xsm mb-5 mr-5" onclick="return toggle_pagename_prefix('{{prefix}}')">{{prefix}}/</button>
+    {% endfor %}
+    </div>
+  </div>
+  {% endif %}
   <div class="form-group">
-    <div class="form-text text-wrap">
+    <div class="form-text text-wrap font-italic">
         Hint: Avoid abbreviations. Try to limit your name to three simple words or fewer.
     </div>
   </div>
   <input class="btn btn-primary" type="submit" value="Create and open in editor">
 </form>
+{% endblock %}
+{% block js %}
+<script type="text/javascript">
+function toggle_pagename_prefix(p) {
+    pagename = document.getElementById('pagename');
+
+    pagename.focus();
+    if (pagename.value.startsWith(p + "/")) {
+        pagename.value = pagename.value.slice(p.length + 1);
+    }
+    else if (pagename.value.startsWith(p)) {
+        pagename.value = pagename.value.slice(p.length);
+    } else {
+        pagename.value = p + "/" + pagename.value;
+    }
+    return false;
+}
+</script>
 {% endblock %}

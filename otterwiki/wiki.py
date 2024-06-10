@@ -11,6 +11,7 @@ from flask import (
     make_response,
     send_file,
     jsonify,
+    session,
 )
 from markupsafe import escape as html_escape
 from otterwiki.gitstorage import StorageNotFound, StorageError
@@ -65,6 +66,17 @@ def get_breadcrumbs(pagepath):
         )
     return crumbs
 
+
+def upsert_pagecrumbs(pagepath):
+    if pagepath is None or pagepath == "/":
+        return
+    if "pagecrumbs" not in session:
+        session["pagecrumbs"] = []
+    else:
+        session["pagecrumbs"] = list(filter(lambda x: x.lower() != pagepath.lower(), session["pagecrumbs"]))
+
+    # add the pagepath to the tail of the list of pagecrumbs
+    session["pagecrumbs"] = session["pagecrumbs"][-7:] + [pagepath]
 
 class PageIndex:
     def __init__(self, path=None):
@@ -206,6 +218,7 @@ class PageIndex:
             abort(403)
         menutree = SidebarNavigation(get_page_directoryname(self.path or "/"))
 
+        upsert_pagecrumbs(get_pagename(self.path or "/", full=True))
         return render_template(
             "pageindex.html",
             title="Page Index",
@@ -516,6 +529,8 @@ class Page:
             return redirect(url_for("login"))
         # handle case that page doesn't exists
         self.exists_or_404()
+
+        upsert_pagecrumbs(get_pagename(self.pagepath, full=True))
 
         danger_alert = False
         if not self.metadata:

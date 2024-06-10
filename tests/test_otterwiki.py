@@ -42,6 +42,25 @@ def test_create_page_sanitized(test_client):
     ).data.decode()
     assert "Please check the pagename" in html
 
+def test_create_page_in(test_client):
+    # create a page in a subdirectory
+    subdir = "subdir"
+    pagename = f"{subdir}/pagename"
+    html = test_client.post(
+        f"/{pagename}/save",
+        data={
+            "content_update": f"{pagename}\n\nTest test 12345678",
+            "commit": "Initial commit",
+        },
+        follow_redirects=True,
+    ).data.decode()
+    assert "Test test 12345678" in html
+
+    html = test_client.get("/-/create").data.decode()
+    assert f"toggle_pagename_prefix('{pagename}')" in html.lower()
+    assert f"toggle_pagename_prefix('{subdir}')" in html.lower()
+
+
 
 def test_create_page(test_client, req_ctx):
     pagename = "createtest"
