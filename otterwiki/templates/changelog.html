@@ -65,7 +65,7 @@
 {% for entry in log %}
           <tr class="align-top">
             <td class="font-size-12"><span class="datetime">{{entry.datetime|format_datetime}}</span>
-                <a href="{{ url_for("show_commit", revision=entry.revision) }}" class="btn revision-small">{{entry.revision}}</a> <a href="{{ url_for("revert", revision=entry.revision) }}"> <i class="fas fa-undo" alt="revert" title="revert commit {{entry.revision}}"></i></a>
+                <a href="{{ url_for("show_commit", revision=entry.revision) }}" class="btn revision-small">{{entry.revision}}</a>{% if has_permission('WRITE') %} <a href="{{ url_for("revert", revision=entry.revision) }}"> <i class="fas fa-undo" alt="revert" title="revert commit {{entry.revision}}"></i></a>{% endif %}
             </td>
 {# author #}
             <td>{%if not entry.author_email%}{{entry.author_name}}{%else%}<a href="mailto:{{entry.author_email}}">{{entry.author_name}}</a>{%endif%}</td>
