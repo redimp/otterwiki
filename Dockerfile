@@ -8,20 +8,21 @@ RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
     rm /etc/apt/apt.conf.d/docker-clean && \
     apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install -y python3.11 python3.11-venv python3-pip \
-    libjpeg-dev zlib1g-dev
+    apt-get install -y --no-install-recommends python3.11 python3.11-venv \
+    python3-pip libjpeg-dev zlib1g-dev build-essential python3-dev
 # prepare environment
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 # upgrade pip and install requirements not in otterwiki
-RUN pip install -U pip wheel uv
+RUN --mount=type=cache,target=/root/.cache \
+    pip install -U pip wheel toml
 # copy src files
-COPY pyproject.toml MANIFEST.in README.md /src/
+COPY pyproject.toml MANIFEST.in README.md LICENSE /src/
 WORKDIR /src
 
 # install requirements
 RUN --mount=type=cache,target=/root/.cache \
-    uv pip compile pyproject.toml >requirements.txt && \
+    python -c 'import toml; print("\n".join(toml.load("./pyproject.toml")["project"]["dependencies"]));' > requirements.txt && \
     pip install -r requirements.txt
 
 # copy otterwiki source and tests
@@ -40,6 +41,8 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
 # install the dev environment
 RUN --mount=type=cache,target=/root/.cache \
     pip install '.[dev]'
+RUN --mount=type=cache,target=/root/.cache \
+    tox
 # configure tox as default command when the test-stage is executed
 CMD ["tox"]
 #
@@ -82,4 +85,4 @@ ENTRYPOINT ["/entrypoint.sh"]
 # and the default command: supervisor which takes care of nginx and uWSGI
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 
-# vim:set et ts=8 sts=2 sw=2 ai fenc=utf-8:
+# vim:set et ts=8 sts=4 sw=4 ai fenc=utf-8:

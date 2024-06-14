@@ -98,9 +98,9 @@ docker-run:
 
 docker-platform-test:
 ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
-	docker buildx build --no-cache --platform $(PLATFORM) --target test-stage .
+	docker buildx build --platform $(PLATFORM) --target test-stage .
 else
-	docker buildx build --no-cache --platform $(PLATFORM_QUICK) --target test-stage .
+	docker buildx build --platform $(PLATFORM_QUICK) --target test-stage .
 endif
 
 docker-push: test
