@@ -16,8 +16,10 @@ that contains the plugin.
 ### Plugins into the Docker image
 
 The `entrypoint.sh` checks before running the app the paths
+
 - /app-data/plugins
 - /plugins
+
 for plugins to install. So you can either add the plugins as a directory to
 the volume that keeps the `app-data`, where also the `db.sqlite` and the
 `repostitory` lives. Or you organize the plugins in a separate directory
