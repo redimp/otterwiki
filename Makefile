@@ -96,11 +96,45 @@ docker-run:
 	docker build -t otterwiki:_build .
 	docker run -p 8080:80 otterwiki:_build
 
+docker-run-slim:
+	docker build -t otterwiki:_build-slim \
+		-f docker/Dockerfile.slim \
+		.
+	docker run -p 8080:8080 otterwiki:_build-slim
+
 docker-platform-test:
 ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
 	docker buildx build --platform $(PLATFORM) --target test-stage .
 else
 	docker buildx build --platform $(PLATFORM_QUICK) --target test-stage .
+endif
+
+docker-push-slim: test
+ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
+# check if git is clean
+ifneq ($(strip $(shell git status --porcelain)),)
+	$(error Error: Uncommitted changes in found)
+endif
+	docker buildx build \
+		--platform $(PLATFORM) \
+		-f docker/Dockerfile.slim \
+		-t redimp/otterwiki:$(VERSION)-slim \
+		-t redimp/otterwiki:$(VERSION_MAJOR)-slim \
+		-t redimp/otterwiki:$(VERSION_MAJOR_MINOR)-slim \
+		--build-arg GIT_TAG="$(shell git describe --long)" \
+		--push .
+else
+	@echo ""
+	@echo "-- Building dev image"
+	@echo ""
+	docker buildx build --platform $(PLATFORM_QUICK) \
+		-f docker/Dockerfile.slim \
+		-t redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD)-slim \
+		--build-arg GIT_TAG="$(shell git describe --long)_$(shell git rev-parse --abbrev-ref HEAD)" \
+		--push .
+	@echo ""
+	@echo "-- Done dev-image: redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD)-slim"
+	@echo ""
 endif
 
 docker-push: test
@@ -121,7 +155,7 @@ else
 	@echo ""
 	@echo "-- Building dev image"
 	@echo ""
-	docker buildx build --platform linux/arm64,linux/amd64 \
+	docker buildx build --platform $(PLATFORM_QUICK) \
 		-t redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD) \
 		--build-arg GIT_TAG="$(shell git describe --long)_$(shell git rev-parse --abbrev-ref HEAD)" \
 		--push .

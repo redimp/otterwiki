@@ -1,0 +1,66 @@
+#
+# compile stage
+#
+FROM alpine:3.20.1 AS compile-stage
+LABEL maintainer="Ralph Thesen <mail@redimp.de>"
+# install build environment (mostly necessary to build Pillow on armv6/7)
+RUN apk add python3 python3-dev py3-virtualenv \
+            zlib-dev jpeg-dev gcc musl-dev
+# prepare environment
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+# upgrade pip and install requirements not in otterwiki
+RUN --mount=type=cache,target=/root/.cache \
+    pip install -U pip wheel toml
+# copy src files
+COPY pyproject.toml MANIFEST.in README.md LICENSE /src/
+WORKDIR /src
+
+# install requirements
+RUN --mount=type=cache,target=/root/.cache \
+    python -c 'import toml; print("\n".join(toml.load("./pyproject.toml")["project"]["dependencies"]));' > requirements.txt && \
+    pip install -r requirements.txt
+
+# copy otterwiki source and tests
+COPY otterwiki /src/otterwiki
+# install the otterwiki
+RUN pip install .
+
+#
+# production stage
+#
+FROM alpine:3.20.1
+# arg for marking dev images
+ARG GIT_TAG
+ENV GIT_TAG $GIT_TAG
+# environment variables (I'm not sure if anyone ever would modify this)
+ENV OTTERWIKI_SETTINGS=/app-data/settings.cfg
+ENV OTTERWIKI_REPOSITORY=/app-data/repository
+# unify debian and alpine user and groups
+RUN delgroup www-data && \
+    addgroup -S -g 33 www-data && \
+    adduser -S -D -u 33 -s /sbin/nologin -h /app -G www-data www-data
+# install python and git
+RUN apk add python3 git uwsgi uwsgi-python3 bash \
+            zlib jpeg
+# copy virtual environment
+COPY --chown=www-data:www-data --from=compile-stage /opt/venv /opt/venv
+# Make sure we use the virtualenv:
+ENV PATH="/opt/venv/bin:$PATH"
+# create directories
+RUN mkdir -p /app-data /app/otterwiki && \
+    chown www-data:www-data /app-data
+VOLUME /app-data
+# copy static files for nginx
+COPY otterwiki/static /app/otterwiki/static
+# copy supervisord configs (nginx is configured in the entrypoint.sh)
+COPY docker/uwsgi-slim.ini /app/uwsgi.ini
+# Copy the entrypoint that will generate Nginx additional configs
+COPY --chmod=0755 ./docker/entrypoint-slim.sh /entrypoint.sh
+
+USER www-data
+# configure the entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
+# and the default command: run uWSGI
+CMD ["/usr/sbin/uwsgi", "--ini", "/app/uwsgi.ini"]
+# vim:set et ts=8 sts=4 sw=4 ai fenc=utf-8:
