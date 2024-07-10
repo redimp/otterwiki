@@ -39,7 +39,8 @@
     <!-- Font awesome -->
     <link rel="stylesheet" href="{{ url_for("static", filename="css/fontawesome-all.min.css") | debug_unixtime }}">
     <!-- pygments  -->
-    <link href="{{ url_for("static", filename="css/pygments.css") | debug_unixtime }}" rel="stylesheet" />
+    <link href="{{ url_for("static", filename="css/pygments.css") | debug_unixtime }}" rel="stylesheet" media="screen"/>
+    <link href="{{ url_for("static", filename="css/pygments-print.css") | debug_unixtime }}" rel="stylesheet" media="print"/>
     <!-- Roboto font (Used when Apple system fonts are not available) -->
     <link href="{{ url_for("static", filename="css/roboto.css") | debug_unixtime }}" rel="stylesheet"/>
     <!-- custom.css for tweaking the default themes -->

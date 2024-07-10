@@ -26,4 +26,29 @@ a.anchor {
     display: none;
 }
 
+h1, h2 {
+    border-bottom: 1px solid;
+}
 
+h2, h3, p {
+    orphans: 3;
+    widows: 3;
+}
+
+div.content {
+    line-height: 1.75;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    word-wrap: break-word;
+}
+
+div.content table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+div.content table th, div.content table td {
+    padding: 6px 13px;
+    border-style: solid;
+    border-color: #ddd;
+    border-width: 1px;
+}
