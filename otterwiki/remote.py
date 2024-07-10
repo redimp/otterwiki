@@ -91,7 +91,6 @@ class GitHttpServer:
             command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
         stdout, stderr = p.communicate(stream.read())
-        print(f"{p.returncode} {stderr}")
         if p.returncode > 0:
             app.logger.error(
                 f"GitHttpServer failed: {command} with \"{stderr}\""
