@@ -94,4 +94,8 @@ filterwarnings = [
     "ignore: 'cgi' is deprecated:DeprecationWarning",
 ]
 
+[tool.pyright]
+venvPath = "."
+venv = "venv"
+
 # vim: set et ts=8 sts=4 sw=4 ai fenc=utf-8:
