@@ -1,0 +1,21 @@
+{#- vim: set et ts=8 sts=4 sw=4 ai: -#}
+{% if breadcrumbs %}
+<nav aria-label="Breadcrumbs">
+  <ul class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="fas fa-home"></i></a></li>
+{% for bname, bpath in breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('view', path=bpath) }}">{{bname}}</a></li>
+{% endfor %}
+{%if revision %}
+<li class="breadcrumb-item"><a href="{{ url_for('history', path=pagepath, revision=revision ) }}"><span class="revision-small">{{revision}}</span></a></li>
+{% endif %}
+</li>
+ </ul>
+</nav>
+{% endif %}
+{% if danger_alert %}
+<div class="alert alert-danger" role="alert">
+  <h4 class="alert-heading">{{ danger_alert[0] }}</h4>
+  {{ danger_alert[1] | safe}}
+</div>
+{% endif %}
