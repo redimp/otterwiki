@@ -333,6 +333,14 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         bottom_panel,
         ]; // document.querySelector("#editor_block");
     const preview_block = document.querySelector("#preview_block");
+    /* prevent user leaving with unsaved changes */
+    window.onbeforeunload = function(e) {
+        e = e || window.event;
+        if (!cm_editor.doc.isClean()) {
+            // will not be shown in modern browsers
+            return "You have unsaved changes.";
+        }
+    };
     /* save */
     document.getElementById('saveform').onsubmit = function() {
         const content_editor = cm_editor.getValue();
@@ -340,6 +348,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         document.getElementById('save_content').value = content_editor;
         document.getElementById('save_cursor_line').value = cm_cursor.line;
         document.getElementById('save_cursor_ch').value = cm_cursor.ch;
+        cm_editor.doc.markClean();
     };
     /* preview */
     preview_btn.onclick = function() {
