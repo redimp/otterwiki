@@ -7,7 +7,7 @@
 
         <div class="collapse-content">
             {% for count, html, level, text, anchor in toc %}
-            <a href="#{{anchor}}" class="sidebar-link sidebar-toc-{{level}}">{{text}}</a>
+            <a href="#{{anchor}}" class="sidebar-link sidebar-toc-{{level}}{%if loop.first%} sidebar-active{% endif %}">{{text}}</a>
             {% endfor %}
         </div>
     </details>

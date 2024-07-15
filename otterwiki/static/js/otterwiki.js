@@ -674,3 +674,33 @@ window.addEventListener("keypress", function() {
         event.preventDefault();
     }
 });
+
+
+let sidebar_links = document.querySelectorAll('a.sidebar-link');
+let header_anchors = document.querySelectorAll('div.page > h1, div.page > h2, div.page > h3, div.page > h4, div.page > h5, div.page > h6');
+
+document.querySelector('#content-wrapper').addEventListener('scroll', (event) => {
+  if (typeof(header_anchors) != 'undefined' && header_anchors != null && typeof(sidebar_links) != 'undefined' && sidebar_links != null) {
+
+    var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+    // highlight the last scrolled-to: set everything inactive first
+    sidebar_links.forEach((link, index) => {
+      link.classList.remove("sidebar-active");
+    });
+
+    // then iterate backwards, on the first match highlight it and break
+    // for (var i = header_anchors.length-1; i >= 0; i--) {
+    for (var i = 0; i < header_anchors.length; i++) {
+      if (header_anchors[i].getBoundingClientRect().y > 0 &&
+          header_anchors[i].getBoundingClientRect().y < viewHeight) {
+        for (var j = sidebar_links.length - 1; j>= 0; j--) {
+          if (sidebar_links[j].href == header_anchors[i].getElementsByClassName("anchor")[0].href) {
+            sidebar_links[j].classList.add('sidebar-active');
+          }
+        }
+        break;
+      }
+    }
+  }
+});
+

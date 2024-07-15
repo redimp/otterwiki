@@ -196,6 +196,10 @@ pre,
     white-space: nowrap;
 }
 
+.sidebar-active {
+    font-weight: bold;
+}
+
 .btn-xsm {
     height: 2.2rem;
     line-height: 2.2rem;
