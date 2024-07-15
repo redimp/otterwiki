@@ -649,7 +649,7 @@ var otterwiki = {
         {
             btn.innerHTML = '<i class="far fa-eye"></i>';
         }
-    }
+    },
 }
 
 var MathJax = {

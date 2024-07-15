@@ -57,8 +57,8 @@ a^2+b^2=c^2
 def test_preview(create_app, req_ctx):
     from otterwiki.wiki import Page
     p = Page("test")
-    preview_html = p.preview(content=markdown_example, cursor_line=1,cursor_ch=1)
-    assert render.htmlcursor in preview_html
+    data = p.preview(content=markdown_example, cursor_line=1)
+    assert render.htmlcursor in data['preview_content']
 
 def test_preview_all(create_app, req_ctx):
     markdown_arr = markdown_example.splitlines()
@@ -66,20 +66,18 @@ def test_preview_all(create_app, req_ctx):
     html_example_arr = html_example.split("<")
     from otterwiki.wiki import Page
     p = Page("test")
-    preview_html = p.preview(content=markdown_example, cursor_line=1,cursor_ch=1)
+    data = p.preview(content=markdown_example, cursor_line=1)
     for part in html_example_arr:
-        assert part in preview_html
-    assert render.htmlcursor in preview_html
+        assert part in data['preview_content']
+    assert render.htmlcursor in data['preview_content']
     # check every cursor line
     for i,md_line in enumerate(markdown_example.splitlines(),start=1):
-        preview_html = p.preview(content=markdown_example,cursor_line=i,cursor_ch=1) 
-        cursor_line='name="cursor_line" value="{}"'.format(i)
-        assert cursor_line in preview_html
-        #assert "<span id=\"cursor\"></span>" in preview_html
+        data = p.preview(content=markdown_example,cursor_line=i)
+        assert render.htmlcursor in data['preview_content']
         # clear cursor
-        preview_html = preview_html.replace(render.htmlcursor,"")
+        preview_html = data['preview_content'].replace(render.htmlcursor,"")
         # and check if everything made it into html
-        for j,part in enumerate(html_example_arr):
+        for _,part in enumerate(html_example_arr):
             assert part in preview_html
 
 def test_preview_list_bug(create_app, req_ctx):
@@ -89,7 +87,7 @@ def test_preview_list_bug(create_app, req_ctx):
 1. eins
 2. zwei
 3. drei"""
-    preview_html = p.preview(content=content, cursor_line=5,cursor_ch=1)
-    assert "<li>eins" in preview_html
-    assert "<li>zwei" in preview_html
-    assert "<li>drei" in preview_html
+    data = p.preview(content=content, cursor_line=5)
+    assert "<li>eins" in data['preview_content']
+    assert "<li>zwei" in data['preview_content']
+    assert "<li>drei" in data['preview_content']

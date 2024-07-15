@@ -156,7 +156,7 @@ def app_with_permissions(app_with_user, test_client):
     html = test_client.post(
         "/Home/save",
         data={
-            "content_update": "There is no place like Home.",
+            "content": "There is no place like Home.",
             "commit": "Home: initial test commit.",
         },
         follow_redirects=True,
@@ -267,7 +267,6 @@ def test_page_edit_permissions(app_with_permissions, test_client):
     assert rv.status_code == 200
     html = rv.data.decode()
     # check that there is an editor in the html
-    assert 'action="{}"'.format(url_for("preview", path=pagename)) in html
     assert "<textarea" in html
     # update permissions
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
@@ -277,7 +276,6 @@ def test_page_edit_permissions(app_with_permissions, test_client):
     html = rv.data.decode()
     # check that there is an editor in the html
     assert rv.status_code == 403
-    assert 'action="{}"'.format(url_for("preview", path=pagename)) not in html
     assert "<textarea" not in html
     # login
     login(test_client)
@@ -285,7 +283,6 @@ def test_page_edit_permissions(app_with_permissions, test_client):
     rv = test_client.get(url_for("edit", path=pagename))
     html = rv.data.decode()
     assert rv.status_code == 200
-    assert 'action="{}"'.format(url_for("preview", path=pagename)) in html
     assert "<textarea" in html
 
 
@@ -300,7 +297,7 @@ def test_page_save_permissions(app_with_permissions, test_client):
     rv = test_client.post(
         url_for("save", path=pagename),
         data={
-            "content_update": content,
+            "content": content,
             "commit": "Home: initial test commit.",
         },
         follow_redirects=True,
@@ -314,7 +311,7 @@ def test_page_save_permissions(app_with_permissions, test_client):
     rv = test_client.post(
         url_for("save", path=pagename),
         data={
-            "content_update": content,
+            "content": content,
             "commit": "Home: initial test commit.",
         },
         follow_redirects=True,
@@ -336,7 +333,7 @@ def test_page_revert_permissions(app_with_permissions, test_client):
     rv = test_client.post(
         url_for("save", path=pagename),
         data={
-            "content_update": old_content,
+            "content": old_content,
             "commit": "initial test commit.",
         },
         follow_redirects=True,
@@ -351,7 +348,7 @@ def test_page_revert_permissions(app_with_permissions, test_client):
     rv = test_client.post(
         url_for("save", path=pagename),
         data={
-            "content_update": content,
+            "content": content,
             "commit": "updated content.",
         },
         follow_redirects=True,
@@ -440,7 +437,7 @@ def test_permissions_per_user(app_with_permissions, test_client):
     rv = test_client.post(
         url_for("save", path="SaveTest"),
         data={
-            "content_update": "Another save test",
+            "content": "Another save test",
             "commit": "test commit.",
         },
         follow_redirects=True,
@@ -454,7 +451,7 @@ def test_permissions_per_user(app_with_permissions, test_client):
     rv = test_client.post(
         url_for("save", path="SaveTest"),
         data={
-            "content_update": "Another save test",
+            "content": "Another save test",
             "commit": "test commit.",
         },
         follow_redirects=True,

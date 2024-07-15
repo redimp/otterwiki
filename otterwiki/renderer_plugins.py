@@ -81,7 +81,6 @@ class mistunePluginFootnotes:
     def parse_footnote_item(self, block, k, refs, state):
         def_footnotes = state['def_footnotes']
         text = def_footnotes[k]
-
         stripped_text = text.strip()
         if '\n' not in stripped_text:
             children = [{'type': 'paragraph', 'text': stripped_text}]

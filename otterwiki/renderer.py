@@ -188,7 +188,7 @@ class OtterwikiRenderer:
             ],
         )
         self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")
-        self.htmlcursor = "<span id=\"cursor\"></span>"
+        self.htmlcursor = " <span id=\"otterwiki_cursor\"></span> "
         # thanks to https://github.com/lepture/mistune/issues/158#issuecomment-830481284
         # we can enable tables in lists
         self.mistune.block.list_rules += ['table', 'nptable']  # pyright:ignore
@@ -201,7 +201,7 @@ class OtterwikiRenderer:
         if cursor is not None:
             text_arr = text.splitlines()
             try:
-                line = min(len(text_arr) - 1, int(cursor) - 1)
+                line = min(len(text_arr) - 1, int(cursor) + 1)
             except ValueError:
                 line = 0
             # find a line to place the cursor
@@ -210,7 +210,7 @@ class OtterwikiRenderer:
             ):
                 line -= 1
             if line > 0:
-                # add empty span at the end of the edited line
+                # add empty span at the beginning of the edited line
                 text_arr[line] = self.lastword.sub(
                     r"\1{}".format(cursormagicword), text_arr[line], count=1
                 )

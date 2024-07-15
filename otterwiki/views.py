@@ -309,18 +309,16 @@ def blame(path, revision=None):
 @app.route("/<path:path>/edit/<string:revision>", methods=["GET"])
 def edit(path, revision=None):
     p = Page(path, revision=revision)
-    return p.editor(
-            content=request.form.get("content_editor"),
-            cursor_line=request.form.get("cursor_line"),
-            cursor_ch=request.form.get("cursor_ch"),
-            )
+    return p.editor()
 
 
 @app.route("/<path:path>/save", methods=["POST"])
 def save(path):
     # fetch form
-    content = request.form.get("content_update", "")
+    content = request.form.get("content", "")
+    # commit message
     commit = request.form.get("commit", "").strip()
+    # Note: cursor_line cursor_ch are in the form
     # clean form data (make sure last character is a newline
     content = content.replace("\r\n", "\n").strip() + "\n"
     commit = commit.strip()
@@ -334,9 +332,8 @@ def save(path):
 def preview(path):
     p = Page(path)
     return p.preview(
-            content=request.form.get("content_editor"),
+            content=request.form.get("content"),
             cursor_line=request.form.get("cursor_line"),
-            cursor_ch=request.form.get("cursor_ch"),
             )
 
 

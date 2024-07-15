@@ -573,14 +573,14 @@ class Page:
             menutree=menutree.query(),
         )
 
-    def preview(self, content=None, cursor_line=None, cursor_ch=None):
+    def preview(self, content=None, cursor_line=None):
         if content is None:
             # handle case that the page doesn't exists
             self.exists_or_404()
             # no content in form use loaded page
             content = self.content
 
-        # render preview
+        # render preview html from markdown
         content_html, toc = render.markdown(content, cursor=cursor_line)
         # update pagename from toc
         if len(toc) > 0:
@@ -591,27 +591,40 @@ class Page:
                 header=toc[0][3],
             )
 
-        return render_template(
+        # render toc into the html template
+        toc_html = render_template(
+            "snippets/toc.html",
+            toc=toc,
+        )
+        # render preview into the html template
+        preview_html = render_template(
             "preview.html",
             pagename=self.pagename,
             pagepath=self.pagepath,
             content_html=content_html,
-            toc=toc,
-            content_editor=content,
-            cursor_line=cursor_line,
-            cursor_ch=cursor_ch,
+            breadcrumbs=self.breadcrumbs(),
         )
 
-    def editor(self, content=None, cursor_line=None, cursor_ch=None):
+        return {
+            "preview_content" : preview_html,
+            "preview_toc" : toc_html,
+        }
+
+    def editor(self):
         if not has_permission("WRITE"):
             abort(403)
-        if content is None:
-            if self.exists:
-                content = self.content
-            else:
-                content = f"# {self.pagename}\n\n"
-                cursor_line = 2
-                cursor_ch = 0
+        if self.exists:
+            content = self.content
+            # FIXME: This could be improved by storing the last position a user
+            #        edited on a page.
+            cursor_line = 0
+            cursor_ch = 0
+        else:
+            content = f"# {self.pagename}\n\n"
+            # Place the cursor in the beginning of the first (empty) line of the\
+            # new document
+            cursor_line = 2
+            cursor_ch = 0
 
         # get file listing
         files = [f.data for f in self._attachments() if f.metadata is not None]
@@ -621,9 +634,9 @@ class Page:
             pagename=self.pagename,
             pagepath=self.pagepath,
             content_editor=content,
+            files=files,
             cursor_line=cursor_line,
             cursor_ch=cursor_ch,
-            files=files,
         )
 
     def save(self, content, commit, author):

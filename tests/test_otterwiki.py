@@ -49,7 +49,7 @@ def test_create_page_in(test_client):
     html = test_client.post(
         f"/{pagename}/save",
         data={
-            "content_update": f"{pagename}\n\nTest test 12345678",
+            "content": f"{pagename}\n\nTest test 12345678",
             "commit": "Initial commit",
         },
         follow_redirects=True,
@@ -71,15 +71,14 @@ def test_create_page(test_client, req_ctx):
         },
         follow_redirects=True,
     ).data.decode()
-    # check form
-    assert 'action="{}"'.format(url_for("preview", path=pagename)) in html
+    # check textarea
     assert "<textarea" in html
     assert 'name="content_editor"' in html
     # test save
     html = test_client.post(
         "/{}/save".format(pagename),
         data={
-            "content_update": "Test test 12345678\n\n**strong**",
+            "content": "Test test 12345678\n\n**strong**",
             "commit": "Initial commit",
         },
         follow_redirects=True,
@@ -106,15 +105,14 @@ def test_create_page_notlower(test_client, req_ctx):
         },
         follow_redirects=True,
     ).data.decode()
-    # check form
-    assert 'action="{}"'.format(url_for("preview", path=pagename)) in html
+    # check textarea
     assert "<textarea" in html
     assert 'name="content_editor"' in html
     # test save
     html = test_client.post(
         "/{}/save".format(pagename),
         data={
-            "content_update": "Test test 12345678\n\n**strong**",
+            "content": "Test test 12345678\n\n**strong**",
             "commit": "Initial commit",
         },
         follow_redirects=True,
@@ -137,7 +135,7 @@ def save_shortcut(test_client, pagename, content, commit_message):
     rv = test_client.post(
         "/{}/save".format(pagename),
         data={
-            "content_update": content,
+            "content": content,
             "commit": commit_message,
         },
         follow_redirects=True,
@@ -453,7 +451,7 @@ def test_move_page(test_client):
     rv = test_client.post(
         "/{}/save".format(pagename),
         data={
-            "content_update": content,
+            "content": content,
             "commit": commit,
         },
         follow_redirects=True,
@@ -484,7 +482,7 @@ def test_nested_files(test_client):
     rv = test_client.post(
         "/{}/save".format(pagename),
         data={
-            "content_update": content,
+            "content": content,
             "commit": commit,
         },
         follow_redirects=True,
