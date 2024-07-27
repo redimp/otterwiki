@@ -2,6 +2,7 @@
 
 import os
 import logging
+import datetime
 from flask import Flask
 from flask_htmlmin import HTMLMIN
 from flask_mail import Mail
@@ -156,9 +157,8 @@ for plugin, dist in plugininfo:
 @app.template_filter("debug_unixtime")
 def template_debug_unixtime(s):
     if app.debug:
-        from datetime import datetime
 
-        return "{}?{}".format(s, datetime.now().strftime("%s"))
+        return "{}?{}".format(s, datetime.datetime.now().strftime("%s"))
     else:
         return "{}?{}".format(s, os.getenv("GIT_TAG", None) or __version__)
 
@@ -167,6 +167,15 @@ def template_debug_unixtime(s):
 def format_datetime(value, format="medium"):
     if format == "medium":
         format = "%Y-%m-%d %H:%M"
+    if format == "deltanow":
+        if value.tzinfo is None:
+            now = datetime.datetime.now()
+        else:
+            now = datetime.datetime.now(datetime.UTC)
+        print(f"  {now=}\n{value=}")
+        td =  now - value
+
+        return otterwiki.util.strfdelta_round(td, "second")
     else:  # format == 'full':
         format = "%Y-%m-%d %H:%M:%S"
     return value.strftime(format)

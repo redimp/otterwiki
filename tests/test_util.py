@@ -18,6 +18,7 @@ from otterwiki.util import (
     titleSs,
     patchset2hunkdict,
     get_header,
+    strfdelta_round,
 )
 
 
@@ -200,3 +201,14 @@ second header
 random text.
 """
     assert "some header" == get_header(md)
+
+def test_strfdelta_round():
+    from datetime import timedelta
+
+    assert strfdelta_round(timedelta(seconds=2), round_period="second") == "2 secs"
+    assert strfdelta_round(timedelta(hours=1, minutes=2, seconds=3), round_period="second") == "1 hour 2 mins 3 secs"
+    assert strfdelta_round(timedelta(days=1, seconds=3), round_period="second") == "1 day 3 secs"
+    assert strfdelta_round(timedelta(days=4, hours=3, minutes=1, seconds=3), round_period="second") == "4 days 3 hours 1 min 3 secs"
+    assert strfdelta_round(timedelta(seconds=2), round_period="minute") == ""
+    assert strfdelta_round(timedelta(days=21), round_period="minute") == "3 weeks"
+

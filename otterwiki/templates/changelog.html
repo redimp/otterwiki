@@ -64,7 +64,7 @@
         <tbody>
 {% for entry in log %}
           <tr class="align-top">
-            <td class="font-size-12"><span class="datetime">{{entry.datetime|format_datetime}}</span>
+            <td class="font-size-12"><span class="datetime" title="{{entry.datetime|format_datetime("deltanow")}} ago">{{entry.datetime|format_datetime}}</span>
                 <a href="{{ url_for("show_commit", revision=entry.revision) }}" class="btn revision-small">{{entry.revision}}</a>{% if has_permission('WRITE') %} <a href="{{ url_for("revert", revision=entry.revision) }}"> <i class="fas fa-undo" alt="revert" title="revert commit {{entry.revision}}"></i></a>{% endif %}
             </td>
 {# author #}
