@@ -333,14 +333,22 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         bottom_panel,
         ]; // document.querySelector("#editor_block");
     const preview_block = document.querySelector("#preview_block");
-    /* prevent user leaving with unsaved changes */
-    window.onbeforeunload = function(e) {
-        e = e || window.event;
+    /*
+        prevent user leaving with unsaved changes
+        Known Issue: this doesn't work reliable in Safari
+    */
+    window.addEventListener('beforeunload', function (e) {
+        // Safari logs the event, but the preventDefault() only
+        // works the first time it is called.
+        // console.log(e);
         if (!cm_editor.doc.isClean()) {
-            // will not be shown in modern browsers
-            return "You have unsaved changes.";
+            e.preventDefault();
+            // Chrome requires returnValue to be set.
+            e.returnValue = '';
+            return e;
         }
-    };
+        return null;
+    });
     /* save */
     document.getElementById('saveform').onsubmit = function() {
         const content_editor = cm_editor.getValue();
