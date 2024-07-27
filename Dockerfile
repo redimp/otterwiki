@@ -51,7 +51,7 @@ CMD ["tox"]
 FROM nginx:1.25.3
 # arg for marking dev images
 ARG GIT_TAG
-ENV GIT_TAG $GIT_TAG
+ENV GIT_TAG=$GIT_TAG
 # environment variables (I'm not sure if anyone ever would modify this)
 ENV OTTERWIKI_SETTINGS=/app-data/settings.cfg
 ENV OTTERWIKI_REPOSITORY=/app-data/repository
