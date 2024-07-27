@@ -106,12 +106,7 @@ if (len(storage.list()[0]) < 1) and (len(storage.log()) < 1):  # pyright: ignore
 #
 # app.config from db preferences
 #
-class Preferences(db.Model):
-    name = db.Column(db.String(256), primary_key=True)
-    value = db.Column(db.String(256))
-
-    def __str__(self):
-        return '{}: {}'.format(self.name, self.value)
+from otterwiki.models import *
 
 mail = None
 

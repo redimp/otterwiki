@@ -308,8 +308,12 @@ def blame(path, revision=None):
 @app.route("/<path:path>/edit", methods=["POST", "GET"])
 @app.route("/<path:path>/edit/<string:revision>", methods=["GET"])
 def edit(path, revision=None):
+
     p = Page(path, revision=revision)
-    return p.editor()
+    return p.editor(
+        author=otterwiki.auth.get_author(),
+        handle_draft=request.form.get("draft", None),
+    )
 
 
 @app.route("/<path:path>/save", methods=["POST"])
@@ -334,6 +338,17 @@ def preview(path):
     return p.preview(
             content=request.form.get("content"),
             cursor_line=request.form.get("cursor_line"),
+            )
+
+@app.route("/<path:path>/draft", methods=["POST", "GET"])
+def draft(path):
+    p = Page(path)
+    return p.save_draft(
+            content=request.form.get("content", ""),
+            cursor_line=request.form.get("cursor_line", 0),
+            cursor_ch=request.form.get("cursor_ch", 0),
+            revision=request.form.get("revision", ""),
+            author=otterwiki.auth.get_author(),
             )
 
 

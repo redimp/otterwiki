@@ -2,6 +2,7 @@
 
 import os
 import re
+from collections import namedtuple
 from unidiff import PatchSet
 from flask import (
     redirect,
@@ -15,7 +16,8 @@ from flask import (
 )
 from markupsafe import escape as html_escape
 from otterwiki.gitstorage import StorageNotFound, StorageError
-from otterwiki.server import app, storage
+from otterwiki.server import app, storage, db
+from otterwiki.models import Drafts
 from otterwiki.renderer import render, pygments_render
 from otterwiki.sidebar import SidebarNavigation
 from otterwiki.util import (
@@ -77,6 +79,8 @@ def upsert_pagecrumbs(pagepath):
 
     # add the pagepath to the tail of the list of pagecrumbs
     session["pagecrumbs"] = session["pagecrumbs"][-7:] + [pagepath]
+    # flask.session: modifications on mutable structures are not picked up automatically
+    session.modified = True
 
 class PageIndex:
     def __init__(self, path=None):
@@ -610,7 +614,7 @@ class Page:
             "preview_toc" : toc_html,
         }
 
-    def editor(self):
+    def editor(self, author, handle_draft=None):
         if not has_permission("WRITE"):
             abort(403)
         if self.exists:
@@ -626,6 +630,27 @@ class Page:
             cursor_line = 2
             cursor_ch = 0
 
+        # check Drafts
+        draft = self.load_draft(author=author)
+        if draft is not None:
+            if handle_draft is None:
+                return render_template(
+                    "draft.html",
+                    pagename=self.pagename,
+                    pagepath=self.pagepath,
+                    revision=self.metadata["revision"] if self.metadata else None,
+                    draft_revision=self.revision,
+                    content=pygments_render(self.content, lang='markdown') if self.content else None,
+                    draft_content=pygments_render(draft.content, lang='markdown'),
+                    draft_datetime=draft.datetime.astimezone(UTC),
+                )
+            if handle_draft == "discard":
+                self.discard_draft(author=author)
+            if handle_draft == "edit":
+                content = draft.content
+                cursor_line = draft.cursor_line
+                cursor_ch = draft.cursor_ch
+
         # get file listing
         files = [f.data for f in self._attachments() if f.metadata is not None]
 
@@ -637,6 +662,7 @@ class Page:
             files=files,
             cursor_line=cursor_line,
             cursor_ch=cursor_ch,
+            revision=self.metadata.get("revision", "") if self.metadata else "",
         )
 
     def save(self, content, commit, author):
@@ -653,6 +679,8 @@ class Page:
             toast("Nothing changed.", "warning")
         else:
             toast("{} saved.".format(self.pagename))
+        # take care of drafts
+        self.discard_draft(author)
         # redirect to view
         return redirect(url_for("view", path=self.pagepath))
 
@@ -979,6 +1007,78 @@ class Page:
                 return a.rename(new_filename, message=message, author=author)
         # show edit form
         return a.edit()
+
+    def load_draft(self, author):
+        if current_user.is_anonymous:
+            try:
+                d = session["drafts"][self.pagepath]
+                return namedtuple('SessionDraft', d.keys())(*d.values())
+            except KeyError:
+                return None
+        else:
+            draft = Drafts.query.filter_by(pagepath=self.pagepath, author_email=author[1]).first()
+            if draft:
+                if draft.datetime.tzinfo is None:
+                    # add the UTC timezone, that we set via datetime.now(UTC)
+                    draft.datetime = draft.datetime.replace(tzinfo = UTC);
+            return draft
+
+    def discard_draft(self, author):
+        if current_user.is_anonymous:
+            if "drafts" not in session:
+                session["drafts"] = {}
+            else:
+                try:
+                    # delete draft from session
+                    del session["drafts"][self.pagepath]
+                    session.modified = True
+                except KeyError:
+                    pass
+        else:
+            Drafts.query.filter_by(pagepath=self.pagepath, author_email=author[1]).delete()
+            db.session.commit()
+
+    def save_draft(self, author, content, revision="", cursor_line=0, cursor_ch=0):
+        if not has_permission("WRITE"):
+            abort(403)
+        # Handle anonymous users, save draft in session
+        if current_user.is_anonymous:
+            if "drafts" not in session:
+                session["drafts"] = {}
+            # save draft in session
+            d = {
+                "content" : content,
+                "revision": revision,
+                "cursor_line": cursor_line,
+                "cursor_ch": cursor_ch,
+                "datetime": datetime.now(UTC)
+            }
+            session["drafts"][self.pagepath] = d
+            # flask.session: modifications on mutable structures are not picked up automatically
+            session.modified = True
+            return {
+                "status" : "draft saved in session",
+            }
+
+        # find existing Draft
+        draft = Drafts.query.filter_by(pagepath=self.pagepath, author_email=author[1]).first()
+        if draft is None:
+            draft = Drafts()
+            draft.pagepath=self.pagepath
+            draft.author_email=author[1]
+        # update content, timestamp, revision, line
+        draft.content = content
+        draft.datetime = datetime.now(UTC)
+        draft.revision = revision
+        draft.cursor_line = cursor_line
+        draft.cursor_ch = cursor_ch
+
+        db.session.add(draft)
+        db.session.commit()
+
+        return {
+            "status" : "draft saved",
+        }
 
 
 class Attachment:

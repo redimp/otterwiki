@@ -268,7 +268,7 @@
 <script src="{{ url_for("static", filename="js/cm-searchcursor.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-dialog.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
-    var cm_editor = CodeMirror.fromTextArea(document.getElementById("content_editor"), {
+    const cm_editor = CodeMirror.fromTextArea(document.getElementById("content_editor"), {
         mode: 'markdown',
         lineNumbers: true,
         theme: "otterwiki",
@@ -290,7 +290,7 @@
         },
       });
     cm_editor.setCursor({ line: {{cursor_line or 0}}, ch: {{cursor_ch or 0}} } );
-    var bottom_panel = document.getElementById('editor-bottom-panel');
+    const bottom_panel = document.getElementById('editor-bottom-panel');
     bottom_panel.style.display = 'block';
     cm_editor.addPanel(bottom_panel, {position: "bottom", stable: true});
 
@@ -333,22 +333,55 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         bottom_panel,
         ]; // document.querySelector("#editor_block");
     const preview_block = document.querySelector("#preview_block");
-    /*
-        prevent user leaving with unsaved changes
-        Known Issue: this doesn't work reliable in Safari
-    */
-    window.addEventListener('beforeunload', function (e) {
-        // Safari logs the event, but the preventDefault() only
-        // works the first time it is called.
-        // console.log(e);
-        if (!cm_editor.doc.isClean()) {
-            e.preventDefault();
-            // Chrome requires returnValue to be set.
-            e.returnValue = '';
-            return e;
+    var cm_last_change = 0;
+    var cm_save_timer = null;
+
+    save_draft = function() {
+        cm_last_change = Date.now();
+        if (cm_save_timer != null) {
+            window.clearTimeout(cm_save_timer);
+            cm_save_timer = null;
         }
-        return null;
-    });
+        const formData = new FormData();
+        formData.append("content", cm_editor.getValue());
+        formData.append("cursor_line", cm_editor.getCursor().line);
+        formData.append("cursor_ch", cm_editor.getCursor().ch);
+        formData.append("revision", "{{revision}}");
+        fetch("{{ url_for('draft', path=pagepath) }}", {
+            method: 'POST',
+            body: formData,
+        })
+            .then(function (response) {
+                return response.json();
+            })
+            .catch(function () {
+                console.log('Error saving draft ...');
+            });
+    }
+    const handleUnload = (event) => {
+        if (cm_editor != null && !cm_editor.doc.isClean()) {
+            event.preventDefault();
+            // No browser actually displays this message anymore.
+            // But Chrome requires it to be defined else the popup won't show.
+            event.returnValue = '';
+            save_draft();
+        }
+    };
+
+    window.addEventListener('load', function () {
+        /*
+            prevent user leaving with unsaved changes
+            Known Issue: this doesn't work reliable in Safari
+        */
+        cm_editor.on('change', () => {
+            window.removeEventListener('beforeunload', handleUnload);
+            window.addEventListener('beforeunload', handleUnload);
+            if (cm_save_timer == null) {
+                cm_save_timer = window.setTimeout(save_draft, 6000);
+            }
+        });
+    }); // page load
+
     /* save */
     document.getElementById('saveform').onsubmit = function() {
         const content_editor = cm_editor.getValue();

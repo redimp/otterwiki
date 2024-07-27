@@ -1,0 +1,42 @@
+{#- vim: set et ts=8 sts=4 sw=4 ai: -#}
+{% extends "page.html" %}
+
+{% block content %}
+<div class="card">
+    <h2 class="card-title">Continue editing draft?</h2>
+
+    <div class="mt-5 mb-15">
+        For <strong>{{pagepath}}</strong> exists a draft version saved  <span title="{{draft_datetime|format_datetime}}">{{draft_datetime|format_datetime("deltanow")}} ago</span>.
+    </div>
+
+    <div class="d-flex">
+        <form action="{{ url_for("edit", path=pagepath) }}" method="POST" class="mr-15">
+            <input type="hidden" name="draft" value="edit" />
+            <input class="btn btn-primary" type="submit" name="submit" value="Continue editing draft" />
+        </form>
+        <form action="{{ url_for("edit", path=pagepath) }}" method="POST">
+            <input type="hidden" name="draft" value="discard" />
+            <input class="btn" type="submit" name="submit" value="Discard draft" />
+        </form>
+    </div>
+</div>
+<table class="table table-inner-bordered">
+  <thead>
+    <tr>
+        <td><em>Draft</em></td>
+{% if content %}
+      <td>Stored Version</td>
+{% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="align-top">
+      <td>{{draft_content|safe}}</td>
+{% if content %}
+      <td>{{content|safe}}</td>
+{% endif %}
+    </tr>
+  </tbody>
+</table>
+{% endblock %}
+
