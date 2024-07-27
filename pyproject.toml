@@ -92,6 +92,8 @@ testpaths = ["./tests"]
 filterwarnings = [
     # venv/lib/python3.11/site-packages/htmlmin/main.py:28: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
     "ignore: 'cgi' is deprecated:DeprecationWarning",
+    # venv/lib/python3.12/site-packages/flask_login/login_manager.py:488: DeprecationWarning: datetime.datetime.utcnow() is deprecated
+    "ignore: datetime.datetime.utcnow\\(\\) is deprecated:DeprecationWarning",
 ]
 
 [tool.pyright]
