@@ -172,7 +172,6 @@ def format_datetime(value, format="medium"):
             now = datetime.datetime.now()
         else:
             now = datetime.datetime.now(datetime.UTC)
-        print(f"  {now=}\n{value=}")
         td =  now - value
 
         return otterwiki.util.strfdelta_round(td, "second")
