@@ -1017,10 +1017,6 @@ class Page:
                 return None
         else:
             draft = Drafts.query.filter_by(pagepath=self.pagepath, author_email=author[1]).first()
-            if draft:
-                if draft.datetime.tzinfo is None:
-                    # add the UTC timezone, that we set via datetime.now(UTC)
-                    draft.datetime = draft.datetime.replace(tzinfo = UTC);
             return draft
 
     def discard_draft(self, author):
