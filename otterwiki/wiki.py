@@ -863,6 +863,12 @@ class Page:
         if not has_permission("WRITE"):
             abort(403)
         menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
+        olddrafts = Drafts.query.filter_by(pagepath=self.pagepath).all()
+        if new_pagename != self.pagepath:
+            newdrafts = Drafts.query.filter_by(pagepath=new_pagename).all()
+        else:
+            newdrafts = []
+
         return render_template(
             "rename.html",
             title="Rename {}".format(self.pagename),
@@ -871,6 +877,8 @@ class Page:
             new_pagename=new_pagename,
             message=message,
             menutree=menutree.query(),
+            olddrafts=olddrafts,
+            newdrafts=newdrafts,
         )
 
     def delete(self, message, author):

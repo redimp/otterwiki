@@ -5,6 +5,52 @@
 {% include 'snippets/menutree.html' %}
 {% endblock %}
 {% block formcontent %}
+{% if olddrafts or newdrafts %}
+{% set temp = namespace(ownold=false, ownnew=false, others=false) %}
+    <div class="invalid-feedback">
+{% if olddrafts %}
+        There are drafts saved for <strong>{{pagename}}</strong>:
+      <ul class="mt-10">
+{% for draft in olddrafts -%}
+<li>
+{%if current_user.email == draft.author_email%}
+    Your draft
+{% set temp.ownold = True %}
+{%else%}
+    {{draft.author_email}}'s draft
+{% set temp.others = True %}
+{%endif%}
+ last updated on <span title="{{draft.datetime|format_datetime("deltanow")}} ago">{{draft.datetime|format_datetime}}</span></li>
+{% endfor -%}
+      </ul>
+{%endif%}
+{% if newdrafts %}
+        There are drafts saved for <strong>{{new_pagename}}</strong>:
+      <ul class="mt-10">
+{% for draft in newdrafts -%}
+<li>
+{%if current_user.email == draft.author_email%}
+    Your draft
+{% set temp.ownnew = True %}
+{%else%}
+    {{draft.author_email}}'s draft
+{% set temp.others = True %}
+{%endif%}
+ last updated on <span title="{{draft.datetime|format_datetime("deltanow")}} ago">{{draft.datetime|format_datetime}}</span></li>
+{% endfor -%}
+      </ul>
+{%endif%}
+      {% if temp.ownnew or temp.ownold %}
+      You can review and edit or discard your draft{%if temp.ownold and temp.ownnew %}s {%endif%}
+      {%if temp.ownold%} for <strong>{{pagepath}}</strong> <a class="hyperlink-underline text-danger" href="{{ url_for("edit", path=pagepath) }}">here</a>{%endif%}
+      {%- if temp.ownold and temp.ownnew %} and {%endif%}
+      {%- if temp.ownnew%} <strong>{{new_pagename}}</strong> <a class="hyperlink-underline text-danger" href="{{ url_for("edit", path=new_pagename) }}">here</a>{%endif%}.
+      {% endif %}
+      {% if temp.others %}
+      You can not review, edit or discard the drafts of other users. They will persist for the current pagename.
+      {% endif %}
+    </div>
+{% endif %}
 <form action="{{ url_for("rename", path=pagepath) }}" method="POST" class="form-inline">
   <div class="form-group">
     <label for="new_pagename" class="required w-150">New name</label>
