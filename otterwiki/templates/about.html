@@ -11,6 +11,10 @@
 <meta property="og:description" content="An Otter Wiki is a tool for collaborative content management. Written in python using Flask.">
 <meta property="og:image" content="{{ url_for("static", filename="img/otter.png") }}">
 {% endblock %}
+{% block menu %}
+{{ super() }}
+{% include "snippets/documentation-menu.html" %}
+{% endblock %}
 {% block content %}
 <div class="page">
 {{htmlcontent|safe}}

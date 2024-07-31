@@ -1,0 +1,29 @@
+<h5 class="sidebar-title">Documentation</h5>
+<div class="sidebar-divider"></div>
+<a href="{{ url_for("help") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+      <i class="fas fa-book"></i>
+    </span>
+    User Guide
+</a>
+{# ### #}
+<a href="{{ url_for("help", topic="syntax") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+      <i class="fab fa-markdown"></i>
+    </span>
+    Markdown Syntax
+</a>
+{# ### #}
+<a href="{{ url_for("help", topic="admin") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+      <i class="fas fa-cogs"></i>
+    </span>
+    Admin Guide
+</a>
+{# ### #}
+<a href="{{ url_for("about") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+      <img width="26" src="{{ url_for("static", filename="img/otterhead.png") }}" >
+    </span>
+    About An Otter Wiki
+</a>
