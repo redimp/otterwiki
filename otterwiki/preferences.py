@@ -85,6 +85,7 @@ def handle_app_preferences(form):
         "notify_admins_on_register",
         "notify_user_on_approval",
         "retain_page_name_case",
+        "hide_logo",
     ]:
         _update_preference(checkbox.upper(),form.get(checkbox, "False"))
     # commit changes to the database

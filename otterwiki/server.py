@@ -24,6 +24,7 @@ app.config.update(
     SITE_DESCRIPTION=None,
     SITE_LOGO=None,
     SITE_ICON=None,
+    HIDE_LOGO=False,
     AUTH_METHOD="",
     READ_ACCESS="ANONYMOUS",
     WRITE_ACCESS="ANONYMOUS",

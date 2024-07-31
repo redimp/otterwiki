@@ -106,6 +106,14 @@
                   <div class="dropdown-menu dropdown-menu-right w-200" aria-labelledby="navbar-dropdown-toggle-btn-1"> <!-- w-200 = width: 20rem (200px) -->
 
 {% block navbardropdown %}
+{% if config.HIDE_LOGO %}
+                    <a href="{{ url_for("about") }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <img width="26" src="{{ url_for("static", filename="img/otterhead.png") }}" >
+                        </span>
+                        About An Otter Wiki
+                    </a>
+{% endif %}
 {% if has_permission('READ') %}
                     <div class="dropdown-divider mt-5 mb-5"></div>
 {% endif %}
@@ -115,14 +123,7 @@
                         </span>
                         Toggle dark mode
                     </a>
-{#-
-                    <a href="{{ url_for("about") }}" class="dropdown-item-with-icon">
-                        <span class="dropdown-icon">
-                            <i class="fas fa-info-circle"></i>
-                        </span>
-                        About
-                    </a>
--#}
+
 {% if not current_user.is_authenticated %}
                     <a href="{{ url_for("login") }} " class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
@@ -169,12 +170,14 @@
                 {% endblock %}
             </div>
 
+            {% if not config.HIDE_LOGO %}
             <div class="sidebar-otter" >
                 <a href=" {{ url_for("about") }}" class="sidebar-link">
                 <img class="sidebar-logo" src="{{ url_for("static", filename="img/otter.png") | debug_unixtime }}" alt=""/><br/>
                 An Otter Wiki
                 </a>
             </div>
+            {% endif %}
         </div>
         <!-- Sidebar end -->
 {% endblock %}

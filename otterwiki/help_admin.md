@@ -17,6 +17,8 @@ An Otter Wikis logo is the default for both.
 The <span class="help-button">Site Description</span> is used in the
 `<meta name="description">` tag.
 
+To hide the logo of An Otter Wiki, check <span class="help-button"><input type="checkbox" style="display:inline;" id="hide-logo" checked> Hide logo of an An Otter Wiki n the sidebar</span>. A menu item linking the about information will be added to the <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span></span> menu.
+
 ### User management
 
 All users are listed in a table under <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-users"></i></span> User management</span>. You can update the flags of the users by checking and unchecking the checkboxes, where <span class="help-button"><input type="checkbox" style="display:inline;" id="true" checked></span> means the flag is set and <span class="help-button"><input type="checkbox" style="display:inline;" id="false"></span> means the flag is not set. A set flag grants a privilege to a user.
