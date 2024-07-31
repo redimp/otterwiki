@@ -839,6 +839,8 @@ class Page:
             new_pagename = sanitize_pagename(new_pagename)
         elif new_pagename == self.pagename:
             toast("New and old name are the same.", "error")
+        elif Page(new_pagename).exists:
+            toast(f"Unable to rename: {new_pagename} already exists.", "warning")
         else:
             # rename
             if empty(message):
@@ -865,7 +867,7 @@ class Page:
         menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
         olddrafts = Drafts.query.filter_by(pagepath=self.pagepath).all()
         if new_pagename != self.pagepath:
-            newdrafts = Drafts.query.filter_by(pagepath=new_pagename).all()
+            newdrafts = Drafts.query.filter_by(pagepath=get_pagepath(new_pagename)).all()
         else:
             newdrafts = []
 
