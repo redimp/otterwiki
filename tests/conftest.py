@@ -3,7 +3,6 @@
 
 import pytest
 import os
-import re
 import otterwiki.gitstorage
 from datetime import datetime
 
@@ -19,7 +18,7 @@ def create_app(tmpdir):
     with open(settings_cfg, "w") as f:
         f.writelines(
             [
-                "REPOSITORY = '{}'\n".format(str(tmpdir.join("repo"))),
+                "REPOSITORY = '{}'\n".format(str(_storage.path)),
                 "SITE_NAME = 'TEST WIKI'\n",
                 "DEBUG = True\n", # enable test and debug settings
                 "TESTING = True\n",
@@ -32,11 +31,11 @@ def create_app(tmpdir):
     # get app
     from otterwiki.server import app, db, mail, storage
     # for debugging
-    app._otterwiki_tempdir = storage.path
+    app._otterwiki_tempdir = storage.path # pyright: ignore
     # for other tests
-    app.storage = storage
+    app.storage = storage # pyright: ignore
     # store mail in app for testing
-    app.test_mail = mail
+    app.test_mail = mail # pyright: ignore
     # enable test and debug settings
     app.config["TESTING"] = True
     app.config["DEBUG"] = True
@@ -61,7 +60,7 @@ def app_with_user(create_app, req_ctx):
     db.session.query(SimpleAuth.User).delete()
     db.session.commit()
     # create a user
-    user = SimpleAuth.User(
+    user = SimpleAuth.User( # pyright: ignore
         name="Test User",
         email="mail@example.org",
         password_hash=generate_password_hash("password1234", method="scrypt"),
@@ -72,7 +71,7 @@ def app_with_user(create_app, req_ctx):
     db.session.add(user)
 
     # create a non admin user
-    user = SimpleAuth.User(
+    user = SimpleAuth.User( # pyright: ignore
         name="Another User",
         email="another@user.org",
         password_hash=generate_password_hash("password4567", method="scrypt"),

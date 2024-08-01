@@ -1,13 +1,9 @@
-#!/usr/bin/env python
+#/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import pytest
-import os
 import re
-import otterwiki
-import otterwiki.gitstorage
 from flask import url_for
-from datetime import datetime
 
 
 def test_create_app_with_user(app_with_user):
@@ -33,6 +29,7 @@ def test_db(app_with_user):
 
     # query created user
     user = SimpleAuth.User.query.filter_by(email="mail@example.org").first()
+    assert user is not None
     assert user.email == "mail@example.org"
     assert user.name == "Test User"
     # check hash
@@ -424,6 +421,7 @@ def test_permissions_per_user(app_with_permissions, test_client):
     # grant the user read_access
     from otterwiki.auth import SimpleAuth, db
     user = SimpleAuth.User.query.filter_by(email="another@user.org").first()
+    assert user is not None
     user.allow_read = True
     db.session.add(user)
     db.session.commit()
@@ -444,6 +442,7 @@ def test_permissions_per_user(app_with_permissions, test_client):
     )
     assert rv.status_code == 403
     user = SimpleAuth.User.query.filter_by(email="another@user.org").first()
+    assert user is not None
     user.allow_write = True
     db.session.add(user)
     db.session.commit()
@@ -489,6 +488,7 @@ def test_lost_password_mail(app_with_user, test_client, req_ctx):
         assert "mail@example.org" in outbox[0].recipients
         # find token
         m = re.search(r"\/-\/recover_password\/(\S+)", outbox[0].body, flags=re.MULTILINE)
+        assert m is not None
         token = m.group(1)
         assert len(token) > 0
         # test token
@@ -498,7 +498,7 @@ def test_lost_password_mail(app_with_user, test_client, req_ctx):
         )
         assert "please update your password." in rv.data.decode()
 
-def test_lost_password_form(app_with_user, test_client):
+def test_lost_password_form_address(app_with_user, test_client):
     rv = test_client.post(
         "/-/lost_password",
         data={

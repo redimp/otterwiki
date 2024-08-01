@@ -6,10 +6,6 @@ import pathlib
 import re
 from io import BytesIO
 from flask import url_for
-import pytest
-import otterwiki
-
-from pprint import pprint
 
 
 def test_html(test_client):
