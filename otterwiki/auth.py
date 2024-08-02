@@ -20,6 +20,7 @@ from flask_login import (
 from otterwiki.server import app, db
 from otterwiki.helper import toast, send_mail, serialize, deserialize, SerializeError
 from otterwiki.util import random_password, empty
+from otterwiki.models import TimeStamp
 from datetime import datetime
 import hmac
 
@@ -44,8 +45,8 @@ class SimpleAuth:
         name = db.Column(db.String(128))
         email = db.Column(db.String(128), index=True, unique=True)
         password_hash = db.Column(db.String(128))
-        first_seen = db.Column(db.DateTime())
-        last_seen = db.Column(db.DateTime())
+        first_seen = db.Column(TimeStamp())
+        last_seen = db.Column(TimeStamp())
         is_approved = db.Column(db.Boolean(), default=False)
         is_admin = db.Column(db.Boolean(), default=False)
         email_confirmed = db.Column(db.Boolean(), default=False)
