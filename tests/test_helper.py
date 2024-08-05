@@ -6,16 +6,6 @@ import flask
 import otterwiki
 import otterwiki.gitstorage
 
-@pytest.fixture
-def test_client(create_app):
-    return create_app.test_client()
-
-
-@pytest.fixture
-def req_ctx(create_app):
-    with create_app.test_request_context() as ctx:
-        yield ctx
-
 
 def test_toast(create_app, req_ctx, test_client):
     test_string = "aa bb cc dd"
@@ -55,6 +45,7 @@ def test_serializer(create_app, req_ctx):
     with pytest.raises(SerializeError):
         deserialize(serialize(s), salt=s)
 
+
 def test_health_check_ok(create_app, req_ctx):
     from otterwiki.helper import health_check
 
@@ -62,12 +53,16 @@ def test_health_check_ok(create_app, req_ctx):
     assert healthy is True
     assert messages == ["ok"]
 
+
 def test_health_check_error_storage(create_app, req_ctx, tmpdir):
     from otterwiki.helper import health_check
     from otterwiki.gitstorage import GitStorage
+
     # update the Storage object with a storage on a not initialized directory
     _working_dir = create_app.storage.repo.git._working_dir
-    create_app.storage.repo.git._working_dir = str(tmpdir.mkdir("test_health_check_error_storage"))
+    create_app.storage.repo.git._working_dir = str(
+        tmpdir.mkdir("test_health_check_error_storage")
+    )
 
     healthy, messages = health_check()
     assert healthy is False
@@ -75,18 +70,23 @@ def test_health_check_error_storage(create_app, req_ctx, tmpdir):
     # restore _working_dir FIXME: no idea why the pytest fixture doesn't work in scope=session
     create_app.storage.repo.git._working_dir = _working_dir
 
+
 def test_health_check_error_storage(create_app, req_ctx, tmpdir):
     from otterwiki.helper import health_check
     from otterwiki.gitstorage import GitStorage
+
     # update the Storage object with a storage on a not initialized directory
     _working_dir = create_app.storage.repo.git._working_dir
-    create_app.storage.repo.git._working_dir = str(tmpdir.mkdir("test_health_check_error_storage"))
+    create_app.storage.repo.git._working_dir = str(
+        tmpdir.mkdir("test_health_check_error_storage")
+    )
 
     healthy, messages = health_check()
     assert healthy is False
     assert True in [m.startswith("StorageError") for m in messages]
     # restore _working_dir
     create_app.storage.repo.git._working_dir = _working_dir
+
 
 def test_auto_url(create_app, req_ctx):
     from otterwiki.helper import auto_url
@@ -102,7 +102,6 @@ def test_auto_url(create_app, req_ctx):
     assert path == "/Page/a/example.mp4"
 
 
-
 @pytest.fixture
 def create_app_raw_filenames(create_app):
     create_app.config["RETAIN_PAGE_NAME_CASE"] = True
@@ -111,19 +110,16 @@ def create_app_raw_filenames(create_app):
 
 
 def test_auto_url_raw(create_app_raw_filenames, req_ctx):
+    assert req_ctx
     from otterwiki.helper import auto_url
 
     name, path = auto_url("home.md")
     assert name == "home"
     assert path == "/home"
-    name, path = auto_url(
-        "subspace/example.md"
-    )
+    name, path = auto_url("subspace/example.md")
     assert name == "subspace/example"
     assert path == "/subspace/example"
-    name, path = auto_url(
-        "page/example.mp4"
-    )
+    name, path = auto_url("page/example.mp4")
     assert name == "page/example.mp4"
     assert path == "/page/a/example.mp4"
 
@@ -135,6 +131,7 @@ def test_get_filename(create_app, req_ctx):
     assert get_filename("hOme") == "home.md"
     assert get_filename("Home.md") == "home.md"
     assert get_filename("HOME.MD") == "home.md"
+
 
 def test_get_filename_raw(create_app_raw_filenames, req_ctx):
     from otterwiki.helper import get_filename
@@ -152,6 +149,7 @@ def test_get_attachment_directoryname(create_app, req_ctx):
     with pytest.raises(ValueError):
         assert get_attachment_directoryname("Home")
     assert get_attachment_directoryname("Another/Test.md") == "another/test"
+
 
 def test_get_attachment_directoryname_raw(create_app_raw_filenames, req_ctx):
 
@@ -180,20 +178,31 @@ def test_get_pagename(create_app, req_ctx):
     assert "Two words" == get_pagename("two words", header="Two words")
     # and with subdirectories
     assert "Two words" == get_pagename("subdir/two words", header="Two words")
-    assert "Two words" == get_pagename("subdir/two words.md", header="Two words")
-    assert "Two words" == get_pagename("subdir1/subdir2/two words.md", header="Two words")
+    assert "Two words" == get_pagename(
+        "subdir/two words.md", header="Two words"
+    )
+    assert "Two words" == get_pagename(
+        "subdir1/subdir2/two words.md", header="Two words"
+    )
     assert "Two Words" == get_pagename("subdir1/subdir2/two words.md")
     assert "Two Words" == get_pagename("subdir1/subdir2/Two Words")
     assert "Subdir/Two words" == get_pagename("subdir/Two words", full=True)
-    assert "Two words/Two words" == get_pagename("Two words/Two words", full=True)
+    assert "Two words/Two words" == get_pagename(
+        "Two words/Two words", full=True
+    )
 
 
 def test_get_pagename_raw(create_app_raw_filenames, req_ctx):
+    assert req_ctx
+    assert create_app_raw_filenames
+
     from otterwiki.helper import get_pagename
 
     # testing raw page name functionality
     assert "example" == get_pagename("subspace/example.md")
-    assert "example" == get_pagename("subspace/example",)
+    assert "example" == get_pagename(
+        "subspace/example",
+    )
     assert "subspace/example" == get_pagename("subspace/example.md", full=True)
     assert "subspace/example" == get_pagename("subspace/example", full=True)
     assert "example" == get_pagename("example.md")
@@ -206,10 +215,15 @@ def test_get_pagename_raw(create_app_raw_filenames, req_ctx):
     assert "Two words" == get_pagename("two words", header="Two words")
     # and with subdirectories
     assert "Two words" == get_pagename("subdir/two words", header="Two words")
-    assert "Two words" == get_pagename("subdir/two words.md", header="Two words")
-    assert "Two words" == get_pagename("subdir1/subdir2/two words.md", header="Two words")
+    assert "Two words" == get_pagename(
+        "subdir/two words.md", header="Two words"
+    )
+    assert "Two words" == get_pagename(
+        "subdir1/subdir2/two words.md", header="Two words"
+    )
     assert "two words" == get_pagename("subdir1/subdir2/two words.md")
     assert "Two Words" == get_pagename("subdir1/subdir2/Two Words")
     assert "subdir/Two words" == get_pagename("subdir/Two words", full=True)
-    assert "Two words/Two words" == get_pagename("Two words/Two words", full=True)
-
+    assert "Two words/Two words" == get_pagename(
+        "Two words/Two words", full=True
+    )
