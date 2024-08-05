@@ -227,3 +227,28 @@ def test_get_pagename_raw(create_app_raw_filenames, req_ctx):
     assert "Two words/Two words" == get_pagename(
         "Two words/Two words", full=True
     )
+
+
+def test_get_pagename_prefixes(test_client):
+    from otterwiki.helper import get_pagename_prefixes
+    from test_otterwiki import save_shortcut
+
+    pages = ["Example", "Random page", "Directory/Content"]
+
+    # Create test pages
+    for pagename in pages:
+        save_shortcut(
+            test_client, pagename, f"# {pagename}", f"added {pagename}"
+        )
+    # session lives in this block
+    with test_client:
+        # View test pages
+        for pagename in pages:
+            rv = test_client.get("/{}".format(pagename))
+            assert rv.status_code == 200
+        assert sorted(get_pagename_prefixes()) == [
+            'Directory',
+            'Directory/Content',
+            'Example',
+            'Random page',
+        ]

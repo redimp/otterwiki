@@ -11,7 +11,7 @@ lightweight as utils.
 
 from otterwiki.server import app, mail, storage, Preferences
 from otterwiki.gitstorage import StorageError
-from flask import flash, url_for
+from flask import flash, url_for, session
 from threading import Thread
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
@@ -177,4 +177,16 @@ def get_pagename(filepath, full=False, header=None):
         return arr[-1]
     return "/".join(arr)
 
+def get_pagename_prefixes():
+    pagename_prefixes = []
 
+    if "pagecrumbs" in session:
+        for crumb in session["pagecrumbs"][::-1]:
+            if len(crumb) == 0 or crumb.lower() == "home": continue
+            crumb_parent = join_path(split_path(crumb)[:-1])
+            if len(crumb_parent)>0 and crumb_parent not in pagename_prefixes:
+                pagename_prefixes.append(crumb_parent)
+            if crumb not in pagename_prefixes:
+                pagename_prefixes.append(crumb)
+            if len(pagename_prefixes)>3: break
+    return pagename_prefixes
