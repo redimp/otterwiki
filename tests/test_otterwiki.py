@@ -38,6 +38,7 @@ def test_create_page_sanitized(test_client):
     ).data.decode()
     assert "Please check the pagename" in html
 
+
 def test_create_page_in(test_client):
     # create a page in a subdirectory
     subdir = "subdir"
@@ -53,9 +54,8 @@ def test_create_page_in(test_client):
     assert "Test test 12345678" in html
 
     html = test_client.get("/-/create").data.decode()
-    assert f"toggle_pagename_prefix('{pagename}')" in html.lower()
-    assert f"toggle_pagename_prefix('{subdir}')" in html.lower()
-
+    assert f"otterwiki.toggle_pagename_prefix('pagename','{pagename}')" in html.lower()
+    assert f"otterwiki.toggle_pagename_prefix('pagename','{subdir}')" in html.lower()
 
 
 def test_create_page(test_client, req_ctx):

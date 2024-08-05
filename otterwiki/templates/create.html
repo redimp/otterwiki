@@ -13,7 +13,7 @@
     </div>
     <div style="position: relative; -ms-flex: 1 1 0%; flex: 1 1 0%; min-width: 0;">
     {% for prefix in pagename_prefixes %}
-    <button class="btn btn-xsm mb-5 mr-5" onclick="return toggle_pagename_prefix('{{prefix}}')">{{prefix}}/</button>
+    <button class="btn btn-xsm mb-5 mr-5" onclick="return otterwiki.toggle_pagename_prefix('pagename','{{prefix}}')">{{prefix}}/</button>
     {% endfor %}
     </div>
   </div>
@@ -25,22 +25,4 @@
   </div>
   <input class="btn btn-primary" type="submit" value="Create and open in editor">
 </form>
-{% endblock %}
-{% block js %}
-<script type="text/javascript">
-function toggle_pagename_prefix(p) {
-    pagename = document.getElementById('pagename');
-
-    pagename.focus();
-    if (pagename.value.startsWith(p + "/")) {
-        pagename.value = pagename.value.slice(p.length + 1);
-    }
-    else if (pagename.value.startsWith(p)) {
-        pagename.value = pagename.value.slice(p.length);
-    } else {
-        pagename.value = p + "/" + pagename.value;
-    }
-    return false;
-}
-</script>
 {% endblock %}

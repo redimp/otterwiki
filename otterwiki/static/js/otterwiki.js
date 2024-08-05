@@ -650,6 +650,20 @@ var otterwiki = {
             btn.innerHTML = '<i class="far fa-eye"></i>';
         }
     },
+    toggle_pagename_prefix: function(element, p) {
+        pagename = document.getElementById(element);
+
+        pagename.focus();
+        if (pagename.value.startsWith(p + "/")) {
+            pagename.value = pagename.value.slice(p.length + 1);
+        }
+        else if (pagename.value.startsWith(p)) {
+            pagename.value = pagename.value.slice(p.length);
+        } else {
+            pagename.value = p + "/" + pagename.value;
+        }
+        return false;
+    },
 }
 
 var MathJax = {

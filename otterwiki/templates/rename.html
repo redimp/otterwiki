@@ -60,6 +60,18 @@
     <label for="message" class="w-150">Commit message</label>
     <input type="text" class="form-control" name="message" id="message" placeholder="Renamed {{pagename}} to {{new_pagename if new_pagename else "..."}}" value="{{ message if message }}">
   </div>
+  {% if pagename_prefixes and pagename_prefixes|length > 0  %}
+  <div class="form-group mb-5">
+    <div class="w-100 mr-10">
+    Move page in subdirectory:
+    </div>
+    <div style="position: relative; -ms-flex: 1 1 0%; flex: 1 1 0%; min-width: 0;">
+    {% for prefix in pagename_prefixes %}
+    <button class="btn btn-xsm mb-5 mr-5" onclick="return otterwiki.toggle_pagename_prefix('new_pagename','{{prefix}}')">{{prefix}}/</button>
+    {% endfor %}
+    </div>
+  </div>
+  {% endif %}
   <div class="form-group">
     <div class="form-text text-wrap">
         Hint: Avoid abbreviations. Try to limit your name to three simple words or fewer.

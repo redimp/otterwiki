@@ -38,6 +38,7 @@ from otterwiki.helper import (
     get_filename,
     get_attachment_directoryname,
     get_pagename,
+    get_pagename_prefixes,
 )
 from otterwiki.auth import has_permission, current_user
 from otterwiki.plugins import chain_hooks
@@ -837,7 +838,7 @@ class Page:
         elif sanitize_pagename(new_pagename) != new_pagename:
             toast("Please check the pagename ...", "warning")
             new_pagename = sanitize_pagename(new_pagename)
-        elif new_pagename == self.pagename:
+        elif get_pagename(new_pagename, full=True) == self.pagepath:
             toast("New and old name are the same.", "error")
         elif Page(new_pagename).exists:
             toast(f"Unable to rename: {new_pagename} already exists.", "warning")
@@ -881,6 +882,7 @@ class Page:
             menutree=menutree.query(),
             olddrafts=olddrafts,
             newdrafts=newdrafts,
+            pagename_prefixes=get_pagename_prefixes(),
         )
 
     def delete(self, message, author):
