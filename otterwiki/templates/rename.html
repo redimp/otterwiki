@@ -67,7 +67,7 @@
     </div>
     <div style="position: relative; -ms-flex: 1 1 0%; flex: 1 1 0%; min-width: 0;">
     {% for prefix in pagename_prefixes %}
-    <button class="btn btn-xsm mb-5 mr-5" onclick="return otterwiki.toggle_pagename_prefix('new_pagename','{{prefix}}')">{{prefix}}/</button>
+    <button type="button" class="btn btn-xsm mb-5 mr-5" onclick="return otterwiki.toggle_pagename_prefix('new_pagename','{{prefix}}')">{{prefix}}/</button>
     {% endfor %}
     </div>
   </div>
