@@ -19,6 +19,10 @@ tag_template = 'v{new_version}'
 name = 'Run make test'
 cmd = 'make test'
 
+[[before_commit]]
+name = "Check Changelog"
+cmd = "grep -q -F {new_version} CHANGELOG.md"
+
 [[file]]
 src = 'otterwiki/version.py'
 version_template = '({major}, {minor}, {patch}, "{extra}")'

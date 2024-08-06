@@ -53,6 +53,7 @@ dev = [
     "tox",
     "tbump",
     "rjsmin",
+    "git-changelog",
     ]
 
 [build-system]
@@ -99,5 +100,23 @@ filterwarnings = [
 [tool.pyright]
 venvPath = "."
 venv = "venv"
+
+[tool.git-changelog]
+bump = "auto"
+convention = "conventional"
+in-place = true
+# filter-commits = ""
+marker-line = "<!-- insertion marker -->"
+output = "CHANGELOG.md"
+parse-refs = false
+parse-trailers = false
+provider = "github"
+repository = "."
+sections = "feat,fix,build,deps,refactor"
+template = "keepachangelog"
+version-regex = "^## \\\\[(?P<version>v?[^\\\\]]+)"
+versioning = "semver"
+zerover = false
+
 
 # vim: set et ts=8 sts=4 sw=4 ai fenc=utf-8:
