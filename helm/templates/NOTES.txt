@@ -2,9 +2,7 @@
 
 Open up your installation of An Otter Wiki via
 {{ range $host := .Values.ingress.hosts }}
-    {{- range .paths }}
-    http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
-    {{- end }}
+    http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}
 {{- end }}
 {{- else if contains "NodePort" .Values.service.type }}
 
