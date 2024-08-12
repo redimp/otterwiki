@@ -882,7 +882,7 @@ class Page:
             menutree=menutree.query(),
             olddrafts=olddrafts,
             newdrafts=newdrafts,
-            pagename_prefixes=get_pagename_prefixes(),
+            pagename_prefixes=get_pagename_prefixes(filter=[self.pagename, self.pagename_full]),
         )
 
     def delete(self, message, author):

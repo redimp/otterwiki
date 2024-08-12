@@ -177,7 +177,7 @@ def get_pagename(filepath, full=False, header=None):
         return arr[-1]
     return "/".join(arr)
 
-def get_pagename_prefixes():
+def get_pagename_prefixes(filter=[]):
     pagename_prefixes = []
 
     if "pagecrumbs" in session:
@@ -186,7 +186,7 @@ def get_pagename_prefixes():
             crumb_parent = join_path(split_path(crumb)[:-1])
             if len(crumb_parent)>0 and crumb_parent not in pagename_prefixes:
                 pagename_prefixes.append(crumb_parent)
-            if crumb not in pagename_prefixes:
+            if crumb not in pagename_prefixes and crumb not in filter:
                 pagename_prefixes.append(crumb)
             if len(pagename_prefixes)>3: break
     return pagename_prefixes
