@@ -13,7 +13,7 @@
             {%- for key, value in menutree.items() recursive -%}
             {%- if value["children"] %}
             <li>
-                <details {% if pagepath.lower().startswith(value.path.lower()) %}open{% endif %}>
+                <details {% if pagepath and pagepath.lower().startswith(value.path.lower()) %}open{% endif %}>
                     <summary class="sidebarmenu">
                         <a href="/{{value["path"]}}">{{value["header"]}}</a>
                     </summary>
