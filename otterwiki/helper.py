@@ -9,6 +9,8 @@ lightweight as utils.
 
 """
 
+import re
+from collections import namedtuple
 from otterwiki.server import app, mail, storage, Preferences
 from otterwiki.gitstorage import StorageError
 from flask import flash, url_for, session
@@ -190,3 +192,26 @@ def get_pagename_prefixes(filter=[]):
                 pagename_prefixes.append(crumb)
             if len(pagename_prefixes)>3: break
     return pagename_prefixes
+
+
+
+def patchset2urlmap(patchset, rev_b, rev_a=None):
+    url_map = {}
+    for file in patchset:
+        source_file = re.sub('^(a|b)/','',file.source_file)
+        target_file = re.sub('^(a|b)/','',file.target_file)
+        if rev_a is None:
+            #import ipdb; ipdb.set_trace()
+            try:
+                rev_a = storage.get_parent_revision(filename=source_file,revision=rev_b)
+            except StorageError:
+                rev_a = rev_b
+        d = {
+            'source_file' : source_file,
+            'target_file' : target_file,
+            'source_url' : auto_url(source_file,revision=rev_a)[1] if source_file != "/dev/null" else None,
+            'target_url' : auto_url(target_file,revision=rev_b)[1] if target_file != "/dev/null" else None,
+        }
+        url_map[file.path] = namedtuple('UrlData', d.keys())(*d.values())
+    return url_map
+

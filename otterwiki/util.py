@@ -154,51 +154,38 @@ def mkdir(path):
     pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 
 
-def patchset2hunkdict(patchset):
-    hunk_helper = {}
+def patchset2filedict(patchset):
     _line_type_style = {
         " ": "",
         "+": "added",
         "-": "removed",
     }
+    files = {}
     for file in patchset:
+        line_data = []
         for hunk in file:
-            lines = {}
-            for l in hunk.source_lines():
-                if not l.source_line_no in lines:
-                    lines[l.source_line_no] = []
-                lines[l.source_line_no].append(
+            line_data.append(
+                {
+                    "source": "",
+                    "target": "",
+                    "value": f"@@ {hunk.source_start},{hunk.source_length} {hunk.target_start},{hunk.target_length} @@",
+                    "style": "hunk",
+                }
+            )
+            for line in hunk:
+                line_data.append(
                     {
-                        "source": l.source_line_no,
-                        "target": l.target_line_no or "",
-                        "type": l.line_type,
-                        "style": _line_type_style[l.line_type],
-                        "value": l.value,
+                        "source": line.source_line_no or "",
+                        "target": line.target_line_no or "",
+                        "type": line.line_type,
+                        "style": _line_type_style[line.line_type],
+                        "value": line.value,
+                        "hunk": False,
                     }
                 )
-            for l in hunk.target_lines():
-                if l.source_line_no is not None:
-                    continue
-                if not l.target_line_no in lines:
-                    lines[l.target_line_no] = []
-                lines[l.target_line_no].append(
-                    {
-                        "source": l.source_line_no or "",
-                        "target": l.target_line_no,
-                        "type": l.line_type,
-                        "style": _line_type_style[l.line_type],
-                        "value": l.value,
-                    }
-                )
-            hunk_helper[
-                (
-                    file.source_file,
-                    file.target_file,
-                    hunk.source_start,
-                    hunk.source_length,
-                )
-            ] = lines
-    return hunk_helper
+        files[file.path] = line_data
+
+    return files
 
 
 def get_local_timezone():

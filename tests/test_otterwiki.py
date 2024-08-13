@@ -280,6 +280,7 @@ def test_blame_and_history_and_diff(test_client):
     rv = test_client.post(
         "/{}/history".format(pagename),
         data={"rev_a": revision[1], "rev_b": revision[0]},
+        follow_redirects=True,
     )
     assert rv.status_code == 200
     html = rv.data.decode()

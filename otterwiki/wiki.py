@@ -29,7 +29,7 @@ from otterwiki.util import (
     get_pagepath,
     get_page_directoryname,
     sanitize_pagename,
-    patchset2hunkdict,
+    patchset2filedict,
     get_header,
 )
 from otterwiki.helper import (
@@ -39,6 +39,7 @@ from otterwiki.helper import (
     get_attachment_directoryname,
     get_pagename,
     get_pagename_prefixes,
+    patchset2urlmap,
 )
 from otterwiki.auth import has_permission, current_user
 from otterwiki.plugins import chain_hooks
@@ -55,6 +56,8 @@ if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
 
 
 def get_breadcrumbs(pagepath):
+    if not pagepath or len(pagepath)<1:
+        return []
     # strip trailing slashes
     pagepath = pagepath.rstrip("/")
     parents = []
@@ -386,25 +389,33 @@ class Changelog:
         if not has_permission("READ"):
             abort(403)
         try:
-            _, diff = storage.show_commit(revision)
+            metadata, diff = storage.show_commit(revision)
         except StorageError as e:
             app.logger.error(e)
             abort(404)
+
         patchset = PatchSet(diff)
-        url_map = {}
-        for file in patchset:
-            url_map[file.path] = auto_url(
-                file.path,
-                revision=revision,
-            )
-        hunk_helper = patchset2hunkdict(patchset)
+        pagepath = None
+
+        url_map=patchset2urlmap(patchset, revision)
+        if len(url_map) == 1:
+            pagepath = get_pagepath(list(url_map.keys())[0])
+
+        menutree = SidebarNavigation(get_page_directoryname(pagepath or "/"))
+
+        file_diffs = patchset2filedict(patchset)
         return render_template(
             "diff.html",
             title="commit {}".format(revision),
+            metadata=metadata,
             url_map=url_map,
+            file_diffs=file_diffs,
             patchset=patchset,
-            hunk_helper=hunk_helper,
             revision=revision,
+            withlinenumbers=False,
+            pagepath=pagepath,
+            breadcrumbs=get_breadcrumbs(pagepath),
+            menutree=menutree.query(),
         )
 
 
@@ -743,25 +754,26 @@ class Page:
         # handle case that the page doesn't exists
         self.exists_or_404()
 
-        diff = storage.diff(self.filename, rev_b, rev_a)
+        diff = storage.diff(rev_a, rev_b)
         patchset = PatchSet(diff)
-        url_map = {}
-        for file in patchset:
-            url_map[file.path] = auto_url(
-                file.path,
-                revision=rev_a,
-            )
-        hunk_helper = patchset2hunkdict(patchset)
+        url_map=patchset2urlmap(patchset, rev_b, rev_a)
+        file_diffs = patchset2filedict(patchset)
+
+        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
         return render_template(
             "diff.html",
             title="{} - diff {} {}".format(self.pagename, rev_a, rev_b),
             pagepath=self.pagepath,
             pagename=self.pagename,
+            page_filename=self.filename,
+            file_diffs=file_diffs,
             patchset=patchset,
             url_map=url_map,
-            hunk_helper=hunk_helper,
             rev_a=rev_a,
             rev_b=rev_b,
+            withlinenumbers=False,
+            menutree=menutree.query(),
+            breadcrumbs=self.breadcrumbs(),
         )
 
     def history(self, rev_a=None, rev_b=None):
@@ -779,7 +791,7 @@ class Page:
                 404,
             )
         if rev_a is not None and rev_b is not None and rev_a != rev_b:
-            return self.diff(rev_a=rev_a, rev_b=rev_b)
+            return redirect(url_for("diff", path=self.pagepath, rev_a=rev_a, rev_b=rev_b))
 
         log = []
         for i,orig_entry in enumerate(orig_log):

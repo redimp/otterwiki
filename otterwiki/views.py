@@ -259,6 +259,15 @@ def history(path):
         rev_b=request.form.get("rev_b"),
     )
 
+@app.route("/<path:path>/diff/<string:rev_a>/<string:rev_b>", methods=["POST", "GET"])
+def diff(path, rev_a, rev_b):
+    # return "path={}".format(path)
+    p = Page(path)
+    return p.diff(
+        rev_a=rev_a,
+        rev_b=rev_b,
+    )
+
 
 @app.route("/<path:path>/rename/", methods=["POST", "GET"])
 @app.route("/<path:path>/rename", methods=["POST", "GET"])

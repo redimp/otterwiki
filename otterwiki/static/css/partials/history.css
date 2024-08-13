@@ -9,9 +9,11 @@ table.diff td {
 table.diff td.filename {
     padding-top: 1rem;
     padding-left: 0;
+    border-bottom: 1px solid rgba(128,128,128,0.25);
 }
 table.diff tr.added,
 table.diff tr.removed,
+table.diff td.value,
 table.diff td.hunk {
     font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
 }
