@@ -198,11 +198,16 @@ class GitStorage(object):
                 return []
         else:
             try:
-                rawlog = self.repo.git.log("--name-only", "-z", "--follow", filename)
+                rawlog = self.repo.git.log("--name-only", "-z", "--follow", "--", filename)
             except (git.exc.GitCommandError) as e:
                 raise StorageNotFound(str(e))
 
-        rawlog = rawlog.strip("\x00").split("\x00\x00")
+        # clean up artifacts
+        rawlog = [entry for entry in rawlog.strip("\x00").split("\x00\x00") if len(entry)>0]
+        # raise Exception of no log entry has been found
+        if len(rawlog)<1:
+            raise StorageNotFound
+
         return [self._get_metadata_of_log(entry) for entry in rawlog]
 
     def log_slow(self, filename=None):
@@ -360,6 +365,19 @@ class GitStorage(object):
         # get diff via 'git show'
         diff = self.repo.git.show(revision, format="%b")
         return metadata, diff
+
+    def get_parent_revision(self, filename, revision):
+        """
+        Walk the log for the given file to find the revision of the commit before the given one.
+        """
+        log = self.log(filename)
+        for i, entry in enumerate(log):
+            if entry['revision'] == revision:
+                try:
+                    return log[i+1]['revision']
+                except IndexError:
+                    raise StorageNotFound
+        raise StorageNotFound
 
 
 storage = None

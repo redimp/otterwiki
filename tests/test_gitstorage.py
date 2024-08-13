@@ -406,4 +406,33 @@ def test_show_commit(storage):
     assert "\n-aaa" in diff
     assert "\n+bbb" in diff
 
+
+def test_get_parent_revision(storage):
+    content = "kdfjlhg gdklfjghdf gkl;djshfg dgf;lkjhs glkshjad\n"
+    filename1 = "test_parentrevision1.md"
+    filename2 = "test_parentrevision_random.md"
+    filename1a = "test_parentrevision2.md"
+    # commit the first file, the one that will be renamed
+    author = ("Example Author", "mail@example.com")
+    assert True == storage.store(
+        filename1, content=content, author=author, message="operation 1"
+    )
+    # commit another file
+    assert True == storage.store(
+        filename2, content=content, author=author, message="operation 2"
+    )
+    # rename
+    storage.rename(filename1, filename1a, author=author, message="operation 3")
+    # fetch the log
+    log = storage.log()
+    # get the revision of the commits matching the operations we did
+    revision1 = [x['revision'] for x in log if x['message']=="operation 1"][0]
+    revision3 = [x['revision'] for x in log if x['message']=="operation 3"][0]
+    # now we check the parent revision of the renamed file, with the revison of the
+    # commit that did the renaming as child
+    parent_revision = storage.get_parent_revision(filename=filename1, revision=revision3)
+    assert parent_revision == revision1
+
+
+
 # vim: set et ts=8 sts=4 sw=4 ai:
