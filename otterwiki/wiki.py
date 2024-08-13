@@ -782,7 +782,11 @@ class Page:
             return self.diff(rev_a=rev_a, rev_b=rev_b)
 
         log = []
-        for orig_entry in orig_log:
+        for i,orig_entry in enumerate(orig_log):
+            if len(orig_log)>1 and i == 0 and rev_b is None:
+                rev_b = orig_entry['revision']
+            elif len(orig_log)>1 and i == 1 and rev_a is None:
+                rev_a = orig_entry['revision']
             entry = dict(orig_entry)
             entry["url"] = url_for(
                 "view", path=self.pagepath, revision=entry["revision"]
