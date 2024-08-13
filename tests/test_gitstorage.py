@@ -301,7 +301,7 @@ def test_diff(storage):
     # get revisions
     rev_b, rev_a = log[0]["revision"], log[1]["revision"]
     # get diff
-    diff = storage.diff(filename, rev_a, rev_b)
+    diff = storage.diff(rev_a, rev_b)
     # check -/+ strings
     assert "-aaa" in diff
     assert "+bbb" in diff

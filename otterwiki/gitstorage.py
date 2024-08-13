@@ -268,9 +268,9 @@ class GitStorage(object):
         actor = git.Actor(author[0], author[1])
         self.repo.index.commit(message, author=actor)
 
-    def diff(self, filename, rev_a, rev_b):
+    def diff(self, rev_a, rev_b):
         # https://docs.python.org/2/library/difflib.html
-        return self.repo.git.diff(rev_a, rev_b, filename)
+        return self.repo.git.diff(rev_a, rev_b)
 
     def delete(self, filename, message=None, author=("","")):
         if not type(filename) == list:
