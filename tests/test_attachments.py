@@ -112,3 +112,58 @@ def test_rename_attachment(test_client, req_ctx):
     )
     assert response.status_code == 200
     assert "attachment0_renamed.txt" in response.data.decode()
+
+
+def test_rename_page_with_attachment(app_with_attachments,test_client):
+    # create test page
+    filename = "testa.md"
+    author = ("Example Author", "mail@example.com")
+    # create attachment
+    app_with_attachments.storage.store(
+        filename, content="# Test AB\nAttachment Test.", author=author, message="create testa"
+    )
+    assert True == app_with_attachments.storage.exists(filename)
+    # create txt attachment
+    app_with_attachments.storage.store(
+        "testa/attachment0.txt",
+        content="attachment0-content0",
+        author=author,
+        message="added attachment to testa",
+    )
+    # test attachment exsists
+    rv = test_client.get("/Testa/a/attachment0.txt")
+    assert rv.status_code == 200
+    # rename page
+    rv = test_client.post(
+        "/{}/rename".format("Testa"),
+        data={"new_pagename": "Testb", "message": "renamed testa to testb"},
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # check that the attachment has been renamed, too
+    rv = test_client.get("/Testb/a/attachment0.txt")
+    assert rv.status_code == 200
+    rv = test_client.get("/Testb/attachment0.txt")
+    assert rv.status_code == 200
+
+    # get log to find the revisions
+    log = app_with_attachments.storage.log()[:3]
+    assert log[1]["message"] == "added attachment to testa"
+
+    rv = test_client.get(f"/Testb/attachment0.txt?revision={log[0]['revision']}")
+    assert rv.status_code == 200
+    rv = test_client.get(f"/Testb/a/attachment0.txt/{log[0]['revision']}")
+    assert rv.status_code == 200
+    rv = test_client.get(f"/Testb/a/attachment0.txt?revision={log[0]['revision']}")
+    assert rv.status_code == 200
+
+    # without a revision the attachment can not be found
+    rv = test_client.get("/Testa/a/attachment0.txt")
+    assert rv.status_code == 404
+
+    # with the revision the attachment is found
+    rv = test_client.get(f"/Testa/a/attachment0.txt/{log[1]['revision']}")
+    assert rv.status_code == 200
+    rv = test_client.get(f"/Testa/a/attachment0.txt?revision={log[1]['revision']}")
+    assert rv.status_code == 200

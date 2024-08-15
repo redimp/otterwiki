@@ -1266,8 +1266,6 @@ class Attachment:
     def get(self):
         if not has_permission("READ"):
             abort(403)
-        if not self.exists():
-            return abort(404)
         if self.revision is None:
             if not storage.exists(self.filepath):
                 return abort(404)
