@@ -299,6 +299,10 @@ in the footnote.</p>
 
 {{ heading("Blocks") }}
 
+These special blocks are not part of the markdown standard, but
+are helpful for structuring content.
+
+<h4>Fancy blocks</h4>
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
 <pre>
@@ -315,6 +319,7 @@ With <em>formatted</em> content.</div>
 </div> {# row #}
 Block styles available: <span class="alert alert-primary text-monospace" style="padding: 0.2rem">info</span>, <span class="alert alert-success text-monospace" style="padding: 0.2rem">success</span>, <span class="alert alert-secondary text-monospace" style="padding: 0.2rem">warning</span>, <span class="alert alert-danger text-monospace" style="padding: 0.2rem">danger</span> and <span class="alert text-monospace" style="padding: 0.2rem">none</span>.
 
+<h4>Spoiler blocks</h4>
 <div class="row my-20">
 <div class="col-md-6 col-sm-12">
 <pre>
@@ -329,6 +334,7 @@ Block styles available: <span class="alert alert-primary text-monospace" style="
 </div>
 </div>
 
+<h4>Folded blocks</h4>
 <div class="row my-20 h-100">
 <div class="col-md-6 col-sm-12">
 <pre>
@@ -344,6 +350,22 @@ Headline is used as summary
 <div class="collapse-content"><p>with the details folded.</p></div></details>
 </div>
 </div>
+
+<h4>Alerts</h4>
+<div class="row">
+<div class="col-md-6 col-sm-12 p-5">
+<pre>
+> [!NOTE]
+> Useful for highlighting special
+> information in your code.
+</pre>
+</div>
+<div class="col-md-6 col-sm-12 p-5">
+<div class="quote-alert quote-alert-note" style="margin:0;"><div class="quote-alert-header"><i class="fas fa-info-circle"></i> Note</div><p>Useful for highlighting speacial information in your code.</p></div>
+</div>
+</div> {# row #}
+Alerts available: <code>[!NOTE]</code>, <code>[!TIP]</code>, <code>[!IMPORTANT]</code>, <code>[!WARNING]</code> and <code>[!CAUTION]</code>.
+
 
 {{ heading("Remark") }}
 There's actually a lot more to Markdown than this. See the official

@@ -470,9 +470,6 @@ class mistunePluginFold:
 
 
 class mistunePluginMath:
-    # too aggressive
-    # MATH_BLOCK = re.compile(r'(\${1,2})((?:\\.|[\s\S])*)\1')
-    # MATH_BLOCK = re.compile(r'\${1,2}[^]*?[^\\]\${1,2}')
     MATH_BLOCK = re.compile(r'(\${2})((?:\\.|.)*)\${2}')
     MATH_INLINE_PATTERN = (
         r'\$(?=[^\s\$])(' r'(?:\\\$|[^\$])*' r'(?:' + ESCAPE_TEXT + r'|[^\s\$]))\$'
@@ -508,6 +505,60 @@ class mistunePluginMath:
             md.renderer.register('math_inline', self.render_html_inline)
 
 
+class mistunePluginAlerts:
+    TYPE_ICONS = {
+        'NOTE': '<i class="fas fa-info-circle"></i>',
+        'TIP': '<i class="far fa-lightbulb"></i>',
+        'IMPORTANT': '<i class="far fa-comment-alt"></i>',
+        'WARNING': '<i class="fas fa-exclamation-triangle"></i>',
+        'CAUTION': '<i class="fas fa-exclamation-circle"></i>',
+    }
+    TYPES_WITH_PIPES = "|".join(TYPE_ICONS.keys())
+    ALERT_LEADING = re.compile(r'^ *\>(\s*\[!(' + TYPES_WITH_PIPES + r')\])?', flags=re.MULTILINE)
+    ALERT_BLOCK = re.compile(r'(?: {0,3}>\s*\[!(' + TYPES_WITH_PIPES + r')\][^\n]*(?:\n|$))( {0,3}>[^\n]*(?:\n|$))+', flags=re.I)
+
+    def parse_alert_block(self, block, m, state):
+        text = m.group(0)
+        type = m.group(1).upper()
+
+        # we are searching for the complete bock, so we have to remove
+        # syntax from the beginning of each line>
+        text = self.ALERT_LEADING.sub('', text)
+
+        text = text.strip()
+
+        children = block.parse(text, state)
+        if not isinstance(children, list):
+            children = [children]
+
+        return {
+            "type": "alert_block",
+            "text": text,
+            "params": (type,),
+            "children": children,
+        }
+
+    def render_html_alert_block(self, text, type):
+        text = text.strip()
+        return f'<div class="quote-alert quote-alert-{type.lower()}"><div class="quote-alert-header">{self.TYPE_ICONS[type]} {type.capitalize()}</div><p>{text}</p></div>\n'
+
+    def __call__(self, md):
+        md.block.register_rule(
+            'alert_block', self.ALERT_BLOCK, self.parse_alert_block
+        )
+
+        index = md.block.rules.index('block_quote')
+        if index != -1:
+            md.block.rules.insert(index, 'alert_block')
+        else:
+            md.block.rules.append('alert_block')
+
+        if md.renderer.NAME == "html":
+            md.renderer.register(
+                "alert_block", self.render_html_alert_block
+            )
+
+
 plugin_task_lists = mistunePluginTaskLists()
 plugin_footnotes = mistunePluginFootnotes()
 plugin_mark = mistunePluginMark()
@@ -515,3 +566,4 @@ plugin_fancy_blocks = mistunePluginFancyBlocks()
 plugin_spoiler = mistunePluginSpoiler()
 plugin_fold = mistunePluginFold()
 plugin_math = mistunePluginMath()
+plugin_alerts = mistunePluginAlerts()

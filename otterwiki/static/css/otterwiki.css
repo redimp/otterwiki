@@ -86,6 +86,38 @@ pre,
     background-color: #263238;
 }
 
+.quote-alert {
+    border-left: .3rem solid;
+    padding: 0.5rem 2rem;
+    margin: 1rem 0em;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+.quote-alert p {
+    margin-block-start: .5rem;
+    margin-block-end: .5rem;
+}
+/* quote alert header */
+.quote-alert-header i {
+    padding: 0 .5rem 0 0;
+    font-size: 1.6rem;
+}
+/* quote alert header */
+.quote-alert-note .quote-alert-header { color: var(--primary-color); }
+.quote-alert-tip .quote-alert-header { color: var(--green-color-dark); }
+.dark-mode .quote-alert-tip .quote-alert-header { color: var(--green-color); }
+.quote-alert-important .quote-alert-header { color: var(--indigo-color); }
+.quote-alert-warning .quote-alert-header { color: var(--yellow-color-dark); }
+.dark-mode .quote-alert-warning .quote-alert-header { color: var(--yellow-color); }
+.quote-alert-caution .quote-alert-header { color: var(--danger-color); }
+/* quote alert border */
+.quote-alert-note { border-color: var(--primary-color); }
+.quote-alert-tip { border-color: var(--green-color-dark); }
+.dark-mode .quote-alert-tip { border-color: var(--green-color); }
+.quote-alert-warning { border-color: var(--yellow-color-dark); }
+.dark-mode .quote-alert-warning { border-color: var(--yellow-color); }
+.quote-alert-caution { border-color: var(--danger-color); }
+.quote-alert-important { border-color: var(--indigo-color); }
+
 .revision-small {
     font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     text-decoration: none;

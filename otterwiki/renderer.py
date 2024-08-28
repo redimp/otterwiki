@@ -26,6 +26,7 @@ from otterwiki.renderer_plugins import (
         plugin_spoiler,
         plugin_fold,
         plugin_math,
+        plugin_alerts,
         )
 from otterwiki.plugins import chain_hooks
 from bs4 import BeautifulSoup
@@ -185,6 +186,7 @@ class OtterwikiRenderer:
                 plugin_spoiler,
                 plugin_fold,
                 plugin_math,
+                plugin_alerts,
             ],
         )
         self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")

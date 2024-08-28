@@ -402,7 +402,6 @@ good news everybody
     assert "<strong>red alert</strong>" in html
     assert 'class="alert alert-danger' in html
     assert 'role="alert"' in html
-    print(html)
 
     md = """:::
 # Head of the block
@@ -436,3 +435,37 @@ def test_fold():
     assert '>Headline is used as summary</summary>' in html
     # check fold
     assert "<p>with the details folded.</p>" in html
+
+def test_all_alert_types():
+    from otterwiki.renderer_plugins import mistunePluginAlerts
+    for type, icon in mistunePluginAlerts.TYPE_ICONS.items():
+        md = f"> [!{type}]\n>text\n>text\n"
+        html, _ = render.markdown(md)
+        assert 'text\ntext' in html
+        assert icon in html
+
+def test_alerts():
+    md = """random paragraph 1.
+
+>[!TIP]
+>Note content
+
+random paragraph 2."""
+    html, _ = render.markdown(md)
+    # easier testing
+    html = html.replace("\n", "")
+    # check content
+    assert 'Note content' in html
+    assert 'Tip</div>'
+    # make sure nothing is lost
+    assert '<p>random paragraph 1.</p>' in html
+    assert '<p>random paragraph 2.</p>' in html
+
+def test_mistunePluginAlerts():
+    from otterwiki.renderer_plugins import mistunePluginAlerts
+    for type, icon in mistunePluginAlerts.TYPE_ICONS.items():
+        # check regexp
+        md = f">[!{type}]\n>Note content\n>content\n"
+        m = mistunePluginAlerts.ALERT_BLOCK.search(md)
+        assert m is not None
+        assert m.group(1) == type
