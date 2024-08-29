@@ -1,5 +1,9 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
+{%block head %}
+{{ super() }}
+<meta name="robots" content="noindex, nofollow"/>
+{% endblock %}
 {% block content %}
 <div class="col-sm-12 col-md-12 col-lg-10">
 <div class="card">

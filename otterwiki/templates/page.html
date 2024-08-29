@@ -1,5 +1,11 @@
 {#- vim: set et ts=8 sts=4 sw=4 ai: -#}
 {% extends "wiki.html" %}
+{%block head %}
+{{ super() }}
+{%-if revision %}
+<meta name="robots" content="noindex"/>
+{%-endif%}
+{% endblock %}
 {% block js %}
 {{ super() }}
 <script src="{{ url_for("static", filename="js/polyfill.e6.min.js") | debug_unixtime }}"></script>
