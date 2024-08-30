@@ -49,6 +49,10 @@ app.config.update(
     SIDEBAR_MENUTREE_MAXDEPTH="",
     COMMIT_MESSAGE="REQUIRED", # OPTIONAL
     GIT_WEB_SERVER=False,
+    SIDEBAR_SHORTCUT_HOME=True,
+    SIDEBAR_SHORTCUT_PAGE_INDEX=True,
+    SIDEBAR_SHORTCUT_CREATE_PAGE=True,
+    SIDEBAR_SHORTCUT_CHANGELOG=False,
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
@@ -123,7 +127,9 @@ def update_app_config():
                 "NOTIFY_ADMINS_ON_REGISTER",
                 "NOTIFY_USER_ON_APPROVAL",
                 "RETAIN_PAGE_NAME_CASE",
-            ]:
+                "GIT_WEB_SERVER",
+                "HIDE_LOGO",
+            ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
                 item.value = item.value.lower() in ["true","yes"]
             if item.name.upper() in ["MAIL_PORT"]:
                 try:

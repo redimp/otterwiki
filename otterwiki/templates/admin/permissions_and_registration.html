@@ -1,0 +1,93 @@
+{#- vim: set et ts=8 sts=4 sw=4 ai ft=jinja.html: #}
+{% extends "settings.html" %}
+{% block content %}
+<div class="card m-auto m-lg-20" id="sidebar_preferences">
+<div class="mw-full">
+<form action="{{ url_for("admin_permissions_and_registration") }}" method="POST">
+<h3 class="card-title" id="permissions_and_registration">Permissions and Registration Preferences</h3>
+  <div class="form-group">
+    <div>
+        <em>Note:</em> To configure privileges per user, set Read Access, Write Access and Attachment
+        management to <strong>Admin</strong> and configure Read, Write, Upload per user via <a href="{{url_for("admin_user_management")}}">User Management</a>.
+    </div>
+  </div>
+{% for permission in ["READ","WRITE","ATTACHMENT"] %}
+  <div class="form-group">
+      <label for="{{permission}}_permission" class="required">
+{%- if permission == "ATTACHMENT" %}
+          Attachment management / Upload
+{%- else %}
+          {{permission | capitalize}} Access
+{%- endif %}
+      </label>
+      <select class="form-control w-md-400" id="{{permission}}_permission" name="{{permission}}_access">
+        {% for permission_option in ["ANONYMOUS","REGISTERED","APPROVED","ADMIN"] %}
+        <option {% if config[permission + "_ACCESS"] == permission_option -%}
+selected="selected"
+{%- endif %} value="{{permission_option}}">{{permission_option | capitalize}}</option>
+        {% endfor %}
+    </select>
+  </div>
+{% endfor %}
+{##}
+<div class="form-text pt-0 mt-0 mb-20"></div>
+{##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.DISABLE_REGISTRATION %}checked{% endif %} type="checkbox" id="disable_registration" name="disable_registration" value="True">
+      <label for="disable_registration">Disable registration</label>
+    </div>
+    <div class="form-text">
+      With a disabled registration no users can sign up. Settings this can be useful for public wikis with a closed group of editors.
+    </div>
+  </div>
+  {##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.EMAIL_NEEDS_CONFIRMATION %}checked{% endif %} type="checkbox" id="email_confirmation" name="email_needs_confirmation" value="True">
+      <label for="email_confirmation">Registration requires email confirmation</label>
+    </div>
+    <div class="form-text">
+      With this enabled users have to confirm their emails address before the account is registered. Enabling this on a public
+      wiki is highly recommend to make life harder for bots and spammers.
+    </div>
+  </div>
+{##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.AUTO_APPROVAL %}checked{% endif %} type="checkbox" id="auto_approval" name="auto_approval" value="True">
+      <label for="auto_approval">Auto approve of new registered users</label>
+    </div>
+    <div class="form-text">
+      With this option set users will be auto approved.
+    </div>
+  </div>
+{##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.NOTIFY_ADMINS_ON_REGISTER %}checked{% endif %} type="checkbox" id="notify_admins" name="notify_admins_on_register" value="True">
+      <label for="notify_admins">Notify admins on new user registration</label>
+    </div>
+    <div class="form-text">
+      Admin users get a notification mail upon registration (and in case email confirmation is necessary on confirmation) of a new user.
+      This is useful when users are not auto approved.
+    </div>
+  </div>
+{##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.NOTIFY_USER_ON_APPROVAL %}checked="checked"{% endif %} type="checkbox" id="notify_user_on_approval" name="notify_user_on_approval" value="True">
+      <label for="notify_user_on_approval">Notify users when their account was approved</label>
+    </div>
+    <div class="form-text">
+      Users get a notification mail when their account has been approved. This is useful when users are not auto approved.
+    </div>
+  </div>
+  <div class="mt-10">
+    <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
+  </div>
+{##}
+</form>
+</div>
+</div>
+{% endblock %}

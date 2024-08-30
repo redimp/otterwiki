@@ -2,25 +2,25 @@
 {% extends "admin.html" %}
 {% block content %}
 <div class="col-sm-12 col-md-12 col-lg-10">
-<div class="card">
+<div class="card mx-auto mx-lg-20">
     <h2 class="card-title">Edit User</h2>
-    <form action="{{ url_for("user", uid=user.id) }}" method="POST" class="form-inline">{# class="w-400 mw-full" <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
+    <form action="{{ url_for("user", uid=user.id) }}" method="POST" class="form-inline">
       <div class="form-group">
-        <label for="name" class="required w-150">Name</label>
+        <label for="name" class="required w-md-100">Name</label>
         <input type="text" class="form-control" name="name" id="name" placeholder="" value="{{user.name if user.name}}">
       </div>
       <div class="form-group">
-        <label for="name" class="required w-150">eMail</label>
+        <label for="name" class="required w-md-100">eMail</label>
         <input type="text" class="form-control" name="email" id="email" placeholder="" value="{{user.email if user.email}}">
       </div>
     <h3 class="card-title">Flags and Permissions</h3>
     {%
       for label, name, value, note in [
         ("Approved","is_approved",user.is_approved,""),
-        ("Admin","is_admin",user.is_admin,"Users flagged as admins always have all the permissions."),
         ("Read","allow_read",user.allow_read,""),
         ("Write","allow_write",user.allow_write,""),
         ("Upload","allow_upload",user.allow_upload,""),
+        ("Admin","is_admin",user.is_admin,"Users flagged as admins always have <strong>all</strong> the permissions."),
       ]
     %}
       <div class="form-group">
@@ -28,8 +28,8 @@
           <input type="checkbox" id="{{name}}" name="{{name}}" value="1" {{"checked=\"checked\"" if value }}>
           <label for="{{name}}" class="">{{ label }}</label>
           {% if note %}
-          <div class="pt-5">
-            {{ note }}
+          <div class="pt-5 ml-10" style="display:inline;">
+            <i>{{ note|safe }}</i>
           </div>
           {% endif %}
         </div>
@@ -37,13 +37,13 @@
   {% endfor %}
       {# #}
       <input class="btn btn-primary" type="submit" value="Update">
-      <a href="{{ url_for("admin", _anchor="user_management") }}" class="btn" role="button">Cancel</a>
+      <a href="{{ url_for("admin_user_management") }}" class="btn" role="button">Cancel</a>
     </form>
 </div>{# card #}
 </div>{# w-600 container #}
 
 <div class="col-sm-12 col-md-12 col-lg-10">
-<div class="card">
+<div class="card mx-auto m-lg-20">
     <h2 class="card-title">Delete User</h2>
     <form action="{{ url_for("user", uid=user.id) }}" method="POST" class="form-inline">{# class="w-400 mw-full" <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
       <div class="form-group">

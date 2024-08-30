@@ -1,0 +1,50 @@
+{# vim: set et ts=8 sts=4 sw=4 ai ft=jinja.html: #}
+{% extends "settings.html" %}
+{% block content %}
+<div class="card m-auto m-lg-20" id="sidebar_preferences">
+<div class="mw-full">
+<form action="{{ url_for("admin_sidebar_preferences") }}" method="POST">
+<h2 class="card-title">Sidebar Preferences</h2>
+<h3 class="card-title">Shortcuts</h3>
+
+{% for name, description in [
+    ("HOME", '<span class="btn btn-square btn-sm"><i class="fas fa-home"></i></span> Home'),
+    ("PAGE_INDEX", '<span class="btn btn-square btn-sm"><i class="fas fa-list"></i></span> A - Z'),
+    ("CHANGELOG", '<span class="btn btn-square btn-sm"><i class="fas fa-history"></i></span> Changelog'),
+    ("CREATE_PAGE", '<span class="btn btn-square btn-sm"><i class="far fa-file"></i></span> Create Page'),
+] %}
+  <div class="form-group">
+    <div class="custom-checkbox">
+        <input {%if config["SIDEBAR_SHORTCUT_" + name] %}checked=checked{% endif %} type="checkbox" id="shortcut_{{name|lower}}" name="sidebar_shortcut_{{name|lower}}" value="True">
+        <label for="shortcut_{{name|lower}}">{{description|safe}}</tt></label>
+    </div>
+  </div>
+{% endfor %}
+{##}
+<div class="form-text pt-0 mt-0 mb-20"></div>
+<h3 class="card-title">Page Index</h3>
+    <div class="form-group">
+        <label for="sidebar_menutree_mode" class="required">Page Index Mode</label>
+        <select class="form-control w-md-400" id="sidebar_menutree_mode" name="sidebar_menutree_mode">
+{% for mode in [("", "Not displayed"),("SORTED","Directories and pages, sorted"),("DIRECTORIES_GROUPED","Directories and pages, with directories grouped first"),("DIRECTORIES_ONLY","Directories only")] %}
+            <option value="{{mode[0]}}"{%if config.SIDEBAR_MENUTREE_MODE == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
+{% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="sidebar_menutree_maxdepth">Maximal depth of pages and directories listed.</label>
+        <input name="sidebar_menutree_maxdepth" type="text" placeholder="unlimited" class="form-control w-md-400" id="sidebar_menutree_maxdepth" value="{{ config.SIDEBAR_MENUTREE_MAXDEPTH or "" }}">
+        <div class="mt-5">
+            With <code>MAXDEPTH=0</code> only the pages and directories of the same depth will be displayed. With <code>MAXDEPTH=n</code> childes up to depth <code>n</code> will be displayed. Without <code>MAXDEPTH</code> all childes will be displayed.
+        </div>
+    </div>
+{##}
+<div class="form-text pt-0 mt-0 mb-20"></div>
+  <div class="mt-10">
+    <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
+  </div>
+</form>
+</div>
+</div>
+{##}
+{% endblock %}

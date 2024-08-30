@@ -1,0 +1,89 @@
+{# vim: set et ts=8 sts=4 sw=4 ai ft=jinja.html: #}
+{% extends "settings.html" %}
+{% block content %}
+<div class="card mx-auto mx-lg-20" id="user_mangement">
+<form action="{{ url_for("admin_user_management") }}" method="POST">
+<h2 class="card-title">User Management</h2>
+<div class="table-responsive table-striped">
+  <table class="table compact">
+    <thead>
+      <tr>
+        <th>&nbsp;</th>
+        <th>eMail</th>
+        <th>Name</th>
+        <th><span class="hidden-md-and-down">Approved</span><span class="hidden-lg-and-up">Ap-<br/>proved</span></th>
+        <th>Read</th>
+        <th>Write</th>
+        <th>Upload</th>
+        <th>Admin</th>
+      </tr>
+    </thead>
+    <tbody>
+{% for user in user_list %}
+      <tr>
+        <td>
+            {% if auth_supported_features['editing'] %}
+            <a href="{{ url_for("user", uid=user.id) }}">
+                <i class="fas fa-user-edit"></i>
+            </a>
+            {% endif %}
+        </td>
+        <td>
+            {{user.email}}
+        </td>
+        <td>
+            {{user.name}}
+        </td>
+        <td>
+          <div class="custom-checkbox">
+              <input type="checkbox" id="checkbox-a-{{user.id}}" name="is_approved" value="{{user.id}}" {{"checked=\"checked\""|safe if
+                user.is_approved }} {% if not auth_supported_features['editing'] %}disabled{% endif %}>
+            <label for="checkbox-a-{{user.id}}"></label>
+          </div>
+        </td>
+        <td>
+          <div class="custom-checkbox">
+              <input type="checkbox" id="checkbox-b-{{user.id}}" name="allow_read" value="{{user.id}}" {{ "checked=\"checked\""|safe if
+                user.allow_read }} {% if not auth_supported_features['editing'] %}disabled{% endif %}>
+            <label for="checkbox-b-{{user.id}}"></label>
+          </div>
+        </td>
+        <td>
+          <div class="custom-checkbox">
+              <input type="checkbox" id="checkbox-c-{{user.id}}" name="allow_write" value="{{user.id}}" {{ "checked=\"checked\""|safe if
+                user.allow_write }} {% if not auth_supported_features['editing'] %}disabled{% endif %}>
+            <label for="checkbox-c-{{user.id}}"></label>
+          </div>
+        </td>
+        <td>
+          <div class="custom-checkbox">
+              <input type="checkbox" id="checkbox-d-{{user.id}}" name="allow_upload" value="{{user.id}}" {{ "checked=\"checked\""|safe if
+                user.allow_upload }} {% if not auth_supported_features['editing'] %}disabled{% endif %}>
+            <label for="checkbox-d-{{user.id}}"></label>
+          </div>
+        </td>
+        <td>
+          <div class="custom-checkbox">
+              <input type="checkbox" id="checkbox-e-{{user.id}}" name="is_admin" value="{{user.id}}" {{ "checked=\"checked\""|safe if
+                user.is_admin }} {% if not auth_supported_features['editing'] %}disabled{% endif %}>
+            <label for="checkbox-e-{{user.id}}"></label>
+          </div>
+        </td>
+      </tr>
+{% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <div class="mt-10">
+      <em>Privileges granted per user</em> add <em>to the general permissions. For example, if in general
+          only users with the <strong>Admin</strong> flag are allowed to upload attachments, the
+          <tt>user@example.org</tt> can be allowed to <strong>Upload</strong> without being flagged as Admin.
+      </em>
+  </div>
+  <div class="mt-10">
+    <input class="btn btn-primary" name="update_permissions" type="submit" value="Update Privileges" {% if not
+      auth_supported_features['editing'] %}disabled{% endif %}>
+  </div>
+</form>
+</div>
+{% endblock %}

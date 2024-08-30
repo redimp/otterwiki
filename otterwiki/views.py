@@ -121,6 +121,46 @@ def settings():
     else:
         return otterwiki.auth.handle_settings(request.form)
 
+@app.route("/-/admin/user_management", methods=["POST", "GET"]) # pyright: ignore -- false positive
+@login_required
+def admin_user_management():
+    if request.method == "GET":
+        return otterwiki.preferences.user_management_form()
+    else:
+        return otterwiki.preferences.handle_user_management(request.form)
+
+@app.route("/-/admin/sidebar_preferences", methods=["POST", "GET"]) # pyright: ignore -- false positive
+@login_required
+def admin_sidebar_preferences():
+    if request.method == "GET":
+        return otterwiki.preferences.sidebar_preferences_form()
+    else:
+        return otterwiki.preferences.handle_sidebar_preferences(request.form)
+
+@app.route("/-/admin/permissions_and_registration", methods=["POST", "GET"]) # pyright: ignore -- false positive
+@login_required
+def admin_permissions_and_registration():
+    if request.method == "GET":
+        return otterwiki.preferences.permissions_and_registration_form()
+    else:
+        return otterwiki.preferences.handle_permissions_and_registration(request.form)
+
+@app.route("/-/admin/content_and_editing", methods=["POST", "GET"]) # pyright: ignore -- false positive
+@login_required
+def admin_content_and_editing():
+    if request.method == "GET":
+        return otterwiki.preferences.content_and_editing_form()
+    else:
+        return otterwiki.preferences.handle_content_and_editing(request.form)
+
+@app.route("/-/admin/mail_preferences", methods=["POST", "GET"]) # pyright: ignore -- false positive
+@login_required
+def admin_mail_preferences():
+    if request.method == "GET":
+        return otterwiki.preferences.mail_preferences_form()
+    else:
+        return otterwiki.preferences.handle_mail_preferences(request.form)
+
 @app.route("/-/admin", methods=["POST", "GET"]) # pyright: ignore -- false positive
 @login_required
 def admin():

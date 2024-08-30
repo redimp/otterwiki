@@ -5,13 +5,15 @@
 <script src="{{ url_for("static", filename="js/otterwiki.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 {% endblock js %}
 {% block menu %}
+{% if config.SIDEBAR_SHORTCUT_HOME %}
                 <a href="{{ url_for("index") }}" class="sidebar-link sidebar-link-with-icon">
                     <span class="sidebar-icon">
                         <i class="fas fa-home"></i>
                     </span>
                     Home
                 </a>
-{% if has_permission('READ') %}
+{% endif %}
+{% if has_permission('READ') and config.SIDEBAR_SHORTCUT_PAGE_INDEX %}
                 <a href="{{ url_for("pageindex") }}" class="sidebar-link sidebar-link-with-icon">
                     <span class="sidebar-icon">
                         <i class="fas fa-list"></i>
@@ -19,7 +21,15 @@
                     A - Z
                 </a>
 {% endif %}
-{% if has_permission('WRITE') %}
+{% if has_permission('READ') and config.SIDEBAR_SHORTCUT_CHANGELOG %}
+                <a href="{{ url_for("changelog") }}" class="sidebar-link sidebar-link-with-icon">
+                    <span class="sidebar-icon">
+                        <i class="fas fa-history"></i>
+                    </span>
+                    Changelog
+                </a>
+{% endif %}
+{% if has_permission('WRITE') and config.SIDEBAR_SHORTCUT_CREATE_PAGE %}
                 <a href="{{ url_for("create") }}" class="sidebar-link sidebar-link-with-icon">
                     <span class="sidebar-icon">
                         <i class="far fa-file"></i>
@@ -27,14 +37,17 @@
                     Create page
                 </a>
 {% endif %}
-                <br />
+{%- if config.SIDEBAR_SHORTCUT_HOME or config.SIDEBAR_SHORTCUT_PAGE_INDEX or 
+       config.SIDEBAR_SHORTCUT_CHANGELOG or config.SIDEBAR_SHORTCUT_CREATE_PAGE %}
+<br />
+{%- endif %}
                 <div id="sidebar-toc" class="sidebar-toc d-xl-none">
                 {% include 'snippets/toc.html' %}
                 </div>
 {% endblock %}
 
 {% block navbardropdown %}
-{% if has_permission('WRITE') %}
+{% if has_permission('WRITE') and not config.SIDEBAR_SHORTCUT_CREATE_PAGE %}
                     <a href="{{ url_for("create") }}" class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="far fa-file"></i>
@@ -42,7 +55,15 @@
                     Create page
                     </a>
 {% endif %}
-{% if has_permission('READ') %}
+{% if has_permission('READ') and not config.SIDEBAR_SHORTCUT_PAGE_INDEX %}
+                    <a href="{{ url_for("pageindex") }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="fas fa-list"></i>
+                        </span>
+                    A - Z
+                    </a>
+{% endif %}
+{% if has_permission('READ') and not config.SIDEBAR_SHORTCUT_CHANGELOG %}
                     <a href="{{ url_for("changelog") }}" class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="fas fa-history"></i>

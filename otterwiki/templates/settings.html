@@ -1,5 +1,7 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
+{% block extra_nav %}
+{% endblock %}
 {% block menu %}
 <a href="{{ url_for("settings") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon">
@@ -8,25 +10,37 @@
     Settings
 </a>
 {% if has_permission("ADMIN") %}
-<a href="{{ url_for("admin", _anchor="user_management") }}" class="sidebar-link sidebar-link-with-icon">
-    <span class="sidebar-icon">
-        <i class="fas fa-users"></i>
-    </span>
-    User Management
-</a>
-<a href="{{ url_for("admin", _anchor="application_preferences") }}" class="sidebar-link sidebar-link-with-icon">
-    <span class="sidebar-icon">
+<a href="{{ url_for("admin") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon" style="min-width: 3rem;">
         <i class="fas fa-cogs"></i>
     </span>
     Application Preferences
 </a>
-<a href="{{ url_for("admin", _anchor="permissions_and_registration") }}" class="sidebar-link sidebar-link-with-icon">
-    <span class="sidebar-icon">
+<a href="{{ url_for("admin_sidebar_preferences") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon" style="min-width: 3rem;">
+        <i class="fas fa-columns"></i>
+    </span>
+    Sidebar Preferences
+</a>
+<a href="{{ url_for("admin_content_and_editing") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon" style="min-width: 3rem;">
+        <i class="fas fa-drafting-compass"></i>
+    </span>
+    Content and Editing
+</a>
+<a href="{{ url_for("admin_user_management") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon" style="min-width: 3rem;">
+        <i class="fas fa-users"></i>
+    </span>
+    User Management
+</a>
+<a href="{{ url_for("admin_permissions_and_registration") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon" style="min-width: 3rem;">
         <i class="fas fa-users-cog"></i>
     </span>
-    Permissions and Registration Preferences
+    Permissions and Registration
 </a>
-<a href="{{ url_for("admin", _anchor="mail_preferences") }}" class="sidebar-link sidebar-link-with-icon">
+<a href="{{ url_for("admin_mail_preferences") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon">
         <i class="far fa-envelope"></i>
     </span>

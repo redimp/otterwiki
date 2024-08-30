@@ -96,6 +96,21 @@ def admin_client(app_with_user):
             "password": "password1234",
         },
         follow_redirects=True,
+   )
+    html = result.data.decode()
+    assert "You logged in successfully." in html
+    return client
+
+@pytest.fixture(scope="function")
+def other_client(app_with_user):
+    client = app_with_user.test_client()
+    result = client.post(
+        "/-/login",
+        data={
+            "email": "another@user.org",
+            "password": "password4567",
+        },
+        follow_redirects=True,
     )
     html = result.data.decode()
     assert "You logged in successfully." in html

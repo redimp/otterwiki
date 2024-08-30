@@ -54,6 +54,7 @@ dev = [
     "tbump",
     "rjsmin",
     "git-changelog",
+    "beautifulsoup4",
     ]
 
 [build-system]
