@@ -39,10 +39,9 @@ SQLALCHEMY_DATABASE_URI = ''
 # MAIL_USERNAME = 'MAIL_USERNAME'
 # MAIL_PASSWORD = 'MAIL_PASSWORD'
 
-# # Flask-Mail Debug Configuration
-# # run dummy stmp server via
+# # For debgging the mail configuration
 # #
-# #   python -m smtpd -n -c DebuggingServer localhost:1025
+# #   ./venv/bin/pip install maildump && ./venv/bin/maildump
 # #
 # MAIL_SERVER = 'localhost'
 # MAIL_PORT = 1025
