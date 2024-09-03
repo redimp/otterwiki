@@ -350,6 +350,7 @@ class Changelog:
             # use the shorter page list
             pages = pages_short
 
+        menutree = SidebarNavigation(get_page_directoryname("/"))
         return render_template(
             "changelog.html",
             log=log,
@@ -359,6 +360,7 @@ class Changelog:
             last_page=last_page,
             previous_page=previous_page,
             next_page=next_page,
+            menutree=menutree.query(),
         )
 
     def revert_form(self, revision, message):

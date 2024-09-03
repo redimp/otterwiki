@@ -4,6 +4,11 @@
 {{ super() }}
 <meta name="robots" content="noindex, nofollow"/>
 {% endblock %}
+{% block extra_nav %}{% endblock %}
+{% block menu %}
+{{ super() }}
+{% include 'snippets/menutree.html' %}
+{% endblock %}
 {% block content %}
 <div class="w-full mw-full p-0 clearfix">
     <h2 class="float-left">Changelog</h2>
