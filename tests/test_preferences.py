@@ -234,31 +234,31 @@ def test_sidebar_preferences(app_with_user, admin_client):
             "/-/admin/sidebar_preferences",
             data = {
                 "sidebar_shortcut_home" : "False",
-                "sidebar_shortcut_page_index" : "False",
+                "sidebar_shortcut_pageindex" : "False",
                 "sidebar_shortcut_changelog" : "False",
-                "sidebar_shortcut_create_page" : "False",
+                "sidebar_shortcut_createpage" : "False",
             },
             follow_redirects=True,
         )
-    assert app_with_user.config['SIDEBAR_SHORTCUT_HOME'] == False
-    assert app_with_user.config['SIDEBAR_SHORTCUT_PAGE_INDEX'] == False
-    assert app_with_user.config['SIDEBAR_SHORTCUT_CHANGELOG'] == False
-    assert app_with_user.config['SIDEBAR_SHORTCUT_CREATE_PAGE'] == False
+    assert "home" not in app_with_user.config['SIDEBAR_SHORTCUTS']
+    assert "pageindex" not in app_with_user.config['SIDEBAR_SHORTCUTS']
+    assert "changelog" not in app_with_user.config['SIDEBAR_SHORTCUTS']
+    assert "createpage" not in app_with_user.config['SIDEBAR_SHORTCUTS']
     # enable all shortcuts
     rv = admin_client.post(
             "/-/admin/sidebar_preferences",
             data = {
                 "sidebar_shortcut_home" : "True",
-                "sidebar_shortcut_page_index" : "True",
+                "sidebar_shortcut_pageindex" : "True",
                 "sidebar_shortcut_changelog" : "True",
-                "sidebar_shortcut_create_page" : "True",
+                "sidebar_shortcut_createpage" : "True",
             },
             follow_redirects=True,
         )
-    assert app_with_user.config['SIDEBAR_SHORTCUT_HOME'] == True
-    assert app_with_user.config['SIDEBAR_SHORTCUT_PAGE_INDEX'] == True
-    assert app_with_user.config['SIDEBAR_SHORTCUT_CHANGELOG'] == True
-    assert app_with_user.config['SIDEBAR_SHORTCUT_CREATE_PAGE'] == True
+    assert "home" in app_with_user.config['SIDEBAR_SHORTCUTS']
+    assert "pageindex" in app_with_user.config['SIDEBAR_SHORTCUTS']
+    assert "changelog" in app_with_user.config['SIDEBAR_SHORTCUTS']
+    assert "createpage" in app_with_user.config['SIDEBAR_SHORTCUTS']
     # configure page index mode
     assert app_with_user.config['SIDEBAR_MENUTREE_MODE'] == ""
     rv = admin_client.post(

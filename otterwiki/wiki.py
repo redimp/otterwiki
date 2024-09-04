@@ -19,7 +19,7 @@ from otterwiki.gitstorage import StorageNotFound, StorageError
 from otterwiki.server import app, storage, db
 from otterwiki.models import Drafts
 from otterwiki.renderer import render, pygments_render
-from otterwiki.sidebar import SidebarNavigation
+from otterwiki.sidebar import SidebarPageIndex, SidebarMenu
 from otterwiki.util import (
     split_path,
     join_path,
@@ -224,7 +224,7 @@ class PageIndex:
     def render(self):
         if not has_permission("READ"):
             abort(403)
-        menutree = SidebarNavigation(get_page_directoryname(self.path or "/"))
+        menutree = SidebarPageIndex(get_page_directoryname(self.path or "/"))
 
         upsert_pagecrumbs(get_pagename(self.path or "/", full=True))
         return render_template(
@@ -233,6 +233,7 @@ class PageIndex:
             pages=self.toc,
             pagepath=self.path or "/",
             menutree=menutree.query(),
+            custom_menu=SidebarMenu().query(),
             breadcrumbs=self.breadcrumbs,
         )
 
@@ -350,7 +351,7 @@ class Changelog:
             # use the shorter page list
             pages = pages_short
 
-        menutree = SidebarNavigation(get_page_directoryname("/"))
+        menutree = SidebarPageIndex(get_page_directoryname("/"))
         return render_template(
             "changelog.html",
             log=log,
@@ -361,6 +362,7 @@ class Changelog:
             previous_page=previous_page,
             next_page=next_page,
             menutree=menutree.query(),
+            custom_menu=SidebarMenu().query(),
         )
 
     def revert_form(self, revision, message):
@@ -403,7 +405,7 @@ class Changelog:
         if len(url_map) == 1:
             pagepath = get_pagepath(list(url_map.keys())[0])
 
-        menutree = SidebarNavigation(get_page_directoryname(pagepath or "/"))
+        menutree = SidebarPageIndex(get_page_directoryname(pagepath or "/"))
 
         file_diffs = patchset2filedict(patchset)
         return render_template(
@@ -418,6 +420,7 @@ class Changelog:
             pagepath=pagepath,
             breadcrumbs=get_breadcrumbs(pagepath),
             menutree=menutree.query(),
+            custom_menu=SidebarMenu().query(),
         )
 
 
@@ -516,7 +519,7 @@ class Page:
             )
 
         source = pygments_render(self.content, lang='markdown')
-        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
 
         return render_template(
             "source.html",
@@ -525,6 +528,7 @@ class Page:
             pagename=self.pagename,
             pagepath=self.pagepath,
             menutree=menutree.query(),
+            custom_menu=SidebarMenu().query(),
             source=source,
             breadcrumbs=self.breadcrumbs(),
         )
@@ -573,7 +577,7 @@ class Page:
         if self.revision is not None:
             title = "{} ({})".format(self.pagename, self.revision)
 
-        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
 
         htmlcontent = chain_hooks("page_view_htmlcontent_postprocess", htmlcontent, self)
 
@@ -589,6 +593,7 @@ class Page:
             breadcrumbs=self.breadcrumbs(),
             danger_alert=danger_alert,
             menutree=menutree.query(),
+            custom_menu=SidebarMenu().query(),
         )
 
     def preview(self, content=None, cursor_line=None):
@@ -740,7 +745,7 @@ class Page:
                 last = row[0]
             else:
                 fdata.append(("", "", "", int(row[3]), line, oddeven))
-        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
         return render_template(
             "blame.html",
             title="{} - blame {}".format(self.pagename, self.revision),
@@ -748,6 +753,7 @@ class Page:
             pagename=self.pagename,
             blame=fdata,
             menutree=menutree.query(),
+            custom_menu=SidebarMenu().query(),
             breadcrumbs=self.breadcrumbs(),
         )
 
@@ -762,7 +768,7 @@ class Page:
         url_map=patchset2urlmap(patchset, rev_b, rev_a)
         file_diffs = patchset2filedict(patchset)
 
-        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
         return render_template(
             "diff.html",
             title="{} - diff {} {}".format(self.pagename, rev_a, rev_b),
@@ -776,6 +782,7 @@ class Page:
             rev_b=rev_b,
             withlinenumbers=False,
             menutree=menutree.query(),
+            custom_menu=SidebarMenu().query(),
             breadcrumbs=self.breadcrumbs(),
         )
 
@@ -807,7 +814,7 @@ class Page:
                 "view", path=self.pagepath, revision=entry["revision"]
             )
             log.append(entry)
-        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
         return render_template(
             "history.html",
             title="{} - History".format(self.pagename),
@@ -817,6 +824,7 @@ class Page:
             rev_a=rev_a,
             rev_b=rev_b,
             menutree=menutree.query(),
+            custom_menu=SidebarMenu().query(),
             breadcrumbs=self.breadcrumbs(),
         )
 
@@ -884,7 +892,7 @@ class Page:
     def rename_form(self, new_pagename=None, message=None):
         if not has_permission("WRITE"):
             abort(403)
-        menutree = SidebarNavigation(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
         olddrafts = Drafts.query.filter_by(pagepath=self.pagepath).all()
         if new_pagename != self.pagepath:
             newdrafts = Drafts.query.filter_by(pagepath=get_pagepath(new_pagename)).all()
@@ -899,6 +907,7 @@ class Page:
             new_pagename=new_pagename,
             message=message,
             menutree=menutree.query(),
+            custom_menu=SidebarMenu().query(),
             olddrafts=olddrafts,
             newdrafts=newdrafts,
             pagename_prefixes=get_pagename_prefixes(filter=[self.pagename, self.pagename_full]),

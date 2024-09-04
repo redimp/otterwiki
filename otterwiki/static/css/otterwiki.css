@@ -218,6 +218,10 @@ pre,
     padding-right: 0;
 }
 
+.btn-handle {
+    cursor: move;
+}
+
 .extra-nav-attachment {
     padding: 1rem;
 }

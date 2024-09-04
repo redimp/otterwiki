@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import re
+import json
 from otterwiki.util import is_valid_email
 from flask import (
     redirect,
@@ -12,7 +13,8 @@ from flask_login import (
     current_user,
 )
 from otterwiki.server import app, db, update_app_config, Preferences
-from otterwiki.helper import toast, send_mail
+from otterwiki.sidebar import SidebarPageIndex, SidebarMenu
+from otterwiki.helper import toast, send_mail, get_pagename
 from otterwiki.util import empty, is_valid_email
 from flask_login import current_user
 from otterwiki.auth import (
@@ -92,6 +94,17 @@ def handle_mail_preferences(form):
 
 
 def handle_sidebar_preferences(form):
+    custom_menu_js = json.dumps(
+        [   x
+            for x in list(zip(form.getlist("title"), form.getlist("link")))
+            if x[0].strip() or x[1].strip()
+        ]
+    )
+
+    _update_preference(
+        "SIDEBAR_CUSTOM_MENU", custom_menu_js
+    )
+
     for checkbox in [
         "sidebar_shortcut_home",
         "sidebar_shortcut_page_index",
@@ -337,10 +350,15 @@ def permissions_and_registration_form():
 def sidebar_preferences_form():
     if not has_permission("ADMIN"):
         abort(403)
+    # we re-use SidebarPageIndex to generate a list of all pages
+    sn = SidebarPageIndex("", mode="*")
+    pages = [get_pagename(fh[0], full=True, header=fh[1]) for fh in sn.filenames_and_header]
     # render form
     return render_template(
         "admin/sidebar_preferences.html",
         title="Sidebar Preferences",
+        pages=pages,
+        custom_menu=SidebarMenu().config,
     )
 
 

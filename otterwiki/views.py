@@ -82,7 +82,6 @@ def syntax():
 @app.route("/-/help")
 @app.route("/-/help/<string:topic>")
 def help(topic=None):
-    print(topic)
     toc = None
     content = "TODO"
     if (topic == "admin"):

@@ -2,25 +2,62 @@
 
 import os
 import re
+import json
 from collections import OrderedDict
-
+from flask import url_for
 from otterwiki.server import storage, app
 from otterwiki.util import (
     split_path,
     join_path,
+    empty,
 )
 from otterwiki.helper import (
     get_pagename,
 )
 
 
-class SidebarNavigation:
+class SidebarMenu:
+    URI_SIMPLE = re.compile(
+        r"^(((https?)\:\/\/)|(mailto:))\S+"
+    )
+    def __init__(self):
+        self.menu = []
+        self.config = []
+        if not app.config.get("SIDEBAR_CUSTOM_MENU", None):
+            return
+        try:
+            raw_config = json.loads(app.config.get("SIDEBAR_CUSTOM_MENU",""))
+        except (ValueError, IndexError) as e:
+            app.logger.error(
+                f"Error decoding SIDEBAR_CUSTOM_MENU={app.config.get('SIDEBAR_CUSTOM_MENU','')}: {e}"
+            )
+            raw_config = []
+        for entry in raw_config:
+            if len(entry) != 2: continue # FIXME: print warning
+            if empty(entry[0]) and empty(entry[1]): continue
+            self.config.append(entry)
+        for entry in self.config:
+            title, link = entry
+            if empty(link):
+                if empty(title): continue
+                self.menu.append([title, url_for("view", path=title)])
+            elif self.URI_SIMPLE.match(link):
+                if empty(title): title = link
+                self.menu.append([title, link])
+            else:
+                if empty(title): title = link
+                self.menu.append([title, url_for("view", path=link)])
+
+    def query(self):
+        return self.menu
+
+class SidebarPageIndex:
     AXT_HEADING = re.compile(
         r' {0,3}(#{1,6})(?!#+)(?: *\n+|' r'\s+([^\n]*?)(?:\n+|\s+?#+\s*\n+))'
     )
     SETEX_HEADING = re.compile(r'([^\n]+)\n *(=|-){2,}[ \t]*\n+')
 
-    def __init__(self, path: str = "/"):
+    def __init__(self, path: str = "/", mode: str = ""):
         self.path = path if app.config["RETAIN_PAGE_NAME_CASE"] else path.lower()
         self.path_depth = len(split_path(self.path))
         try:
@@ -28,8 +65,15 @@ class SidebarNavigation:
         except ValueError:
             self.max_depth = None
         self.mode = app.config["SIDEBAR_MENUTREE_MODE"]
+        # overwrite mode if argument is given
+        if mode: self.mode = mode
+
         # TODO load configs (yaml header in page?) (sidebar.yaml?)
+
         # TODO check for cached pages
+
+        self.filenames_and_header = []
+
         # load pages
         if self.mode == "":
             self.tree = None
@@ -122,6 +166,7 @@ class SidebarNavigation:
             if entry.endswith(".md"):
                 header = self.read_header(entry)
                 entry = entry[:-3]
+            self.filenames_and_header.append((entry, header))
             parts = split_path(entry)
             self.add_node(self.tree, [], parts, header)
 

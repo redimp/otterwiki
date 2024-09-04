@@ -1,0 +1,22 @@
+{#- vim: set et ts=8 sts=4 sw=4 ai: -#}
+{% if has_permission('READ') %}
+{% if custom_menu %}
+    <details class="collapse-panel" open>
+
+        <summary class="collapse-header">
+            Menu
+        </summary>
+
+        <div class="collapse-content">
+            <!-- menu [[ -->
+            <ul class="sidebarmenu parent-sidebar-menu">
+            {%- for title, link in custom_menu -%}
+            <li> <a href="{{link}}">{{title}}</a> </li>
+            {%- endfor %}
+            </ul>
+            <!-- ]] menu -->
+        </div>
+    </details>
+{% endif %}{# if custom_menu #}
+{% endif %}{# if has_permission('READ') #}
+
