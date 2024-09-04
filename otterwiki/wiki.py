@@ -425,12 +425,12 @@ class Page:
     def __init__(self, pagepath=None, pagename=None, revision=None):
 
         if pagepath is not None:
-            self.pagepath = pagepath
+            self.pagepath = sanitize_pagename(pagepath)
             self.pagename = get_pagename(
                 pagepath
             )
         elif pagename is not None:
-            self.pagename = pagename
+            self.pagename = sanitize_pagename(pagename)
             self.pagepath = get_pagepath(pagename)
 
         self.pagename_full = get_pagename(self.pagepath, full=True)
@@ -484,7 +484,7 @@ class Page:
             response404 = make_response(
                 render_template(
                     "page404.html",
-                    pagename=self.pagename,
+                    pagename=self.pagename_full,
                     pagepath=self.pagepath,
                 ),
                 404,
@@ -682,6 +682,7 @@ class Page:
     def save(self, content, commit, author):
         if not has_permission("WRITE"):
             abort(403)
+
         # store page
         changed = storage.store(
             filename=self.filename,
@@ -692,7 +693,7 @@ class Page:
         if not changed:
             toast("Nothing changed.", "warning")
         else:
-            toast("{} saved.".format(self.pagename))
+            toast("{} saved.".format(self.pagename_full))
         # take care of drafts
         self.discard_draft(author)
         # redirect to view
