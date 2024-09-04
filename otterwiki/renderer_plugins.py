@@ -344,10 +344,6 @@ class mistunePluginFancyBlocks:
         else:
             header = ""
         text = text.strip()
-        if text.startswith('<p>'):
-            text = text[3:]
-        if text.endswith('</p>'):
-            text = text[:-4]
         return (
             f'<div class="{cls} mb-20" role="alert">{header}\n{text}</div>\n'
         )

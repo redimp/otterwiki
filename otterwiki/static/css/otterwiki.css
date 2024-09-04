@@ -76,6 +76,10 @@ pre,
     overflow: auto;
 }
 
+.page > .alert > p {
+    margin-block-end: 0.2em;
+}
+
 .dark-mode code,
 .dark-mode pre,
 .dark-mode .code {
