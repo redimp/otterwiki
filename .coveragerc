@@ -1,6 +1,0 @@
-[run]
-omit =
-    otterwiki/profiler.py
-
-[html]
-directory = coverage_html

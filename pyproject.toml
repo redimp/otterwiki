@@ -118,5 +118,12 @@ version-regex = "^## \\\\[(?P<version>v?[^\\\\]]+)"
 versioning = "semver"
 zerover = false
 
+[tool.coverage.run]
+omit = [
+    "otterwiki/profiler.py",
+]
+[tool.coverage.html]
+directory = "coverage_html"
+
 
 # vim: set et ts=8 sts=4 sw=4 ai fenc=utf-8:

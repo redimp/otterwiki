@@ -37,7 +37,7 @@ debug: venv settings.cfg
 
 profiler: venv settings.cfg
 	FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg \
-        venv/bin/python otterwiki/profiler.py
+		venv/bin/python otterwiki/profiler.py
 
 
 shell: venv
@@ -49,13 +49,10 @@ test: venv
 tox: venv
 	venv/bin/tox
 
-venv/bin/coverage: venv
-	venv/bin/pip install coverage
-
-coverage: venv venv/bin/coverage
+coverage: venv
 	OTTERWIKI_SETTINGS="" venv/bin/coverage run --source=otterwiki -m pytest tests
 	venv/bin/coverage report
-	venv/bin/coverage html -d coverage_html
+	venv/bin/coverage html
 
 black:
 	venv/bin/black setup.py otterwiki/ tests/
