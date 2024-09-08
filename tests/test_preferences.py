@@ -223,6 +223,10 @@ def test_preferences_403(app_with_user, other_client):
     assert rv.status_code == 403
     rv = other_client.post("/-/admin/mail_preferences", follow_redirects=True)
     assert rv.status_code == 403
+    rv = other_client.get("/-/admin/content_and_editing", follow_redirects=True)
+    assert rv.status_code == 403
+    rv = other_client.post("/-/admin/content_and_editing", follow_redirects=True)
+    assert rv.status_code == 403
 
 
 def test_sidebar_preferences(app_with_user, admin_client):

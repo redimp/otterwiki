@@ -48,6 +48,19 @@ Note that this will not change any edit history or prevent the user from signing
 
 ### Sidebar Preferences
 
+#### Shortcuts
+Frequently used Wiki features such as <code>Home</code>, the <code>Page Index</code>, the <code>Changelog</code> or <code>Create
+Page</code> can be added to the Sidebar, e.g. <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-list"></i></span> A - Z</span>.
+
+#### Custom Menu
+
+A custom menu can be configured to display links to important pages or external links.
+For wiki pages, only the page name needs to be entered. For external links, enter the
+link with its full URL. Optionally, a title can be specified for each entry. The order
+of the entries in the menu is set manually.
+
+#### Page Index
+
 The Sidebar can be configured to display the Page Index in different modes.
 You can display pages and directories either alphabetical, or with directories first,
 or only the directories. Alternatively you choose to not display the Page Index at all.

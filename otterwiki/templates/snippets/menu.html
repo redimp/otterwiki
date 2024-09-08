@@ -7,10 +7,10 @@
             Menu
         </summary>
 
-        <div class="collapse-content">
+        <div id="custom-menu" class="collapse-content">
             <!-- menu [[ -->
             <ul class="sidebarmenu parent-sidebar-menu">
-            {%- for title, link in custom_menu -%}
+            {%- for link, title in custom_menu -%}
             <li> <a href="{{link}}">{{title}}</a> </li>
             {%- endfor %}
             </ul>

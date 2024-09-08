@@ -33,18 +33,18 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
 <table>
     <thead>
         <th>&nbsp;</th>
-        <th>Page/Title</th>
-        <th>Link <em>(optional)</em></th>
+        <th>Page/Link</th>
+        <th>Title <em>(optional)</em></th>
         <th>&nbsp;</th>
     </thead>
     <tbody id="custom-page-index">
-{% for title,link in custom_menu + [["",""]] %}
+{% for link,title in custom_menu + [["",""]] %}
         <tr>
             <td class="pr-10">
                 <span class="btn btn-square btn-sm btn-handle"><i class="fas fa-arrows-alt"></i></span>
             </td>
-            <td><input type="text" name="title" placeholder="..." class="w-200 form-control" value="{{title}}"/></td>
-            <td><input type="text" name="link" placeholder="" class="w-200 form-control"/ value="{{link}}"> </td>
+            <td><input type="text" name="link" placeholder="..." class="w-200 form-control" value="{{link}}"/></td>
+            <td><input type="text" name="title" placeholder="" class="w-200 form-control"/ value="{{title}}"> </td>
             <td class="pl-10">
                 <span class="btn btn-square btn-sm" onclick="cloneRow(this);"><i class="fas fa-clone"></i></span>
                 <span class="btn btn-square btn-sm btn-danger" onclick="deleteRow(this);"><i class="far fa-trash-alt"></i></span>
@@ -139,8 +139,8 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
             row = lastrow;
         else
             row = cloneRow(null, true);
-        row.querySelector("input[name='title']").value = pageSelect.value;
-        row.querySelector("input[name='link']").value = '';
+        row.querySelector("input[name='link']").value = pageSelect.value;
+        row.querySelector("input[name='title']").value = '';
     }
 </script>
 {% endblock %}

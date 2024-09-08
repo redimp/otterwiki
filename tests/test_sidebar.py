@@ -5,6 +5,9 @@ from bs4 import BeautifulSoup
 
 
 def get_sidebar_shortcuts(test_client):
+    """
+    Helper function to get all links from the sidebar and the dropdown menu.
+    """
     rv = test_client.get("/")
     assert rv.status_code == 200
     soup = BeautifulSoup(rv.data.decode(), "html.parser")
@@ -60,3 +63,60 @@ def test_sidebar_shortcuts_empty(create_app, test_client):
     assert ('A - Z', '/-/index') in dropdown_shortcuts
     assert ('Create page', '/-/create') in dropdown_shortcuts
     assert ("Changelog", "/-/changelog") in dropdown_shortcuts
+
+
+def get_sidebar_menu(test_client):
+    """
+    Helper function to get all links in the custom menu
+    """
+    rv = test_client.get("/")
+    assert rv.status_code == 200
+    soup = BeautifulSoup(rv.data.decode(), "html.parser")
+    sidebar_custom_menu = soup.find("div", id="custom-menu")
+    if sidebar_custom_menu is None:
+        return None
+    sidebar_custom_links = sidebar_custom_menu.find_all("a")  # pyright: ignore
+    sidebar_custom_links = [
+        (x.text.strip(), x["href"]) for x in sidebar_custom_links
+    ]
+    return sidebar_custom_links
+
+
+def test_sidebar_custom_menu(create_app, test_client, req_ctx):
+    from otterwiki.sidebar import SidebarMenu
+
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = ""
+    assert SidebarMenu().config == []
+    links = get_sidebar_menu(test_client)
+    assert links is None
+
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = "[]"
+    assert [] == SidebarMenu().config
+    links = get_sidebar_menu(test_client)
+    assert links is None
+
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = """[["Home", ""]]"""
+    assert [['Home', '']] == SidebarMenu().config
+    links = get_sidebar_menu(test_client)
+    assert links
+    assert ('Home', '/Home') in links
+
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = """[["https://example.com", "Example"]]"""
+    assert [['https://example.com', 'Example']] == SidebarMenu().config
+    links = get_sidebar_menu(test_client)
+    assert links
+    assert ('Example', 'https://example.com') in links
+
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = """[["/Example", ""]]"""
+    assert [['/Example', '']] == SidebarMenu().config
+    links = get_sidebar_menu(test_client)
+    assert links
+    assert ('/Example', '/Example') in links
+
+def test_sidebar_custom_menu_error(create_app, test_client, req_ctx):
+    from otterwiki.sidebar import SidebarMenu
+
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = "["
+    assert SidebarMenu().config == []
+    links = get_sidebar_menu(test_client)
+    assert links is None

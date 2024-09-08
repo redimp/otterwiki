@@ -26,7 +26,7 @@ class SidebarMenu:
         if not app.config.get("SIDEBAR_CUSTOM_MENU", None):
             return
         try:
-            raw_config = json.loads(app.config.get("SIDEBAR_CUSTOM_MENU",""))
+            raw_config = json.loads(app.config.get("SIDEBAR_CUSTOM_MENU","[]"))
         except (ValueError, IndexError) as e:
             app.logger.error(
                 f"Error decoding SIDEBAR_CUSTOM_MENU={app.config.get('SIDEBAR_CUSTOM_MENU','')}: {e}"
@@ -37,16 +37,16 @@ class SidebarMenu:
             if empty(entry[0]) and empty(entry[1]): continue
             self.config.append(entry)
         for entry in self.config:
-            title, link = entry
+            link, title = entry
             if empty(link):
                 if empty(title): continue
-                self.menu.append([title, url_for("view", path=title)])
+                self.menu.append([url_for("view", path=title), title])
             elif self.URI_SIMPLE.match(link):
                 if empty(title): title = link
-                self.menu.append([title, link])
+                self.menu.append([link, title])
             else:
                 if empty(title): title = link
-                self.menu.append([title, url_for("view", path=link)])
+                self.menu.append([url_for("view", path=link), title])
 
     def query(self):
         return self.menu
