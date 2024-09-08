@@ -105,13 +105,16 @@ def handle_sidebar_preferences(form):
         "SIDEBAR_CUSTOM_MENU", custom_menu_js
     )
 
-    for checkbox in [
-        "sidebar_shortcut_home",
-        "sidebar_shortcut_page_index",
-        "sidebar_shortcut_changelog",
-        "sidebar_shortcut_create_page",
+    sidebar_shortcuts = []
+    for shortcut in [
+        "home",
+        "pageindex",
+        "changelog",
+        "createpage",
     ]:
-        _update_preference(checkbox.upper(), form.get(checkbox, "False"))
+        if form.get("sidebar_shortcut_" + shortcut, "False") == "True":
+            sidebar_shortcuts.append(shortcut)
+    _update_preference("SIDEBAR_SHORTCUTS", " ".join(sidebar_shortcuts))
 
     if not re.match(r"^(|\d+)$", form.get("sidebar_menutree_maxdepth", "")):
         toast(

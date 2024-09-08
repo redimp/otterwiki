@@ -50,10 +50,7 @@ app.config.update(
     SIDEBAR_CUSTOM_MENU="",
     COMMIT_MESSAGE="REQUIRED", # OPTIONAL
     GIT_WEB_SERVER=False,
-    SIDEBAR_SHORTCUT_HOME=True,
-    SIDEBAR_SHORTCUT_PAGE_INDEX=True,
-    SIDEBAR_SHORTCUT_CREATE_PAGE=True,
-    SIDEBAR_SHORTCUT_CHANGELOG=False,
+    SIDEBAR_SHORTCUTS="home pageindex createpage",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 

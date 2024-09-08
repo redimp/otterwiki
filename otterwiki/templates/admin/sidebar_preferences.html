@@ -11,14 +11,14 @@
 Shortcuts not listed in the sidebar are available via the <span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span> Menu.
 </div>
 {% for name, description in [
-    ("HOME", '<span class="btn btn-square btn-sm"><i class="fas fa-home"></i></span> Home'),
-    ("PAGE_INDEX", '<span class="btn btn-square btn-sm"><i class="fas fa-list"></i></span> A - Z'),
-    ("CHANGELOG", '<span class="btn btn-square btn-sm"><i class="fas fa-history"></i></span> Changelog'),
-    ("CREATE_PAGE", '<span class="btn btn-square btn-sm"><i class="far fa-file"></i></span> Create Page'),
+    ("home", '<span class="btn btn-square btn-sm"><i class="fas fa-home"></i></span> Home'),
+    ("pageindex", '<span class="btn btn-square btn-sm"><i class="fas fa-list"></i></span> A - Z'),
+    ("changelog", '<span class="btn btn-square btn-sm"><i class="fas fa-history"></i></span> Changelog'),
+    ("createpage", '<span class="btn btn-square btn-sm"><i class="far fa-file"></i></span> Create Page'),
 ] %}
   <div class="form-group">
     <div class="custom-checkbox">
-        <input {%if config["SIDEBAR_SHORTCUT_" + name] %}checked=checked{% endif %} type="checkbox" id="shortcut_{{name|lower}}" name="sidebar_shortcut_{{name|lower}}" value="True">
+        <input {%if name in config.SIDEBAR_SHORTCUTS.lower().split() %}checked=checked{% endif %} type="checkbox" id="shortcut_{{name|lower}}" name="sidebar_shortcut_{{name|lower}}" value="True">
         <label for="shortcut_{{name|lower}}">{{description|safe}}</tt></label>
     </div>
   </div>
