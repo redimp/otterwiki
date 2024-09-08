@@ -740,11 +740,11 @@ class Page:
             if row[0] != last:
                 oddeven = "odd" if oddeven == "even" else "even"
                 fdata.append(
-                    (row[0], row[1], row[2], int(row[3]), line, oddeven)
+                    (row[0], row[1], row[2], int(row[3]), line, f"chunk-start chunk-start-{oddeven}", row[0])
                 )
                 last = row[0]
             else:
-                fdata.append(("", "", "", int(row[3]), line, oddeven))
+                fdata.append(("", "", "", int(row[3]), line, oddeven, row[0]))
         menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
         return render_template(
             "blame.html",

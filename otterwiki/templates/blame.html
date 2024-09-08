@@ -4,6 +4,7 @@
 {{ super() }}
 <meta name="robots" content="noindex, nofollow">
 {% endblock %}
+{% block extra_nav %}{% endblock %}
 {% block content %}
 <div class="w-full mw-full p-0 m-0 clearfix">
     <h2>Blame {#{pagename}#}</h2>
@@ -14,8 +15,8 @@
     <td class="min">{% if line[0] %}<a href="{{ url_for("show_commit", revision=line[0]) }}" class="btn revision-small">{{line[0]}}</a>{% endif %}</td>
     <td class="min" style="white-space:nowrap">{{line[1]}}</td>
     <td class="min" style="white-space:nowrap">{% if line[2] %}<a href="{{ url_for("pageview", path=pagepath, revision=line[0]) }}">{{line[2]|format_datetime}}</a>{% endif %}</td>
-    <td class="tt min linenumber">{{line[3]}}</td>
-    <td class="tt"><div class="highlight">{{line[4]|safe}}</div></td>
+    <td class="tt min linenumber" style="border-left: 2px solid #{{line[6]}};">{{line[3]}}</td>
+    <td class="tt" style="border-right: 2px solid #{{line[6]}}; border-left: 2px solid #{{line[6]}};"><div class="highlight">{{line[4]|safe}}</div></td>
 </tr>
 {%- endfor %}{# l in lines #}
 </table>

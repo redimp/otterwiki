@@ -43,6 +43,7 @@ tr.added {
 
 table .min {
     width: 1%;
+    padding-right: 0.4rem;
 }
 table .linenumber {
     text-align: right;
@@ -53,24 +54,23 @@ table.blame {
     overflow-x: auto;
     width: 100%;
 }
+
 table.blame td {
-    padding: 0.1rem 0.5rem;
-    /*border: 1px solid black;*/
-}
-table.blame .tt {
-    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    vertical-align: top;
 }
 
-table.blame tr.odd {
-    background-color: rgba(0, 0, 0, 0.1);
+table.blame .tt {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    white-space: pre-wrap;
+    padding-left: 1rem;
 }
 
 table.compact td {
     padding: 0.5rem 0.2rem;
 }
 
-.dark-mode table.blame tr.odd {
-    background-color: rgba(0, 0, 0, 0.3);
+table.blame tr.chunk-start > td {
+    padding-top: 0.2rem;
 }
 
 .text-match {
