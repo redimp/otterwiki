@@ -233,7 +233,7 @@ class OtterwikiRenderer:
 
         # clean magicword out of toc
         toc = [
-            (a, b.replace(cursormagicword, ""), c, d, e)
+            (a, b.replace(cursormagicword, ""), c, d.replace(cursormagicword, ""), e)
             for (a, b, c, d, e) in toc
         ]
 
