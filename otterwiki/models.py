@@ -24,7 +24,7 @@ class TimeStamp(db.types.TypeDecorator):
 
 class Preferences(db.Model):
     name = db.Column(db.String(256), primary_key=True)
-    value = db.Column(db.String(256))
+    value = db.Column(db.Text)
 
     def __str__(self):
         return '{}: {}'.format(self.name, self.value)

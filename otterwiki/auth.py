@@ -44,7 +44,7 @@ class SimpleAuth:
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(128))
         email = db.Column(db.String(128), index=True, unique=True)
-        password_hash = db.Column(db.String(128))
+        password_hash = db.Column(db.String(512))
         first_seen = db.Column(TimeStamp())
         last_seen = db.Column(TimeStamp())
         is_approved = db.Column(db.Boolean(), default=False)
@@ -59,20 +59,8 @@ class SimpleAuth:
 
     def __init__(self):
         with app.app_context():
-            self._db_migrate()
             # create tables
             db.create_all()
-
-    def _db_migrate(self):
-        from sqlalchemy.exc import OperationalError
-        with db.engine.begin() as conn:
-            for column in ['email_confirmed', 'allow_read', 'allow_write', 'allow_upload']:
-                try:
-                    sqlc = db.text("ALTER TABLE user ADD COLUMN {} BOOLEAN;".format(column))
-                    r = conn.execute(sqlc)
-                    app.logger.warning("_db_migrate: Altered table 'user' added '{}'".format(column))
-                except OperationalError:
-                    pass
 
     def user_loader(self, id):
         return self.User.query.filter_by(id=int(id)).first()
