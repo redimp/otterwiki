@@ -94,12 +94,14 @@ def handle_mail_preferences(form):
 
 
 def handle_sidebar_preferences(form):
-    custom_menu_js = json.dumps(
-        [   x
+    custom_menu_js = json.dumps([
+            {
+                "link": x[0],
+                "title": x[1],
+            }
             for x in list(zip(form.getlist("link"), form.getlist("title")))
             if x[0].strip() or x[1].strip()
-        ]
-    )
+    ])
 
     _update_preference(
         "SIDEBAR_CUSTOM_MENU", custom_menu_js

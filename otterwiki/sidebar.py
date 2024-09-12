@@ -32,21 +32,21 @@ class SidebarMenu:
                 f"Error decoding SIDEBAR_CUSTOM_MENU={app.config.get('SIDEBAR_CUSTOM_MENU','')}: {e}"
             )
             raw_config = []
+        # generate both config and menu from raw_config
         for entry in raw_config:
-            if len(entry) != 2: continue # FIXME: print warning
-            if empty(entry[0]) and empty(entry[1]): continue
-            self.config.append(entry)
-        for entry in self.config:
-            link, title = entry
+            if not entry.get("title", None) and not entry.get("link", None):
+                continue
+            link, title = entry.get("link",""), entry.get("title", "")
+            self.config.append({"link": link, "title": title})
             if empty(link):
                 if empty(title): continue
-                self.menu.append([url_for("view", path=title), title])
+                self.menu.append({"link":url_for("view", path=title), "title": title})
             elif self.URI_SIMPLE.match(link):
                 if empty(title): title = link
-                self.menu.append([link, title])
+                self.menu.append({"link": link, "title": title})
             else:
                 if empty(title): title = link
-                self.menu.append([url_for("view", path=link), title])
+                self.menu.append({"link": url_for("view", path=link), "title": title})
 
     def query(self):
         return self.menu

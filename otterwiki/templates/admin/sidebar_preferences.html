@@ -38,13 +38,13 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
         <th>&nbsp;</th>
     </thead>
     <tbody id="custom-page-index">
-{% for link,title in custom_menu + [["",""]] %}
+{% for entry in custom_menu + [{"link":"","title":""}] %}
         <tr>
             <td class="pr-10">
                 <span class="btn btn-square btn-sm btn-handle"><i class="fas fa-arrows-alt"></i></span>
             </td>
-            <td><input type="text" name="link" placeholder="..." class="w-200 form-control" value="{{link}}"/></td>
-            <td><input type="text" name="title" placeholder="" class="w-200 form-control"/ value="{{title}}"> </td>
+            <td><input type="text" name="link" placeholder="..." class="w-200 form-control" value="{{entry.link}}"/></td>
+            <td><input type="text" name="title" placeholder="" class="w-200 form-control"/ value="{{entry.title}}"> </td>
             <td class="pl-10">
                 <span class="btn btn-square btn-sm" onclick="cloneRow(this);"><i class="fas fa-clone"></i></span>
                 <span class="btn btn-square btn-sm btn-danger" onclick="deleteRow(this);"><i class="far fa-trash-alt"></i></span>
@@ -135,7 +135,7 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
         var tbody = document.getElementById('custom-page-index');
         var table = tbody.closest("table");
         var lastrow = document.getElementById('custom-page-index').lastElementChild;
-        if (lastrow.querySelector("input[name='title']").value == "")
+        if (lastrow.querySelector("input[name='link']").value == "")
             row = lastrow;
         else
             row = cloneRow(null, true);
