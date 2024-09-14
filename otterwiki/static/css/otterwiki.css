@@ -86,6 +86,12 @@ pre,
     background-color: #263238;
 }
 
+.dark-mode pre.mermaid,
+pre.mermaid {
+    background-color: transparent;
+}
+
+
 .quote-alert {
     border-left: .3rem solid;
     padding: 0.5rem 2rem;

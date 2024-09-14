@@ -469,3 +469,15 @@ def test_mistunePluginAlerts():
         m = mistunePluginAlerts.ALERT_BLOCK.search(md)
         assert m is not None
         assert m.group(1) == type
+
+
+def test_mermaid():
+    md = """
+```mermaid
+graph TD;
+    A-->B;
+```
+"""
+    html, _ = render.markdown(md)
+    assert """<pre class="mermaid">graph TD;
+    A-->B;</pre>""" in html

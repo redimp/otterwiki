@@ -101,6 +101,7 @@ def help(topic=None):
             'Mathjax',
             'Footnotes',
             'Blocks',
+            'Diagrams',
             ]
         ]
         return render_template("help_syntax.html", toc=toc, in_help=True)

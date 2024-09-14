@@ -144,6 +144,13 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             html = "".join(
                 ["\\[{}\\]".format(line) for line in code.strip().splitlines()]
             )
+        elif info == "mermaid":
+            html = "".join(
+                ["\\[{}\\]".format(line) for line in code.strip().splitlines()]
+            )
+            return '\n<pre class="mermaid">{}</pre>\n'.format(
+                code.strip()
+            )
         else:
             html = prefix + pygments_render(code, info)
         html = showmagicword(cursorline, html)

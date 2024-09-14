@@ -423,7 +423,10 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
             })
             .then(function () {
                 cursor = document.getElementById("otterwiki_cursor");
+                // update MathJax
                 MathJax.typeset();
+                // update Mermaid
+                mermaid.contentLoaded();
                 if (cursor) {
                     cursor.scrollIntoView({
                         behavior: 'instant',
