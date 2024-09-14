@@ -51,6 +51,7 @@ app.config.update(
     COMMIT_MESSAGE="REQUIRED", # OPTIONAL
     GIT_WEB_SERVER=False,
     SIDEBAR_SHORTCUTS="home pageindex createpage",
+    ROBOTS_TXT="allow",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 

@@ -95,6 +95,36 @@ def test_update_preferences_logo_and_icon(app_with_user, admin_client):
     assert f"<link rel=\"icon\" href=\"{new_icon}\">" in html
     assert f"<img src=\"{new_logo}\" alt=\"\" id=\"site_logo\"/>" in html
 
+
+def test_update_preferences_robotstxt(app_with_user, admin_client):
+    # allow
+    rv = admin_client.post(
+            "/-/admin",
+            data = {
+                "robots_txt" : "allow",
+                "update_preferences" : "true",
+            },
+            follow_redirects=True,
+        )
+    assert rv.status_code == 200
+    assert app_with_user.config['ROBOTS_TXT'] == "allow"
+    rv = admin_client.get("/robots.txt")
+    assert "User-agent: *\nAllow: /" in rv.data.decode()
+    # disallow
+    rv = admin_client.post(
+            "/-/admin",
+            data = {
+                "robots_txt" : "disallow",
+                "update_preferences" : "true",
+            },
+            follow_redirects=True,
+        )
+    assert rv.status_code == 200
+    assert app_with_user.config['ROBOTS_TXT'] == "disallow"
+    rv = admin_client.get("/robots.txt")
+    assert "User-agent: *\nDisallow: /" in rv.data.decode()
+
+
 def test_update_mail_preferences(app_with_user, admin_client):
     new_sender = "mail@example.com"
     new_server = "mail.example.com"

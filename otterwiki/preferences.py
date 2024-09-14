@@ -144,7 +144,7 @@ def handle_app_preferences(form):
         "site_logo",
         "site_description",
         "site_icon",
-        "commit_message",
+        "robots_txt"
     ]:
         _update_preference(name.upper(), form.get(name, ""))
     for checkbox in [

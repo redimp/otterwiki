@@ -31,9 +31,14 @@ def index():
 
 @app.route("/robots.txt")
 def robotstxt():
+    if app.config["ROBOTS_TXT"] == "allow":
+        txt = "User-agent: *\nAllow: /"
+    elif app.config["ROBOTS_TXT"] == "disallow":
+        txt = "User-agent: *\nDisallow: /"
+    else: # this a fallback, in case of a typo: disallow
+        txt = "User-agent: *\nDisallow: /"
     response = make_response(
-        """User-agent: *
-Allow: /""",
+        txt,
         200,
     )
     response.mimetype = "text/plain"
