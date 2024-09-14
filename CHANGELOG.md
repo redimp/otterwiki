@@ -6,24 +6,50 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.6.0](https://github.com/redimp/otterwiki/releases/tag/v2.6.0) - 2024-09-15
+
+<small>[Compare with v2.5.2](https://github.com/redimp/otterwiki/compare/v2.5.2...v2.6.0)</small>
+
+### Features
+
+- Added Custom Sidebar Menu, see #125 ([be3c4a5](https://github.com/redimp/otterwiki/commit/be3c4a59ba0f5ae06d7ef1a02b3a7feb4b6f5207)).
+- Sidebar shortcuts are configurable, see #125. ([d2a617e](https://github.com/redimp/otterwiki/commit/d2a617e2607d5657393d77fe10dab7e2ab279bc6)).
+- Added support for Mermaid diagrams, see #138. ([ed0e06f](https://github.com/redimp/otterwiki/commit/ed0e06fe0b87034db4b1400138f87acbacef7779)).
+- Alerts are now supported by the markdown renderer ([1a88ab8](https://github.com/redimp/otterwiki/commit/1a88ab89b2a235502bcb7d210dc80c1e1fb5f251)).
+- Configure in the preferences whether robots are allowed to crawl the wiki, see #133. ([99862d](https://github.com/redimp/otterwiki/commit/99862da37c06225e321101b6a67748039e99b6b4)).
+- Redesigned the admin interface. ([d2a617e](https://github.com/redimp/otterwiki/commit/d2a617e2607d5657393d77fe10dab7e2ab279bc6)).
+- Page/history and Page/blame make better use of space. Improved blame display. ([20a33d2](https://github.com/redimp/otterwiki/commit/20a33d2dacbcdd69c91c67b89605d95820737881)).
+
+### Bug Fixes
+
+- removed obsolete `_db_migrate()` function from `SimpleAuth`. ([f89829d](https://github.com/redimp/otterwiki/commit/f89829d9af5dba339b437bc343cb02b36096dc6e)).
+- edit/preview: remove misplaced cursormagicword from toc ([1a91c50](https://github.com/redimp/otterwiki/commit/1a91c5030ebaf715f9f4a3a8e742a241e039f31e)).
+- inconsistent font size in special blocks, see #136 ([44a308b](https://github.com/redimp/otterwiki/commit/44a308bd6e5593cb268c26b284d9edc3523b9351)).
+- QoL Changelog uses full column and displays the menutree. ([2e9927d](https://github.com/redimp/otterwiki/commit/2e9927d1a21baaee16f2a3a329bb6a7525142c61)).
+- added meta robots: noindex, nofollow to changelog, forms and page revisions ([0f95755](https://github.com/redimp/otterwiki/commit/0f95755e488d15026c24819c5a609fc4c0397cc9)).
+
+### Code Refactoring
+
+- custom_menu list of dicts instead of list of lists ([3cb2021](https://github.com/redimp/otterwiki/commit/3cb20214db09dcc2cc3b46b53398166b466cc692)).
+
 ## [v2.5.2](https://github.com/redimp/otterwiki/releases/tag/v2.5.2) - 2024-08-15
 
 <small>[Compare with v2.5.1](https://github.com/redimp/otterwiki/compare/v2.5.1...v2.5.2)</small>
 
 ### Features
 
-- Quality of life improvements for Changelog, History and Diff views ([d73aefe](https://github.com/redimp/otterwiki/commit/d73aefe0f09aaf4a094c3711e19ffc8107796572) and [0f20d98](https://github.com/redimp/otterwiki/commit/0f20d98d99f798897742ca423eaa92dff18c8039) by Ralph Thesen).
+- Quality of life improvements for Changelog, History and Diff views ([d73aefe](https://github.com/redimp/otterwiki/commit/d73aefe0f09aaf4a094c3711e19ffc8107796572) and [0f20d98](https://github.com/redimp/otterwiki/commit/0f20d98d99f798897742ca423eaa92dff18c8039)).
 
 ### Bug Fixes
 
-- Removed the necessity that a page exists to get an attachment ([455497e](https://github.com/redimp/otterwiki/commit/455497e03cf8c805e9e27bbd3e4e77caefe57ca7) by Ralph Thesen).
-- Remove current page from list of prefixes when renaming ([af5bbd2](https://github.com/redimp/otterwiki/commit/af5bbd2943f03f55be35262e3e937069b04f00ef) by Ralph Thesen).
-- Hitting [ENTER] submits the form in create and rename. ([a6cde65](https://github.com/redimp/otterwiki/commit/a6cde65e808ab03eb2fda29530c6def1f89c75ce) by Ralph Thesen).
+- Removed the necessity that a page exists to get an attachment ([455497e](https://github.com/redimp/otterwiki/commit/455497e03cf8c805e9e27bbd3e4e77caefe57ca7)).
+- Remove current page from list of prefixes when renaming ([af5bbd2](https://github.com/redimp/otterwiki/commit/af5bbd2943f03f55be35262e3e937069b04f00ef)).
+- Hitting [ENTER] submits the form in create and rename. ([a6cde65](https://github.com/redimp/otterwiki/commit/a6cde65e808ab03eb2fda29530c6def1f89c75ce)).
 
 ### Code Refactoring
 
-- menutree does not depend on pagepath being set ([0136a83](https://github.com/redimp/otterwiki/commit/0136a83bb9c1396f1249dc0876b2d4bf0f389656) by Ralph Thesen).
-- removed unused filename parameter from diff() ([008a562](https://github.com/redimp/otterwiki/commit/008a5625dbca8566b5f16408eba4aa97862a91a1) by Ralph Thesen).
+- menutree does not depend on pagepath being set ([0136a83](https://github.com/redimp/otterwiki/commit/0136a83bb9c1396f1249dc0876b2d4bf0f389656)).
+- removed unused filename parameter from diff() ([008a562](https://github.com/redimp/otterwiki/commit/008a5625dbca8566b5f16408eba4aa97862a91a1)).
 
 ## [v2.5.1](https://github.com/redimp/otterwiki/releases/tag/v2.5.1) - 2024-08-06
 
