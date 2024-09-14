@@ -30,9 +30,9 @@
     <div class="form-group">
       <div class="custom-checkbox">
         <input {%if config.GIT_WEB_SERVER %}checked=checked{% endif %} type="checkbox" id="git_web_server" name="git_web_server" value="True">
-        <label for="git_web_server">Enable Git Webserver <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
+        <label for="git_web_server">Enable Git Web server <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
         <div class="mt-5">
-            Enable this to allow users with the permission to READ to clone and pull the wiki content via git and users with UPLOAD/Attachment management permissions to push content.
+            Enable this to allow users with the permission to READ to clone and pull the wiki content via git and users with UPLOAD/Attachment management permissions to push content. When enabled the URL <code>{{url_for("dotgit", _external=True)}}</code> will be displayed in the users settings.
         </div>
       </div>
     </div>
