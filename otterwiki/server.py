@@ -74,7 +74,7 @@ if not app.config["TESTING"] and not app.config["DEBUG"]:
 
 # ensure SECRET_KEY is set
 if len(app.config["SECRET_KEY"])<16 or app.config["SECRET_KEY"] == "CHANGE ME":
-    fatal_error("Please confire a uniq random SECRET_KET of decent length")
+    fatal_error("Please configure a random SECRET_KEY with a length of at least 16 characters.")
 
 # setup storage
 if app.config["REPOSITORY"] is None:

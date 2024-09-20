@@ -7,7 +7,7 @@ __all__ = ["fatal_error"]
 
 
 def fatal_error(msg):
-    print("Error: {}".format(msg), file=sys.stderr)
+    print("\nError: {}\n".format(msg), file=sys.stderr)
     sys.exit(1)
 
 
