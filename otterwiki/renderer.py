@@ -148,6 +148,8 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             html = "".join(
                 ["\\[{}\\]".format(line) for line in code.strip().splitlines()]
             )
+            # replace \n with <br/> for convinient diagram writing (and match the github syntax)
+            code = code.replace("\\n","<br/>")
             return '\n<pre class="mermaid">{}</pre>\n'.format(
                 code.strip()
             )
