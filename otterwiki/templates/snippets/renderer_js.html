@@ -3,11 +3,13 @@
 <script id="MathJax-script" async src="{{ url_for("static", filename="mathjax/tex-chtml.js") }}"></script>
 <script src="{{ url_for("static", filename="js/mermaid@11.2.0.min.js") }}"></script>
 <script type="text/javascript">
-    mermaid.initialize({
-{%- if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}
-      theme: 'dark',
-{%- else %}
-      theme: 'neutral',
-{%- endif %}
+    document.addEventListener("DOMContentLoaded", function(event) {
+        let theme = 'neutral';
+        if (document.querySelector("body").classList.contains("dark-mode")) {
+            theme = 'dark';
+        }
+        mermaid.initialize({
+            theme: theme,
+        });
     });
 </script>
