@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.6.1](https://github.com/redimp/otterwiki/releases/tag/v2.6.1) - 2024-09-29
+
+<small>[Compare with v2.6.0](https://github.com/redimp/otterwiki/compare/v2.6.0...v2.6.1)</small>
+
+### Design/Behaviour changes
+
+- Disabled auto-scaling ([003975a](https://github.com/redimp/otterwiki/commit/003975a73f6bfabd55e24736f1be6e580ffd49d1)).
+
+### Features
+
+- In mermaid blocks replace `\n` with `<br/>` ([0d52932](https://github.com/redimp/otterwiki/commit/0d5293273472526742a5e61f4efb06972b3146a3)).
+
+### Bug Fixes
+
+- initialize mermaid after DOM being ready ([1b5187d](https://github.com/redimp/otterwiki/commit/1b5187dcc374283660d0f08d158d4d8c22b44a97)).
+- typo, more visibility for fatal errors, no endless failure loop ([acf7b3b](https://github.com/redimp/otterwiki/commit/acf7b3b29e5c2d716e640933a9f327e46b9d40e1)).
+
 ## [v2.6.0](https://github.com/redimp/otterwiki/releases/tag/v2.6.0) - 2024-09-15
 
 <small>[Compare with v2.5.2](https://github.com/redimp/otterwiki/compare/v2.5.2...v2.6.0)</small>
