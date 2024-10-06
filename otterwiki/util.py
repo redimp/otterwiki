@@ -155,6 +155,7 @@ def patchset2filedict(patchset):
         " ": "",
         "+": "added",
         "-": "removed",
+        "\\": "",  # line.line_type='\\' line.value=' No newline at end of file\n'
     }
     files = {}
     for file in patchset:
@@ -169,6 +170,7 @@ def patchset2filedict(patchset):
                 }
             )
             for line in hunk:
+                print(f"{line=} {line.line_type=} {line.value=}")
                 line_data.append(
                     {
                         "source": line.source_line_no or "",
