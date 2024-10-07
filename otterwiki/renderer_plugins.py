@@ -6,6 +6,7 @@ import re
 
 from mistune.inline_parser import LINK_LABEL
 from mistune.util import unikey, ESCAPE_TEXT
+import urllib.parse
 
 __all__ = ['plugin_task_lists', 'plugin_footnotes']
 
@@ -559,6 +560,68 @@ class mistunePluginAlerts:
             )
 
 
+class mistunePluginWikiLink:
+    """This plugin preprocesses links in the [[WikiLink]] style."""
+
+    PIPE_REPLACEMENT="\ufeff"
+
+    WIKI_LINK = (
+        r"\[\[(([^|\]#]+)(?:#[^\]]*)?(?:(\|)([^\]]+))?)\]\]"
+    )
+    WIKI_LINK_RE = re.compile(WIKI_LINK)
+    WIKI_LINK_MOD = (
+        r"\[\[(([^"+PIPE_REPLACEMENT+r"\]#]+)(?:#[^\]]*)?(?:("+PIPE_REPLACEMENT+r")([^\]]+))?)\]\]"
+    )
+    WIKI_LINK_MOD_RE = re.compile(WIKI_LINK_MOD)
+
+    def parse_wikilink(self, inline, m, state):
+        title, link = m.group(2), m.group(4) or ""
+
+        if link == '':
+            link = title
+        if not link.startswith("/"):
+            link = f"/{link}"
+        # quote link (and just in case someone encoded already: unquote)
+        link = urllib.parse.quote(urllib.parse.unquote(link), safe="/#")
+
+        return "wikilink", inline.render(title, state), link
+
+    def render_html_wikilink(self, text, link):
+        return '<a href="'+ link +'">' + text + '</a>'
+
+    def replace_wikilinks(self, match):
+        if match.group(3) and len(match.group(3)):
+            return "[["+match.group(2)+"%"+match.group(4)+"]]"
+        return "[["+match.group(2)+"]]"
+
+    def before_parse(self, md, s, state):
+        def replace(match):
+            if match.group(3) and len(match.group(3)):
+                return "[["+match.group(2)+self.PIPE_REPLACEMENT+match.group(4)+"]]"
+            return "[["+match.group(2)+"]]"
+        s = self.WIKI_LINK_RE.sub(replace, s)
+        return s, state
+
+    def after_render(self, md, s, state):
+        def replace(match):
+            if match.group(3) and len(match.group(3)):
+                return "[["+match.group(2)+"|"+match.group(4)+"]]"
+            return "[["+match.group(2)+"]]"
+        s = self.WIKI_LINK_MOD_RE.sub(replace, s)
+        return s
+
+    def __call__(self, md):
+        md.before_parse_hooks.append(self.before_parse)
+        md.after_render_hooks.append(self.after_render)
+
+        md.inline.register_rule('wikilink', self.WIKI_LINK_MOD, self.parse_wikilink)
+
+        md.inline.rules.append('wikilink')
+
+        if md.renderer.NAME == 'html':
+            md.renderer.register('wikilink', self.render_html_wikilink)
+
+
 plugin_task_lists = mistunePluginTaskLists()
 plugin_footnotes = mistunePluginFootnotes()
 plugin_mark = mistunePluginMark()
@@ -567,3 +630,4 @@ plugin_spoiler = mistunePluginSpoiler()
 plugin_fold = mistunePluginFold()
 plugin_math = mistunePluginMath()
 plugin_alerts = mistunePluginAlerts()
+plugin_wikilink = mistunePluginWikiLink()

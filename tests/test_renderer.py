@@ -2,7 +2,6 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import pytest
-from otterwiki.plugins import WikiLinkPlugin
 from otterwiki.renderer import render, clean_html
 
 
@@ -122,38 +121,10 @@ def test_wiki_link_in_table(req_ctx):
 [[Paul|people/Paul]]
 """
     html, _ = render.markdown(text)
+    print(html)
     assert '<td><a href="/people/John">people/John</a></td>' in html
     assert '<a href="/people/Paul">Paul</a>' in html
     assert '<td><a href="/people/Mary">Mary</a></td>' in html
-
-
-def test_preprocess_wiki_links():
-    plugin = WikiLinkPlugin()
-    md = plugin.renderer_markdown_preprocess(
-        """
-         [[Page]]
-         [[Title|Link]]
-         [[Text with space|Link with space]]
-         """
-    )
-    assert '[Page](/Page)' in md
-    assert '[Title](/Link)' in md
-    assert '[Page](/Page)' == plugin.renderer_markdown_preprocess("[[Page]]")
-    assert '[Title](/Link)' == plugin.renderer_markdown_preprocess("[[Title|Link]]")
-    assert (
-        '[Text with space](/Link%20with%20space)'
-        == plugin.renderer_markdown_preprocess("[[Text with space|Link with space]]")
-    )
-    assert (
-        '[Text with space](/Link%20with%20space)'
-        == plugin.renderer_markdown_preprocess(
-            "[[Text with space|Link%20with%20space]]"
-        )
-    )
-    # make sure fragment identifier of the URL survived the parser
-    assert '[Random#Title](/Random#Title)' == plugin.renderer_markdown_preprocess(
-        "[[Random#Title]]"
-    )
 
 
 def test_table_align():

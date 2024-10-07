@@ -40,39 +40,6 @@ class OtterWikiPluginSpec:
         """
 
 
-class WikiLinkPlugin:
-    """This plugin preprocesses links in the [[WikiLink]] style."""
-
-    wiki_link_outer = re.compile(
-        r'\[\['
-        r'([^\]]+)'
-        r'\]\](?!\])'  # [[  # ...  # ]]
-    )
-    wiki_link_inner = re.compile(r'([^\|]+)\|?(.*)')
-
-    @hookimpl
-    def renderer_markdown_preprocess(self, md):
-        """
-        Will turn
-            [[Page]]
-            [[Title|Link]]
-        into
-            [Page](/Page)
-            [Title](/Link)
-        """
-        for m in self.wiki_link_outer.finditer(md):
-            title, link = self.wiki_link_inner.findall(m.group(1))[0]
-            if link == '':
-                link = title
-            if not link.startswith("/"):
-                link = f"/{link}"
-            # quote link (and just in case someone encoded already: unquote)
-            link = urllib.parse.quote(urllib.parse.unquote(link), safe="/#")
-            md = md.replace(m.group(0), f'[{title}]({link})')
-
-        return md
-
-
 # pluggy doesn't by default handle chaining the output of one plugin into
 # another, so this is a small utility function to do this.
 # this utility function will chain the result of each hook into the first
@@ -88,5 +55,4 @@ def chain_hooks(hook_name, value, *args, **kwargs):
 # addition to the utility function above.
 plugin_manager = pluggy.PluginManager("otterwiki")
 plugin_manager.add_hookspecs(OtterWikiPluginSpec)
-plugin_manager.register(WikiLinkPlugin())
 plugin_manager.load_setuptools_entrypoints("otterwiki")
