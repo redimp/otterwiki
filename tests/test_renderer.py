@@ -119,12 +119,26 @@ def test_wiki_link_in_table(req_ctx):
 | Mary |10/08/2001 | [[Mary|people/Mary]] |
 
 [[Paul|people/Paul]]
+`[[Peter|Petra]]`
+
 """
     html, _ = render.markdown(text)
-    print(html)
     assert '<td><a href="/people/John">people/John</a></td>' in html
     assert '<a href="/people/Paul">Paul</a>' in html
     assert '<td><a href="/people/Mary">Mary</a></td>' in html
+
+def test_wiki_link_in_code(req_ctx):
+    text = """`[[people/John]]`
+
+```
+[[Mary|people/Mary]]
+```
+"""
+    html, _ = render.markdown(text)
+    assert '<a href="/people/John">people/John</a>' not in html
+    assert '<a href="/people/Mary">Mary</a>' not in html
+    assert '[[people/John]]' in html
+    assert '[[Mary|people/Mary]]' in html
 
 
 def test_table_align():
