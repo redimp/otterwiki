@@ -10,7 +10,7 @@
 {{ heading("Emphasis") }}
 <div class="row mb-10">
 <div class="col-md-6 col-sm-12">
-<pre>**<strong>bold</strong>**
+<pre class="block-compact">**<strong>bold</strong>**
 *<em>italics</em>*
 ~~<strike>strikethrough</strike>~~
 ==<mark>mark</mark>==
@@ -26,7 +26,7 @@
 You can use backslash escapes to generate literal characters that are used for formatting otherwise, e.g.
 <div class="row">
 <div class="col-md-6 col-sm-12">
-<pre>
+<pre class="block-compact">
 \*literal asterisks\*
 </pre>
 </div>
@@ -57,7 +57,7 @@ You can use backslash escapes to generate literal characters that are used for f
 {{ heading("Lists") }}
 <div class="row">
 <div class="col-md-6 col-sm-12">
-<pre>- Generic list item
+<pre class="block-compact">- Generic list item
 - Generic list item
 - Generic list item</pre>
 </div>
@@ -72,7 +72,7 @@ You can use backslash escapes to generate literal characters that are used for f
 <br/>
 <div class="row">
 <div class="col-md-6 col-sm-12">
-<pre>1. Numbered list item
+<pre class="block-compact">1. Numbered list item
 2. Numbered list item
 3. Numbered list item</pre>
 </div>
@@ -88,7 +88,7 @@ You can use backslash escapes to generate literal characters that are used for f
 {{ heading("Links") }}
 <div class="row">
 <div class="col-md-6 col-sm-12">
-<pre class="text-wrap">[[WikiPage]]</pre>
+<pre class="block-compact text-wrap">[[WikiPage]]</pre>
 </div>
 <div class="col-md-6 col-sm-12 pl-5">
 <a href="#">WikiPage</a>
@@ -97,7 +97,7 @@ You can use backslash escapes to generate literal characters that are used for f
 
 <div class="row">
 <div class="col-md-6 col-sm-12">
-<pre class="text-wrap">[[Text to display|WikiPage]]</pre>
+<pre class="block-compact text-wrap">[[Text to display|WikiPage]]</pre>
 </div>
 <div class="col-md-6 col-sm-12 pl-5">
   <a href="#">Text to display</a>
@@ -106,7 +106,7 @@ You can use backslash escapes to generate literal characters that are used for f
 
 <div class="row">
 <div class="col-md-6 col-sm-12">
-<pre class="text-wrap">http://www.example.com</pre>
+<pre class="block-compact text-wrap">http://www.example.com</pre>
 </div>
 <div class="col-md-6 col-sm-12 pl-5">
   <a href="#">http://example.com</a>
@@ -115,7 +115,7 @@ You can use backslash escapes to generate literal characters that are used for f
 
 <div class="row">
 <div class="col-md-6 col-sm-12">
-<pre class="text-wrap">[Link with text](http://example.com)</pre>
+<pre class="block-compact text-wrap">[Link with text](http://example.com)</pre>
 </div>
 <div class="col-md-6 col-sm-12 pl-5">
   <a href="#">Link with text</a>
@@ -125,7 +125,7 @@ You can use backslash escapes to generate literal characters that are used for f
 {{ heading("Quotes") }}
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-<pre>&gt; This is a quote.
+<pre class="block-compact">&gt; This is a quote.
 &gt; It can span multiple lines!
 &gt;&gt; And multiple levels.
 &gt;&gt; *<em>With markdown syntax.</em>*</pre>
@@ -142,14 +142,14 @@ It can span multiple lines!</p>
 
 {{ heading("Images") }}
 <p>You can copy n paste images directly into the editor, they will be uploaded as attachments.</p>
-<pre>![](http://www.example.com/image.jpg)</pre>
+<pre class="block-compact">![](http://www.example.com/image.jpg)</pre>
 <p>Check the attachments of a page, there are links for copy'n'paste.</p>
 
 {{ heading("Tables") }}
 
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-<pre>| Column 1 | Column 2 | Column 3 |
+<pre class="block-compact">| Column 1 | Column 2 | Column 3 |
 | -------- | -------- | -------- |
 | John     | Doe      | Peach    |
 | Mary     | Smith    | Banana   |</pre>
@@ -182,7 +182,7 @@ It can span multiple lines!</p>
 
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-<pre class="text-wrap">Inline code `int n = 1` with backticks.</pre></div>
+<pre class="block-compact text-wrap">Inline code `int n = 1` with backticks.</pre></div>
 <div class="col-md-6 col-sm-12 p-5">
 Inline code <code>int n = 1</code> with backticks.
 </div>
@@ -200,13 +200,13 @@ Code Blocks
 
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-<pre>```python
+<pre class="block-compact">```python
 #!/usr/bin/env python
 assert 1 + 1 == 2
 print("Hello World!")```</pre>
 </div>
 <div class="col-md-6 col-sm-12 p-5">
-<div class="highlight"><pre><span></span><span class=".highlight ch">#!/usr/bin/env python</span>
+<div class="highlight"><pre class="block-compact"><span></span><span class=".highlight ch">#!/usr/bin/env python</span>
 <span class=".highlight k">assert</span> <span class=".highlight mi">1</span> <span class=".highlight o">+</span> <span class=".highlight mi">1</span> <span class=".highlight o">==</span> <span class=".highlight mi">2</span>
 <span class=".highlight nb">print</span><span class=".highlight p">(</span><span class=".highlight s2">&quot;Hello World!&quot;</span><span class=".highlight p">)</span>
 </pre></div>
@@ -217,7 +217,7 @@ print("Hello World!")```</pre>
 
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-<pre class="text-wrap">Inline math: `$a^2+b^2=c^2$`</pre></div>
+<pre class="block-compact text-wrap">Inline math: `$a^2+b^2=c^2$`</pre></div>
 <div class="col-md-6 col-sm-12 p-5">
 Inline Math: \(a^2+b^2=c^2\)
 </div>
@@ -225,7 +225,7 @@ Inline Math: \(a^2+b^2=c^2\)
 
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-  <pre>
+  <pre class="block-compact">
 Math block:
 ```math
 a^2+b^2=c^2
@@ -242,7 +242,7 @@ Math block:</br>
 
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-<pre>
+<pre class="block-compact">
 Inline Math: $a^2+b^2=c^2$
 </pre>
 </div>
@@ -252,7 +252,7 @@ Inline Math: \(a^2+b^2=c^2\)
 </div>
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-<pre>
+<pre class="block-compact">
 Equation:
 $$a^2+b^2=c^2$$
 </pre>
@@ -266,7 +266,7 @@ $$a^2+b^2=c^2$$
 
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-<pre>
+<pre class="block-compact">
 Footnote identifiers[^1] are single characters
 or words[^bignote]. And can be referenced
 multiple[^1] times.
@@ -305,7 +305,7 @@ are helpful for structuring content.
 <h4>Fancy blocks</h4>
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-<pre>
+<pre class="block-compact">
 ::: info
 # Head of the block.
 With _formatted_ content.
@@ -322,7 +322,7 @@ Block styles available: <span class="alert alert-primary text-monospace" style="
 <h4>Spoiler blocks</h4>
 <div class="row my-20">
 <div class="col-md-6 col-sm-12">
-<pre>
+<pre class="block-compact">
 &gt;! Spoiler blocks reveal their
 &gt;! content on click on the icon.
 </pre>
@@ -337,7 +337,7 @@ Block styles available: <span class="alert alert-primary text-monospace" style="
 <h4>Folded blocks</h4>
 <div class="row my-20 h-100">
 <div class="col-md-6 col-sm-12">
-<pre>
+<pre class="block-compact">
 &gt;| # Headline is used as summary
 &gt;| with the details folded.
 </pre>
@@ -354,7 +354,7 @@ Headline is used as summary
 <h4>Alerts</h4>
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-<pre>
+<pre class="block-compact">
 > [!NOTE]
 > Useful for highlighting special
 > information in your code.
@@ -371,7 +371,7 @@ Alerts available: <code>[!NOTE]</code>, <code>[!TIP]</code>, <code>[!IMPORTANT]<
 Using <a href="https://mermaid.js.org/">Mermaid</a> you can create diagrams and visualizations in your wiki pages.
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
-<pre>
+<pre class="block-compact">
 ```mermaid
 flowchart LR
   A[An Otter Wiki]-- supports ---Mermaid

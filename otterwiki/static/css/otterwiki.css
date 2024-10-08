@@ -58,10 +58,21 @@ h5:hover a.anchor {
     display: none;
 }
 
+.block-compact {
+    margin-block-start: 0rem !important;
+    margin-block-end: 0rem !important;
+}
+
 /* pre and code */
 
 div.page > div.highlight {
-    margin-bottom: 1rem;
+    margin-block-start: 1rem;
+    margin-block-end: 1rem;
+}
+
+.page pre {
+    margin-block-start: 1rem;
+    margin-block-end: 1rem;
 }
 
 code,
