@@ -465,4 +465,4 @@ graph TD;
 """
     html, _ = render.markdown(md)
     assert """<pre class="mermaid">graph TD;
-    A-->B;</pre>""" in html
+    A-->B;\n</pre>""" in html
