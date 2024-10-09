@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.6.2](https://github.com/redimp/otterwiki/releases/tag/v2.6.2) - 2024-10-10
+
+<small>[Compare with v2.6.1](https://github.com/redimp/otterwiki/compare/v2.6.1...v2.6.2)</small>
+
+### Bug Fixes
+
+- wikilink re-implemented as inline parser not plugin, see #144 ([32299d0](https://github.com/redimp/otterwiki/commit/32299d0d59b7649da27e4093a1b9f4f829989f63)).
+- better margins for tables and pre blocks ([f31e7ef](https://github.com/redimp/otterwiki/commit/f31e7ef856532e915f9bbf04fffb83d6b277a66b)).
+- breadcrumbs in a /-/commit/ uses filepath not pagepath ([6726412](https://github.com/redimp/otterwiki/commit/67264121ab51b83b7e4164b49ba89cd380eae4c6)).
+- diffs on files without a newline at the end are displayed correctly ([561ed88](https://github.com/redimp/otterwiki/commit/561ed88070fe520a0809863fb2c8dd380b80253d)).
+
+### Code Refactoring
+
+- `update_mermaid()` does exactly that. diagrams in documentation as svgs. ([12d3c00](https://github.com/redimp/otterwiki/commit/12d3c00fd71ef5019733d96bb9fadc3fa9042dfe)).
+
 ## [v2.6.1](https://github.com/redimp/otterwiki/releases/tag/v2.6.1) - 2024-09-29
 
 <small>[Compare with v2.6.0](https://github.com/redimp/otterwiki/compare/v2.6.0...v2.6.1)</small>
