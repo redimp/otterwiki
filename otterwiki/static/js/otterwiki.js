@@ -633,6 +633,7 @@ var otterwiki = {
         if (ehm.style.display === "none")
         {
             ehm.style.display = "block";
+            otterwiki.update_mermaid();
         }
         else
         {
@@ -663,6 +664,15 @@ var otterwiki = {
             pagename.value = p + "/" + pagename.value;
         }
         return false;
+    },
+    update_mermaid: function() {
+        if (typeof(mermaid) == 'undefined' || mermaid == null) { return; }
+
+        var mm_diagrams = document.getElementsByClassName('mermaid');
+        for (var i = 0; i < mm_diagrams.length; ++i) {
+            mm_diagrams[i].removeAttribute('data-processed');
+        }
+        mermaid.contentLoaded();
     },
 }
 

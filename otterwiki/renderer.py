@@ -150,9 +150,10 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             )
             # replace \n with <br/> for convinient diagram writing (and match the github syntax)
             code = code.replace("\\n","<br/>")
-            return '\n<pre class="mermaid">{}</pre>\n'.format(
+            html = '\n<pre class="mermaid">{}\n</pre>\n'.format(
                 code.strip()
             )
+            return html
         else:
             html = prefix + pygments_render(code, info)
         html = showmagicword(cursorline, html)
