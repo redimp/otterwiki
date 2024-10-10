@@ -7,6 +7,8 @@
 # to get started.
 #
 version: '3'
+volumes:
+  otterwiki:
 services:
   web:
     build: .
@@ -17,4 +19,4 @@ services:
     volumes:
       # mount the local directory ./app-data into the container
       # (so settings, database and repository are accessible)
-      - ./app-data:/app-data
+      - otterwiki:/app-data:rw,z

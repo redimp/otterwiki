@@ -21,7 +21,7 @@ COPY pyproject.toml MANIFEST.in README.md LICENSE /src/
 WORKDIR /src
 
 # install requirements
-RUN --mount=type=cache,target=/root/.cache \
+RUN --mount=type=cache,target=/root/.cache,Z \
     python -c 'import toml; print("\n".join(toml.load("./pyproject.toml")["project"]["dependencies"]));' > requirements.txt && \
     pip install -r requirements.txt
 
