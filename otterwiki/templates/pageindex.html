@@ -17,12 +17,16 @@
 <div class="pageindex-letterblock"><h2 class="content-title font-weight-bolder pageindex-header">{{letter}}</h2>
 {% for depth, title, url, page_toc in pagelist %}
 <div class="pageindex-pageblock" style="padding-left:{{1.5 * depth}}rem;">
-<a href="{{ url }}" class="global-toc-link font-weight-semi-bold">{{title}}</a>
+{% if '/' in title %}
+<a href="{{ url }}" class="text-success global-toc-link font-weight-semi-bold">{{ title }}</a>
+{% else %}
+<a href="{{ url }}" class="text-primary global-toc-link font-weight-semi-bold">{{ title }}</a>
+{% endif %}
 {% if page_toc %}
 <div class="pagetoc" style="display: none;">
 {% for tocdepth, title, url in page_toc %}
 <div style="word-break: all; padding-left:{{1 * tocdepth}}rem;">
-<a href="{{ url }}" class="global-toc-link">{{title}}</a><br/>
+<a href="{{ url }}" class="text-danger global-toc-link">{{title}}</a><br/>
 </div>
 {% endfor %}
 </div>
