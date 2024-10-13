@@ -2,8 +2,8 @@
 # vim: set et ts=8 sts=4 sw=4 ai
 # -*- coding: utf-8 -*-
 
-import pytest
-from pprint import pprint
+import bs4
+import re
 from otterwiki.renderer import render
 
 markdown_example = """# Header
@@ -61,24 +61,35 @@ def test_preview(create_app, req_ctx):
     assert render.htmlcursor in data['preview_content']
 
 def test_preview_all(create_app, req_ctx):
+    whitespace = re.compile(r"\s+")
     markdown_arr = markdown_example.splitlines()
     html_example, _ = render.markdown(markdown_example)
-    html_example_arr = html_example.split("<")
+    html_example_soup = bs4.BeautifulSoup(html_example, "html.parser")
     from otterwiki.wiki import Page
     p = Page("test")
     data = p.preview(content=markdown_example, cursor_line=1)
-    for part in html_example_arr:
-        assert part in data['preview_content']
+    preview_soup = bs4.BeautifulSoup(data['preview_content'].replace(render.htmlcursor,""), "html.parser")
+    preview_soup = preview_soup.find("div", {"class":"page"})
+    assert preview_soup
+    for element in html_example_soup:
+        assert str(element) in str(preview_soup)
     assert render.htmlcursor in data['preview_content']
     # check every cursor line
     for i,md_line in enumerate(markdown_example.splitlines(),start=1):
         data = p.preview(content=markdown_example,cursor_line=i)
-        assert render.htmlcursor in data['preview_content']
-        # clear cursor
-        preview_html = data['preview_content'].replace(render.htmlcursor,"")
+        assert render.htmlcursor.strip() in data['preview_content']
+        # clean cursor and newlines
+        preview_soup = bs4.BeautifulSoup(data['preview_content'].replace(render.htmlcursor,"").replace(render.htmlcursor.strip(),""), "html.parser")
+        # remove all the whitespace (the htmlcursor leaves annoying artifatcs)
+        preview_soup = preview_soup.find("div", {"class":"page"})
+        preview_html = whitespace.sub("", str(preview_soup))
         # and check if everything made it into html
-        for _,part in enumerate(html_example_arr):
-            assert part in preview_html
+        for element in html_example_soup:
+            if not element: continue
+            element = whitespace.sub("", str(element))
+            if not len(element): continue
+            # assert str(element).strip() in str(preview_soup)
+            assert str(element) in preview_html
 
 def test_preview_list_bug(create_app, req_ctx):
     from otterwiki.wiki import Page

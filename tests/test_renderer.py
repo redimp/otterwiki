@@ -183,7 +183,7 @@ def test_clean_html_render():
 And last an onclick example:
 <p onclick="alert(4)">PPPPP</p>
 
-<video width='80%' controls> <!-- this is updated to width="80%" -->
+<video controls width='80%'> <!-- this is updated to width="80%" -->
 <source src="/mp4%20example/example.mp4" type="video/mp4">
 </video>
 """
@@ -202,7 +202,7 @@ And last an onclick example:
     # and that onlick is removed
     assert '<p onclick="alert(4)"' not in html
     # check multimedia
-    assert "<video width='80%' controls>" in html
+    assert '<video controls="" width="80%">' in html
     assert "</video>" in html
 
 
@@ -316,14 +316,14 @@ And can be referenced multiple[^1] times.
     assert 'id="fn-1"' in html
     assert 'href="#fn-1"' in html
     assert 'id="fnref-1"' in html
-    assert 'href="#fnref-1" ' in html
+    assert 'href="#fnref-1"' in html
 
 
 def test_footnote_multiref():
     md = "\n".join(["Hello World [^1]" for _ in range(27)])
     md += "\n\n[^1]: Footnotes test"
     html, _ = render.markdown(md)
-    assert '<a href="#fnref-27" class="footnote">aa</a>' in html
+    assert '<a class="footnote" href="#fnref-27">aa</a>' in html
 
 
 def test_footnote_not_found():
@@ -465,4 +465,4 @@ graph TD;
 """
     html, _ = render.markdown(md)
     assert """<pre class="mermaid">graph TD;
-    A-->B;\n</pre>""" in html
+    A--&gt;B;\n</pre>""" in html

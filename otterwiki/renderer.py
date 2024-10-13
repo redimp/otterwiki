@@ -74,18 +74,30 @@ def showmagicword(line, html):
     return "".join(arr)
 
 
-def clean_html(html):
+def clean_html(html: str) -> str:
     # use BeautifulSoup to identify tags we want to remove / escape
-    # since we get iincomplete tags via inline html we have to work
+    # since we get incomplete tags via inline html we have to work
     # with the html string and can not use what bs makes out of it
+    REMOVE_ATTRIBUTES = ['onclick','onload', 'onerror', 'onfocus', 'onbeforeprint', 'beforeunload',
+                         'onblur', 'onchange', 'oncopy', 'oncut', 'ondblclick', 'ondrag', 'draggable',
+                         'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondragstart',
+                         'ondrop', 'onfocus', 'onfocusin', 'onfocusout', 'onhashchange',
+                         'oninput', 'oninvalid', 'onkeydown', 'onkeypress', 'onkeyup', 'onload',
+                         'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseover',
+                         'onmouseout', 'onmouseup', 'onoffline', 'ononline', 'onpagehide',
+                         'onpageshow', 'onpaste', 'onresize', 'onreset', 'onscroll',
+                         'onsearch', 'onselect', 'ontoggle', 'ontouchcancel', 'ontouchend',
+                         'ontouchmove', 'ontouchstart', 'onunload']
+    REMOVE_TAGS = ['style', 'script', 'blink', 'marque']
+
     _escape = False
     soup = BeautifulSoup(html, 'html.parser')
     for element in soup:
-        if element.name in ['script', 'marque', 'blink']: # pyright: ignore
+        if element.name in REMOVE_TAGS: # pyright: ignore
             _escape = True
             break
         try:
-            if any(x in element.attrs.keys() for x in ['onclick','onload']): # pyright: ignore
+            if any(x in element.attrs.keys() for x in REMOVE_ATTRIBUTES): # pyright: ignore
                 _escape = True
                 break
         except AttributeError:
@@ -248,6 +260,12 @@ class OtterwikiRenderer:
             (a, b.replace(cursormagicword, ""), c, d.replace(cursormagicword, ""), e)
             for (a, b, c, d, e) in toc
         ]
+
+        # make sure the page content is clean html.
+        # we shove it through BeautifulSoup.prettify this will get rid
+        # of wrong placed tags, too many closed tags and so on.
+        soup = BeautifulSoup(html, 'html.parser')
+        html = str(soup)
 
         return html, toc
 
