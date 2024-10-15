@@ -147,6 +147,7 @@
     Navbar
 #}
 {% block bodytop %}
+{%if config["COMMIT_MESSAGE"] != "DISABLED"%}
 <div class="modal" id="modal-commit" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -172,6 +173,7 @@
     </div>
   </div>
 </div>
+{% endif %}
 {% endblock %}
 {#
     Sidebar Menu
@@ -248,7 +250,17 @@
 #}
 {% block navbar %}
 <a href="{{ url_for('view', path=pagepath) }}" class="btn btn-danger mr-5" role="button" title="Cancel"><i class="fas fa-window-close"></i></a>
+{%if config["COMMIT_MESSAGE"] == "DISABLED"%}
+<form id="saveform" action="{{ url_for('save', path=pagepath) }}" method="post" autocomplete="off">
+<input id="save_content" type="hidden" name="content" value="">
+<input id="save_cursor_line" type="hidden" name="cursor_line" value="" />
+<input id="save_cursor_ch" type="hidden" name="cursor_ch" value="" />
+<button class="btn btn-success mr-5" title="Save"><i class="fas fa-save"></i></button>
+<input name="commit" type="hidden" value="">
+</form>
+{% else %}
 <button class="btn btn-success mr-5" onclick="otterwiki.toggleModal('modal-commit')" title="Save"><i class="fas fa-save"></i></button>
+{% endif %}
 <button id="preview_btn" class="btn btn-primary" style="width: 1rem;" title="Preview"><i class="far fa-eye" ></i></button>
 <button id="editor_btn" class="btn btn-primary" style="width: 1rem; display:none;" title="Edit"><i class="fas fa-pencil-alt"></i></button>
 {% endblock %}

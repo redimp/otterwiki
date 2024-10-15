@@ -9,7 +9,7 @@
     <div class="form-group">
         <label for="commit_message" class="required">Commit message</label>
         <select class="form-control w-md-400" id="commit_message" name="commit_message">
-{% for mode in [("REQUIRED", "Required"),("OPTIONAL","Optional (empty commit messages are allowed)")] %}
+{% for mode in [("REQUIRED", "Required"),("OPTIONAL","Optional (empty commit messages are allowed"),("DISABLED", "Disabled (Changes saved without a commit message)")] %}
             <option value="{{mode[0]}}"{%if config.COMMIT_MESSAGE == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
 {% endfor %}
         </select>
