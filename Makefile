@@ -162,10 +162,9 @@ else
 endif
 
 pypi: test
-	./venv/bin/python3 -m pip install --upgrade build
-	./venv/bin/python3 -m pip install --upgrade twine
-	python3 -m build
-	python3 -m twine upload dist/*
+	./venv/bin/python3 -m pip install --upgrade build twine
+	./venv/bin/python3 -m build
+	./venv/bin/python3 -m twine upload dist/*
 
 helm-build:
 	cd helm/ && helm lint ./
