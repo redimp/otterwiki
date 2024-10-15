@@ -91,6 +91,8 @@ class PageIndex:
         '''
         This will generate an index of pages/toc of pages from a given path.
         '''
+        self.toc = {}
+        page_indices = []
 
         if path is not None:
             self.path = path if app.config["RETAIN_PAGE_NAME_CASE"] else path.lower()
@@ -107,14 +109,16 @@ class PageIndex:
             self.index_depth = 0
 
         t_start = timer()
+        # get all files in the storage
         files, _ = storage.list(p=self.path)
         app.logger.debug(
                 f"PageIndex({self.path}) storage.list() files took {timer() - t_start:.3f} seconds."
             )
-        self.toc = {}
-        page_indices = []
+        # restart timer
         t_start = timer()
-        for fn in [f for f in files if f.endswith(".md")]:  # filter .md files
+        # filter .md files
+        md_files = [f for f in files if f.endswith(".md")]
+        for fn in md_files:
             if self.path is None:
                 f = fn
             else:
@@ -157,6 +161,7 @@ class PageIndex:
                                 ),
                             ),  # url
                             [],
+                            True,
                         )
                     )
                     page_indices.append(subdir_path)
@@ -201,6 +206,11 @@ class PageIndex:
                 self.path.lower()
             ):
                 displayname = displayname[len(self.path) + 1 :]
+            has_children = False
+            for other in md_files:
+                if other.startswith(f[:-3]+"/"):
+                    has_children = True
+                    break
             self.toc[firstletter].append(
                 (
                     page_depth - self.index_depth,
@@ -214,6 +224,7 @@ class PageIndex:
                         ),
                     ),  # url
                     pagetoc,
+                    has_children,
                 )
             )
 
