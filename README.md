@@ -16,10 +16,13 @@ and [CodeMirror](https://codemirror.net/) as editor.
 
 - Minimalistic interface (with dark-mode)
 - Editor with markdown highlighting and support including tables
+- Customizable Sidebar: Menu and/or Page Index
 - Full changelog and page history
 - User authentication
 - Page Attachments
-- A very cute Otter as logo (drawn by [Christy Presler](http://christypresler.com/) CC BY 3.0).
+- Extended Markdown: tables, footnotes, fancy blocks, alerts and mermaid diagrams
+- (experimental) Git http server: clone, pull and push the content of your wiki
+- A very cute Otter as logo (drawn by [Christy Presler](http://christypresler.com/) CC BY 3.0)
 
 ## Demo
 
@@ -45,7 +48,6 @@ detailed information.
 #### docker-compose.yml
 
 ```yaml
-version: '3'
 services:
   otterwiki:
     image: redimp/otterwiki:2
