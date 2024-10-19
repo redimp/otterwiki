@@ -36,10 +36,14 @@ USE_STATIC_URL=${STATIC_URL:-'/static'}
 USE_STATIC_PATH=${STATIC_PATH:-'/app/otterwiki/static'}
 # Get the listen port for Nginx, default to 80
 USE_LISTEN_PORT=${LISTEN_PORT:-80}
+if [ "${USE_LISTEN_PORT}" != "8080" ]; then
+    LISTEN_EXTRA_PORT="listen 8080;"
+fi
 
 # Generate Nginx config first part using the environment variables
 echo "server {
     listen ${USE_LISTEN_PORT};
+    ${LISTEN_EXTRA_PORT}
     client_max_body_size $USE_NGINX_MAX_UPLOAD;
 " > /etc/nginx/conf.d/default.conf
 
