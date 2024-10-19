@@ -170,7 +170,6 @@ def patchset2filedict(patchset):
                 }
             )
             for line in hunk:
-                print(f"{line=} {line.line_type=} {line.value=}")
                 line_data.append(
                     {
                         "source": line.source_line_no or "",
