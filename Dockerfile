@@ -63,6 +63,8 @@ RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
     nginx supervisor git \
     python3.11 python3-wheel python3-venv libpython3.11 \
     uwsgi uwsgi-plugin-python3 \
+    && ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log \
     && rm -rf /var/lib/apt/lists/*
 # copy virtual environment
 COPY --from=compile-stage /opt/venv /opt/venv

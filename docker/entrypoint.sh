@@ -45,12 +45,12 @@ echo "server {
     listen ${USE_LISTEN_PORT};
     ${LISTEN_EXTRA_PORT}
     client_max_body_size $USE_NGINX_MAX_UPLOAD;
-" > /etc/nginx/conf.d/default.conf
+" > /etc/nginx/sites-enabled/default
 
 if [ ! -z "${REAL_IP_FROM}" ]; then
 echo "    set_real_ip_from $REAL_IP_FROM;
     real_ip_header X-Real-IP;
-    real_ip_recursive on;" >> /etc/nginx/conf.d/nginx.conf
+    real_ip_recursive on;" >> /etc/nginx/sites-enabled/default
 fi
 
 
@@ -63,10 +63,10 @@ echo "    location / {
     }
     location $USE_STATIC_URL {
         alias $USE_STATIC_PATH;
-    }" >> /etc/nginx/conf.d/default.conf
+    }" >> /etc/nginx/sites-enabled/default
 
 # close the server block
-echo "}" >> /etc/nginx/conf.d/default.conf
+echo "}" >> /etc/nginx/sites-enabled/default
 
 # install plugins found in /app-data/plugins and /plugins
 for PLUGIN in /app-data/plugins/*/ /plugins/*/; do
