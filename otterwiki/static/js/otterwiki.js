@@ -674,6 +674,14 @@ var otterwiki = {
         }
         mermaid.contentLoaded();
     },
+    copy_to_clipboard: function(btn) {
+        var pre_element = btn.parentElement.parentElement.querySelector("pre.copy-to-clipboard");
+        if (typeof(pre_element) == 'undefined' || pre_element == 'undefined' || pre_element == null) {
+            console.log("Error: pre element matching the button could not found. This is a bug.")
+            return;
+        }
+        navigator.clipboard.writeText(pre_element.innerText);
+    }
 }
 
 var MathJax = {

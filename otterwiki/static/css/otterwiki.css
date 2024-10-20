@@ -87,6 +87,24 @@ pre,
     overflow: auto;
 }
 
+.copy-to-clipboard-outer {
+    position: relative;
+}
+
+.copy-to-clipboard-outer:not(:hover) .copy-to-clipboard-inner {
+    display: none;
+}
+
+.copy-to-clipboard-inner {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 0.2rem;
+}
+
+button.copy-to-clipboard {
+}
+
 .page > .alert > p {
     margin-block-end: 0.2em;
 }

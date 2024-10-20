@@ -2,6 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import pytest
+from bs4 import BeautifulSoup
 from otterwiki.renderer import render, clean_html
 
 
@@ -54,7 +55,9 @@ def test_code():
 abc
 ```"""
     )
-    assert '<pre class="code">abc</pre>' in html
+    pre_code = BeautifulSoup(html, "html.parser").find('pre', {'class': 'code'})
+    assert pre_code is not None
+    assert 'abc' in pre_code.text
     # test highlight
     html, _ = render.markdown(
         """```python
@@ -62,13 +65,18 @@ n = 0
 ```"""
     )
     assert '<div class="highlight">' in html
+    pre_code = BeautifulSoup(html, "html.parser").find('pre')
+    assert pre_code is not None
+    assert pre_code.text.startswith('n = 0')
     # test missing lexer
     html, _ = render.markdown(
         """```non_existing_lexer
 n = 0
 ```"""
     )
-    assert '<pre class="code">non_existing_lexer' in html
+    pre_code = BeautifulSoup(html, "html.parser").find('pre', {'class': 'code'})
+    assert pre_code is not None
+    assert pre_code.text.startswith('non_existing_lexer')
 
 
 def test_img():
@@ -175,7 +183,7 @@ def test_clean_html_render():
 
     <script>alert(1)</script>
 
-```javascript
+```html
 <script>alert(3)</script>
 ```
 <script>alert(2)</script>
@@ -189,13 +197,13 @@ And last an onclick example:
 """
     html, _ = render.markdown(text)
     # make sure that preformatted html stays preformatted
+    pre_code = BeautifulSoup(html, "html.parser").find_all('pre', {'class': 'copy-to-clipboard'})
+    assert pre_code is not None
+    assert "<script>alert(1)</script>" in pre_code[0].text # bs4 decodes the html already
+    # make sure that highlighted blocks are okay
     assert (
-        '<pre class="code">&lt;script&gt;alert(1)&lt;/script&gt;</pre>' in html
-    )
-    # and that highlited blocks are okay
-    assert (
-        '<span class=".highlight o">&lt;</span><span class=".highlight nx">script</span><span class=".highlight o">&gt;</span><span class=".highlight nx">alert</span><span class=".highlight p">(</span><span class=".highlight mf">3</span><span class=".highlight p">)</span><span class=".highlight o">&lt;</span><span class=".highlight err">/script&gt;</span>'
-        in html
+        '<span class=".highlight p">&lt;</span><span class=".highlight nt">script</span><span class=".highlight p">&gt;</span><span class=".highlight nx">alert</span><span class=".highlight p">(</span><span class=".highlight mf">3</span><span class=".highlight p">)&lt;/</span><span class=".highlight nt">script</span><span class=".highlight p">&gt;</span>'
+        in str(pre_code[1])
     )
     # but script code is removed
     assert '<script>alert(2)</script>' not in html

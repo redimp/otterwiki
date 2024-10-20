@@ -45,15 +45,27 @@ mistune.plugins.plugin_table.NP_TABLE_PATTERN = re.compile( # pyright: ignore
     r' {0,3}(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n{0,1}'
 )
 
+def _pre_copy_to_clipboard_tag(extra_class: str = ""):
+    return f"""<div class="copy-to-clipboard-outer"><div class="copy-to-clipboard-inner"><button class="btn btn-xsm copy-to-clipboard" type="button"  onclick="otterwiki.copy_to_clipboard(this);"><i class="fa fa-copy" aria-hidden="true" alt="Copy to clipboard""></i></button></div><pre class="copy-to-clipboard {extra_class}">"""
+
+class CodeHtmlFormatter(html.HtmlFormatter):
+
+    def wrap(self, source):
+        yield 0, _pre_copy_to_clipboard_tag()
+        for i, t in source:
+            yield i, t
+        yield 0, '</pre></div>'
+
 def pygments_render(code, lang):
     try:
         lexer = get_lexer_by_name(lang, stripall=True)
     except ClassNotFound:
-        return '\n<pre class="code">%s\n%s</pre>\n' % (
+        return '\n'+_pre_copy_to_clipboard_tag("code")+'%s\n%s</pre></div>\n' % (
             mistune.escape(lang.strip()),
             mistune.escape(code.strip()),
         )
-    formatter = html.HtmlFormatter(classprefix=".highlight ")
+    formatter = CodeHtmlFormatter(classprefix=".highlight ")
+    # formatter = html.HtmlFormatter(classprefix=".highlight ")
     return highlight(code, lexer, formatter)
 
 
@@ -146,7 +158,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
     def block_code(self, code, info=None):
         prefix = ""
         if not info:
-            return '\n<pre class="code">{}</pre>\n'.format(
+            return '\n'+_pre_copy_to_clipboard_tag("code")+'{}</pre></div>\n'.format(
                 mistune.escape(code.strip())
             )
         if cursormagicword in info:
