@@ -83,6 +83,7 @@
   <div class="mt-10">
     <input class="btn btn-primary" name="update_permissions" type="submit" value="Update Privileges" {% if not
       auth_supported_features['editing'] %}disabled{% endif %}>
+    {% if auth_supported_features['editing'] %}&nbsp;<a href="{{ url_for("user", uid="") }}" class="btn">Add User</a>{% endif %}
   </div>
 </form>
 </div>

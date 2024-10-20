@@ -60,7 +60,7 @@ class SimpleAuth:
             if self.allow_write: permissions+="W"
             if self.allow_upload: permissions+="U"
             if self.is_admin: permissions+="A"
-            return f"<User '{self.name} <{self.email}>' {permissions}>"
+            return f"<User {self.id} '{self.name} <{self.email}>' {permissions}>"
 
     def __init__(self):
         with app.app_context():
@@ -78,7 +78,7 @@ class SimpleAuth:
             return self.User.query.filter_by(id=uid).first()
         if email is not None:
             return self.User.query.filter_by(email=email).first()
-        raise ValueError("Neither uid nor email given")
+        return self.User()
 
     def update_user(self, user):
         # validation check
@@ -89,6 +89,7 @@ class SimpleAuth:
                 user.is_admin = True
         db.session.add(user)
         db.session.commit()
+        return user
 
     def delete_user(self, user):
         db.session.delete(user)
@@ -676,11 +677,11 @@ def handle_request_confirmation(*args, **kwargs):
 def get_all_user(*args, **kwargs):
     return auth_manager.get_all_user(*args, **kwargs)
 
-def get_user(uid):
-    return auth_manager.get_user(uid)
+def get_user(*args, **kwargs):
+    return auth_manager.get_user(*args, **kwargs)
 
-def update_user(user):
-    return auth_manager.update_user(user)
+def update_user(*args, **kwargs):
+    return auth_manager.update_user(*args, **kwargs)
 
 def delete_user(user):
     return auth_manager.delete_user(user)

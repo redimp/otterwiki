@@ -2,6 +2,7 @@
 
 import re
 import json
+from datetime import datetime
 from otterwiki.util import is_valid_email
 from flask import (
     redirect,
@@ -23,6 +24,7 @@ from otterwiki.auth import (
     get_user,
     update_user,
     delete_user,
+    generate_password_hash,
 )
 
 
@@ -384,8 +386,8 @@ def user_edit_form(uid):
     if not has_permission("ADMIN"):
         abort(403)
     user = get_user(uid)
-    if user is None:
-        abort(404)
+    if uid is not None and (user is None or user.id is None):
+        return abort(404)
     # render form
     return render_template(
         "user.html",
@@ -393,12 +395,72 @@ def user_edit_form(uid):
         user=user,
     )
 
+def handle_user_add(form):
+    if not has_permission("ADMIN"):
+        abort(403)
+    # get empty user object
+    user = get_user(None)
+    # update user from form
+    user.name = form.get("name").strip() # pyright: ignore
+    user.email = form.get("email").strip() # pyright: ignore
+
+    for value, _ in [
+        ("email_confirmed", "email confirmed"),
+        ("is_admin", "admin"),
+        ("is_approved", "approved"),
+        ("allow_read", "read"),
+        ("allow_write", "write"),
+        ("allow_upload", "upload"),
+    ]:
+        if getattr(user, value) and not form.get(value):
+            setattr(user, value, False)
+        elif not getattr(user, value) and form.get(value):
+            setattr(user, value, True)
+
+    error = []
+    if empty(user.name): # pyright: ignore
+        error.append("Name must not be empty")
+    if get_user(email=user.email) is not None:  # pyright: ignore
+        error.append("User with this email exists")
+    if not is_valid_email(user.email): # pyright: ignore
+        error.append("Invalid email address")
+    # handle password
+    if len(form.get("password1","")) or len(form.get("password2","")):
+        if form.get("password1","") != form.get("password2",""):
+            error.append("Passwords do not match")
+        else:
+            user.password_hash = generate_password_hash(form.get("password1"))  # pyright: ignore
+
+    # check user object
+    if len(error):
+        for msg in error:
+            toast(msg, 'danger')
+        return render_template(
+            "user.html",
+            title="User",
+            user=user,
+        )
+    # no error: store in database
+    user.first_seen=datetime.now() # pyright: ignore
+    user.last_seen=datetime.now() # pyright: ignore
+    try:
+        user = update_user(user)
+        # send_approvement_mail(user)
+        app.logger.info(f"{user.name} <{user.email}> added")
+        toast(f"{user.name} <{user.email}> added")
+    except Exception as e:
+        app.logger.error(f"Unable to update user: {e}")
+        toast('Unable to create user. Please check the server logs.', 'danger')
+    return redirect(url_for("user", uid=user.id))
+
 
 def handle_user_edit(uid, form):
     if not has_permission("ADMIN"):
         abort(403)
+    if uid is None:
+        return handle_user_add(form)
     user = get_user(uid)
-    if user is None:
+    if not user or user.id is None:
         abort(404)
     msgs, flags = [], []
     # delete
@@ -407,9 +469,9 @@ def handle_user_edit(uid, form):
             toast(f"Unable to delete yourself.", "error")
             return redirect(url_for("user", uid=user.id))
         toast(f"User '{user.name} &lt;{user.email}&gt;' deleted.")
-        app.logger.info(f"deleted user '{user.name} &lt;{user.email}&gt;'")
+        app.logger.info(f"deleted user '{user.name} <{user.email}>'")
         delete_user(user)
-        return redirect(url_for("admin", _anchor="user_management"))
+        return redirect(url_for("admin_user_management"))
     if form.get("name") is None:
         return redirect(url_for("user", uid=user.id))
     # name
@@ -430,9 +492,16 @@ def handle_user_edit(uid, form):
                 f"'{form.get('email').strip()}' is not a valid email address",
                 "danger",
             )
+    if len(form.get("password1","")) or len(form.get("password2","")):
+        if form.get("password1","") != form.get("password2",""):
+            toast("Passwords do not match", "danger")
+        else:
+            user.password_hash = generate_password_hash(form.get("password1"))
+            msgs.append("Updated password")
     user_was_already_approved = user.is_approved
     # handle all the flags
     for value, label in [
+        ("email_confirmed", "email confirmed"),
         ("is_admin", "admin"),
         ("is_approved", "approved"),
         ("allow_read", "read"),
@@ -463,4 +532,5 @@ def handle_user_edit(uid, form):
             send_approvement_mail(user)
     except Exception as e:
         app.logger.error(f"Unable to update user: {e}")
+        toast('Unable to update the user. Please check the server logs.', 'danger')
     return redirect(url_for("user", uid=user.id))

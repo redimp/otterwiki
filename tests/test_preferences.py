@@ -2,6 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 from datetime import datetime
+from bs4 import BeautifulSoup
 
 def test_admin_form(admin_client):
     rv = admin_client.get("/-/admin")
@@ -412,7 +413,8 @@ def test_user_management(app_with_user, admin_client):
 
     # check user_management if mail address has is listed
     rv = admin_client.get("/-/admin/user_management", follow_redirects=True)
-    assert tmp_user_mail in rv.data.decode()
+    table = BeautifulSoup(rv.data.decode(), "html.parser").find("table")
+    assert tmp_user_mail in str(table)
 
     # test prevention of removing all admins
     rv = admin_client.post(
@@ -488,3 +490,46 @@ def test_user_management(app_with_user, admin_client):
         assert admin and admin.is_approved == True and admin.is_admin == True
         user = SimpleAuth.User.query.filter_by(id=user.id).first()
         assert user and getattr(user, flag) == False
+
+def test_user_add(app_with_user, admin_client):
+    from otterwiki.auth import SimpleAuth
+
+    new_user = ("New User", "new@user.org")
+    # check user_management if mail address has is listed
+    rv = admin_client.get("/-/admin/user_management", follow_redirects=True)
+    table = BeautifulSoup(rv.data.decode(), "html.parser").find("table")
+    # make user doesn't exist
+    assert new_user[0] not in str(table)
+    assert new_user[1] not in str(table)
+    # create user
+    rv = admin_client.post(f"/-/user/",
+                           data = {
+                            "name": new_user[0],
+                            "email": new_user[1],
+                            "is_approved": "1",
+                           }, follow_redirects=True)
+    assert rv.status_code == 200
+    # check that the user has been created
+    rv = admin_client.get("/-/admin/user_management", follow_redirects=True)
+    table = BeautifulSoup(rv.data.decode(), "html.parser").find("table")
+    # make user exists
+    assert new_user[0] in str(table)
+    assert new_user[1] in str(table)
+    user = SimpleAuth.User.query.filter_by(email=new_user[1]).first()
+    assert user is not None
+    assert user.name == new_user[0]
+    assert user.email == new_user[1]
+    assert user.is_approved == True
+    assert user.is_admin == False
+
+    # try to add user again
+    rv = admin_client.post(f"/-/user/",
+                           data = {
+                            "name": "",
+                            "email": new_user[1],
+                            "is_approved": "1",
+                           }, follow_redirects=True)
+    assert rv.status_code == 200
+    # check for toast
+    assert "User with this email exists" in rv.data.decode()
+    assert "Name must not be empty" in rv.data.decode()

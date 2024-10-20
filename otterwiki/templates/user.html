@@ -3,45 +3,80 @@
 {% block content %}
 <div class="col-sm-12 col-md-12 col-lg-10">
 <div class="card mx-auto mx-lg-20">
-    <h2 class="card-title">Edit User</h2>
+  <h2 class="card-title">
+    {% if user.id %}
+    Edit User
+    {% else %}
+    Add User
+    {% endif %}
+  </h2>
     <form action="{{ url_for("user", uid=user.id) }}" method="POST" class="form-inline">
       <div class="form-group">
-        <label for="name" class="required w-md-100">Name</label>
+        <label for="name" class="required w-md-200">Name</label>
         <input type="text" class="form-control" name="name" id="name" placeholder="" value="{{user.name if user.name}}">
       </div>
       <div class="form-group">
-        <label for="name" class="required w-md-100">eMail</label>
+        <label for="name" class="required w-md-200">eMail</label>
         <input type="text" class="form-control" name="email" id="email" placeholder="" value="{{user.email if user.email}}">
       </div>
+      <div class="form-group">
+        <label for="password1" class="w-md-200">Password</label>
+        <input type="password" class="form-control" name="password1" id="password1" placeholder="" value="">
+      </div>
+      <div class="form-group">
+        <label for="password2" class="w-md-200">Confirm password</label>
+        <input type="password" class="form-control" name="password2" id="password2" placeholder="" value="">
+      </div>
     <h3 class="card-title">Flags and Permissions</h3>
+    <div class="container-fluid">
+      <div class="row">
     {%
-      for label, name, value, note in [
-        ("Approved","is_approved",user.is_approved,""),
-        ("Read","allow_read",user.allow_read,""),
-        ("Write","allow_write",user.allow_write,""),
-        ("Upload","allow_upload",user.allow_upload,""),
-        ("Admin","is_admin",user.is_admin,"Users flagged as admins always have <strong>all</strong> the permissions."),
+      for label, name, value, note, new_row in [
+        (
+          "eMail confirmed","email_confirmed",
+          user.email_confirmed,
+          "If not set, users have to confirm their email address to login." if config.EMAIL_NEEDS_CONFIRMATION else "User don't need to confirm their eMail address.",
+          False
+        ),
+        (
+          "Approved","is_approved",user.is_approved,
+          "Auto approval is enabled." if config.AUTO_APPROVAL else "This flag has to be set by an admin.",
+          True
+        ),
+        ("Read","allow_read",user.allow_read,"", False),
+        ("Write","allow_write",user.allow_write,"", False),
+        ("Upload","allow_upload",user.allow_upload,"", True),
+        ("Admin","is_admin",user.is_admin,"Users flagged as admins always have <strong>all</strong> the permissions.", False),
       ]
     %}
+    <div class="col-sm-4 pr-5">
       <div class="form-group">
         <div class="custom-checkbox">
           <input type="checkbox" id="{{name}}" name="{{name}}" value="1" {{"checked=\"checked\"" if value }}>
           <label for="{{name}}" class="">{{ label }}</label>
           {% if note %}
-          <div class="pt-5 ml-10" style="display:inline;">
+          <div class="pt-5" style="display:block;">
             <i>{{ note|safe }}</i>
           </div>
           {% endif %}
         </div>
       </div>
+    </div>
+    {%if new_row %}
+      </div>
+      <div class="row">
+    {% endif %}
   {% endfor %}
+      </div> {# row #}
+    </div> {# container-fluid #}
       {# #}
-      <input class="btn btn-primary" type="submit" value="Update">
+      <input class="btn btn-primary" type="submit" value="{% if user.id %}Update{% else %}Add{% endif %}">
       <a href="{{ url_for("admin_user_management") }}" class="btn" role="button">Cancel</a>
     </form>
 </div>{# card #}
 </div>{# w-600 container #}
 
+{% if user.id %}
 <div class="col-sm-12 col-md-12 col-lg-10">
 <div class="card mx-auto m-lg-20">
     <h2 class="card-title">Delete User</h2>
@@ -56,4 +91,5 @@
     </form>
 </div>{# card #}
 </div>{# w-600 container #}
+{% endif %}
 {% endblock %}

@@ -174,6 +174,7 @@ def admin():
     else:
         return otterwiki.preferences.handle_preferences(request.form)
 
+@app.route("/-/user/", methods=["POST","GET"])
 @app.route("/-/user/<string:uid>", methods=["POST","GET"])
 @login_required
 def user(uid=None):
