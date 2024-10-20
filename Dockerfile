@@ -1,7 +1,7 @@
 #
 # compile stage
 #
-FROM nginx:1.25.3 AS compile-stage
+FROM debian:12.7-slim AS compile-stage
 LABEL maintainer="Ralph Thesen <mail@redimp.de>"
 # install python environment
 RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
@@ -48,7 +48,7 @@ CMD ["tox"]
 #
 # production stage
 #
-FROM nginx:1.25.3
+FROM debian:12.7-slim
 # arg for marking dev images
 ARG GIT_TAG
 ENV GIT_TAG=$GIT_TAG
@@ -60,7 +60,7 @@ RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
     apt-get -y update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-    supervisor git \
+    nginx supervisor git \
     python3.11 python3-wheel python3-venv libpython3.11 \
     uwsgi uwsgi-plugin-python3 \
     && rm -rf /var/lib/apt/lists/*
