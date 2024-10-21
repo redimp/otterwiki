@@ -83,7 +83,7 @@
  * and some manual tweaking.
  */
 .dark-mode .highlight .hll { background-color: #2C3B41 }
-.dark-mode .highlight { background: #263238; color: #EEFFFF }
+.dark-mode .highlight { background: transparent; color: #EEFFFF }
 .dark-mode .highlight .c { color: #546E7A; font-style: italic } /* Comment */
 .dark-mode .highlight .err { color: #FF5370 } /* Error */
 .dark-mode .highlight .esc { color: #89DDFF } /* Escape */

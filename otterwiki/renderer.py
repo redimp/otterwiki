@@ -45,8 +45,8 @@ mistune.plugins.plugin_table.NP_TABLE_PATTERN = re.compile( # pyright: ignore
     r' {0,3}(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n{0,1}'
 )
 
-def _pre_copy_to_clipboard_tag(extra_class: str = ""):
-    return f"""<div class="copy-to-clipboard-outer"><div class="copy-to-clipboard-inner"><button class="btn btn-xsm copy-to-clipboard" type="button"  onclick="otterwiki.copy_to_clipboard(this);"><i class="fa fa-copy" aria-hidden="true" alt="Copy to clipboard""></i></button></div><pre class="copy-to-clipboard {extra_class}">"""
+def _pre_copy_to_clipboard_tag():
+    return f"""<div class="copy-to-clipboard-outer"><div class="copy-to-clipboard-inner"><button class="btn alt-dm btn-xsm copy-to-clipboard" type="button"  onclick="otterwiki.copy_to_clipboard(this);"><i class="fa fa-copy" aria-hidden="true" alt="Copy to clipboard""></i></button></div><pre class="copy-to-clipboard code">"""
 
 class CodeHtmlFormatter(html.HtmlFormatter):
 
@@ -60,7 +60,7 @@ def pygments_render(code, lang):
     try:
         lexer = get_lexer_by_name(lang, stripall=True)
     except ClassNotFound:
-        return '\n'+_pre_copy_to_clipboard_tag("code")+'%s\n%s</pre></div>\n' % (
+        return '\n'+_pre_copy_to_clipboard_tag()+'%s\n%s</pre></div>\n' % (
             mistune.escape(lang.strip()),
             mistune.escape(code.strip()),
         )
@@ -158,7 +158,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
     def block_code(self, code, info=None):
         prefix = ""
         if not info:
-            return '\n'+_pre_copy_to_clipboard_tag("code")+'{}</pre></div>\n'.format(
+            return '\n'+_pre_copy_to_clipboard_tag()+'{}</pre></div>\n'.format(
                 mistune.escape(code.strip())
             )
         if cursormagicword in info:

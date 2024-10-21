@@ -85,6 +85,7 @@ pre,
     padding: 0.1rem 0.5rem;
     margin: 0 0.1rem;
     overflow: auto;
+    min-height: 2.6rem;
 }
 
 .copy-to-clipboard-outer {
@@ -97,7 +98,7 @@ pre,
 
 .copy-to-clipboard-inner {
     position: absolute;
-    right: 0;
+    right: 0.2rem;
     top: 0;
     padding: 0.2rem;
 }
