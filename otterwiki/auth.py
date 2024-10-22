@@ -55,7 +55,12 @@ class SimpleAuth:
         allow_upload = db.Column(db.Boolean(), default=False)
 
         def __repr__(self):
-            return f"<User '{self.name} <{self.email}>' a:{self.is_admin}>"
+            permissions = ""
+            if self.allow_read: permissions+="R"
+            if self.allow_write: permissions+="W"
+            if self.allow_upload: permissions+="U"
+            if self.is_admin: permissions+="A"
+            return f"<User '{self.name} <{self.email}>' {permissions}>"
 
     def __init__(self):
         with app.app_context():
@@ -446,7 +451,7 @@ class SimpleAuth:
         # check page edit permission
         if permission.upper() == "WRITE":
             # if you are not allowed to read, you are not allowed to write
-            if not has_permission("READ"):
+            if not self.has_permission("READ", user):
                 return False
             if app.config["WRITE_ACCESS"].upper() == "ANONYMOUS":
                 return True
@@ -468,7 +473,7 @@ class SimpleAuth:
                 return True
         # check upload permission
         if permission.upper() == "UPLOAD":
-            if not has_permission("WRITE"):
+            if not self.has_permission("WRITE", user):
                 return False
             if app.config["ATTACHMENT_ACCESS"] == "ANONYMOUS":
                 return True
