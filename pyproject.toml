@@ -12,14 +12,14 @@ dependencies = [
     "Werkzeug==3.0.3",
     "Flask-Login==0.6.3",
     "Flask-Mail==0.9.1",
-    "SQLAlchemy==2.0.27",
+    "SQLAlchemy==2.0.36",
     "Flask-SQLAlchemy==3.1.1",
-    "Flask==3.0.2",
+    "Flask==3.0.3",
     "Jinja2==3.1.4",
     "gitpython==3.1.42",
     "cython==3.0.8",
     "mistune==2.0.5",
-    "pygments==2.17.2",
+    "pygments==2.18.0",
     "Pillow==10.4.0",
     "unidiff==0.7.5",
     "beautifulsoup4==4.12.3",
@@ -80,7 +80,7 @@ skip-string-normalization = true
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py3{11,12}
+envlist = py3{11,12,13}
 isolated_build = True
 [testenv]
 deps = pytest
@@ -91,8 +91,6 @@ commands =
 [tool.pytest.ini_options]
 testpaths = ["./tests"]
 filterwarnings = [
-    # venv/lib/python3.11/site-packages/htmlmin/main.py:28: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
-    "ignore: 'cgi' is deprecated:DeprecationWarning",
     # venv/lib/python3.12/site-packages/flask_login/login_manager.py:488: DeprecationWarning: datetime.datetime.utcnow() is deprecated
     "ignore: datetime.datetime.utcnow\\(\\) is deprecated:DeprecationWarning",
 ]
