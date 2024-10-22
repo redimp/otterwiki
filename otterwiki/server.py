@@ -4,7 +4,6 @@ import os
 import logging
 import datetime
 from flask import Flask
-from flask_htmlmin import HTMLMIN
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from otterwiki import fatal_error, __version__
@@ -67,10 +66,6 @@ app.logger.setLevel(app.config["LOG_LEVEL"])
 
 # setup database
 db = SQLAlchemy(app)
-
-# auto html minify
-if not app.config["TESTING"] and not app.config["DEBUG"]:
-    htmlmin = HTMLMIN(app)
 
 # ensure SECRET_KEY is set
 if len(app.config["SECRET_KEY"])<16 or app.config["SECRET_KEY"] == "CHANGE ME":
