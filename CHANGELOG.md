@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.7.0](https://github.com/redimp/otterwiki/releases/tag/v2.7.0) - 2024-10-24
+
+<small>[Compare with v2.6.2](https://github.com/redimp/otterwiki/compare/v2.6.2...v2.7.0)</small>
+
+### Features
+
+- added "Add User" functionality to user management, see #151. ([ca5360f](https://github.com/redimp/otterwiki/commit/ca5360fe45dbcae11b0deb1caef658f76a114cea)).
+- added copy-to-clipboard button to code blocks, see #153. ([68f82f6](https://github.com/redimp/otterwiki/commit/68f82f682d3ad78235c1232b9c140b1146f0a84f)).
+- option for disable commit added and respected in editor ([0da52ff](https://github.com/redimp/otterwiki/commit/0da52ffccd7ad45c11a497ab39f4b7c6f2625dd4)).
+
+### Bug Fixes
+
+- `has_permission` must use `self.has_permission` to work correct with git ([190a622](https://github.com/redimp/otterwiki/commit/190a622dcc2761a95a339a5add4f1239649b3509)), this fixes #154.
+
 ## [v2.6.2](https://github.com/redimp/otterwiki/releases/tag/v2.6.2) - 2024-10-10
 
 <small>[Compare with v2.6.1](https://github.com/redimp/otterwiki/compare/v2.6.1...v2.6.2)</small>
