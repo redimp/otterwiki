@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # version_onfo managed by tbump
-version_info = (2, 6, 2, "")
+version_info = (2, 7, 0, "")
 
 # build version string from version_info
 __version__ = f"{version_info[0]}.{version_info[1]}.{version_info[2]}" + \
