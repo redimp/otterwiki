@@ -20,7 +20,7 @@ from flask_login import (
 from otterwiki.server import app, db
 from otterwiki.helper import toast, send_mail, serialize, deserialize, SerializeError
 from otterwiki.util import random_password, empty
-from otterwiki.models import TimeStamp
+from otterwiki.models import User as UserModel
 from datetime import datetime
 import hmac
 
@@ -39,33 +39,8 @@ def check_password_hash_backport(pwhash, password):
 
 
 class SimpleAuth:
-    # User Model
-    class User(UserMixin, db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        name = db.Column(db.String(128))
-        email = db.Column(db.String(128), index=True, unique=True)
-        password_hash = db.Column(db.String(512))
-        first_seen = db.Column(TimeStamp())
-        last_seen = db.Column(TimeStamp())
-        is_approved = db.Column(db.Boolean(), default=False)
-        is_admin = db.Column(db.Boolean(), default=False)
-        email_confirmed = db.Column(db.Boolean(), default=False)
-        allow_read = db.Column(db.Boolean(), default=False)
-        allow_write = db.Column(db.Boolean(), default=False)
-        allow_upload = db.Column(db.Boolean(), default=False)
-
-        def __repr__(self):
-            permissions = ""
-            if self.allow_read: permissions+="R"
-            if self.allow_write: permissions+="W"
-            if self.allow_upload: permissions+="U"
-            if self.is_admin: permissions+="A"
-            return f"<User {self.id} '{self.name} <{self.email}>' {permissions}>"
-
-    def __init__(self):
-        with app.app_context():
-            # create tables
-            db.create_all()
+    class User(UserMixin, UserModel):
+        pass
 
     def user_loader(self, id):
         return self.User.query.filter_by(id=int(id)).first()
