@@ -1,0 +1,40 @@
+---
+version: '3'
+volumes:
+  app-data:
+  letsencrypt:
+  static:
+  db:
+services:
+  db:
+    image: postgres:16.4
+    restart: unless-stopped
+    volumes:
+      - db:/var/lib/postgresql/data:rw,z
+    env_file: .env.prod.db
+  nginx:
+    build:
+      context: nginx
+    restart: unless-stopped
+    env_file:
+      - .env.prod.nginx
+    volumes:
+      - letsencrypt:/etc/letsencrypt:ro,z
+      - static:/app/otterwiki/static:ro,z
+    ports:
+      - "8443:443"
+  web:
+    build:
+      dockerfile: docker/Dockerfile.slim
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - app-data:/app-data:rw,z
+      - letsencrypt:/etc/letsencrypt:ro,z
+      - static:/app/otterwiki/static:rw,z
+    depends_on:
+      db:
+        condition: service_started
