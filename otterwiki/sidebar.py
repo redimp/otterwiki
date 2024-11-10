@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
 import re
@@ -17,16 +18,17 @@ from otterwiki.helper import (
 
 
 class SidebarMenu:
-    URI_SIMPLE = re.compile(
-        r"^(((https?)\:\/\/)|(mailto:))\S+"
-    )
+    URI_SIMPLE = re.compile(r"^(((https?)\:\/\/)|(mailto:))\S+")
+
     def __init__(self):
         self.menu = []
         self.config = []
         if not app.config.get("SIDEBAR_CUSTOM_MENU", None):
             return
         try:
-            raw_config = json.loads(app.config.get("SIDEBAR_CUSTOM_MENU","[]"))
+            raw_config = json.loads(
+                app.config.get("SIDEBAR_CUSTOM_MENU", "[]")
+            )
         except (ValueError, IndexError) as e:
             app.logger.error(
                 f"Error decoding SIDEBAR_CUSTOM_MENU={app.config.get('SIDEBAR_CUSTOM_MENU','')}: {e}"
@@ -36,20 +38,28 @@ class SidebarMenu:
         for entry in raw_config:
             if not entry.get("title", None) and not entry.get("link", None):
                 continue
-            link, title = entry.get("link",""), entry.get("title", "")
+            link, title = entry.get("link", ""), entry.get("title", "")
             self.config.append({"link": link, "title": title})
             if empty(link):
-                if empty(title): continue
-                self.menu.append({"link":url_for("view", path=title), "title": title})
+                if empty(title):
+                    continue
+                self.menu.append(
+                    {"link": url_for("view", path=title), "title": title}
+                )
             elif self.URI_SIMPLE.match(link):
-                if empty(title): title = link
+                if empty(title):
+                    title = link
                 self.menu.append({"link": link, "title": title})
             else:
-                if empty(title): title = link
-                self.menu.append({"link": url_for("view", path=link), "title": title})
+                if empty(title):
+                    title = link
+                self.menu.append(
+                    {"link": url_for("view", path=link), "title": title}
+                )
 
     def query(self):
         return self.menu
+
 
 class SidebarPageIndex:
     AXT_HEADING = re.compile(
@@ -58,7 +68,9 @@ class SidebarPageIndex:
     SETEX_HEADING = re.compile(r'([^\n]+)\n *(=|-){2,}[ \t]*\n+')
 
     def __init__(self, path: str = "/", mode: str = ""):
-        self.path = path if app.config["RETAIN_PAGE_NAME_CASE"] else path.lower()
+        self.path = (
+            path if app.config["RETAIN_PAGE_NAME_CASE"] else path.lower()
+        )
         self.path_depth = len(split_path(self.path))
         try:
             self.max_depth = int(app.config["SIDEBAR_MENUTREE_MAXDEPTH"])
@@ -66,11 +78,8 @@ class SidebarPageIndex:
             self.max_depth = None
         self.mode = app.config["SIDEBAR_MENUTREE_MODE"]
         # overwrite mode if argument is given
-        if mode: self.mode = mode
-
-        # TODO load configs (yaml header in page?) (sidebar.yaml?)
-
-        # TODO check for cached pages
+        if mode:
+            self.mode = mode
 
         self.filenames_and_header = []
 
@@ -141,7 +150,10 @@ class SidebarPageIndex:
             }
         if len(parts) > 1:
             self.add_node(
-                tree[parts[0]]["children"], prefix + [parts[0]], parts[1:], header
+                tree[parts[0]]["children"],
+                prefix + [parts[0]],
+                parts[1:],
+                header,
             )
 
     def load(self):
@@ -172,6 +184,3 @@ class SidebarPageIndex:
 
     def query(self):
         return self.tree
-
-
-# vim: set et ts=8 sts=4 sw=4 ai:

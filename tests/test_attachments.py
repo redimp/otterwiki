@@ -5,6 +5,7 @@ import pytest
 import base64
 from flask import url_for
 
+
 @pytest.fixture
 def app_with_attachments(create_app):
     # create test page
@@ -13,7 +14,10 @@ def app_with_attachments(create_app):
     author = ("Example Author", "mail@example.com")
     # create attachment
     create_app.storage.store(
-        filename, content="# Test\nAttachment Test.", author=author, message=message
+        filename,
+        content="# Test\nAttachment Test.",
+        author=author,
+        message=message,
     )
     assert True == create_app.storage.exists(filename)
     # create txt attachment
@@ -104,7 +108,9 @@ def test_rename_attachment(test_client, req_ctx):
     assert response.status_code == 200
     assert "attachment0.txt" in response.data.decode()
     response = test_client.post(
-        url_for("edit_attachment",pagepath="Test",filename="attachment0.txt"),
+        url_for(
+            "edit_attachment", pagepath="Test", filename="attachment0.txt"
+        ),
         data={
             "new_filename": "attachment0_renamed.txt",
         },
@@ -114,13 +120,16 @@ def test_rename_attachment(test_client, req_ctx):
     assert "attachment0_renamed.txt" in response.data.decode()
 
 
-def test_rename_page_with_attachment(app_with_attachments,test_client):
+def test_rename_page_with_attachment(app_with_attachments, test_client):
     # create test page
     filename = "testa.md"
     author = ("Example Author", "mail@example.com")
     # create attachment
     app_with_attachments.storage.store(
-        filename, content="# Test AB\nAttachment Test.", author=author, message="create testa"
+        filename,
+        content="# Test AB\nAttachment Test.",
+        author=author,
+        message="create testa",
     )
     assert True == app_with_attachments.storage.exists(filename)
     # create txt attachment
@@ -151,11 +160,15 @@ def test_rename_page_with_attachment(app_with_attachments,test_client):
     log = app_with_attachments.storage.log()[:3]
     assert log[1]["message"] == "added attachment to testa"
 
-    rv = test_client.get(f"/Testb/attachment0.txt?revision={log[0]['revision']}")
+    rv = test_client.get(
+        f"/Testb/attachment0.txt?revision={log[0]['revision']}"
+    )
     assert rv.status_code == 200
     rv = test_client.get(f"/Testb/a/attachment0.txt/{log[0]['revision']}")
     assert rv.status_code == 200
-    rv = test_client.get(f"/Testb/a/attachment0.txt?revision={log[0]['revision']}")
+    rv = test_client.get(
+        f"/Testb/a/attachment0.txt?revision={log[0]['revision']}"
+    )
     assert rv.status_code == 200
 
     # without a revision the attachment can not be found
@@ -165,5 +178,7 @@ def test_rename_page_with_attachment(app_with_attachments,test_client):
     # with the revision the attachment is found
     rv = test_client.get(f"/Testa/a/attachment0.txt/{log[1]['revision']}")
     assert rv.status_code == 200
-    rv = test_client.get(f"/Testa/a/attachment0.txt?revision={log[1]['revision']}")
+    rv = test_client.get(
+        f"/Testa/a/attachment0.txt?revision={log[1]['revision']}"
+    )
     assert rv.status_code == 200

@@ -20,7 +20,7 @@ def create_app(tmpdir):
             [
                 "REPOSITORY = '{}'\n".format(str(_storage.path)),
                 "SITE_NAME = 'TEST WIKI'\n",
-                "DEBUG = True\n", # enable test and debug settings
+                "DEBUG = True\n",  # enable test and debug settings
                 "TESTING = True\n",
                 "MAIL_SUPPRESS_SEND = True\n",
                 "SECRET_KEY = 'Testing Testing Testing'\n",
@@ -30,12 +30,13 @@ def create_app(tmpdir):
     os.environ["OTTERWIKI_SETTINGS"] = settings_cfg
     # get app
     from otterwiki.server import app, db, mail, storage
+
     # for debugging
-    app._otterwiki_tempdir = storage.path # pyright: ignore
+    app._otterwiki_tempdir = storage.path  # pyright: ignore
     # for other tests
-    app.storage = storage # pyright: ignore
+    app.storage = storage  # pyright: ignore
     # store mail in app for testing
-    app.test_mail = mail # pyright: ignore
+    app.test_mail = mail  # pyright: ignore
     # enable test and debug settings
     app.config["TESTING"] = True
     app.config["DEBUG"] = True
@@ -47,10 +48,12 @@ def test_client(create_app):
     client = create_app.test_client()
     return client
 
+
 @pytest.fixture
 def req_ctx(create_app):
     with create_app.test_request_context() as ctx:
         yield ctx
+
 
 @pytest.fixture
 def app_with_user(create_app, req_ctx):
@@ -60,7 +63,7 @@ def app_with_user(create_app, req_ctx):
     db.session.query(SimpleAuth.User).delete()
     db.session.commit()
     # create a user
-    user = SimpleAuth.User( # pyright: ignore
+    user = SimpleAuth.User(  # pyright: ignore
         name="Test User",
         email="mail@example.org",
         password_hash=generate_password_hash("password1234", method="scrypt"),
@@ -71,7 +74,7 @@ def app_with_user(create_app, req_ctx):
     db.session.add(user)
 
     # create a non admin user
-    user = SimpleAuth.User( # pyright: ignore
+    user = SimpleAuth.User(  # pyright: ignore
         name="Another User",
         email="another@user.org",
         password_hash=generate_password_hash("password4567", method="scrypt"),
@@ -96,10 +99,11 @@ def admin_client(app_with_user):
             "password": "password1234",
         },
         follow_redirects=True,
-   )
+    )
     html = result.data.decode()
     assert "You logged in successfully." in html
     return client
+
 
 @pytest.fixture(scope="function")
 def other_client(app_with_user):

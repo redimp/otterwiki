@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
 
@@ -12,7 +13,14 @@ from flask import (
     url_for,
 )
 from otterwiki.server import app, storage, githttpserver
-from otterwiki.wiki import Page, PageIndex, Changelog, Search, render, AutoRoute
+from otterwiki.wiki import (
+    Page,
+    PageIndex,
+    Changelog,
+    Search,
+    render,
+    AutoRoute,
+)
 import otterwiki.auth
 import otterwiki.preferences
 from otterwiki.helper import toast, health_check, get_pagename_prefixes
@@ -20,6 +28,7 @@ from otterwiki.version import __version__
 from otterwiki.util import sanitize_pagename, split_path, join_path
 
 from flask_login import login_required
+
 
 #
 # techninal views/routes/redirects
@@ -35,7 +44,7 @@ def robotstxt():
         txt = "User-agent: *\nAllow: /"
     elif app.config["ROBOTS_TXT"] == "disallow":
         txt = "User-agent: *\nDisallow: /"
-    else: # this a fallback, in case of a typo: disallow
+    else:  # this a fallback, in case of a typo: disallow
         txt = "User-agent: *\nDisallow: /"
     response = make_response(
         txt,
@@ -57,9 +66,11 @@ def favicon():
 @app.route("/-/healthz")
 def healthz():
     healthy, msgs = health_check()
-    return "\n".join(msgs), \
-            200 if healthy else 503, \
-            {'Content-Type': 'text/plain; charset=utf-8'}
+    return (
+        "\n".join(msgs),
+        200 if healthy else 503,
+        {'Content-Type': 'text/plain; charset=utf-8'},
+    )
 
 
 #
@@ -69,7 +80,7 @@ def healthz():
 def about():
     with open(os.path.join(app.root_path, "about.md")) as f:
         content = f.read()
-    htmlcontent,_ = render.markdown(content)
+    htmlcontent, _ = render.markdown(content)
     return render_template(
         "about.html",
         htmlcontent=htmlcontent,
@@ -81,32 +92,35 @@ def about():
 def syntax():
     return render_template(
         "syntax.html",
-        in_help = True,
+        in_help=True,
     )
+
 
 @app.route("/-/help")
 @app.route("/-/help/<string:topic>")
 def help(topic=None):
     toc = None
     content = "TODO"
-    if (topic == "admin"):
+    if topic == "admin":
         with open(os.path.join(app.root_path, "help_admin.md")) as f:
             md = f.read()
             content, toc = render.markdown(md)
-    elif (topic == "syntax"):
-        toc = [(None, '', 2, s, s.lower()) for s in [
-            'Emphasis',
-            'Headings',
-            'Lists',
-            'Links',
-            'Quotes',
-            'Images',
-            'Tables',
-            'Code',
-            'Mathjax',
-            'Footnotes',
-            'Blocks',
-            'Diagrams',
+    elif topic == "syntax":
+        toc = [
+            (None, '', 2, s, s.lower())
+            for s in [
+                'Emphasis',
+                'Headings',
+                'Lists',
+                'Links',
+                'Quotes',
+                'Images',
+                'Tables',
+                'Code',
+                'Mathjax',
+                'Footnotes',
+                'Blocks',
+                'Diagrams',
             ]
         ]
         return render_template("help_syntax.html", toc=toc, in_help=True)
@@ -126,7 +140,10 @@ def settings():
     else:
         return otterwiki.auth.handle_settings(request.form)
 
-@app.route("/-/admin/user_management", methods=["POST", "GET"]) # pyright: ignore -- false positive
+
+@app.route(
+    "/-/admin/user_management", methods=["POST", "GET"]
+)  # pyright: ignore -- false positive
 @login_required
 def admin_user_management():
     if request.method == "GET":
@@ -134,7 +151,10 @@ def admin_user_management():
     else:
         return otterwiki.preferences.handle_user_management(request.form)
 
-@app.route("/-/admin/sidebar_preferences", methods=["POST", "GET"]) # pyright: ignore -- false positive
+
+@app.route(
+    "/-/admin/sidebar_preferences", methods=["POST", "GET"]
+)  # pyright: ignore -- false positive
 @login_required
 def admin_sidebar_preferences():
     if request.method == "GET":
@@ -142,15 +162,23 @@ def admin_sidebar_preferences():
     else:
         return otterwiki.preferences.handle_sidebar_preferences(request.form)
 
-@app.route("/-/admin/permissions_and_registration", methods=["POST", "GET"]) # pyright: ignore -- false positive
+
+@app.route(
+    "/-/admin/permissions_and_registration", methods=["POST", "GET"]
+)  # pyright: ignore -- false positive
 @login_required
 def admin_permissions_and_registration():
     if request.method == "GET":
         return otterwiki.preferences.permissions_and_registration_form()
     else:
-        return otterwiki.preferences.handle_permissions_and_registration(request.form)
+        return otterwiki.preferences.handle_permissions_and_registration(
+            request.form
+        )
 
-@app.route("/-/admin/content_and_editing", methods=["POST", "GET"]) # pyright: ignore -- false positive
+
+@app.route(
+    "/-/admin/content_and_editing", methods=["POST", "GET"]
+)  # pyright: ignore -- false positive
 @login_required
 def admin_content_and_editing():
     if request.method == "GET":
@@ -158,7 +186,10 @@ def admin_content_and_editing():
     else:
         return otterwiki.preferences.handle_content_and_editing(request.form)
 
-@app.route("/-/admin/mail_preferences", methods=["POST", "GET"]) # pyright: ignore -- false positive
+
+@app.route(
+    "/-/admin/mail_preferences", methods=["POST", "GET"]
+)  # pyright: ignore -- false positive
 @login_required
 def admin_mail_preferences():
     if request.method == "GET":
@@ -166,7 +197,10 @@ def admin_mail_preferences():
     else:
         return otterwiki.preferences.handle_mail_preferences(request.form)
 
-@app.route("/-/admin", methods=["POST", "GET"]) # pyright: ignore -- false positive
+
+@app.route(
+    "/-/admin", methods=["POST", "GET"]
+)  # pyright: ignore -- false positive
 @login_required
 def admin():
     if request.method == "GET":
@@ -174,14 +208,16 @@ def admin():
     else:
         return otterwiki.preferences.handle_preferences(request.form)
 
-@app.route("/-/user/", methods=["POST","GET"])
-@app.route("/-/user/<string:uid>", methods=["POST","GET"])
+
+@app.route("/-/user/", methods=["POST", "GET"])
+@app.route("/-/user/<string:uid>", methods=["POST", "GET"])
 @login_required
 def user(uid=None):
     if request.method == "GET":
         return otterwiki.preferences.user_edit_form(uid)
     else:
-        return otterwiki.preferences.handle_user_edit(uid,request.form)
+        return otterwiki.preferences.handle_user_edit(uid, request.form)
+
 
 #
 # index, changelog
@@ -200,19 +236,24 @@ def pageindex():
     idx = PageIndex()
     return idx.render()
 
+
 @app.route("/-/create", methods=["POST", "GET"])
 def create():
     pagename = request.form.get("pagename")
     pagename_sanitized = sanitize_pagename(pagename)
     if pagename is None:
         # This is the default create page view
-        return render_template("create.html", title="Create Page",
-                               pagename_prefixes=get_pagename_prefixes())
+        return render_template(
+            "create.html",
+            title="Create Page",
+            pagename_prefixes=get_pagename_prefixes(),
+        )
     elif pagename != pagename_sanitized:
         if pagename is not None and pagename != pagename_sanitized:
             toast("Please check the pagename ...", "warning")
         return render_template(
-            "create.html", title="Create Page",
+            "create.html",
+            title="Create Page",
             pagename=pagename_sanitized,
             pagename_prefixes=get_pagename_prefixes(),
         )
@@ -276,9 +317,11 @@ def confirm_email(token):
 def recover_password(token):
     return otterwiki.auth.handle_recover_password_token(token=token)
 
+
 @app.route("/-/request_confirmation_link/<string:email>", methods=["GET"])
 def request_confirmation_link(email):
     return otterwiki.auth.handle_request_confirmation(email=email)
+
 
 #
 # page views
@@ -296,6 +339,7 @@ def view(path="Home"):
     p = AutoRoute(path, values=request.values)
     return p.view()
 
+
 @app.route("/<path:path>/history", methods=["POST", "GET"])
 def history(path):
     # return "path={}".format(path)
@@ -305,7 +349,10 @@ def history(path):
         rev_b=request.form.get("rev_b"),
     )
 
-@app.route("/<path:path>/diff/<string:rev_a>/<string:rev_b>", methods=["POST", "GET"])
+
+@app.route(
+    "/<path:path>/diff/<string:rev_a>/<string:rev_b>", methods=["POST", "GET"]
+)
 def diff(path, rev_a, rev_b):
     # return "path={}".format(path)
     p = Page(path)
@@ -372,27 +419,30 @@ def save(path):
     # create page object
     p = Page(path)
     # and save
-    return p.save(content=content, commit=commit, author=otterwiki.auth.get_author())
+    return p.save(
+        content=content, commit=commit, author=otterwiki.auth.get_author()
+    )
 
 
 @app.route("/<path:path>/preview", methods=["POST", "GET"])
 def preview(path):
     p = Page(path)
     return p.preview(
-            content=request.form.get("content"),
-            cursor_line=request.form.get("cursor_line"),
-            )
+        content=request.form.get("content"),
+        cursor_line=request.form.get("cursor_line"),
+    )
+
 
 @app.route("/<path:path>/draft", methods=["POST", "GET"])
 def draft(path):
     p = Page(path)
     return p.save_draft(
-            content=request.form.get("content", ""),
-            cursor_line=request.form.get("cursor_line", 0),
-            cursor_ch=request.form.get("cursor_ch", 0),
-            revision=request.form.get("revision", ""),
-            author=otterwiki.auth.get_author(),
-            )
+        content=request.form.get("content", ""),
+        cursor_line=request.form.get("cursor_line", 0),
+        cursor_ch=request.form.get("cursor_ch", 0),
+        revision=request.form.get("revision", ""),
+        author=otterwiki.auth.get_author(),
+    )
 
 
 @app.route("/<path:pagepath>/source/<string:revision>")
@@ -407,6 +457,7 @@ def source(pagepath, revision=None):
 def show_commit(revision):
     chlg = Changelog()
     return chlg.show_commit(revision)
+
 
 @app.route("/-/revert/<string:revision>", methods=["POST", "GET"])
 def revert(revision):
@@ -439,10 +490,14 @@ def get_attachment(pagepath, filename, revision=None):
 @app.route("/<path:pagepath>/t/<string:filename>/<int:size>")
 def get_attachment_thumbnail(pagepath, filename, size=80):
     p = Page(pagepath)
-    return p.get_attachment_thumbnail(filename=filename, size=size, revision=None)
+    return p.get_attachment_thumbnail(
+        filename=filename, size=size, revision=None
+    )
 
 
-@app.route("/<path:pagepath>/attachment/<string:filename>", methods=["POST", "GET"])
+@app.route(
+    "/<path:pagepath>/attachment/<string:filename>", methods=["POST", "GET"]
+)
 def edit_attachment(pagepath, filename):
     p = Page(pagepath)
     return p.edit_attachment(
@@ -497,12 +552,14 @@ def search(query=None):
     )
     return s.render()
 
+
 #
 # git remote http server
 #
 @app.route("/.git", methods=["GET"])
 def dotgit():
     return redirect(url_for("index"))
+
 
 @app.route("/.git/info/refs", methods=["POST", "GET"])
 def git_info_refs():
@@ -511,6 +568,7 @@ def git_info_refs():
         return githttpserver.advertise_refs(service)
     else:
         abort(400)
+
 
 @app.route("/.git/git-upload-pack", methods=["POST"])
 def git_upload_pack():
@@ -521,4 +579,4 @@ def git_upload_pack():
 def git_receive_pack():
     return githttpserver.git_receive_pack(request.stream)
 
-# vim: set et ts=8 sts=4 sw=4 ai:
+

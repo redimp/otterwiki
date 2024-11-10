@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
 import pytest
@@ -69,10 +70,12 @@ def test_broken_message(storage):
     metadata = storage.metadata(filename)
     assert metadata["message"] == ""
 
+
 def test_log_empty(storage):
     assert [] == storage.log(fail_on_git_error=False)
     with pytest.raises(gitstorage.StorageNotFound):
         log = storage.log(fail_on_git_error=True)
+
 
 def test_log(storage):
     content = "kdfjlhg gdklfjghdf gkl;djshfg dgf;lkjhs glkshjad\n"
@@ -113,7 +116,9 @@ def test_revert(storage):
     # get revision
     log = storage.log(filename)
     revision = log[0]["revision"]
-    storage.revert(revision, message="reverted {}".format(revision), author=author)
+    storage.revert(
+        revision, message="reverted {}".format(revision), author=author
+    )
     # check that the file is in the old state
     assert storage.load(filename) == content1
 
@@ -133,7 +138,9 @@ def test_revert_fail(storage):
     log = storage.log(filename)
     revision = log[0]["revision"]
     # revert
-    storage.revert(revision, message="reverted {}".format(revision), author=author)
+    storage.revert(
+        revision, message="reverted {}".format(revision), author=author
+    )
     files, _ = storage.list()
     assert filename not in files
 
@@ -180,7 +187,7 @@ def test_binary(storage):
 
 
 def test_revision(storage):
-    content = ["aaa","kdfjlhg gdklfjghdf gkl;djshfg dgf;lkjhs glkshjad"]
+    content = ["aaa", "kdfjlhg gdklfjghdf gkl;djshfg dgf;lkjhs glkshjad"]
     message = "Test commit"
     filename = "test_revision.md"
     author = ("Example Author", "mail@example.com")
@@ -212,7 +219,7 @@ def test_store_subdir(storage):
     content = "kdfjlhg gdklfjghdf gkl;djshfg dgf;lkjhs glkshjad\n"
     message = "Test commit"
     subdir = "test_subdir"
-    filename = os.path.join(subdir,"test_subdir.md")
+    filename = os.path.join(subdir, "test_subdir.md")
     author = ("Example Author", "mail@example.com")
     assert True == storage.store(
         filename, content=content, author=author, message=message
@@ -234,7 +241,9 @@ def test_list(storage):
     author = ("Example Author", "mail@example.com")
     all_files = ["a", "b/c", "d/e/f"]
     for f in all_files:
-        assert True == storage.store(f, content=content, author=author, message=msg)
+        assert True == storage.store(
+            f, content=content, author=author, message=msg
+        )
     files, directories = storage.list()
     # check that all files are there
     assert files == all_files
@@ -264,7 +273,9 @@ def test_list_path(storage):
     author = ("Example Author", "mail@example.com")
     all_files = ["a", "b/c", "b/d"]
     for f in all_files:
-        assert True == storage.store(f, content=content, author=author, message=msg)
+        assert True == storage.store(
+            f, content=content, author=author, message=msg
+        )
     files, directories = storage.list()
     assert files == ["a", "b/c", "b/d"]
     # check if depth=2 works
@@ -426,13 +437,17 @@ def test_get_parent_revision(storage):
     # fetch the log
     log = storage.log()
     # get the revision of the commits matching the operations we did
-    revision1 = [x['revision'] for x in log if x['message']=="operation 1"][0]
-    revision3 = [x['revision'] for x in log if x['message']=="operation 3"][0]
+    revision1 = [x['revision'] for x in log if x['message'] == "operation 1"][
+        0
+    ]
+    revision3 = [x['revision'] for x in log if x['message'] == "operation 3"][
+        0
+    ]
     # now we check the parent revision of the renamed file, with the revison of the
     # commit that did the renaming as child
-    parent_revision = storage.get_parent_revision(filename=filename1, revision=revision3)
+    parent_revision = storage.get_parent_revision(
+        filename=filename1, revision=revision3
+    )
     assert parent_revision == revision1
 
 
-
-# vim: set et ts=8 sts=4 sw=4 ai:

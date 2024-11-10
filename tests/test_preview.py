@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai
-# -*- coding: utf-8 -*-
 
 import bs4
 import re
@@ -54,11 +53,14 @@ a^2+b^2=c^2
 <span class=".highlight nb">echo</span> <span class=".highlight s2">&quot;Hello </span><span class=".highlight nv">$WORLD</span><span class=".highlight s2">&quot;</span>
 """
 
+
 def test_preview(create_app, req_ctx):
     from otterwiki.wiki import Page
+
     p = Page("test")
     data = p.preview(content=markdown_example, cursor_line=1)
     assert render.htmlcursor in data['preview_content']
+
 
 def test_preview_all(create_app, req_ctx):
     whitespace = re.compile(r"\s+")
@@ -66,33 +68,45 @@ def test_preview_all(create_app, req_ctx):
     html_example, _ = render.markdown(markdown_example)
     html_example_soup = bs4.BeautifulSoup(html_example, "html.parser")
     from otterwiki.wiki import Page
+
     p = Page("test")
     data = p.preview(content=markdown_example, cursor_line=1)
-    preview_soup = bs4.BeautifulSoup(data['preview_content'].replace(render.htmlcursor,""), "html.parser")
-    preview_soup = preview_soup.find("div", {"class":"page"})
+    preview_soup = bs4.BeautifulSoup(
+        data['preview_content'].replace(render.htmlcursor, ""), "html.parser"
+    )
+    preview_soup = preview_soup.find("div", {"class": "page"})
     assert preview_soup
     for element in html_example_soup:
         assert str(element) in str(preview_soup)
     assert render.htmlcursor in data['preview_content']
     # check every cursor line
-    for i,md_line in enumerate(markdown_example.splitlines(),start=1):
-        data = p.preview(content=markdown_example,cursor_line=i)
+    for i, md_line in enumerate(markdown_example.splitlines(), start=1):
+        data = p.preview(content=markdown_example, cursor_line=i)
         assert render.htmlcursor.strip() in data['preview_content']
         # clean cursor and newlines
-        preview_soup = bs4.BeautifulSoup(data['preview_content'].replace(render.htmlcursor,"").replace(render.htmlcursor.strip(),""), "html.parser")
+        preview_soup = bs4.BeautifulSoup(
+            data['preview_content']
+            .replace(render.htmlcursor, "")
+            .replace(render.htmlcursor.strip(), ""),
+            "html.parser",
+        )
         # remove all the whitespace (the htmlcursor leaves annoying artifatcs)
-        preview_soup = preview_soup.find("div", {"class":"page"})
+        preview_soup = preview_soup.find("div", {"class": "page"})
         preview_html = whitespace.sub("", str(preview_soup))
         # and check if everything made it into html
         for element in html_example_soup:
-            if not element: continue
+            if not element:
+                continue
             element = whitespace.sub("", str(element))
-            if not len(element): continue
+            if not len(element):
+                continue
             # assert str(element).strip() in str(preview_soup)
             assert str(element) in preview_html
 
+
 def test_preview_list_bug(create_app, req_ctx):
     from otterwiki.wiki import Page
+
     p = Page("test")
     content = """Zeile
 1. eins

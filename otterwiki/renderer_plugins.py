@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import re
@@ -473,8 +472,11 @@ class mistunePluginFold:
 class mistunePluginMath:
     MATH_BLOCK = re.compile(r'(\${2})((?:\\.|.)*)\${2}')
     MATH_INLINE_PATTERN = (
-        r'\$(?=[^\s\$])(' r'(?:\\\$|[^\$])*' r'(?:' + ESCAPE_TEXT + r'|[^\s\$]))\$'
+        r'\$(?=[^\s\$])('
+        r'(?:\\\$|[^\$])*'
+        r'(?:' + ESCAPE_TEXT + r'|[^\s\$]))\$'
     )
+
     def parse_block(self, block, m, state):
         text = m.group(2)
         return {
@@ -493,10 +495,10 @@ class mistunePluginMath:
         return '\\(' + text + '\\)'
 
     def __call__(self, md):
-        md.block.register_rule(
-            'math_block', self.MATH_BLOCK, self.parse_block
+        md.block.register_rule('math_block', self.MATH_BLOCK, self.parse_block)
+        md.inline.register_rule(
+            'math_inline', self.MATH_INLINE_PATTERN, self.parse_inline
         )
-        md.inline.register_rule('math_inline', self.MATH_INLINE_PATTERN, self.parse_inline)
 
         md.block.rules.append('math_block')
         md.inline.rules.append('math_inline')
@@ -515,8 +517,15 @@ class mistunePluginAlerts:
         'CAUTION': '<i class="fas fa-exclamation-circle"></i>',
     }
     TYPES_WITH_PIPES = "|".join(TYPE_ICONS.keys())
-    ALERT_LEADING = re.compile(r'^ *\>(\s*\[!(' + TYPES_WITH_PIPES + r')\])?', flags=re.MULTILINE)
-    ALERT_BLOCK = re.compile(r'(?: {0,3}>\s*\[!(' + TYPES_WITH_PIPES + r')\][^\n]*(?:\n|$))( {0,3}>[^\n]*(?:\n|$))+', flags=re.I)
+    ALERT_LEADING = re.compile(
+        r'^ *\>(\s*\[!(' + TYPES_WITH_PIPES + r')\])?', flags=re.MULTILINE
+    )
+    ALERT_BLOCK = re.compile(
+        r'(?: {0,3}>\s*\[!('
+        + TYPES_WITH_PIPES
+        + r')\][^\n]*(?:\n|$))( {0,3}>[^\n]*(?:\n|$))+',
+        flags=re.I,
+    )
 
     def parse_alert_block(self, block, m, state):
         text = m.group(0)
@@ -555,22 +564,22 @@ class mistunePluginAlerts:
             md.block.rules.append('alert_block')
 
         if md.renderer.NAME == "html":
-            md.renderer.register(
-                "alert_block", self.render_html_alert_block
-            )
+            md.renderer.register("alert_block", self.render_html_alert_block)
 
 
 class mistunePluginWikiLink:
     """This plugin preprocesses links in the [[WikiLink]] style."""
 
-    PIPE_REPLACEMENT="\ufeff"
+    PIPE_REPLACEMENT = "\ufeff"
 
-    WIKI_LINK = (
-        r"\[\[(([^|\]#]+)(?:#[^\]]*)?(?:(\|)([^\]]+))?)\]\]"
-    )
+    WIKI_LINK = r"\[\[(([^|\]#]+)(?:#[^\]]*)?(?:(\|)([^\]]+))?)\]\]"
     WIKI_LINK_RE = re.compile(WIKI_LINK)
     WIKI_LINK_MOD = (
-        r"\[\[(([^"+PIPE_REPLACEMENT+r"\]#]+)(?:#[^\]]*)?(?:("+PIPE_REPLACEMENT+r")([^\]]+))?)\]\]"
+        r"\[\[(([^"
+        + PIPE_REPLACEMENT
+        + r"\]#]+)(?:#[^\]]*)?(?:("
+        + PIPE_REPLACEMENT
+        + r")([^\]]+))?)\]\]"
     )
     WIKI_LINK_MOD_RE = re.compile(WIKI_LINK_MOD)
 
@@ -587,26 +596,34 @@ class mistunePluginWikiLink:
         return "wikilink", inline.render(title, state), link
 
     def render_html_wikilink(self, text, link):
-        return '<a href="'+ link +'">' + text + '</a>'
+        return '<a href="' + link + '">' + text + '</a>'
 
     def replace_wikilinks(self, match):
         if match.group(3) and len(match.group(3)):
-            return "[["+match.group(2)+"%"+match.group(4)+"]]"
-        return "[["+match.group(2)+"]]"
+            return "[[" + match.group(2) + "%" + match.group(4) + "]]"
+        return "[[" + match.group(2) + "]]"
 
     def before_parse(self, md, s, state):
         def replace(match):
             if match.group(3) and len(match.group(3)):
-                return "[["+match.group(2)+self.PIPE_REPLACEMENT+match.group(4)+"]]"
-            return "[["+match.group(2)+"]]"
+                return (
+                    "[["
+                    + match.group(2)
+                    + self.PIPE_REPLACEMENT
+                    + match.group(4)
+                    + "]]"
+                )
+            return "[[" + match.group(2) + "]]"
+
         s = self.WIKI_LINK_RE.sub(replace, s)
         return s, state
 
     def after_render(self, md, s, state):
         def replace(match):
             if match.group(3) and len(match.group(3)):
-                return "[["+match.group(2)+"|"+match.group(4)+"]]"
-            return "[["+match.group(2)+"]]"
+                return "[[" + match.group(2) + "|" + match.group(4) + "]]"
+            return "[[" + match.group(2) + "]]"
+
         s = self.WIKI_LINK_MOD_RE.sub(replace, s)
         return s
 
@@ -614,7 +631,9 @@ class mistunePluginWikiLink:
         md.before_parse_hooks.append(self.before_parse)
         md.after_render_hooks.append(self.after_render)
 
-        md.inline.register_rule('wikilink', self.WIKI_LINK_MOD, self.parse_wikilink)
+        md.inline.register_rule(
+            'wikilink', self.WIKI_LINK_MOD, self.parse_wikilink
+        )
 
         md.inline.rules.append('wikilink')
 

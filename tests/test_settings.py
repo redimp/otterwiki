@@ -7,6 +7,7 @@ import re
 import otterwiki
 from pprint import pprint
 
+
 def test_settings_update_name(app_with_user, test_client):
     rv = test_client.post(
         "/-/login",
@@ -130,4 +131,6 @@ def test_settings_change_password(app_with_user, test_client):
         follow_redirects=True,
     )
     assert 200 == rv.status_code
-    assert 'The password must be at least 8 characters long.' in rv.data.decode()
+    assert (
+        'The password must be at least 8 characters long.' in rv.data.decode()
+    )

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: set et ts=8 sts=4 sw=4 ai:
 
 import re
 import json
@@ -96,18 +97,18 @@ def handle_mail_preferences(form):
 
 
 def handle_sidebar_preferences(form):
-    custom_menu_js = json.dumps([
+    custom_menu_js = json.dumps(
+        [
             {
                 "link": x[0],
                 "title": x[1],
             }
             for x in list(zip(form.getlist("link"), form.getlist("title")))
             if x[0].strip() or x[1].strip()
-    ])
-
-    _update_preference(
-        "SIDEBAR_CUSTOM_MENU", custom_menu_js
+        ]
     )
+
+    _update_preference("SIDEBAR_CUSTOM_MENU", custom_menu_js)
 
     sidebar_shortcuts = []
     for shortcut in [
@@ -146,7 +147,7 @@ def handle_app_preferences(form):
         "site_logo",
         "site_description",
         "site_icon",
-        "robots_txt"
+        "robots_txt",
     ]:
         _update_preference(name.upper(), form.get(name, ""))
     for checkbox in [
@@ -177,7 +178,6 @@ def handle_content_and_editing(form):
     update_app_config()
     toast("Content and Editing Preferences updated.")
     return redirect(url_for("admin_content_and_editing"))
-
 
 
 def handle_test_mail_preferences(form):
@@ -359,7 +359,10 @@ def sidebar_preferences_form():
         abort(403)
     # we re-use SidebarPageIndex to generate a list of all pages
     sn = SidebarPageIndex("", mode="*")
-    pages = [get_pagename(fh[0], full=True, header=fh[1]) for fh in sn.filenames_and_header]
+    pages = [
+        get_pagename(fh[0], full=True, header=fh[1])
+        for fh in sn.filenames_and_header
+    ]
     # render form
     return render_template(
         "admin/sidebar_preferences.html",
@@ -395,14 +398,15 @@ def user_edit_form(uid):
         user=user,
     )
 
+
 def handle_user_add(form):
     if not has_permission("ADMIN"):
         abort(403)
     # get empty user object
     user = get_user(None)
     # update user from form
-    user.name = form.get("name").strip() # pyright: ignore
-    user.email = form.get("email").strip() # pyright: ignore
+    user.name = form.get("name").strip()  # pyright: ignore
+    user.email = form.get("email").strip()  # pyright: ignore
 
     for value, _ in [
         ("email_confirmed", "email confirmed"),
@@ -418,18 +422,20 @@ def handle_user_add(form):
             setattr(user, value, True)
 
     error = []
-    if empty(user.name): # pyright: ignore
+    if empty(user.name):  # pyright: ignore
         error.append("Name must not be empty")
     if get_user(email=user.email) is not None:  # pyright: ignore
         error.append("User with this email exists")
-    if not is_valid_email(user.email): # pyright: ignore
+    if not is_valid_email(user.email):  # pyright: ignore
         error.append("Invalid email address")
     # handle password
-    if len(form.get("password1","")) or len(form.get("password2","")):
-        if form.get("password1","") != form.get("password2",""):
+    if len(form.get("password1", "")) or len(form.get("password2", "")):
+        if form.get("password1", "") != form.get("password2", ""):
             error.append("Passwords do not match")
         else:
-            user.password_hash = generate_password_hash(form.get("password1"))  # pyright: ignore
+            user.password_hash = generate_password_hash(
+                form.get("password1")
+            )  # pyright: ignore
 
     # check user object
     if len(error):
@@ -441,8 +447,8 @@ def handle_user_add(form):
             user=user,
         )
     # no error: store in database
-    user.first_seen=datetime.now() # pyright: ignore
-    user.last_seen=datetime.now() # pyright: ignore
+    user.first_seen = datetime.now()  # pyright: ignore
+    user.last_seen = datetime.now()  # pyright: ignore
     try:
         user = update_user(user)
         # send_approvement_mail(user)
@@ -492,8 +498,8 @@ def handle_user_edit(uid, form):
                 f"'{form.get('email').strip()}' is not a valid email address",
                 "danger",
             )
-    if len(form.get("password1","")) or len(form.get("password2","")):
-        if form.get("password1","") != form.get("password2",""):
+    if len(form.get("password1", "")) or len(form.get("password2", "")):
+        if form.get("password1", "") != form.get("password2", ""):
             toast("Passwords do not match", "danger")
         else:
             user.password_hash = generate_password_hash(form.get("password1"))
@@ -532,5 +538,8 @@ def handle_user_edit(uid, form):
             send_approvement_mail(user)
     except Exception as e:
         app.logger.error(f"Unable to update user: {e}")
-        toast('Unable to update the user. Please check the server logs.', 'danger')
+        toast(
+            'Unable to update the user. Please check the server logs.',
+            'danger',
+        )
     return redirect(url_for("user", uid=user.id))

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: set et ts=8 sts=4 sw=4 ai:
 
 from otterwiki.util import is_valid_email
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -18,11 +19,18 @@ from flask_login import (
     current_user,
 )
 from otterwiki.server import app, db
-from otterwiki.helper import toast, send_mail, serialize, deserialize, SerializeError
+from otterwiki.helper import (
+    toast,
+    send_mail,
+    serialize,
+    deserialize,
+    SerializeError,
+)
 from otterwiki.util import random_password, empty
 from otterwiki.models import User as UserModel
 from datetime import datetime
 import hmac
+
 
 def check_password_hash_backport(pwhash, password):
     # split pwhash to check the method
@@ -33,8 +41,8 @@ def check_password_hash_backport(pwhash, password):
         salt = salt.encode("utf-8")
         password = password.encode("utf-8")
         return hmac.compare_digest(
-                hmac.new(salt, password, method).hexdigest(),
-                hashval)
+            hmac.new(salt, password, method).hexdigest(), hashval
+        )
     return check_password_hash(pwhash, password)
 
 
@@ -80,7 +88,11 @@ class SimpleAuth:
             next = request.args.get("next")
         # render template
         return render_template(
-            "login.html", title="Login", email=email, remember=remember, next=next
+            "login.html",
+            title="Login",
+            email=email,
+            remember=remember,
+            next=next,
         )
 
     def handle_logout(self):
@@ -90,7 +102,9 @@ class SimpleAuth:
 
     def check_credentials(self, email, password):
         user = self.User.query.filter_by(email=email).first()
-        if not user or not check_password_hash_backport(user.password_hash, password):
+        if not user or not check_password_hash_backport(
+            user.password_hash, password
+        ):
             return None
         return user
 
@@ -102,13 +116,22 @@ class SimpleAuth:
         next_page = request.form.get("next")
         user = self.check_credentials(email, password)
         if user is not None:
-            if app.config["EMAIL_NEEDS_CONFIRMATION"] and not user.is_admin \
-                    and not user.email_confirmed:
-                toast("Please confirm your email address. "+\
-                        "<a href='{}'>Resend confirmation link.</a>".format(url_for("request_confirmation_link", email=email)),
-                        "warning")
+            if (
+                app.config["EMAIL_NEEDS_CONFIRMATION"]
+                and not user.is_admin
+                and not user.email_confirmed
+            ):
+                toast(
+                    "Please confirm your email address. "
+                    + "<a href='{}'>Resend confirmation link.</a>".format(
+                        url_for("request_confirmation_link", email=email)
+                    ),
+                    "warning",
+                )
                 return redirect(url_for("login"))
-            if not user.is_admin and (self._user_needs_approvement() and not user.is_approved):
+            if not user.is_admin and (
+                self._user_needs_approvement() and not user.is_approved
+            ):
                 toast("You are not approved yet.", "warning")
                 return redirect(url_for("login"))
             # login
@@ -117,9 +140,14 @@ class SimpleAuth:
             if not next_page or urlsplit(next_page).netloc != "":
                 next_page = url_for("index")
             # check if the users password_hash is going to be deprecated
-            if (user.password_hash.startswith("sha256$")):
-                app.logger.warning(f"User has deprecated password hash: {user.email}")
-                toast(f"Please <a href='{url_for('settings')}'>update your password</a>. The hashing method used is deprecated. Check <a href='{url_for('settings')}'>settings</a> for additional information.", "warning");
+            if user.password_hash.startswith("sha256$"):
+                app.logger.warning(
+                    f"User has deprecated password hash: {user.email}"
+                )
+                toast(
+                    f"Please <a href='{url_for('settings')}'>update your password</a>. The hashing method used is deprecated. Check <a href='{url_for('settings')}'>settings</a> for additional information.",
+                    "warning",
+                )
             else:
                 toast("You logged in successfully.", "success")
             # update last_seen
@@ -150,11 +178,15 @@ class SimpleAuth:
         # check if email exists
         user = self.User.query.filter_by(email=email).first()
         if not user:
-            app.logger.warning(f"request of confirmation for non existing email: {email}")
+            app.logger.warning(
+                f"request of confirmation for non existing email: {email}"
+            )
             abort(404)
         token = serialize(email, salt="confirm-email")
         # generate mail
-        subject = "Request confirmation - {} - An Otter Wiki".format(app.config["SITE_NAME"])
+        subject = "Request confirmation - {} - An Otter Wiki".format(
+            app.config["SITE_NAME"]
+        )
         text_body = render_template(
             "confirm_email.txt",
             sitename=app.config["SITE_NAME"],
@@ -193,7 +225,7 @@ class SimpleAuth:
             # handle auto approval
             is_approved = app.config["AUTO_APPROVAL"] is True
         # create user object
-        user = self.User( # pyright: ignore
+        user = self.User(  # pyright: ignore
             name=name,
             email=email,
             password_hash=hashed_password,
@@ -206,7 +238,9 @@ class SimpleAuth:
         db.session.add(user)
         db.session.commit()
         # log user creation
-        app.logger.info("auth: New user registered: {} <{}>".format(name, email))
+        app.logger.info(
+            "auth: New user registered: {} <{}>".format(name, email)
+        )
         if app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin:
             self.request_confirmation(email)
         else:
@@ -224,22 +258,30 @@ class SimpleAuth:
         admin_list = self.User.query.filter_by(is_admin=True).all()
         admin_emails = [str(u.email) for u in admin_list]
         text_body = render_template(
-                "admin_notification.txt",
-                sitename=app.config["SITE_NAME"],
-                name=name,
-                email=email,
-                url=url_for("settings", _external=True),
-                )
-        subject = "New Account Registration - {} - An Otter Wiki".format(app.config["SITE_NAME"])
-        send_mail(subject=subject, recipients=admin_emails, text_body=text_body)
+            "admin_notification.txt",
+            sitename=app.config["SITE_NAME"],
+            name=name,
+            email=email,
+            url=url_for("settings", _external=True),
+        )
+        subject = "New Account Registration - {} - An Otter Wiki".format(
+            app.config["SITE_NAME"]
+        )
+        send_mail(
+            subject=subject, recipients=admin_emails, text_body=text_body
+        )
 
     def _user_needs_approvement(self):
         # check if the user needs to be approved by checking
         # if beeing REGISTERED is a lower requirement anywhere
         return "REGISTERED" not in [
-                app.config[permission].upper()
-                for permission in ["READ_ACCESS", "WRITE_ACCESS", "ATTACHMENT_ACCESS"]
-                ]
+            app.config[permission].upper()
+            for permission in [
+                "READ_ACCESS",
+                "WRITE_ACCESS",
+                "ATTACHMENT_ACCESS",
+            ]
+        ]
 
     def user_confirmed_email(self, email):
         user = self.User.query.filter_by(email=email).first()
@@ -270,7 +312,7 @@ class SimpleAuth:
             toast("Please enter your name.", "error")
         elif password1 != password2:
             toast("The passwords do not match.", "error")
-        elif password1 is  None or len(password1) < 8:
+        elif password1 is None or len(password1) < 8:
             toast("The password must be at least 8 characters long.", "error")
         else:
             # register account
@@ -300,7 +342,9 @@ class SimpleAuth:
         if app.config['NOTIFY_ADMINS_ON_REGISTER']:
             self.activated_user_notify_admins(user.name, email)
         # log activation
-        app.logger.info("auth: New user activated: {} <{}>".format(user.name, user.email))
+        app.logger.info(
+            "auth: New user activated: {} <{}>".format(user.name, user.email)
+        )
         # redirect user back to login
         return redirect(url_for("login"))
 
@@ -326,11 +370,15 @@ class SimpleAuth:
                 db.session.add(current_user)
                 db.session.commit()
                 toast("Your name was updated successfully.", "success")
-        if not empty(form.get("password1")) or not empty(form.get("password2")):
+        if not empty(form.get("password1")) or not empty(
+            form.get("password2")
+        ):
             if form.get("password1") != form.get("password2"):
                 toast("The passwords do not match.", "error")
             elif len(form.get("password1")) < 8:
-                toast("The password must be at least 8 characters long.", "error")
+                toast(
+                    "The password must be at least 8 characters long.", "error"
+                )
             else:
                 # update password
                 current_user.password_hash = generate_password_hash(
@@ -383,7 +431,9 @@ class SimpleAuth:
 
     def handle_recover_password_token(self, token):
         try:
-            email = deserialize(token, salt="lost-password-email", max_age=86400)
+            email = deserialize(
+                token, salt="lost-password-email", max_age=86400
+            )
         except SerializeError:
             app.logger.warning(
                 "auth.recover_password_token() Invalid token: {}".format(token)
@@ -394,7 +444,9 @@ class SimpleAuth:
         user = self.User.query.filter_by(email=email).first()
         if user is not None:
             login_user(user, remember=True)
-            app.logger.info("auth: Password recovery successful: {}".format(email))
+            app.logger.info(
+                "auth: Password recovery successful: {}".format(email)
+            )
             toast("Welcome {}, please update your password.".format(user.name))
             return redirect(url_for("settings"))
         else:
@@ -553,7 +605,8 @@ class ProxyHeaderAuth:
         return [current_user]
 
     def has_permission(self, permission, user):
-        if not user.is_authenticated: return False
+        if not user.is_authenticated:
+            return False
         return permission.upper() in user.permissions
 
 
@@ -580,7 +633,6 @@ if hasattr(auth_manager, "user_loader"):
     @login_manager.user_loader
     def user_load_proxy(id):
         return auth_manager.user_loader(id)
-
 
 elif hasattr(auth_manager, "request_loader"):
 
@@ -652,17 +704,22 @@ def handle_request_confirmation(*args, **kwargs):
 def get_all_user(*args, **kwargs):
     return auth_manager.get_all_user(*args, **kwargs)
 
+
 def get_user(*args, **kwargs):
     return auth_manager.get_user(*args, **kwargs)
+
 
 def update_user(*args, **kwargs):
     return auth_manager.update_user(*args, **kwargs)
 
+
 def delete_user(user):
     return auth_manager.delete_user(user)
 
+
 def check_credentials(email, password):
     return auth_manager.check_credentials(email, password)
+
 
 #
 # utils
@@ -678,4 +735,3 @@ app.jinja_env.globals.update(
     auth_supported_features=auth_manager.supported_features()
 )
 
-# vim: set et ts=8 sts=4 sw=4 ai:

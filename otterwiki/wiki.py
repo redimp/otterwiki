@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
 import re
@@ -66,7 +67,9 @@ class PageIndex:
         page_indices = []
 
         if path is not None:
-            self.path = path if app.config["RETAIN_PAGE_NAME_CASE"] else path.lower()
+            self.path = (
+                path if app.config["RETAIN_PAGE_NAME_CASE"] else path.lower()
+            )
             self.path = self.path.rstrip("/")
             self.breadcrumbs = get_breadcrumbs(
                 get_pagename(
@@ -83,8 +86,8 @@ class PageIndex:
         # get all files in the storage
         files, _ = storage.list(p=self.path)
         app.logger.debug(
-                f"PageIndex({self.path}) storage.list() files took {timer() - t_start:.3f} seconds."
-            )
+            f"PageIndex({self.path}) storage.list() files took {timer() - t_start:.3f} seconds."
+        )
         # restart timer
         t_start = timer()
         # filter .md files
@@ -95,9 +98,7 @@ class PageIndex:
             else:
                 f = os.path.join(self.path, fn)
             page_depth = len(split_path(f)) - 1
-            firstletter = get_pagename(
-                fn, full=True
-            )[0].upper()
+            firstletter = get_pagename(fn, full=True)[0].upper()
             if firstletter not in self.toc.keys():
                 self.toc[firstletter] = []
             # add the subdirectories the page is in to the page index
@@ -139,7 +140,8 @@ class PageIndex:
             pagetoc = []
             # default pagename is the pagename derived from the filename
             pagename = get_pagename(
-                f, full=False,
+                f,
+                full=False,
             )
             # read file
             content = storage.load(f)
@@ -179,7 +181,7 @@ class PageIndex:
                 displayname = displayname[len(self.path) + 1 :]
             has_children = False
             for other in md_files:
-                if other.startswith(f[:-3]+"/"):
+                if other.startswith(f[:-3] + "/"):
                     has_children = True
                     break
             self.toc[firstletter].append(
@@ -200,8 +202,8 @@ class PageIndex:
             )
 
         app.logger.debug(
-                f"PageIndex({self.path}) parsing files took {timer() - t_start:.3f} seconds."
-            )
+            f"PageIndex({self.path}) parsing files took {timer() - t_start:.3f} seconds."
+        )
 
     def render(self):
         if not has_permission("READ"):
@@ -378,7 +380,7 @@ class Changelog:
         patchset = PatchSet(diff)
         pagepath = None
 
-        url_map=patchset2urlmap(patchset, revision)
+        url_map = patchset2urlmap(patchset, revision)
         if len(url_map) == 1:
             pagepath = get_pagepath(get_pagename(list(url_map.keys())[0]))
 
@@ -406,9 +408,7 @@ class Page:
 
         if pagepath is not None:
             self.pagepath = sanitize_pagename(pagepath)
-            self.pagename = get_pagename(
-                pagepath
-            )
+            self.pagename = get_pagename(pagepath)
         elif pagename is not None:
             self.pagename = sanitize_pagename(pagename)
             self.pagepath = get_pagepath(pagename)
@@ -416,9 +416,7 @@ class Page:
         self.pagename_full = get_pagename(self.pagepath, full=True)
         self.revision = revision
 
-        self.filename = get_filename(
-            self.pagepath
-        )
+        self.filename = get_filename(self.pagepath)
         self.attachment_directoryname = get_attachment_directoryname(
             self.filename
         )
@@ -556,7 +554,9 @@ class Page:
 
         menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
 
-        htmlcontent = chain_hooks("page_view_htmlcontent_postprocess", htmlcontent, self)
+        htmlcontent = chain_hooks(
+            "page_view_htmlcontent_postprocess", htmlcontent, self
+        )
 
         # render template
         return render_template(
@@ -606,8 +606,8 @@ class Page:
         )
 
         return {
-            "preview_content" : preview_html,
-            "preview_toc" : toc_html,
+            "preview_content": preview_html,
+            "preview_toc": toc_html,
         }
 
     def editor(self, author, handle_draft=None):
@@ -634,10 +634,18 @@ class Page:
                     "draft.html",
                     pagename=self.pagename,
                     pagepath=self.pagepath,
-                    revision=self.metadata["revision"] if self.metadata else None,
+                    revision=(
+                        self.metadata["revision"] if self.metadata else None
+                    ),
                     draft_revision=self.revision,
-                    content=pygments_render(self.content, lang='markdown') if self.content else None,
-                    draft_content=pygments_render(draft.content, lang='markdown'),
+                    content=(
+                        pygments_render(self.content, lang='markdown')
+                        if self.content
+                        else None
+                    ),
+                    draft_content=pygments_render(
+                        draft.content, lang='markdown'
+                    ),
                     draft_datetime=draft.datetime.astimezone(UTC),
                 )
             if handle_draft == "discard":
@@ -658,7 +666,9 @@ class Page:
             files=files,
             cursor_line=cursor_line,
             cursor_ch=cursor_ch,
-            revision=self.metadata.get("revision", "") if self.metadata else "",
+            revision=(
+                self.metadata.get("revision", "") if self.metadata else ""
+            ),
         )
 
     def save(self, content, commit, author):
@@ -717,7 +727,15 @@ class Page:
             if row[0] != last:
                 oddeven = "odd" if oddeven == "even" else "even"
                 fdata.append(
-                    (row[0], row[1], row[2], int(row[3]), line, f"chunk-start chunk-start-{oddeven}", row[0])
+                    (
+                        row[0],
+                        row[1],
+                        row[2],
+                        int(row[3]),
+                        line,
+                        f"chunk-start chunk-start-{oddeven}",
+                        row[0],
+                    )
                 )
                 last = row[0]
             else:
@@ -742,7 +760,7 @@ class Page:
 
         diff = storage.diff(rev_a, rev_b)
         patchset = PatchSet(diff)
-        url_map=patchset2urlmap(patchset, rev_b, rev_a)
+        url_map = patchset2urlmap(patchset, rev_b, rev_a)
         file_diffs = patchset2filedict(patchset)
 
         menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
@@ -778,13 +796,15 @@ class Page:
                 404,
             )
         if rev_a is not None and rev_b is not None and rev_a != rev_b:
-            return redirect(url_for("diff", path=self.pagepath, rev_a=rev_a, rev_b=rev_b))
+            return redirect(
+                url_for("diff", path=self.pagepath, rev_a=rev_a, rev_b=rev_b)
+            )
 
         log = []
-        for i,orig_entry in enumerate(orig_log):
-            if len(orig_log)>1 and i == 0 and rev_b is None:
+        for i, orig_entry in enumerate(orig_log):
+            if len(orig_log) > 1 and i == 0 and rev_b is None:
                 rev_b = orig_entry['revision']
-            elif len(orig_log)>1 and i == 1 and rev_a is None:
+            elif len(orig_log) > 1 and i == 1 and rev_a is None:
                 rev_a = orig_entry['revision']
             entry = dict(orig_entry)
             entry["url"] = url_for(
@@ -811,9 +831,7 @@ class Page:
         # handle case that the page doesn't exists
         self.exists_or_404()
         # filename
-        new_filename = get_filename(
-            new_pagename
-        )
+        new_filename = get_filename(new_pagename)
         # check for attachments
         files, directories = storage.list(self.attachment_directoryname)
         if (len(files) + len(directories)) > 0:
@@ -845,7 +863,9 @@ class Page:
         elif get_pagename(new_pagename, full=True) == self.pagepath:
             toast("New and old name are the same.", "error")
         elif Page(new_pagename).exists:
-            toast(f"Unable to rename: {new_pagename} already exists.", "warning")
+            toast(
+                f"Unable to rename: {new_pagename} already exists.", "warning"
+            )
         else:
             # rename
             if empty(message):
@@ -872,7 +892,9 @@ class Page:
         menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
         olddrafts = Drafts.query.filter_by(pagepath=self.pagepath).all()
         if new_pagename != self.pagepath:
-            newdrafts = Drafts.query.filter_by(pagepath=get_pagepath(new_pagename)).all()
+            newdrafts = Drafts.query.filter_by(
+                pagepath=get_pagepath(new_pagename)
+            ).all()
         else:
             newdrafts = []
 
@@ -887,7 +909,9 @@ class Page:
             custom_menu=SidebarMenu().query(),
             olddrafts=olddrafts,
             newdrafts=newdrafts,
-            pagename_prefixes=get_pagename_prefixes(filter=[self.pagename, self.pagename_full]),
+            pagename_prefixes=get_pagename_prefixes(
+                filter=[self.pagename, self.pagename_full]
+            ),
         )
 
     def delete(self, message, author):
@@ -1033,7 +1057,9 @@ class Page:
             except KeyError:
                 return None
         else:
-            draft = Drafts.query.filter_by(pagepath=self.pagepath, author_email=author[1]).first()
+            draft = Drafts.query.filter_by(
+                pagepath=self.pagepath, author_email=author[1]
+            ).first()
             return draft
 
     def discard_draft(self, author):
@@ -1048,10 +1074,14 @@ class Page:
                 except KeyError:
                     pass
         else:
-            Drafts.query.filter_by(pagepath=self.pagepath, author_email=author[1]).delete()
+            Drafts.query.filter_by(
+                pagepath=self.pagepath, author_email=author[1]
+            ).delete()
             db.session.commit()
 
-    def save_draft(self, author, content, revision="", cursor_line=0, cursor_ch=0):
+    def save_draft(
+        self, author, content, revision="", cursor_line=0, cursor_ch=0
+    ):
         if not has_permission("WRITE"):
             abort(403)
         # Handle anonymous users, save draft in session
@@ -1060,25 +1090,27 @@ class Page:
                 session["drafts"] = {}
             # save draft in session
             d = {
-                "content" : content,
+                "content": content,
                 "revision": revision,
                 "cursor_line": cursor_line,
                 "cursor_ch": cursor_ch,
-                "datetime": datetime.now(UTC)
+                "datetime": datetime.now(UTC),
             }
             session["drafts"][self.pagepath] = d
             # flask.session: modifications on mutable structures are not picked up automatically
             session.modified = True
             return {
-                "status" : "draft saved in session",
+                "status": "draft saved in session",
             }
 
         # find existing Draft
-        draft = Drafts.query.filter_by(pagepath=self.pagepath, author_email=author[1]).first()
+        draft = Drafts.query.filter_by(
+            pagepath=self.pagepath, author_email=author[1]
+        ).first()
         if draft is None:
             draft = Drafts()
-            draft.pagepath=self.pagepath
-            draft.author_email=author[1]
+            draft.pagepath = self.pagepath
+            draft.author_email = author[1]
         # update content, timestamp, revision, line
         draft.content = content
         draft.datetime = datetime.now(UTC)
@@ -1090,7 +1122,7 @@ class Page:
         db.session.commit()
 
         return {
-            "status" : "draft saved",
+            "status": "draft saved",
         }
 
 
@@ -1102,16 +1134,12 @@ class Attachment:
         self.absdirectory = os.path.join(
             storage.path,
             get_attachment_directoryname(
-                get_filename(
-                    pagepath
-                ),
+                get_filename(pagepath),
             ),
         )
         self.fullpath = os.path.join(pagepath, filename)
         self.directory = get_attachment_directoryname(
-            get_filename(
-                pagepath
-            ),
+            get_filename(pagepath),
         )
         self.filepath = os.path.join(self.directory, filename)
         self.abspath = os.path.join(storage.path, self.filepath)
@@ -1362,7 +1390,8 @@ class Search:
         files, _ = storage.list()
         md_files = [filename for filename in files if filename.endswith(".md")]
         app.logger.debug(
-            f"Search storage.list() and filter took {timer() - t_start:.3f} seconds.")
+            f"Search storage.list() and filter took {timer() - t_start:.3f} seconds."
+        )
         fn_result = {}
 
         t_start = timer()
@@ -1375,7 +1404,7 @@ class Search:
                     get_pagename(
                         fn,
                         full=True,
-                    )
+                    ),
                 ]
             # open file, read file
             haystack = storage.load(fn)
@@ -1393,7 +1422,8 @@ class Search:
                 else:
                     lastlinematched = False
         app.logger.debug(
-            f"Search storage.load() and re.search('{self.needle}') took {timer() - t_start:.3f} seconds.")
+            f"Search storage.load() and re.search('{self.needle}') took {timer() - t_start:.3f} seconds."
+        )
         if self.in_history:
             # TODO
             # use git log -S
@@ -1418,12 +1448,8 @@ class Search:
                 fnmatch,
                 n,
                 fn,
-                get_pagename(
-                    fn, full=True
-                ),
-                get_pagename(
-                    fn, full=True
-                ),
+                get_pagename(fn, full=True),
+                get_pagename(fn, full=True),
             ]
             summary = []
             if fnmatch == 1:
@@ -1461,7 +1487,8 @@ class Search:
             # store summary with key
             result[tuple(key)] = summary
         app.logger.debug(
-            f"Search simplify result took {timer() - t_start:.3f} seconds.")
+            f"Search simplify result took {timer() - t_start:.3f} seconds."
+        )
 
         return result
 
@@ -1548,4 +1575,3 @@ class AutoRoute:
         return p.view()
 
 
-# vim: set et ts=8 sts=4 sw=4 ai:

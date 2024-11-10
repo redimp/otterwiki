@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
 import logging
@@ -47,7 +48,7 @@ app.config.update(
     SIDEBAR_MENUTREE_MODE="SORTED",
     SIDEBAR_MENUTREE_MAXDEPTH="",
     SIDEBAR_CUSTOM_MENU="",
-    COMMIT_MESSAGE="REQUIRED", # OPTIONAL DIISABLED
+    COMMIT_MESSAGE="REQUIRED",  # OPTIONAL DIISABLED
     GIT_WEB_SERVER=False,
     SIDEBAR_SHORTCUTS="home pageindex createpage",
     ROBOTS_TXT="allow",
@@ -58,7 +59,7 @@ app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 for key in app.config:
     if key in os.environ:
         if type(app.config[key]) == bool:
-            app.config[key] = os.environ[key].lower() in ["true","yes"]
+            app.config[key] = os.environ[key].lower() in ["true", "yes"]
         else:
             app.config[key] = os.environ[key]
 
@@ -68,8 +69,13 @@ app.logger.setLevel(app.config["LOG_LEVEL"])
 db = SQLAlchemy(app)
 
 # ensure SECRET_KEY is set
-if len(app.config["SECRET_KEY"])<16 or app.config["SECRET_KEY"] == "CHANGE ME":
-    fatal_error("Please configure a random SECRET_KEY with a length of at least 16 characters.")
+if (
+    len(app.config["SECRET_KEY"]) < 16
+    or app.config["SECRET_KEY"] == "CHANGE ME"
+):
+    fatal_error(
+        "Please configure a random SECRET_KEY with a length of at least 16 characters."
+    )
 
 # setup storage
 if app.config["REPOSITORY"] is None:
@@ -88,13 +94,18 @@ else:
 
 
 # check if the git repository is empty
-if (len(storage.list()[0]) < 1) and (len(storage.log()) < 1):  # pyright: ignore
+if (len(storage.list()[0]) < 1) and (
+    len(storage.log()) < 1
+):  # pyright: ignore
     # we have a brand new repository here
     with open(os.path.join(app.root_path, "initial_home.md")) as f:
         content = f.read()
-        filename = "Home.md" if app.config["RETAIN_PAGE_NAME_CASE"] else "home.md"
+        filename = (
+            "Home.md" if app.config["RETAIN_PAGE_NAME_CASE"] else "home.md"
+        )
         storage.store(  # pyright: ignore
-            filename=filename, content=content,
+            filename=filename,
+            content=content,
             author=("Otterwiki Robot", "noreply@otterwiki"),
             message="Initial commit",
         )
@@ -107,6 +118,7 @@ if (len(storage.list()[0]) < 1) and (len(storage.log()) < 1):  # pyright: ignore
 from otterwiki.models import *
 
 mail = None
+
 
 def update_app_config():
     global mail
@@ -124,17 +136,21 @@ def update_app_config():
                 "GIT_WEB_SERVER",
                 "HIDE_LOGO",
             ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
-                item.value = item.value.lower() in ["true","yes"]
+                item.value = item.value.lower() in ["true", "yes"]
             if item.name.upper() in ["MAIL_PORT"]:
                 try:
                     item.value = int(item.value)
                 except ValueError:
-                    app.logger.warning("server: Ignored invalid value app.config[\"{}\"]={}".format(
-                        item.name, item.value))
+                    app.logger.warning(
+                        "server: Ignored invalid value app.config[\"{}\"]={}".format(
+                            item.name, item.value
+                        )
+                    )
             # update app settings
             app.config[item.name] = item.value
         # setup flask_mail
         mail = Mail(app)
+
 
 with app.app_context():
     db.create_all()
@@ -145,7 +161,10 @@ update_app_config()
 #
 plugininfo = plugin_manager.list_plugin_distinfo()
 for plugin, dist in plugininfo:
-    app.logger.info(f"server: Loaded plugin: {dist.project_name}-{dist.version}")
+    app.logger.info(
+        f"server: Loaded plugin: {dist.project_name}-{dist.version}"
+    )
+
 
 #
 # template extensions
@@ -168,19 +187,20 @@ def format_datetime(value, format="medium"):
             now = datetime.datetime.now()
         else:
             now = datetime.datetime.now(datetime.UTC)
-        td =  now - value
+        td = now - value
 
         return otterwiki.util.strfdelta_round(td, "second")
     else:  # format == 'full':
         format = "%Y-%m-%d %H:%M:%S"
     return value.strftime(format)
 
+
 app.jinja_env.globals.update(os_getenv=os.getenv)
 
 # initialize git via http
 import otterwiki.remote
+
 githttpserver = otterwiki.remote.GitHttpServer(path=app.config["REPOSITORY"])
 
 import otterwiki.views
 
-# vim: set et ts=8 sts=4 sw=4 ai:

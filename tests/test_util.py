@@ -91,8 +91,6 @@ def test_random_password():
     assert p16_1 != p16_2
 
 
-
-
 def test_get_pagepath():
     assert "Home" == get_pagepath("Home")
 
@@ -102,7 +100,6 @@ def test_get_page_directoryname():
     assert "Sub" == get_page_directoryname("Sub/Dir")
     assert "Sub" == get_page_directoryname("/Sub/Dir")
     assert "Sub/Dir" == get_page_directoryname("/Sub/Dir/Page")
-
 
 
 def test_mkdir(tmpdir):
@@ -119,6 +116,7 @@ def test_mkdir(tmpdir):
     mkdir(path=tmpdir.join(path_c))
     assert os.path.exists(tmpdir.join(path_c))
 
+
 def test_titleSs():
     assert "Abc Def" == titleSs("abc dEf")
     assert "ßabc Def" == titleSs("ßabc def")
@@ -128,6 +126,7 @@ def test_titleSs():
 
 def test_patchset2filedict():
     from unidiff import PatchSet
+
     diff = """diff --git a/test_show_commit.md b/test_show_commit.md
 index 72943a1..f761ec1 100644
 --- a/test_show_commit.md
@@ -189,13 +188,32 @@ random text.
 """
     assert "some header" == get_header(md)
 
+
 def test_strfdelta_round():
     from datetime import timedelta
 
-    assert strfdelta_round(timedelta(seconds=2), round_period="second") == "2 secs"
-    assert strfdelta_round(timedelta(hours=1, minutes=2, seconds=3), round_period="second") == "1 hour 2 mins 3 secs"
-    assert strfdelta_round(timedelta(days=1, seconds=3), round_period="second") == "1 day 3 secs"
-    assert strfdelta_round(timedelta(days=4, hours=3, minutes=1, seconds=3), round_period="second") == "4 days 3 hours 1 min 3 secs"
+    assert (
+        strfdelta_round(timedelta(seconds=2), round_period="second")
+        == "2 secs"
+    )
+    assert (
+        strfdelta_round(
+            timedelta(hours=1, minutes=2, seconds=3), round_period="second"
+        )
+        == "1 hour 2 mins 3 secs"
+    )
+    assert (
+        strfdelta_round(timedelta(days=1, seconds=3), round_period="second")
+        == "1 day 3 secs"
+    )
+    assert (
+        strfdelta_round(
+            timedelta(days=4, hours=3, minutes=1, seconds=3),
+            round_period="second",
+        )
+        == "4 days 3 hours 1 min 3 secs"
+    )
     assert strfdelta_round(timedelta(seconds=2), round_period="minute") == ""
-    assert strfdelta_round(timedelta(days=21), round_period="minute") == "3 weeks"
-
+    assert (
+        strfdelta_round(timedelta(days=21), round_period="minute") == "3 weeks"
+    )

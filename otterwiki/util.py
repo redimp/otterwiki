@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: set et ts=8 sts=4 sw=4 ai:
 
 import os.path
 import pathlib
@@ -17,6 +18,7 @@ def ttl_lru_cache(ttl: int = 60, maxsize: int = 128):
     """
     Time aware lru caching thx to https://stackoverflow.com/a/73026174/212768
     """
+
     def wrapper(func):
 
         @lru_cache(maxsize)
@@ -24,7 +26,11 @@ def ttl_lru_cache(ttl: int = 60, maxsize: int = 128):
             # Note that __ttl is not passed down to func,
             # as it's only used to trigger cache miss after some time
             return func(*args, **kwargs)
-        return lambda *args, **kwargs: inner(time.time() // ttl, *args, **kwargs)
+
+        return lambda *args, **kwargs: inner(
+            time.time() // ttl, *args, **kwargs
+        )
+
     return wrapper
 
 
@@ -43,6 +49,7 @@ def slugify(value, separator="-"):
     value = re.sub(r"[^\w\s-]", "", value.decode("ascii")).strip().lower()
     return re.sub(r"[%s\s]+" % separator, separator, value)
 
+
 def clean_slashes(value):
     '''This will insure that any path separated by slashes only has one
     slash between each dir and does not end in slash'''
@@ -54,6 +61,7 @@ def clean_slashes(value):
 
     value = "/".join(_path)
     return value
+
 
 def sanitize_pagename(value, allow_unicode=True):
     value = str(value)
@@ -97,10 +105,10 @@ def titleSs(s):
         return s.title()
     magicword = 'M🙉A🙈G🙊I🐤C🐣W🐥O🦆R🐔D'
     while magicword in s:
-        magicword = 2*magicword
-    s = s.replace('ß',magicword)
+        magicword = 2 * magicword
+    s = s.replace('ß', magicword)
     s = s.title()
-    return s.replace(magicword,'ß')
+    return s.replace(magicword, 'ß')
 
 
 def get_pagepath(pagename):
@@ -129,7 +137,8 @@ def is_valid_email(email):
 
 def random_password(len=8):
     return "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(len)
+        random.choice(string.ascii_lowercase + string.digits)
+        for _ in range(len)
     )
 
 
@@ -187,12 +196,14 @@ def patchset2filedict(patchset):
 
 def get_local_timezone():
     """get the timezone the server is running on"""
-    return datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo;
+    return datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+
 
 AXT_HEADING = re.compile(
     r' {0,3}(#{1,6})(?!#+)(?: *\n+|' r'\s+([^\n]*?)(?:\n+|\s+?#+\s*\n+))'
 )
 SETEX_HEADING = re.compile(r'([^\n]+)\n *(=|-){2,}[ \t]*\n+')
+
 
 def get_header(content):
     filehead = content[:512]
@@ -213,8 +224,10 @@ def strfdelta_round(tdelta, round_period='second'):
     """
     period_names = ('week', 'day', 'hour', 'minute', 'second', 'millisecond')
     if round_period not in period_names:
-        raise Exception(f'round_period "{round_period}" invalid, should be one of {",".join(period_names)}')
-    period_seconds = (604800, 86400, 3600, 60, 1, 1/pow(10,3))
+        raise Exception(
+            f'round_period "{round_period}" invalid, should be one of {",".join(period_names)}'
+        )
+    period_seconds = (604800, 86400, 3600, 60, 1, 1 / pow(10, 3))
     period_desc = ('weeks', 'days', 'hours', 'mins', 'secs', 'msecs')
     round_i = period_names.index(round_period)
 
@@ -222,16 +235,16 @@ def strfdelta_round(tdelta, round_period='second'):
     remainder = tdelta.total_seconds()
     for i in range(len(period_names)):
         q, remainder = divmod(remainder, period_seconds[i])
-        if int(q)>0:
-            if not len(s)==0:
+        if int(q) > 0:
+            if not len(s) == 0:
                 s += ' '
             if q > 1:
                 s += f'{q:.0f} {period_desc[i]}'
             else:
                 s += f'{q:.0f} {period_desc[i][:-1]}'
-        if i==round_i:
+        if i == round_i:
             break
-        if i==round_i+1:
+        if i == round_i + 1:
             if remainder > 1:
                 s += f'{remainder} {period_desc[round_i]}'
             else:
@@ -240,4 +253,4 @@ def strfdelta_round(tdelta, round_period='second'):
 
     return s
 
-# vim: set et ts=8 sts=4 sw=4 ai:
+

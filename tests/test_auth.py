@@ -1,4 +1,4 @@
-#/usr/bin/env python
+# /usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import pytest
@@ -46,15 +46,53 @@ def test_generate_and_check_hash(create_app):
 
 
 def test_check_password_hash_backport(create_app):
-    from otterwiki.auth import generate_password_hash, check_password_hash_backport
+    from otterwiki.auth import (
+        generate_password_hash,
+        check_password_hash_backport,
+    )
+
     # make sure check_password_hash still works sice sha256/sha512 password methods
     # are deprecated and will be removed in Werkzeug 3.0 to not break existing
     # installations
-    for passwd, pwhash in [("abc123.!äüöß","sha256$AuvUmsdieyFfazrT$c5f6f1efe98ed5590dee4971345e57f54da33f277e1e00e558fdc3749dc1aa4d"),("aedaiPaesh8ie5Iu","sha256$sF2obN32d4OkvmLs$cfb90dab3c2250791eaae6f9ece94a8f1eb79d2dc04d535801e15c53ac66305b"),("┳━┳ ヽ(ಠل͜ಠ)ﾉ","sha256$OEPGu0fDDZSvlEhZ$6af38560ea7a07d93e66105a02babca6a179f7c96dd1a3c42a7fca77bc2d09be"),("abc123.!äüöß","sha512$8hycondShwRbmPT7$8fe00313e3ae05eb788dcd24a7fb577442c3eb31c60bf4a66acb92868187425db0f3e3af07b0e76726930e4012b5b8488d23f28ac16f18a7790c066c94727954"),("aedaiPaesh8ie5Iu","sha512$JbDiZmPuzsOuHQLZ$57a18fa3eb3c9f93d0d8e6d5c460e9e14cbcefdb8c36fb7bbb4a24b0f61a8e9674e09172a4ee8dce40de79d64f7fddd8addc46b881f2fbb837be46402198ae14"),("┳━┳ ヽ(ಠل͜ಠ)ﾉ","sha512$5aG970kGxIx1lKp0$2f54f96e4e68020c0ba5780b0b882979dd3ce79eabd34b40b4fce8da215ea018dba5c2f71015a0051ad798106f4e5fdbd40c6589ea4e4b260555daf205f9accc"),("abc123.!äüöß","scrypt:32768:8:1$jTNi3RiP3DuKPgrX$7d6c11df590d60ac9b96837a43bbd57dbc2bf5958e4ef316dc7214fa87e60849883fc090265bbd2910659c527d51c17815e4f79bff8b3458f6925f1f07905ce7"),("aedaiPaesh8ie5Iu","scrypt:32768:8:1$m1S6sWOQ7GK1zDpM$14368587b86036a44835ac6f1775b36e6ad217a7a895c4e41ff3b087bab5222da982a79bae540868b7d01bdf6e952545196bbba8866b3f6d69153abd0cdb46a1"),("┳━┳ ヽ(ಠل͜ಠ)ﾉ","scrypt:32768:8:1$R4Tk2yLvwsIXIJqa$f298715f1ae4242014779d45a4fb509f59f49f347708039698023f8a9c7513e3ed68471b6282c2ca5f3d9f56213b404117e0fb5c8f395853ed5acd9ec17f10df")]:
-        assert True is check_password_hash_backport(
-            pwhash,
-            passwd
-            )
+    for passwd, pwhash in [
+        (
+            "abc123.!äüöß",
+            "sha256$AuvUmsdieyFfazrT$c5f6f1efe98ed5590dee4971345e57f54da33f277e1e00e558fdc3749dc1aa4d",
+        ),
+        (
+            "aedaiPaesh8ie5Iu",
+            "sha256$sF2obN32d4OkvmLs$cfb90dab3c2250791eaae6f9ece94a8f1eb79d2dc04d535801e15c53ac66305b",
+        ),
+        (
+            "┳━┳ ヽ(ಠل͜ಠ)ﾉ",
+            "sha256$OEPGu0fDDZSvlEhZ$6af38560ea7a07d93e66105a02babca6a179f7c96dd1a3c42a7fca77bc2d09be",
+        ),
+        (
+            "abc123.!äüöß",
+            "sha512$8hycondShwRbmPT7$8fe00313e3ae05eb788dcd24a7fb577442c3eb31c60bf4a66acb92868187425db0f3e3af07b0e76726930e4012b5b8488d23f28ac16f18a7790c066c94727954",
+        ),
+        (
+            "aedaiPaesh8ie5Iu",
+            "sha512$JbDiZmPuzsOuHQLZ$57a18fa3eb3c9f93d0d8e6d5c460e9e14cbcefdb8c36fb7bbb4a24b0f61a8e9674e09172a4ee8dce40de79d64f7fddd8addc46b881f2fbb837be46402198ae14",
+        ),
+        (
+            "┳━┳ ヽ(ಠل͜ಠ)ﾉ",
+            "sha512$5aG970kGxIx1lKp0$2f54f96e4e68020c0ba5780b0b882979dd3ce79eabd34b40b4fce8da215ea018dba5c2f71015a0051ad798106f4e5fdbd40c6589ea4e4b260555daf205f9accc",
+        ),
+        (
+            "abc123.!äüöß",
+            "scrypt:32768:8:1$jTNi3RiP3DuKPgrX$7d6c11df590d60ac9b96837a43bbd57dbc2bf5958e4ef316dc7214fa87e60849883fc090265bbd2910659c527d51c17815e4f79bff8b3458f6925f1f07905ce7",
+        ),
+        (
+            "aedaiPaesh8ie5Iu",
+            "scrypt:32768:8:1$m1S6sWOQ7GK1zDpM$14368587b86036a44835ac6f1775b36e6ad217a7a895c4e41ff3b087bab5222da982a79bae540868b7d01bdf6e952545196bbba8866b3f6d69153abd0cdb46a1",
+        ),
+        (
+            "┳━┳ ヽ(ಠل͜ಠ)ﾉ",
+            "scrypt:32768:8:1$R4Tk2yLvwsIXIJqa$f298715f1ae4242014779d45a4fb509f59f49f347708039698023f8a9c7513e3ed68471b6282c2ca5f3d9f56213b404117e0fb5c8f395853ed5acd9ec17f10df",
+        ),
+    ]:
+        assert True is check_password_hash_backport(pwhash, passwd)
 
 
 def test_minimal_auth(app_with_user):
@@ -356,7 +394,9 @@ def test_page_revert_permissions(app_with_permissions, test_client):
     # find revision
     rv = test_client.get("/{}/history".format(pagename))
     html = rv.data.decode()
-    revisions = re.findall(r"class=\"btn revision-small\">([A-z0-9]+)</a>", html)
+    revisions = re.findall(
+        r"class=\"btn revision-small\">([A-z0-9]+)</a>", html
+    )
     assert len(revisions) == 2
     latest_revision = revisions[0]
 
@@ -386,12 +426,15 @@ def test_page_revert_permissions(app_with_permissions, test_client):
     assert "Revert commit [{}]".format(latest_revision) in html
 
     # try to revert latest commit
-    rv = test_client.post("/-/revert/{}".format(latest_revision), follow_redirects=True)
+    rv = test_client.post(
+        "/-/revert/{}".format(latest_revision), follow_redirects=True
+    )
     assert rv.status_code == 200
 
     # check if content changed
     html = test_client.get("/{}/view".format(pagename)).data.decode()
     assert old_content in html
+
 
 def test_permissions_per_user(app_with_permissions, test_client):
     fun = "view"
@@ -420,16 +463,14 @@ def test_permissions_per_user(app_with_permissions, test_client):
     assert "There is no place like Home." not in rv.data.decode()
     # grant the user read_access
     from otterwiki.auth import SimpleAuth, db
+
     user = SimpleAuth.User.query.filter_by(email="another@user.org").first()
     assert user is not None
     user.allow_read = True
     db.session.add(user)
     db.session.commit()
     # check if the read_access works
-    rv = test_client.get(
-        url_for(fun, path="Home"),
-        follow_redirects=True
-        )
+    rv = test_client.get(url_for(fun, path="Home"), follow_redirects=True)
     assert "There is no place like Home." in rv.data.decode()
     # try to save
     rv = test_client.post(
@@ -461,12 +502,14 @@ def test_permissions_per_user(app_with_permissions, test_client):
     app_with_permissions.config["WRITE_ACCESS"] = "ANONYMOUS"
     app_with_permissions.config["ATTACHMENT_ACCESS"] = "ANONYMOUS"
 
+
 #
 # lost_password
 #
 def test_lost_password_form(test_client):
     rv = test_client.get("/-/lost_password")
     assert rv.status_code == 200
+
 
 def test_lost_password_mail(app_with_user, test_client, req_ctx):
     # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
@@ -487,7 +530,9 @@ def test_lost_password_mail(app_with_user, test_client, req_ctx):
         assert "/-/recover_password/" in outbox[0].body
         assert "mail@example.org" in outbox[0].recipients
         # find token
-        m = re.search(r"\/-\/recover_password\/(\S+)", outbox[0].body, flags=re.MULTILINE)
+        m = re.search(
+            r"\/-\/recover_password\/(\S+)", outbox[0].body, flags=re.MULTILINE
+        )
         assert m is not None
         token = m.group(1)
         assert len(token) > 0
@@ -497,6 +542,7 @@ def test_lost_password_mail(app_with_user, test_client, req_ctx):
             follow_redirects=True,
         )
         assert "please update your password." in rv.data.decode()
+
 
 def test_lost_password_form_address(app_with_user, test_client):
     rv = test_client.post(
@@ -516,6 +562,7 @@ def test_lost_password_form_address(app_with_user, test_client):
     )
     assert "This email address is unknown." in rv.data.decode()
 
+
 def test_lost_password_invalid_token(app_with_user, test_client):
     rv = test_client.get(
         "/-/recover_password/invalidtoken",
@@ -532,6 +579,7 @@ def test_lost_password_invalid_token(app_with_user, test_client):
         follow_redirects=True,
     )
     assert "Invalid email address." in rv.data.decode()
+
 
 #
 # register
@@ -568,6 +616,7 @@ def test_register_and_login(app_with_user, test_client, req_ctx):
     html = rv.data.decode()
     assert "You logged in successfully." in html
 
+
 def test_register_and_confirm(app_with_user, test_client, req_ctx):
     app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = True
     # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
@@ -582,8 +631,8 @@ def test_register_and_confirm(app_with_user, test_client, req_ctx):
             data={
                 "email": email,
                 "name": "Example User",
-                "password1":password,
-                "password2":password,
+                "password1": password,
+                "password2": password,
             },
             follow_redirects=True,
         )
@@ -614,7 +663,10 @@ def test_register_and_confirm(app_with_user, test_client, req_ctx):
             follow_redirects=True,
         )
         assert rv.status_code == 200
-        assert "Your email address has been confirmed. You can log in now." in rv.data.decode()
+        assert (
+            "Your email address has been confirmed. You can log in now."
+            in rv.data.decode()
+        )
         # check if account is confirmed now
         rv = test_client.post(
             "/-/login",
@@ -626,6 +678,7 @@ def test_register_and_confirm(app_with_user, test_client, req_ctx):
         )
         html = rv.data.decode()
         assert "You logged in successfully." in html
+
 
 def test_register_errors(app_with_user, test_client, req_ctx):
     # test invalid mail

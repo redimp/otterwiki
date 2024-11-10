@@ -1,3 +1,6 @@
+#!/env/bin/python
+# vim: set et ts=8 sts=4 sw=4 ai:
+
 import subprocess
 import os
 
@@ -59,7 +62,10 @@ class GitHttpServer:
 
         command = [service, "--stateless-rpc", "--advertise-refs", self.path]
         p = subprocess.Popen(
-            command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         stdout, stderr = p.communicate()
         if p.returncode > 0:
@@ -88,7 +94,10 @@ class GitHttpServer:
     def git_pack(self, service, stream):
         command = [f"git-{service}-pack", "--stateless-rpc", self.path]
         p = subprocess.Popen(
-            command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         stdout, stderr = p.communicate(stream.read())
         if p.returncode > 0:

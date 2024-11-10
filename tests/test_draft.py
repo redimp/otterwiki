@@ -1,4 +1,4 @@
-#/usr/bin/env python
+# /usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 from test_auth import login
 
@@ -17,6 +17,7 @@ def create_draft(test_client, pagepath, content):
     )
     assert rv.status_code == 200
     assert rv.json["status"] == "draft saved"
+
 
 def test_create_draft(app_with_user, test_client):
     assert app_with_user
@@ -67,9 +68,7 @@ def test_draft_warning(app_with_user, test_client):
     # open up editor with the draft
     rv = test_client.post(
         "/{}/edit".format(pagepath),
-        data={
-            'draft': 'edit'
-        },
+        data={'draft': 'edit'},
         follow_redirects=True,
     )
     assert rv.status_code == 200
@@ -105,9 +104,7 @@ def test_draft_discard(app_with_user, test_client):
     # discard draft
     rv = test_client.post(
         "/{}/edit".format(pagepath),
-        data={
-            'draft': 'discard'
-        },
+        data={'draft': 'discard'},
         follow_redirects=True,
     )
     assert rv.status_code == 200
@@ -115,4 +112,3 @@ def test_draft_discard(app_with_user, test_client):
     html = rv.data.decode()
     # check that the page content is back to the default for new pages
     assert "# Test_Draft_Discard" in html
-

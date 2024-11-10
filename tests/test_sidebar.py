@@ -95,23 +95,33 @@ def test_sidebar_custom_menu(create_app, test_client, req_ctx):
     links = get_sidebar_menu(test_client)
     assert links is None
 
-    create_app.config["SIDEBAR_CUSTOM_MENU"] = """[{"link": "Home", "title": ""}]"""
-    assert [{'link':'Home', 'title':''}] == SidebarMenu().config
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = (
+        """[{"link": "Home", "title": ""}]"""
+    )
+    assert [{'link': 'Home', 'title': ''}] == SidebarMenu().config
     links = get_sidebar_menu(test_client)
     assert links
     assert ('Home', '/Home') in links
 
-    create_app.config["SIDEBAR_CUSTOM_MENU"] = """[{"link":"https://example.com", "title":"Example"}]"""
-    assert {"title":"Example", "link":"https://example.com"} in SidebarMenu().config
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = (
+        """[{"link":"https://example.com", "title":"Example"}]"""
+    )
+    assert {
+        "title": "Example",
+        "link": "https://example.com",
+    } in SidebarMenu().config
     links = get_sidebar_menu(test_client)
     assert links
     assert ('Example', 'https://example.com') in links
 
-    create_app.config["SIDEBAR_CUSTOM_MENU"] = """[{"link": "/Example", "title": ""}]"""
-    assert [{'link':'/Example', 'title':''}] == SidebarMenu().config
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = (
+        """[{"link": "/Example", "title": ""}]"""
+    )
+    assert [{'link': '/Example', 'title': ''}] == SidebarMenu().config
     links = get_sidebar_menu(test_client)
     assert links
     assert ('/Example', '/Example') in links
+
 
 def test_sidebar_custom_menu_error(create_app, test_client, req_ctx):
     from otterwiki.sidebar import SidebarMenu

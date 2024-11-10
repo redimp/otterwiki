@@ -65,7 +65,15 @@ def send_async_email(app, msg, raise_on_error=False):
                 raise e
 
 
-def send_mail(subject, recipients, text_body, sender=None, html_body=None, _async=True, raise_on_error=False):
+def send_mail(
+    subject,
+    recipients,
+    text_body,
+    sender=None,
+    html_body=None,
+    _async=True,
+    raise_on_error=False,
+):
     """send_mail
 
     :param subject:
@@ -85,6 +93,7 @@ def send_mail(subject, recipients, text_body, sender=None, html_body=None, _asyn
         thr.start()
     else:
         send_async_email(app, msg, raise_on_error)
+
 
 def health_check():
     # check if storage is readable, the database works and auth is healthy
@@ -113,25 +122,25 @@ def auto_url(filename, revision=None):
             get_pagename(filename, full=True),
             url_for(
                 "view",
-                path=get_pagename(
-                    filename, full=True
-                ),
+                path=get_pagename(filename, full=True),
                 revision=revision,
             ),
         )
     else:
         # attachment
         pagename, attached_filename = (
-            get_pagename(
-                join_path(arr[:-1]), full=True
-            ),
+            get_pagename(join_path(arr[:-1]), full=True),
             arr[-1],
         )
-        return (filename,
-                url_for('get_attachment',
-                    pagepath=pagename,
-                    filename=attached_filename, revision=revision)
-               )
+        return (
+            filename,
+            url_for(
+                'get_attachment',
+                pagepath=pagename,
+                filename=attached_filename,
+                revision=revision,
+            ),
+        )
 
 
 def get_filename(pagepath):
@@ -149,7 +158,9 @@ def get_filename(pagepath):
 
 
 def get_attachment_directoryname(filename):
-    filename = filename if app.config["RETAIN_PAGE_NAME_CASE"] else filename.lower()
+    filename = (
+        filename if app.config["RETAIN_PAGE_NAME_CASE"] else filename.lower()
+    )
     if filename[-3:] != ".md":
         raise ValueError
     return filename[:-3]
@@ -158,7 +169,7 @@ def get_attachment_directoryname(filename):
 def get_pagename(filepath, full=False, header=None):
     '''This will derive the page name (displayed on the web page) from the url requested'''
     # remove trailing slashes from filepath
-    filepath=filepath.rstrip("/")
+    filepath = filepath.rstrip("/")
 
     if filepath.endswith(".md"):
         filepath = filepath[:-3]
@@ -167,35 +178,41 @@ def get_pagename(filepath, full=False, header=None):
     for i, part in enumerate(arr):
         hint = part
         # if basename use header as hint
-        if i == len(arr)-1 and header is not None:
+        if i == len(arr) - 1 and header is not None:
             hint = header
-        if (hint != part and hint.lower() == part.lower()) \
-                or (hint == part and hint != part.lower()):
+        if (hint != part and hint.lower() == part.lower()) or (
+            hint == part and hint != part.lower()
+        ):
             arr[i] = hint
         else:
-            arr[i] = part if app.config["RETAIN_PAGE_NAME_CASE"] else titleSs(part)
+            arr[i] = (
+                part if app.config["RETAIN_PAGE_NAME_CASE"] else titleSs(part)
+            )
 
     if not full:
         return arr[-1]
     return "/".join(arr)
+
 
 def get_pagename_prefixes(filter=[]):
     pagename_prefixes = []
 
     if "pagecrumbs" in session:
         for crumb in session["pagecrumbs"][::-1]:
-            if len(crumb) == 0 or crumb.lower() == "home": continue
+            if len(crumb) == 0 or crumb.lower() == "home":
+                continue
             crumb_parent = join_path(split_path(crumb)[:-1])
-            if len(crumb_parent)>0 and crumb_parent not in pagename_prefixes:
+            if len(crumb_parent) > 0 and crumb_parent not in pagename_prefixes:
                 pagename_prefixes.append(crumb_parent)
             if crumb not in pagename_prefixes and crumb not in filter:
                 pagename_prefixes.append(crumb)
-            if len(pagename_prefixes)>3: break
+            if len(pagename_prefixes) > 3:
+                break
     return pagename_prefixes
 
 
 def get_breadcrumbs(pagepath):
-    if not pagepath or len(pagepath)<1:
+    if not pagepath or len(pagepath) < 1:
         return []
     # strip trailing slashes
     pagepath = pagepath.rstrip("/")
@@ -221,7 +238,11 @@ def upsert_pagecrumbs(pagepath):
     if "pagecrumbs" not in session:
         session["pagecrumbs"] = []
     else:
-        session["pagecrumbs"] = list(filter(lambda x: x.lower() != pagepath.lower(), session["pagecrumbs"]))
+        session["pagecrumbs"] = list(
+            filter(
+                lambda x: x.lower() != pagepath.lower(), session["pagecrumbs"]
+            )
+        )
 
     # add the pagepath to the tail of the list of pagecrumbs
     session["pagecrumbs"] = session["pagecrumbs"][-7:] + [pagepath]
@@ -232,20 +253,29 @@ def upsert_pagecrumbs(pagepath):
 def patchset2urlmap(patchset, rev_b, rev_a=None):
     url_map = {}
     for file in patchset:
-        source_file = re.sub('^(a|b)/','',file.source_file)
-        target_file = re.sub('^(a|b)/','',file.target_file)
+        source_file = re.sub('^(a|b)/', '', file.source_file)
+        target_file = re.sub('^(a|b)/', '', file.target_file)
         if rev_a is None:
-            #import ipdb; ipdb.set_trace()
+            # import ipdb; ipdb.set_trace()
             try:
-                rev_a = storage.get_parent_revision(filename=source_file,revision=rev_b)
+                rev_a = storage.get_parent_revision(
+                    filename=source_file, revision=rev_b
+                )
             except StorageError:
                 rev_a = rev_b
         d = {
-            'source_file' : source_file,
-            'target_file' : target_file,
-            'source_url' : auto_url(source_file,revision=rev_a)[1] if source_file != "/dev/null" else None,
-            'target_url' : auto_url(target_file,revision=rev_b)[1] if target_file != "/dev/null" else None,
+            'source_file': source_file,
+            'target_file': target_file,
+            'source_url': (
+                auto_url(source_file, revision=rev_a)[1]
+                if source_file != "/dev/null"
+                else None
+            ),
+            'target_url': (
+                auto_url(target_file, revision=rev_b)[1]
+                if target_file != "/dev/null"
+                else None
+            ),
         }
         url_map[file.path] = namedtuple('UrlData', d.keys())(*d.values())
     return url_map
-

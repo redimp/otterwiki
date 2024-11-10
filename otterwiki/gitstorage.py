@@ -10,6 +10,7 @@ from otterwiki.util import split_path, ttl_lru_cache
 import pathlib
 import os
 
+
 class StorageError(Exception):
     pass
 
@@ -60,7 +61,9 @@ class GitStorage(object):
         self._check_reload()
         if revision is not None:
             try:
-                content = self.repo.git.show("{}:{}".format(revision, filename))
+                content = self.repo.git.show(
+                    "{}:{}".format(revision, filename)
+                )
                 if mode == "rb":
                     content = content.encode("utf8", "surrogateescape")
             except git.exc.GitCommandError:
@@ -89,7 +92,9 @@ class GitStorage(object):
         }
         # this is a workaround
         if commit.author.email is None:
-            metadata["author_name"] = metadata["author_name"].replace("<>", "").strip()
+            metadata["author_name"] = (
+                metadata["author_name"].replace("<>", "").strip()
+            )
         return metadata
 
     def _get_commit(self, filename, revision):
@@ -97,7 +102,9 @@ class GitStorage(object):
         commit = None
         if revision is None:
             try:
-                commit = list(self.repo.iter_commits(paths=filename, max_count=1))[0]
+                commit = list(
+                    self.repo.iter_commits(paths=filename, max_count=1)
+                )[0]
             except (ValueError, IndexError, git.exc.GitCommandError):
                 raise StorageNotFound
         else:
@@ -163,14 +170,18 @@ class GitStorage(object):
         if logentry[1].startswith("Merge:"):
             offset = 1
         # Find author data
-        author_info = re.findall(r"Author: ([^\<]*) <([^\>]*)>", logentry[offset + 1])[
-            0
-        ]
+        author_info = re.findall(
+            r"Author: ([^\<]*) <([^\>]*)>", logentry[offset + 1]
+        )[0]
         author_name = author_info[0]
         author_email = author_info[1]
         # Get and convert Datetime
-        datetime_str = re.findall("Date: (.*)", logentry[offset + 2])[0].strip()
-        datetime_obj = datetime.strptime(datetime_str, "%a %b %d %H:%M:%S %Y %z")
+        datetime_str = re.findall("Date: (.*)", logentry[offset + 2])[
+            0
+        ].strip()
+        datetime_obj = datetime.strptime(
+            datetime_str, "%a %b %d %H:%M:%S %Y %z"
+        )
         # Get commit msg
         message = "\n".join([x.strip() for x in logentry[offset + 4 : -2]])
 
@@ -192,20 +203,26 @@ class GitStorage(object):
         if filename is None:
             try:
                 rawlog = self.repo.git.log("--name-only", "-z")
-            except (git.exc.GitCommandError) as e:
+            except git.exc.GitCommandError as e:
                 if fail_on_git_error:
                     raise StorageNotFound(str(e))
                 return []
         else:
             try:
-                rawlog = self.repo.git.log("--name-only", "-z", "--follow", "--", filename)
-            except (git.exc.GitCommandError) as e:
+                rawlog = self.repo.git.log(
+                    "--name-only", "-z", "--follow", "--", filename
+                )
+            except git.exc.GitCommandError as e:
                 raise StorageNotFound(str(e))
 
         # clean up artifacts
-        rawlog = [entry for entry in rawlog.strip("\x00").split("\x00\x00") if len(entry)>0]
+        rawlog = [
+            entry
+            for entry in rawlog.strip("\x00").split("\x00\x00")
+            if len(entry) > 0
+        ]
         # raise Exception of no log entry has been found
-        if len(rawlog)<1:
+        if len(rawlog) < 1:
             raise StorageNotFound
 
         return [self._get_metadata_of_log(entry) for entry in rawlog]
@@ -226,12 +243,14 @@ class GitStorage(object):
         # build and return logfile
         return [self._get_metadata_of_commit(commit) for commit in commits]
 
-    def store(self, filename, content, message="", author=("",""), mode="w"):
+    def store(self, filename, content, message="", author=("", ""), mode="w"):
         if message is None:
             message = ""
         dirname = os.path.dirname(filename)
         if dirname != "":
-            os.makedirs(os.path.join(self.path, dirname), mode=0o775, exist_ok=True)
+            os.makedirs(
+                os.path.join(self.path, dirname), mode=0o775, exist_ok=True
+            )
         # store file on filesystem
         with open(os.path.join(self.path, filename), mode) as f:
             f.write(content)
@@ -246,7 +265,7 @@ class GitStorage(object):
         index.commit(message, author=actor)
         return True
 
-    def commit(self, filenames, message="", author=("",""), no_add=False):
+    def commit(self, filenames, message="", author=("", ""), no_add=False):
         index = self.repo.index
         # add and commit to git
         if no_add == False:
@@ -259,7 +278,7 @@ class GitStorage(object):
         actor = git.Actor(author[0], author[1])
         index.commit(message, author=actor)
 
-    def revert(self, revision, message="", author=("","")):
+    def revert(self, revision, message="", author=("", "")):
         actor = git.Actor(author[0], author[1])
         try:
             self.repo.git.revert(revision, "--no-commit")
@@ -277,14 +296,24 @@ class GitStorage(object):
         # https://docs.python.org/2/library/difflib.html
         return self.repo.git.diff(rev_a, rev_b)
 
-    def delete(self, filename, message=None, author=("","")):
+    def delete(self, filename, message=None, author=("", "")):
         if not type(filename) == list:
-            filename=[filename]
+            filename = [filename]
         # make sure we only try to delete what exists
-        filename_remove = [f for f in filename if self.exists(f) and not self.isdir(f)]
-        filename_remove += [d for d in filename if self.exists(d) and self.isdir(d) and not self.isemptydir(d)]
+        filename_remove = [
+            f for f in filename if self.exists(f) and not self.isdir(f)
+        ]
+        filename_remove += [
+            d
+            for d in filename
+            if self.exists(d) and self.isdir(d) and not self.isemptydir(d)
+        ]
         # remove empty directories via os
-        empty_dirs = [d for d in filename if self.exists(d) and self.isdir(d) and self.isemptydir(d)]
+        empty_dirs = [
+            d
+            for d in filename
+            if self.exists(d) and self.isdir(d) and self.isemptydir(d)
+        ]
         for dirname in empty_dirs:
             os.rmdir(os.path.join(self.path, dirname))
 
@@ -296,19 +325,30 @@ class GitStorage(object):
         self.repo.index.commit(message, author=actor)
 
     def rename(
-        self, old_filename, new_filename, message=None, author=None, no_commit=False
+        self,
+        old_filename,
+        new_filename,
+        message=None,
+        author=None,
+        no_commit=False,
     ):
         if self.exists(new_filename):
-            raise StorageError(f'The filename "{new_filename}" already exist. Please choose a new filename.')
+            raise StorageError(
+                f'The filename "{new_filename}" already exist. Please choose a new filename.'
+            )
         # make sure the target directory exists
         dirname = os.path.dirname(new_filename)
         if dirname != "":
-            os.makedirs(os.path.join(self.path, dirname), mode=0o775, exist_ok=True)
+            os.makedirs(
+                os.path.join(self.path, dirname), mode=0o775, exist_ok=True
+            )
         try:
             self.repo.git.mv(old_filename, new_filename)
         except Exception as e:
             raise StorageError(
-                "Renaming {} to {} failed: {}.".format(old_filename, new_filename, e)
+                "Renaming {} to {} failed: {}.".format(
+                    old_filename, new_filename, e
+                )
             )
         if message is None:
             message = "{} renamed to {}.".format(old_filename, new_filename)
@@ -357,9 +397,7 @@ class GitStorage(object):
         try:
             commit = self.repo.commit(revision)
         except git.exc.BadName as e:
-            raise StorageError(
-                f"No commit found for ref {revision}"
-                )
+            raise StorageError(f"No commit found for ref {revision}")
         # fetch metadata
         metadata = self._get_metadata_of_commit(commit)
         # get diff via 'git show'
@@ -374,7 +412,7 @@ class GitStorage(object):
         for i, entry in enumerate(log):
             if entry['revision'] == revision:
                 try:
-                    return log[i+1]['revision']
+                    return log[i + 1]['revision']
                 except IndexError:
                     raise StorageNotFound
         raise StorageNotFound

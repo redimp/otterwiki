@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import re
@@ -19,16 +18,16 @@ from pygments.util import ClassNotFound
 from markupsafe import Markup, escape
 from otterwiki.util import slugify, empty
 from otterwiki.renderer_plugins import (
-        plugin_task_lists,
-        plugin_footnotes,
-        plugin_mark,
-        plugin_fancy_blocks,
-        plugin_spoiler,
-        plugin_fold,
-        plugin_math,
-        plugin_alerts,
-        plugin_wikilink,
-        )
+    plugin_task_lists,
+    plugin_footnotes,
+    plugin_mark,
+    plugin_fancy_blocks,
+    plugin_spoiler,
+    plugin_fold,
+    plugin_math,
+    plugin_alerts,
+    plugin_wikilink,
+)
 from otterwiki.plugins import chain_hooks
 from bs4 import BeautifulSoup
 
@@ -38,15 +37,17 @@ cursormagicword = "CuRsoRm4g1cW0Rd"
 #
 # patch mistune table_plugin so that not all the newlines at the end of a table are removed
 #
-mistune.plugins.plugin_table.TABLE_PATTERN = re.compile( # pyright: ignore
+mistune.plugins.plugin_table.TABLE_PATTERN = re.compile(  # pyright: ignore
     r' {0,3}\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n{0,1}'
 )
-mistune.plugins.plugin_table.NP_TABLE_PATTERN = re.compile( # pyright: ignore
+mistune.plugins.plugin_table.NP_TABLE_PATTERN = re.compile(  # pyright: ignore
     r' {0,3}(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n{0,1}'
 )
 
+
 def _pre_copy_to_clipboard_tag():
     return f"""<div class="copy-to-clipboard-outer"><div class="copy-to-clipboard-inner"><button class="btn alt-dm btn-xsm copy-to-clipboard" type="button"  onclick="otterwiki.copy_to_clipboard(this);"><i class="fa fa-copy" aria-hidden="true" alt="Copy to clipboard""></i></button></div><pre class="copy-to-clipboard code">"""
+
 
 class CodeHtmlFormatter(html.HtmlFormatter):
 
@@ -56,13 +57,19 @@ class CodeHtmlFormatter(html.HtmlFormatter):
             yield i, t
         yield 0, '</pre></div>'
 
+
 def pygments_render(code, lang):
     try:
         lexer = get_lexer_by_name(lang, stripall=True)
     except ClassNotFound:
-        return '\n'+_pre_copy_to_clipboard_tag()+'%s\n%s</pre></div>\n' % (
-            mistune.escape(lang.strip()),
-            mistune.escape(code.strip()),
+        return (
+            '\n'
+            + _pre_copy_to_clipboard_tag()
+            + '%s\n%s</pre></div>\n'
+            % (
+                mistune.escape(lang.strip()),
+                mistune.escape(code.strip()),
+            )
         )
     formatter = CodeHtmlFormatter(classprefix=".highlight ")
     # formatter = html.HtmlFormatter(classprefix=".highlight ")
@@ -90,26 +97,72 @@ def clean_html(html: str) -> str:
     # use BeautifulSoup to identify tags we want to remove / escape
     # since we get incomplete tags via inline html we have to work
     # with the html string and can not use what bs makes out of it
-    REMOVE_ATTRIBUTES = ['onclick','onload', 'onerror', 'onfocus', 'onbeforeprint', 'beforeunload',
-                         'onblur', 'onchange', 'oncopy', 'oncut', 'ondblclick', 'ondrag', 'draggable',
-                         'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondragstart',
-                         'ondrop', 'onfocus', 'onfocusin', 'onfocusout', 'onhashchange',
-                         'oninput', 'oninvalid', 'onkeydown', 'onkeypress', 'onkeyup', 'onload',
-                         'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseover',
-                         'onmouseout', 'onmouseup', 'onoffline', 'ononline', 'onpagehide',
-                         'onpageshow', 'onpaste', 'onresize', 'onreset', 'onscroll',
-                         'onsearch', 'onselect', 'ontoggle', 'ontouchcancel', 'ontouchend',
-                         'ontouchmove', 'ontouchstart', 'onunload']
+    REMOVE_ATTRIBUTES = [
+        'onclick',
+        'onload',
+        'onerror',
+        'onfocus',
+        'onbeforeprint',
+        'beforeunload',
+        'onblur',
+        'onchange',
+        'oncopy',
+        'oncut',
+        'ondblclick',
+        'ondrag',
+        'draggable',
+        'ondragend',
+        'ondragenter',
+        'ondragleave',
+        'ondragover',
+        'ondragstart',
+        'ondrop',
+        'onfocus',
+        'onfocusin',
+        'onfocusout',
+        'onhashchange',
+        'oninput',
+        'oninvalid',
+        'onkeydown',
+        'onkeypress',
+        'onkeyup',
+        'onload',
+        'onmousedown',
+        'onmouseenter',
+        'onmouseleave',
+        'onmousemove',
+        'onmouseover',
+        'onmouseout',
+        'onmouseup',
+        'onoffline',
+        'ononline',
+        'onpagehide',
+        'onpageshow',
+        'onpaste',
+        'onresize',
+        'onreset',
+        'onscroll',
+        'onsearch',
+        'onselect',
+        'ontoggle',
+        'ontouchcancel',
+        'ontouchend',
+        'ontouchmove',
+        'ontouchstart',
+        'onunload',
+    ]
     REMOVE_TAGS = ['style', 'script', 'blink', 'marque']
 
     _escape = False
     soup = BeautifulSoup(html, 'html.parser')
     for element in soup:
-        if element.name in REMOVE_TAGS: # pyright: ignore
+        if element.name in REMOVE_TAGS:  # pyright: ignore
             _escape = True
             break
         try:
-            if any(x in element.attrs.keys() for x in REMOVE_ATTRIBUTES): # pyright: ignore
+            if any(
+                x in element.attrs.keys() for x in REMOVE_ATTRIBUTES
+            ):  # pyright: ignore
                 _escape = True
                 break
         except AttributeError:
@@ -146,9 +199,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
                     src, title, alt
                 )
             )
-        return '<img src="{}" class="img-fluid" alt="{}">'.format(
-            src, alt
-        )
+        return '<img src="{}" class="img-fluid" alt="{}">'.format(src, alt)
 
     def codespan(self, text):
         if text.startswith("$") and text.endswith("$"):
@@ -158,8 +209,10 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
     def block_code(self, code, info=None):
         prefix = ""
         if not info:
-            return '\n'+_pre_copy_to_clipboard_tag()+'{}</pre></div>\n'.format(
-                mistune.escape(code.strip())
+            return (
+                '\n'
+                + _pre_copy_to_clipboard_tag()
+                + '{}</pre></div>\n'.format(mistune.escape(code.strip()))
             )
         if cursormagicword in info:
             info = info.replace(cursormagicword, "")
@@ -174,10 +227,8 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
                 ["\\[{}\\]".format(line) for line in code.strip().splitlines()]
             )
             # replace \n with <br/> for convinient diagram writing (and match the github syntax)
-            code = code.replace("\\n","<br/>")
-            html = '\n<pre class="mermaid">{}\n</pre>\n'.format(
-                code.strip()
-            )
+            code = code.replace("\\n", "<br/>")
+            html = '\n<pre class="mermaid">{}\n</pre>\n'.format(code.strip())
             return html
         else:
             html = prefix + pygments_render(code, info)
@@ -269,7 +320,13 @@ class OtterwikiRenderer:
 
         # clean magicword out of toc
         toc = [
-            (a, b.replace(cursormagicword, ""), c, d.replace(cursormagicword, ""), e)
+            (
+                a,
+                b.replace(cursormagicword, ""),
+                c,
+                d.replace(cursormagicword, ""),
+                e,
+            )
             for (a, b, c, d, e) in toc
         ]
 

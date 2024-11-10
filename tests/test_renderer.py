@@ -55,7 +55,9 @@ def test_code():
 abc
 ```"""
     )
-    pre_code = BeautifulSoup(html, "html.parser").find('pre', {'class': 'code'})
+    pre_code = BeautifulSoup(html, "html.parser").find(
+        'pre', {'class': 'code'}
+    )
     assert pre_code is not None
     assert 'abc' in pre_code.text
     # test highlight
@@ -74,7 +76,9 @@ n = 0
 n = 0
 ```"""
     )
-    pre_code = BeautifulSoup(html, "html.parser").find('pre', {'class': 'code'})
+    pre_code = BeautifulSoup(html, "html.parser").find(
+        'pre', {'class': 'code'}
+    )
     assert pre_code is not None
     assert pre_code.text.startswith('non_existing_lexer')
 
@@ -134,6 +138,7 @@ def test_wiki_link_in_table(req_ctx):
     assert '<td><a href="/people/John">people/John</a></td>' in html
     assert '<a href="/people/Paul">Paul</a>' in html
     assert '<td><a href="/people/Mary">Mary</a></td>' in html
+
 
 def test_wiki_link_in_code(req_ctx):
     text = """`[[people/John]]`
@@ -197,9 +202,13 @@ And last an onclick example:
 """
     html, _ = render.markdown(text)
     # make sure that preformatted html stays preformatted
-    pre_code = BeautifulSoup(html, "html.parser").find_all('pre', {'class': 'copy-to-clipboard'})
+    pre_code = BeautifulSoup(html, "html.parser").find_all(
+        'pre', {'class': 'copy-to-clipboard'}
+    )
     assert pre_code is not None
-    assert "<script>alert(1)</script>" in pre_code[0].text # bs4 decodes the html already
+    assert (
+        "<script>alert(1)</script>" in pre_code[0].text
+    )  # bs4 decodes the html already
     # make sure that highlighted blocks are okay
     assert (
         '<span class=".highlight p">&lt;</span><span class=".highlight nt">script</span><span class=".highlight p">&gt;</span><span class=".highlight nx">alert</span><span class=".highlight p">(</span><span class=".highlight mf">3</span><span class=".highlight p">)&lt;/</span><span class=".highlight nt">script</span><span class=".highlight p">&gt;</span>'
@@ -429,13 +438,16 @@ def test_fold():
     # check fold
     assert "<p>with the details folded.</p>" in html
 
+
 def test_all_alert_types():
     from otterwiki.renderer_plugins import mistunePluginAlerts
+
     for type, icon in mistunePluginAlerts.TYPE_ICONS.items():
         md = f"> [!{type}]\n>text\n>text\n"
         html, _ = render.markdown(md)
         assert 'text\ntext' in html
         assert icon in html
+
 
 def test_alerts():
     md = """random paragraph 1.
@@ -454,8 +466,10 @@ random paragraph 2."""
     assert '<p>random paragraph 1.</p>' in html
     assert '<p>random paragraph 2.</p>' in html
 
+
 def test_mistunePluginAlerts():
     from otterwiki.renderer_plugins import mistunePluginAlerts
+
     for type, icon in mistunePluginAlerts.TYPE_ICONS.items():
         # check regexp
         md = f">[!{type}]\n>Note content\n>content\n"
@@ -472,5 +486,8 @@ graph TD;
 ```
 """
     html, _ = render.markdown(md)
-    assert """<pre class="mermaid">graph TD;
-    A--&gt;B;\n</pre>""" in html
+    assert (
+        """<pre class="mermaid">graph TD;
+    A--&gt;B;\n</pre>"""
+        in html
+    )

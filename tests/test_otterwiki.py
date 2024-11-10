@@ -54,8 +54,14 @@ def test_create_page_in(test_client):
     assert "Test test 12345678" in html
 
     html = test_client.get("/-/create").data.decode()
-    assert f"otterwiki.toggle_pagename_prefix('pagename','{pagename}')" in html.lower()
-    assert f"otterwiki.toggle_pagename_prefix('pagename','{subdir}')" in html.lower()
+    assert (
+        f"otterwiki.toggle_pagename_prefix('pagename','{pagename}')"
+        in html.lower()
+    )
+    assert (
+        f"otterwiki.toggle_pagename_prefix('pagename','{subdir}')"
+        in html.lower()
+    )
 
 
 def test_create_page(test_client, req_ctx):
@@ -91,6 +97,7 @@ def test_create_page(test_client, req_ctx):
         follow_redirects=True,
     ).data.decode()
     assert "exists already" in html
+
 
 def test_create_page_notlower(test_client, req_ctx):
     pagename = "Create/Test page"
@@ -140,8 +147,18 @@ def save_shortcut(test_client, pagename, content, commit_message):
 
 
 def test_pageindex(test_client):
-    save_shortcut(test_client, "Random page", "# Random page\nrandom text", "added random page")
-    save_shortcut(test_client, "Sub directory/Nested Page", "# Nested page\n\n## Nested header\n", "added nested page")
+    save_shortcut(
+        test_client,
+        "Random page",
+        "# Random page\nrandom text",
+        "added random page",
+    )
+    save_shortcut(
+        test_client,
+        "Sub directory/Nested Page",
+        "# Nested page\n\n## Nested header\n",
+        "added nested page",
+    )
     html = test_client.get("/-/index").data.decode()
     # check captializing (from # Random page)
     assert 'Random page' in html
@@ -184,7 +201,7 @@ def test_view_source(test_client):
 
 def test_view_revision(test_client, req_ctx):
     pagename = "ViewRevisionTest"
-    content = ["aaa","bbb"]
+    content = ["aaa", "bbb"]
     commit_messages = ["initial commit", "update"]
     # save page
     save_shortcut(test_client, pagename, content[0], commit_messages[0])
@@ -197,7 +214,9 @@ def test_view_revision(test_client, req_ctx):
     # check history
     html = test_client.get("/{}/history".format(pagename)).data.decode()
     # find revisions
-    revision = re.findall(r"class=\"btn revision-small\">([A-z0-9]+)</a>", html)
+    revision = re.findall(
+        r"class=\"btn revision-small\">([A-z0-9]+)</a>", html
+    )
     assert len(revision) == 2
     # fetch revisions via pageview
     url0 = url_for("pageview", path=pagename, revision=revision[0])
@@ -227,7 +246,7 @@ def test_view_commit(test_client, req_ctx):
     assert rv.status_code == 404
 
     pagename = "ViewCommitTest"
-    content = ["aaa initial commit line","bbb updated commit line"]
+    content = ["aaa initial commit line", "bbb updated commit line"]
     commit_messages = ["initial commit", "update"]
     # save page
     save_shortcut(test_client, pagename, content[0], commit_messages[0])
@@ -240,7 +259,9 @@ def test_view_commit(test_client, req_ctx):
     # check history
     html = test_client.get("/{}/history".format(pagename)).data.decode()
     # find revisions
-    revision = re.findall(r"class=\"btn revision-small\">([A-z0-9]+)</a>", html)
+    revision = re.findall(
+        r"class=\"btn revision-small\">([A-z0-9]+)</a>", html
+    )
     assert len(revision) == 2
     html = test_client.get(f"/-/commit/{revision[0]}").data.decode()
 
@@ -267,7 +288,9 @@ def test_blame_and_history_and_diff(test_client):
     # check history
     html = test_client.get("/{}/history".format(pagename)).data.decode()
     # find revision
-    revision = re.findall(r"class=\"btn revision-small\">([A-z0-9]+)</a>", html)
+    revision = re.findall(
+        r"class=\"btn revision-small\">([A-z0-9]+)</a>", html
+    )
     assert len(revision) == 2
     for line in commit_messages:
         assert line in html
@@ -288,6 +311,7 @@ def test_blame_and_history_and_diff(test_client):
     assert revision[0] in html
     assert revision[1] in html
 
+
 def test_blame_and_history_404(test_client):
     pagename = "Does not exist"
     # check blame
@@ -305,7 +329,9 @@ def test_search(test_client):
     save_shortcut(test_client, "HayStack 0", "Needle 0", "initial commit")
     save_shortcut(test_client, "HayStack 1", "Needle 1", "initial commit")
     save_shortcut(test_client, "Haystack 1a", "NeEdle 1", "initial commit")
-    save_shortcut(test_client, "Haystack 2", "NeEdle 2\nNeEdle 2", "initial commit")
+    save_shortcut(
+        test_client, "Haystack 2", "NeEdle 2\nNeEdle 2", "initial commit"
+    )
     # search 1
     rv = test_client.get("/-/search/{}".format("Haystack"))
     assert "Search matched 4 pages" in rv.data.decode()
@@ -340,12 +366,15 @@ def test_search(test_client):
     assert rv.status_code == 200
     # search via post 4: regex
     rv = test_client.post(
-        "/-/search", data={"query": "NeEdle", "is_regexp": "y", "is_casesensitive": "y"}
+        "/-/search",
+        data={"query": "NeEdle", "is_regexp": "y", "is_casesensitive": "y"},
     )
     assert "Search matched 2 pages" in rv.data.decode()
     assert rv.status_code == 200
     # search via post 4: regex
-    rv = test_client.post("/-/search", data={"query": "N[eE]+dle", "is_regexp": "y"})
+    rv = test_client.post(
+        "/-/search", data={"query": "N[eE]+dle", "is_regexp": "y"}
+    )
     assert "Search matched 4 pages" in rv.data.decode()
     assert rv.status_code == 200
 
@@ -393,7 +422,10 @@ def test_delete(test_client):
     content = "# Delete content\nabc abc abc def def def."
     # create page
     save_shortcut(
-        test_client, pagename=pagename, content=content, commit_message="initial commit"
+        test_client,
+        pagename=pagename,
+        content=content,
+        commit_message="initial commit",
     )
     # check content
     rv = test_client.get("/{}/view".format(pagename))
@@ -401,7 +433,10 @@ def test_delete(test_client):
     # delete form
     rv = test_client.get("/{}/delete".format(pagename))
     assert rv.status_code == 200
-    assert 'form action="/{}/delete" method="POST"'.format(pagename) in rv.data.decode()
+    assert (
+        'form action="/{}/delete" method="POST"'.format(pagename)
+        in rv.data.decode()
+    )
     # delete page
     rv = test_client.post(
         "/{}/delete".format(pagename),
@@ -429,8 +464,12 @@ def test_non_version_control_file(test_client):
     # then try that file that was previous created (but not added to version control)
     response = test_client.get(f"/{filename}")
     assert response.status_code == 200
-    assert "This page was loaded from the repository but is not added under git version control" in response.data.decode()
+    assert (
+        "This page was loaded from the repository but is not added under git version control"
+        in response.data.decode()
+    )
     assert content in response.data.decode()
+
 
 def test_move_page(test_client):
     '''test that moving a file works'''
@@ -465,7 +504,11 @@ def test_move_page(test_client):
     )
     assert rv.status_code == 200
 
-    assert f'<a href="/{new_pagename}">{_new_file_name}</a>'.lower() in rv.data.decode().lower()
+    assert (
+        f'<a href="/{new_pagename}">{_new_file_name}</a>'.lower()
+        in rv.data.decode().lower()
+    )
+
 
 def test_nested_files(test_client):
     p = test_client.application._otterwiki_tempdir
@@ -486,7 +529,7 @@ def test_nested_files(test_client):
     )
     assert rv.status_code == 200
 
-    nested_wiki_file = pathlib.Path(p, pagename+'.md')
+    nested_wiki_file = pathlib.Path(p, pagename + '.md')
     nested_file_exists = nested_wiki_file.exists()
     assert nested_file_exists == True
 
@@ -512,9 +555,9 @@ def test_nested_files(test_client):
     )
     response = test_client.post(
         "/{}/attachments".format(pagename),
-        content_type = 'multipart/form-data',
-        data = data,
-        follow_redirects=True
+        content_type='multipart/form-data',
+        data=data,
+        follow_redirects=True,
     )
 
     # check the image exists

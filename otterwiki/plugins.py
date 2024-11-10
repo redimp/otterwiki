@@ -1,9 +1,13 @@
-# This file contains both the "plugin spec" for An Otter Wiki, and several
-# plugins included with the app itself. For now this is a proof of concept
-# that will be expanded in the future.
-#
-# See docs/plugin_examples for examples.
-#
+#!/usr/bin/env python
+# vim: set et ts=8 sts=4 sw=4 ai:
+
+"""
+This file contains both the "plugin spec" for An Otter Wiki, and several
+plugins included with the app itself. For now this is a proof of concept
+that will be expanded in the future.
+
+See docs/plugin_examples for examples.
+"""
 
 import pluggy
 import re

@@ -3,6 +3,7 @@
 
 import pytest
 
+
 def test_robots(test_client):
     response = test_client.get("/robots.txt")
     assert response.status_code == 200
