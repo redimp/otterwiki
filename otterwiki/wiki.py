@@ -40,6 +40,8 @@ from otterwiki.helper import (
     get_pagename,
     get_pagename_prefixes,
     patchset2urlmap,
+    get_breadcrumbs,
+    upsert_pagecrumbs,
 )
 from otterwiki.auth import has_permission, current_user
 from otterwiki.plugins import chain_hooks
@@ -54,37 +56,6 @@ import PIL.Image
 if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
     PIL.Image.Resampling = PIL.Image
 
-
-def get_breadcrumbs(pagepath):
-    if not pagepath or len(pagepath)<1:
-        return []
-    # strip trailing slashes
-    pagepath = pagepath.rstrip("/")
-    parents = []
-    crumbs = []
-    for e in split_path(pagepath):
-        parents.append(e)
-        crumbs.append(
-            (
-                get_pagename(e),
-                join_path(parents),
-            )
-        )
-    return crumbs
-
-
-def upsert_pagecrumbs(pagepath):
-    if pagepath is None or pagepath == "/":
-        return
-    if "pagecrumbs" not in session:
-        session["pagecrumbs"] = []
-    else:
-        session["pagecrumbs"] = list(filter(lambda x: x.lower() != pagepath.lower(), session["pagecrumbs"]))
-
-    # add the pagepath to the tail of the list of pagecrumbs
-    session["pagecrumbs"] = session["pagecrumbs"][-7:] + [pagepath]
-    # flask.session: modifications on mutable structures are not picked up automatically
-    session.modified = True
 
 class PageIndex:
     def __init__(self, path=None):
@@ -274,11 +245,6 @@ class Changelog:
         return log
 
     def render(self):
-        """revert_form.
-
-        :param revision:
-        :param message:
-        """
         if not has_permission("READ"):
             abort(403)
         log = self.get()

@@ -194,6 +194,40 @@ def get_pagename_prefixes(filter=[]):
     return pagename_prefixes
 
 
+def get_breadcrumbs(pagepath):
+    if not pagepath or len(pagepath)<1:
+        return []
+    # strip trailing slashes
+    pagepath = pagepath.rstrip("/")
+    parents = []
+    crumbs = []
+    for e in split_path(pagepath):
+        parents.append(e)
+        crumbs.append(
+            (
+                get_pagename(e),
+                join_path(parents),
+            )
+        )
+    return crumbs
+
+
+def upsert_pagecrumbs(pagepath):
+    """
+    adds the given pagepath to the page specific crumbs "pagecrumbs" stored in the session
+    """
+    if pagepath is None or pagepath == "/":
+        return
+    if "pagecrumbs" not in session:
+        session["pagecrumbs"] = []
+    else:
+        session["pagecrumbs"] = list(filter(lambda x: x.lower() != pagepath.lower(), session["pagecrumbs"]))
+
+    # add the pagepath to the tail of the list of pagecrumbs
+    session["pagecrumbs"] = session["pagecrumbs"][-7:] + [pagepath]
+    # flask.session: modifications on mutable structures are not picked up automatically
+    session.modified = True
+
 
 def patchset2urlmap(patchset, rev_b, rev_a=None):
     url_map = {}
