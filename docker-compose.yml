@@ -6,7 +6,6 @@
 # Please read the Installation guide <https://otterwiki.com/Installation>
 # to get started.
 #
-version: '3'
 services:
   web:
     build: .
