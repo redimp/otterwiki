@@ -1,8 +1,13 @@
+Sortable.js linguist-vendored
+Sortable.min.js linguist-vendored
 cm-continuelist.js linguist-vendored
+cm-dialog.js linguist-vendored
 cm-markdown.js linguist-vendored
 cm-modes.js linguist-vendored
 cm-modes.min.js linguist-vendored
 cm-panel.js linguist-vendored
+cm-search.js linguist-vendored
+cm-searchcursor.js linguist-vendored
 codemirror-4.inline-attachment.js
 codemirror.js linguist-vendored
 codemirror.min.js linguist-vendored
@@ -10,6 +15,7 @@ halfmoon-module.js linguist-vendored
 halfmoon.js linguist-vendored
 halfmoon.min.js linguist-vendored
 inline-attachment.js linguist-vendored
+mermaid@11.2.0.min.js linguist-vendored
 otterwiki.js
 polyfill.e6.min.js linguist-vendored
 polyfill.min.js linguist-vendored
