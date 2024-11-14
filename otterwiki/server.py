@@ -11,6 +11,7 @@ from otterwiki import fatal_error, __version__
 import otterwiki.gitstorage
 import otterwiki.util
 from otterwiki.plugins import plugin_manager
+from otterwiki.renderer import OtterwikiRenderer
 
 app = Flask(__name__)
 # default configuration settings
@@ -155,6 +156,14 @@ def update_app_config():
 with app.app_context():
     db.create_all()
 update_app_config()
+
+
+#
+# a renderer configured with the app.config
+#
+# initiliaze renderer
+app_renderer = OtterwikiRenderer(config=app.config)
+
 
 #
 # plugins

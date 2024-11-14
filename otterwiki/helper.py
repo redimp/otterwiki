@@ -18,6 +18,7 @@ from threading import Thread
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from otterwiki.util import split_path, join_path, clean_slashes, titleSs
+from otterwiki.renderer import OtterwikiRenderer
 
 
 class SerializeError(ValueError):
@@ -26,7 +27,6 @@ class SerializeError(ValueError):
 
 # initiliaze serializer
 _serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
-
 
 def serialize(str, salt=None):
     return _serializer.dumps(str, salt=salt)

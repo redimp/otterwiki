@@ -178,8 +178,9 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
     toc_tree = []
     toc_anchors = {}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, env, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.env = env
 
     def inline_html(self, html):
         return clean_html(html)
@@ -255,12 +256,42 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         return rv
 
 
+class OtterwikiInlineParser(mistune.InlineParser):
+    def __init__(self, env, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.env = env
+
+    def parse_std_link(self, m, state):
+        line = m.group(0)
+        text = m.group(1)
+        link = mistune.inline_parser.ESCAPE_CHAR.sub(r'\1', m.group(2))
+        if link.startswith('<') and link.endswith('>'):
+            link = link[1:-1]
+
+        title = m.group(3)
+        if title:
+            title = mistune.inline_parser.ESCAPE_CHAR.sub(r'\1', title[1:-1])
+
+        if line[0] == '!':
+            return 'image', mistune.escape_url(link), text, title
+
+        return self.tokenize_link(line, link, text, title, state)
+
+class OtterwikiMdParser(mistune.Markdown):
+    def __init__(self, renderer, block=None, inline=None, plugins=None, env={}):
+        self.env = env
+        super().__init__(renderer=renderer, block=block, inline=inline, plugins=plugins)
+
 class OtterwikiRenderer:
-    def __init__(self):
-        self.md_renderer = OtterwikiMdRenderer()
-        # self.md_lexer = OtterwikiInlineLexer(self.md_renderer)
-        self.mistune = mistune.create_markdown(
+    def __init__(self, config={}):
+        self.env = {
+            "config" : config,
+        }
+        self.md_renderer = OtterwikiMdRenderer(env=self.env)
+        self.inline_renderer = OtterwikiInlineParser(env=self.env, renderer=self.md_renderer, hard_wrap=False)
+        self.mistune = OtterwikiMdParser(
             renderer=self.md_renderer,
+            inline=self.inline_renderer,
             plugins=[
                 plugin_table,
                 plugin_url,
@@ -275,6 +306,7 @@ class OtterwikiRenderer:
                 plugin_alerts,
                 plugin_wikilink,
             ],
+            env=self.env,
         )
         self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")
         self.htmlcursor = " <span id=\"otterwiki_cursor\"></span> "
@@ -282,7 +314,7 @@ class OtterwikiRenderer:
         # we can enable tables in lists
         self.mistune.block.list_rules += ['table', 'nptable']  # pyright:ignore
 
-    def markdown(self, text, cursor=None):
+    def markdown(self, text, cursor=None, **kwargs):
         self.md_renderer.reset_toc()
         # do the preparsing
         text = chain_hooks("renderer_markdown_preprocess", text)
@@ -307,7 +339,13 @@ class OtterwikiRenderer:
         else:
             line = 0
 
+        # store extra kwargs in environment
+        for k,v in kwargs.items():
+            self.env[k.upper()] = v
         html = self.mistune(text)
+        # clean extra kwargs from environment
+        for k,v in kwargs.items():
+            del self.env[k.upper()]
         # generate the toc
         toc = self.md_renderer.toc_tree.copy()
         if cursor is not None and line > 0:
@@ -338,8 +376,5 @@ class OtterwikiRenderer:
 
         return html, toc
 
-    def hilight(self, code, lang):
-        return pygments_render(code, lang)
-
-
+# unconfigured renderer for testing and rendering about()
 render = OtterwikiRenderer()

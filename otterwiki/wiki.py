@@ -17,9 +17,9 @@ from flask import (
 )
 from markupsafe import escape as html_escape
 from otterwiki.gitstorage import StorageNotFound, StorageError
-from otterwiki.server import app, storage, db
+from otterwiki.server import app, storage, db, app_renderer
 from otterwiki.models import Drafts
-from otterwiki.renderer import render, pygments_render
+from otterwiki.renderer import pygments_render
 from otterwiki.sidebar import SidebarPageIndex, SidebarMenu
 from otterwiki.util import (
     split_path,
@@ -147,7 +147,7 @@ class PageIndex:
             # read file
             content = storage.load(f)
             # parse file contents
-            _, ftoc = render.markdown(content)
+            _, ftoc = app_renderer.markdown(content)
             # add headers to page toc
             # (4, '2 L <strong>bold</strong>', 1, '2 L bold', '2-l-bold')
             for i, header in enumerate(ftoc):
@@ -420,6 +420,8 @@ class Page:
             self.pagename = sanitize_pagename(pagename)
             self.pagepath = get_pagepath(pagename)
 
+        self.page_url = url_for("view", path=self.pagepath)
+
         self.pagename_full = get_pagename(self.pagepath, full=True)
         self.revision = revision
 
@@ -544,7 +546,7 @@ class Page:
             ]
 
         # render markdown
-        htmlcontent, toc = render.markdown(self.content)
+        htmlcontent, toc = app_renderer.markdown(self.content, page_url=self.page_url)
 
         if len(toc) > 0:
             # use first headline to overwrite pagename
@@ -588,7 +590,7 @@ class Page:
             content = self.content
 
         # render preview html from markdown
-        content_html, toc = render.markdown(content, cursor=cursor_line)
+        content_html, toc = app_renderer.markdown(content, cursor=cursor_line, page_url=self.page_url)
         # update pagename from toc
         if len(toc) > 0:
             # use first headline to overwrite pagename
@@ -718,7 +720,7 @@ class Page:
 
         data = storage.blame(self.filename, self.revision)
 
-        markup_lines = render.hilight(self.content, lang="markdown")
+        markup_lines = pygments_render(self.content, lang="markdown")
         # fix markup_lines
         markup_lines = markup_lines.replace(
             '<div class="highlight"><pre><span></span>', ""
