@@ -15,7 +15,7 @@ halfmoon-module.js linguist-vendored
 halfmoon.js linguist-vendored
 halfmoon.min.js linguist-vendored
 inline-attachment.js linguist-vendored
-mermaid@11.2.0.min.js linguist-vendored
+mermaid*.js linguist-vendored
 otterwiki.js
 polyfill.e6.min.js linguist-vendored
 polyfill.min.js linguist-vendored
