@@ -573,7 +573,7 @@ def test_nested_files(test_client):
     # delete the image
     rv = test_client.post(
         "/{}/delete".format(pagename),
-        data={"message": "deleted ..."},
+        data={"message": "deleted ...", "recursive": "recursive"},
         follow_redirects=True,
     )
     assert rv.status_code == 200

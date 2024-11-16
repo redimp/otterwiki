@@ -932,13 +932,21 @@ class Page:
             ),
         )
 
-    def delete(self, message, author):
+    def delete(self, message, author, recursive=True):
         if not has_permission("WRITE"):
             abort(403)
         if empty(message):
             message = "{} deleted.".format(self.pagename)
+        files = []
+        if self.exists:
+            files.append(self.filename)
+        if recursive:
+            files.append(self.attachment_directoryname)
+        if len(files) < 1:
+            toast("Nothing to delete.")
+            return redirect(url_for("view", path=self.pagepath))
         storage.delete(
-            [self.filename, self.attachment_directoryname],
+            files,
             message=message,
             author=author,
         )

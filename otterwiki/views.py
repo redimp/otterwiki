@@ -383,6 +383,7 @@ def delete(path):
         return p.delete(
             message=request.form.get("message"),
             author=otterwiki.auth.get_author(),
+            recursive=request.form.get("recursive", False) == "recursive",
         )
     return p.delete_form()
 

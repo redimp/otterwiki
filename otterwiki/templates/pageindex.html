@@ -5,6 +5,11 @@
 {% include 'snippets/menu.html' %}
 {% include 'snippets/menutree.html' %}
 {% endblock %}
+{% block navbardropdown %}
+{% include 'snippets/navbardropdown_rename_remove.html' %}
+                    <div class="dropdown-divider mt-5 mb-5"></div>
+{{ super() }}
+{% endblock %}
 {% block content %}
 <h2 class="pr-20 d-inline-block">{{ title }}</h2>
 <div class="d-inline-block custom-switch font-size-12 mb-10">
