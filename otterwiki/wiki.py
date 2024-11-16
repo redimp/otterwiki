@@ -50,6 +50,7 @@ from datetime import timedelta, datetime, UTC
 from timeit import default_timer as timer
 from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
+from urllib.parse import unquote
 from io import BytesIO
 
 import PIL.Image
@@ -220,6 +221,12 @@ class PageIndex:
             custom_menu=SidebarMenu().query(),
             breadcrumbs=self.breadcrumbs,
         )
+
+    def pages(self):
+        for letter in self.toc:
+            for _, pagename, url, _, _ in self.toc[letter]:
+                pagepath = unquote(url)[1:]
+                yield pagename, pagepath, url
 
 
 class Changelog:
@@ -657,6 +664,8 @@ class Page:
 
         # get file listing
         files = [f.data for f in self._attachments() if f.metadata is not None]
+        # get page listing
+        page_idx = PageIndex()
 
         return render_template(
             "editor.html",
@@ -664,6 +673,7 @@ class Page:
             pagepath=self.pagepath,
             content_editor=content,
             files=files,
+            pages=list(page_idx.pages()),
             cursor_line=cursor_line,
             cursor_ch=cursor_ch,
             revision=(

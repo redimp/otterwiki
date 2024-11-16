@@ -188,34 +188,48 @@
 <div id="extranav-attachments">
 <h5 class="sidebar-title"><a class="sidebar-title-link" href="{{ url_for('attachments', pagepath=pagepath ) }}">Attachments <i class="fa fa-paperclip"></i></a></h5>
                     <div class="sidebar-divider" ></div>
-                    {% for f in files %}
-    {#                            <a href="{{f.url}}">{% if f.thumbnail_url %}<img src="{{f.thumbnail_url}}"/>{%else%}{{f.thumbnail_icon|safe}}{%endif%}</a>#}
-                        <details class="collapse-panel pb-5">
-                          <summary class="collapse-header font-size-12">
-                            {{f.filename}}
-                          </summary>
-                          <div class="position-relative collapse-content font-size-12 extra-nav-attachment">
-{% if f.thumbnail_url %}
-                            <span class="font-weight-semi-bold">Inline Image:</span>
-                            <a href="#" onclick="otterwiki_editor.img('![]({{f.url}})')" class="btn btn-xsm position-absolute" style="right: 3.5rem;"><i class="far fa-image"></i></a>
-                            <a href="#" title="Copy to clipboard" onclick="navigator.clipboard.writeText('![]({{f.url}})')" class="btn btn-xsm position-absolute right-02"><i class="fas fa-copy"></i></a>
-                            <div class="font-size-10 text-monospace py-5 break-all">![]({{f.url}})</div>
-                            <!-- -->
-                            <span class="font-weight-semi-bold">Link with Thumbnail:</span>
-                            <a href="#" onclick="otterwiki_editor.img('[![]({{f.thumbnail_url}})]({{f.url}})')" class="btn btn-xsm position-absolute" style="right: 3.5rem;"><i class="far fa-image"></i></a>
-                            <a href="#" onclick="navigator.clipboard.writeText('[![]({{f.thumbnail_url}})]({{f.url}})')" class="btn btn-xsm position-absolute right-02"><i class="fas fa-copy"></i></a>
-                            <div class="font-size-10 text-monospace py-5 break-all">[![]({{f.thumbnail_url}})]({{f.url}})</div>
-                            <!-- -->
-{% endif %}
-                            <span class="font-weight-semi-bold">Link:</span>
-                            <a href="#" onclick="otterwiki_editor.img('[{{f.filename}}]({{f.url}})')" class="btn btn-xsm position-absolute" style="right: 3.5rem;"><i class="fas fa-link"></i></a>
-                            <a href="#" onclick="navigator.clipboard.writeText('[{{f.filename}}]({{f.url}})')" class="btn btn-xsm position-absolute right-02"><i class="fas fa-copy"></i></a>
-                            <div class="font-size-10 text-monospace py-5 break-all">[{{f.filename}}]({{f.url}})</div>
-                          </div>
-                        </details>
-                        {% endfor %}
-                        <p class="font-size-12 p-15 text-muted">Additional media can be added via the 'Attachments' of this page, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.</p>
-</div>
+                    <form class="ml-10">
+                        <select class="form-control" id="attachment-filename" onchange="otterwiki_editor.update_attachment_preview(this);">
+                          <option value="" selected="selected" disabled="disabled">Select an attachment</option>
+{% for f in files %}
+                          <option value="{{f.filename}}/--/{{f.url}}/--/{{f.thumbnail_url or ''}}">{{f.filename}}</option>
+{% endfor %}
+                        </select>
+                        <div id="extranav-preview" class="my-5"></div>
+                        <div class="custom-radio mt-5 ml-5">
+                          <input type="radio" name="attachment-type" id="attachment-link" value="link" checked="checked">
+                          <label for="attachment-link">as link</label>
+                        </div>
+                        <div class="custom-radio mt-5 ml-5">
+                          <input type="radio" name="attachment-type" id="attachment-image" value="image">
+                          <label for="attachment-image">as image</label>
+                        </div>
+                        <div class="custom-radio mt-5 ml-5">
+                          <input type="radio" name="attachment-type" id="attachment-thumbnail" value="thumbnail">
+                          <label for="attachment-thumbnail">as link with thumbnail</label>
+                        </div>
+                        <div class="custom-checkbox mt-5 ml-5">
+                          <input type="checkbox" id="attachment-absolute" value="checked">
+                          <label for="attachment-absolute">use absolute path</label>
+                        </div>
+                        <button class="btn mt-5" type="button" onclick="otterwiki_editor.insert_attachment()" title="Copy into the editor" ><i class="fas fa-paste"></i></button>
+                    </form>
+
+
+                    <p class="font-size-12 p-15 text-muted">Additional media can be added via the 'Attachments' of this page, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.</p>
+
+                    <h5 class="sidebar-title">WikiLink <i class="fa fa-link"></i></h5>
+                    <div class="sidebar-divider" ></div>
+                    <form class="ml-10">
+                        <select class="form-control" id="wikilink">
+                          <option value="" selected="selected" disabled="disabled">Select an page to link</option>
+{% for p in pages %}
+                          <option value="{{p[1]}}">{{p[1]}}</option>
+{% endfor %}
+                        </select>
+                        <button class="btn mt-5" type="button" onclick="otterwiki_editor.insert_wikilink()" title="Copy into the editor" ><i class="fas fa-paste"></i></button>
+                    </form>
+                    </div>
 {{ super() }}
 {%- endblock extra_nav %}
 {#

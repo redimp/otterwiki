@@ -4,6 +4,7 @@
 {{ super() }}
 <meta name="robots" content="noindex, nofollow">
 {% endblock %}
+{% block extra_nav %}{% endblock %}
 {% block content %}
 <div class="w-full mw-full p-0 clearfix">
     <h2 class="float-left">Attachments</h2>
@@ -47,25 +48,6 @@
         <tr class="align-top">
             <td><a href="{{f.url}}">{% if f.thumbnail_url %}<img src="{{f.thumbnail_url}}"/>{%else%}{{f.thumbnail_icon|safe}}{%endif%}</a></td>
             <td><a href="{{f.url}}">{{f.filename}}</a><br/>
-{# copy n paste optionen #}
-<div class="dropdown dropup">
-    <a href="#" data-toggle="dropdown" id="dropdown-toggle-btn-{{loop.index}}" aria-haspopup="true" aria-expanded="false">
-        <i class="fas fa-copy"></i>
-    </a>
-    <div class="dropdown-menu" aria-labelledby="dropdown-toggle-btn-{{loop.index}}">
-        <h6 class="dropdown-header">Markdown Shortcuts <span class="font-size-12">- Click to copy to clipboard</span></h6>
-{% if f.thumbnail_url %}
-    <a href="#" onclick="navigator.clipboard.writeText('![]({{f.url}})')" class="dropdown-item"><i class="fas fa-copy"></i> Inline Image:</a>
-    <div class="dropdown-item font-size-12">![]({{f.url}})</div>
-    <div class="dropdown-divider"></div>
-    <a href="#" onclick="navigator.clipboard.writeText('[![]({{f.thumbnail_url}})]({{f.url}})')" class="dropdown-item"><i class="fas fa-copy"></i> Link with Thumbnail:</a>
-    <div class="dropdown-item font-size-12>">[![]({{f.thumbnail_url}})]({{f.url}})</div>
-    <div class="dropdown-divider"></div>
-{% endif %}
-        <a href="#" onclick="navigator.clipboard.writeText('[{{f.filename}}]({{f.url}})')" class="dropdown-item"><i class="fas fa-copy"></i> Link Attachment:</a>
-        <div class="dropdown-item font-size-12">[{{f.filename}}]({{f.url}})</div>
-    </div>
-</div>
             </td>
             <td>{{f.filesize}}
             <td>{{f.datetime|format_datetime}}<br/><span class="btn revision-small">{{f.revision}}</span></td>
