@@ -267,6 +267,9 @@ class OtterwikiInlineParser(mistune.InlineParser):
         link = mistune.inline_parser.ESCAPE_CHAR.sub(r'\1', m.group(2))
         if link.startswith('<') and link.endswith('>'):
             link = link[1:-1]
+        elif link.startswith("./"):
+            if self.env.get("PAGE_URL", None) is not None:
+                link = self.env["PAGE_URL"]+"/"+link
 
         title = m.group(3)
         if title:
