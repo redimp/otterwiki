@@ -983,6 +983,7 @@ class Page:
     def upload_attachments(
         self, files, message, filename, author, inline=False
     ):
+        last_uploaded_filename = None
         if not has_permission("UPLOAD"):
             abort(403)
         # attachments to commit in the second step
@@ -1000,6 +1001,7 @@ class Page:
             os.makedirs(attachment.absdirectory, mode=0o775, exist_ok=True)
             upload.save(attachment.abspath)
             to_commit.append(attachment)
+            last_uploaded_filename = fn
         if len(to_commit) > 0:
             if filename is None:
                 toastmsg = "Added attachment(s): {}.".format(
@@ -1018,12 +1020,9 @@ class Page:
             if not inline:
                 toast(toastmsg)
         if inline:
-            attachment_url = url_for(
-                "get_attachment",
-                pagepath=self.pagepath,
-                filename=fn,  # pyright: ignore
-            )
-            return jsonify(filename=attachment_url)
+            if last_uploaded_filename is None:
+                abort(500)
+            return jsonify(filename=f"./{last_uploaded_filename}")
         return redirect(url_for("attachments", pagepath=self.pagepath))
 
     def get_attachment(self, filename, revision=None):
