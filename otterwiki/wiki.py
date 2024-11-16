@@ -840,12 +840,15 @@ class Page:
     def rename(self, new_pagename, message, author):
         if not has_permission("WRITE"):
             abort(403)
-        # handle case that the page doesn't exists
-        self.exists_or_404()
         # filename
         new_filename = get_filename(new_pagename)
         # check for attachments
         files, directories = storage.list(self.attachment_directoryname)
+
+        # handle case that the page and no attachments exist
+        if not self.exists and (len(files) + len(directories)) == 0:
+            self.exists_or_404()
+
         if (len(files) + len(directories)) > 0:
             # rename attachment directory
             new_attachment_directoryname = get_attachment_directoryname(
@@ -857,12 +860,15 @@ class Page:
                 new_attachment_directoryname,
                 author=author,
                 message=message,
-                no_commit=True,
+                # if self.exists, do not commit yet, commit will follow below, when the md file is renamed
+                # if not self.exists, do commit, since no md file will be renamed
+                no_commit=self.exists,
             )
         # rename page
-        storage.rename(
-            self.filename, new_filename, message=message, author=author
-        )
+        if self.exists:
+            storage.rename(
+                self.filename, new_filename, message=message, author=author
+            )
 
     def handle_rename(self, new_pagename, message, author):
         if not has_permission("WRITE"):
