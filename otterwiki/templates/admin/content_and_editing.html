@@ -9,7 +9,7 @@
     <div class="form-group">
         <label for="commit_message" class="required">Commit message</label>
         <select class="form-control w-md-400" id="commit_message" name="commit_message">
-{% for mode in [("REQUIRED", "Required"),("OPTIONAL","Optional (empty commit messages are allowed"),("DISABLED", "Disabled (Changes saved without a commit message)")] %}
+{% for mode in [("REQUIRED", "Required"),("OPTIONAL","Optional (empty commit messages are allowed)"),("DISABLED", "Disabled (Changes saved without a commit message)")] %}
             <option value="{{mode[0]}}"{%if config.COMMIT_MESSAGE == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
 {% endfor %}
         </select>
@@ -35,6 +35,18 @@
             Enable this to allow users with the permission to READ to clone and pull the wiki content via git and users with UPLOAD/Attachment management permissions to push content. When enabled the URL <code>{{url_for("dotgit", _external=True)}}</code> will be displayed in the users settings.
         </div>
       </div>
+    </div>
+{##}
+    <div class="form-group">
+        <label for="sidebar_menutree_mode">WikiLink Style</label>
+        <select class="form-control w-md-600" id="wikilink_style" name="wikilink_style">
+{% for mode in [("", "[[Title | PageName]] - like Markdown links [Title](/PageName)"),("LINKTITLE","[[PageName | Title]] - compatibility mode"),] %}
+            <option value="{{mode[0]}}"{%if config.WIKILINK_STYLE == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
+{% endfor %}
+        </select>
+        <div class="mt-5">
+            The WikiLink Style only changes the rendering of the <code>[[Wikilink]]</code>, no content will be changed. The compatibility mode is for imported content or matching the style users got used to.
+        </div>
     </div>
 {##}
 <div class="form-text pt-0 mt-0 mb-20"></div>

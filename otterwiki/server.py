@@ -53,6 +53,7 @@ app.config.update(
     GIT_WEB_SERVER=False,
     SIDEBAR_SHORTCUTS="home pageindex createpage",
     ROBOTS_TXT="allow",
+    WIKILINK_STYLE="",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 

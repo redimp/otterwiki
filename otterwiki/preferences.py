@@ -166,6 +166,7 @@ def handle_app_preferences(form):
 def handle_content_and_editing(form):
     for name in [
         "commit_message",
+        "wikilink_style",
     ]:
         _update_preference(name.upper(), form.get(name, ""))
     for checkbox in [

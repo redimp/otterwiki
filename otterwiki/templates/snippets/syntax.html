@@ -97,7 +97,11 @@ You can use backslash escapes to generate literal characters that are used for f
 
 <div class="row">
 <div class="col-md-6 col-sm-12">
+{% if config.WIKILINK_STYLE.upper() == "LINKTITLE" %}
+<pre class="block-compact text-wrap">[[WikiPage|Text to display]]</pre>
+{% else %}
 <pre class="block-compact text-wrap">[[Text to display|WikiPage]]</pre>
+{% endif %}
 </div>
 <div class="col-md-6 col-sm-12 pl-5">
   <a href="#">Text to display</a>
@@ -121,6 +125,9 @@ You can use backslash escapes to generate literal characters that are used for f
   <a href="#">Link with text</a>
 </div>
 </div>
+{% if config.WIKILINK_STYLE.upper() == "LINKTITLE" %}
+<p><em>Note: WikiLink-Style is in compatibility mode.</em></p>
+{% endif %}
 
 {{ heading("Quotes") }}
 <div class="row">

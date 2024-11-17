@@ -3,7 +3,7 @@
 
 import pytest
 from bs4 import BeautifulSoup
-from otterwiki.renderer import render, clean_html
+from otterwiki.renderer import render, clean_html, OtterwikiRenderer
 
 
 def test_lastword():
@@ -122,6 +122,14 @@ def test_wiki_link_subspace(req_ctx):
     text = "[[Paul|people/Paul]]"
     html, _ = render.markdown(text)
     assert '<a href="/people/Paul">Paul</a>' in html
+
+
+def test_wiki_link_compatibilty_mode(req_ctx):
+    configured_renderer = OtterwikiRenderer(config={"WIKILINK_STYLE":"LinkTitle"})
+    text = "[[people/Paul|Paul]]"
+    html, _ = configured_renderer.markdown(text)
+    assert '<a href="/people/Paul">Paul</a>' in html
+
 
 
 def test_wiki_link_in_table(req_ctx):
