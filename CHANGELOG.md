@@ -6,6 +6,39 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.8.0](https://github.com/redimp/otterwiki/releases/tag/v2.8.0) - 2024-11-17
+
+<small>[Compare with v2.7.0](https://github.com/redimp/otterwiki/compare/v2.7.0...v2.8.0)</small>
+
+### Features
+
+- added a convenient way to add attachments and wikilinks, this implements #128. ([fa34e02](https://github.com/redimp/otterwiki/commit/fa34e028a9a4c1f16536f3ca6bf46ab97c81d3d7))
+- attachments can not be linked relative to the page, e.g. `![](./example.png)`,
+  this implements #163. ([3170c64](https://github.com/redimp/otterwiki/commit/3170c64cd66c931380a82029ed6f0986521cf636))
+- the editor makes use of this feature and adds pasted images using relative links. ([1945f2e](https://github.com/redimp/otterwiki/commit/1945f2e5ed537a9eb20e3e593bbf822b0e9b27c0))
+- allow renaming of folders and to remove a page without removing the
+  attachments and sub-pages, this implements #149 and $150. ([e7d92be](https://github.com/redimp/otterwiki/commit/e7d92bee553dc31f7fcd6a60f5523d90b4d040c5))
+- new config option: `WIKILINK_STYLE` allows rendering Wikilinks in a compability mode.
+  This implements #155. ([067668f](https://github.com/redimp/otterwiki/commit/067668fac9f9b255b0f2057926a477eabeeabc2a))
+
+### Dependencies
+
+- updated mermaid to 11.4.0 this fixes #164. ([d6c10d5](https://github.com/redimp/otterwiki/commit/d6c10d502278cc6f395b6359ca4a1dd8ea8570b4))
+- updated python dependencies ([2207643](https://github.com/redimp/otterwiki/commit/2207643ae3090d73eed471544e08bd93848da408))
+  - Werkzeug 3.1.3
+  - Flask 3.1.0
+  - Flask-Mail 0.10.0
+  - cython 3.0.11
+
+### Bug Fixes
+
+- enable renaming of folders without markdown file ([bfd6615](https://github.com/redimp/otterwiki/commit/bfd6615880d3d1cc208fa939a7cf746ea0f59945)).
+
+### Code Refactoring
+
+- moved helper methods into `helpers.py` ([a921cb8](https://github.com/redimp/otterwiki/commit/a921cb895c0429b14212f4be7b9103070f0fc960)).
+- User Model moved into `otterwiki.models` ([e9d6cbe](https://github.com/redimp/otterwiki/commit/e9d6cbe4e434e38a1d7021565ae3e365d5215558)).
+
 ## [v2.7.0](https://github.com/redimp/otterwiki/releases/tag/v2.7.0) - 2024-10-24
 
 <small>[Compare with v2.6.2](https://github.com/redimp/otterwiki/compare/v2.6.2...v2.7.0)</small>
