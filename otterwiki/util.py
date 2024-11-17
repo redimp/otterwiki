@@ -252,5 +252,3 @@ def strfdelta_round(tdelta, round_period='second'):
             break
 
     return s
-
-

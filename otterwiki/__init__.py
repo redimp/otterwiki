@@ -10,5 +10,3 @@ __all__ = ["fatal_error"]
 def fatal_error(msg):
     print("\nError: {}\n".format(msg), file=sys.stderr)
     sys.exit(1)
-
-

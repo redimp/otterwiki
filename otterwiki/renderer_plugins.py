@@ -586,8 +586,11 @@ class mistunePluginWikiLink:
     def parse_wikilink(self, inline, m, state):
         title, link = m.group(2), m.group(4) or ""
 
-        WIKILINK_STYLE = inline.env.get("config",{}).get("WIKILINK_STYLE","")
-        if WIKILINK_STYLE.upper().replace("_","").strip() in ["LINKTITLE", "PAGENAMETITLE"]:
+        WIKILINK_STYLE = inline.env.get("config", {}).get("WIKILINK_STYLE", "")
+        if WIKILINK_STYLE.upper().replace("_", "").strip() in [
+            "LINKTITLE",
+            "PAGENAMETITLE",
+        ]:
             title, link = link, title
 
         if link == '':

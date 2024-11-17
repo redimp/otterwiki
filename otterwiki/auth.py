@@ -734,4 +734,3 @@ app.jinja_env.globals.update(has_permission=has_permission)
 app.jinja_env.globals.update(
     auth_supported_features=auth_manager.supported_features()
 )
-

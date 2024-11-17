@@ -579,5 +579,3 @@ def git_upload_pack():
 @app.route("/.git/git-receive-pack", methods=["POST"])
 def git_receive_pack():
     return githttpserver.git_receive_pack(request.stream)
-
-

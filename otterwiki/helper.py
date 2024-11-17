@@ -28,6 +28,7 @@ class SerializeError(ValueError):
 # initiliaze serializer
 _serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
+
 def serialize(str, salt=None):
     return _serializer.dumps(str, salt=salt)
 

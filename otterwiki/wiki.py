@@ -546,7 +546,9 @@ class Page:
             ]
 
         # render markdown
-        htmlcontent, toc = app_renderer.markdown(self.content, page_url=self.page_url)
+        htmlcontent, toc = app_renderer.markdown(
+            self.content, page_url=self.page_url
+        )
 
         if len(toc) > 0:
             # use first headline to overwrite pagename
@@ -590,7 +592,9 @@ class Page:
             content = self.content
 
         # render preview html from markdown
-        content_html, toc = app_renderer.markdown(content, cursor=cursor_line, page_url=self.page_url)
+        content_html, toc = app_renderer.markdown(
+            content, cursor=cursor_line, page_url=self.page_url
+        )
         # update pagename from toc
         if len(toc) > 0:
             # use first headline to overwrite pagename
@@ -1598,5 +1602,3 @@ class AutoRoute:
             return pi.render()
         # default to Page view
         return p.view()
-
-

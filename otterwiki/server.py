@@ -213,4 +213,3 @@ import otterwiki.remote
 githttpserver = otterwiki.remote.GitHttpServer(path=app.config["REPOSITORY"])
 
 import otterwiki.views
-

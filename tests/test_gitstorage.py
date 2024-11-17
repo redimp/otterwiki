@@ -449,5 +449,3 @@ def test_get_parent_revision(storage):
         filename=filename1, revision=revision3
     )
     assert parent_revision == revision1
-
-

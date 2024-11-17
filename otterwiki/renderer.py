@@ -269,7 +269,7 @@ class OtterwikiInlineParser(mistune.InlineParser):
             link = link[1:-1]
         elif link.startswith("./"):
             if self.env.get("PAGE_URL", None) is not None:
-                link = self.env["PAGE_URL"]+"/"+link
+                link = self.env["PAGE_URL"] + "/" + link
 
         title = m.group(3)
         if title:
@@ -280,18 +280,26 @@ class OtterwikiInlineParser(mistune.InlineParser):
 
         return self.tokenize_link(line, link, text, title, state)
 
+
 class OtterwikiMdParser(mistune.Markdown):
-    def __init__(self, renderer, block=None, inline=None, plugins=None, env={}):
+    def __init__(
+        self, renderer, block=None, inline=None, plugins=None, env={}
+    ):
         self.env = env
-        super().__init__(renderer=renderer, block=block, inline=inline, plugins=plugins)
+        super().__init__(
+            renderer=renderer, block=block, inline=inline, plugins=plugins
+        )
+
 
 class OtterwikiRenderer:
     def __init__(self, config={}):
         self.env = {
-            "config" : config,
+            "config": config,
         }
         self.md_renderer = OtterwikiMdRenderer(env=self.env)
-        self.inline_renderer = OtterwikiInlineParser(env=self.env, renderer=self.md_renderer, hard_wrap=False)
+        self.inline_renderer = OtterwikiInlineParser(
+            env=self.env, renderer=self.md_renderer, hard_wrap=False
+        )
         self.mistune = OtterwikiMdParser(
             renderer=self.md_renderer,
             inline=self.inline_renderer,
@@ -343,11 +351,11 @@ class OtterwikiRenderer:
             line = 0
 
         # store extra kwargs in environment
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             self.env[k.upper()] = v
         html = self.mistune(text)
         # clean extra kwargs from environment
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             del self.env[k.upper()]
         # generate the toc
         toc = self.md_renderer.toc_tree.copy()
@@ -378,6 +386,7 @@ class OtterwikiRenderer:
         html = str(soup)
 
         return html, toc
+
 
 # unconfigured renderer for testing and rendering about()
 render = OtterwikiRenderer()

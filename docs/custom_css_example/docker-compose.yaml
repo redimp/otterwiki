@@ -16,4 +16,3 @@ services:
       - ./custom:/app/otterwiki/static/custom:ro
       # For this example we do not persist any data
       # - ./app-data:/app-data
-

@@ -40,10 +40,14 @@ class NoEmojiPlugin:
     def renderer_markdown_preprocess(self, md):
         return self.emojis.sub('', md)
 
+
 # this is ne
 plugin_manager.register(NoEmojiPlugin())
+
 
 def test_noemoji():
     noemoji = NoEmojiPlugin()
     assert noemoji.preprocess_markdown("👴") == ""
-    assert noemoji.preprocess_markdown("🕶H🦴ello, W🎲orld😇!") == "Hello, World!"
+    assert (
+        noemoji.preprocess_markdown("🕶H🦴ello, W🎲orld😇!") == "Hello, World!"
+    )
