@@ -28,6 +28,7 @@ venv: pyproject.toml
 	python3 -m venv venv
 	venv/bin/pip install -U pip wheel
 	venv/bin/pip install -e '.[dev]'
+	venv/bin/pre-commit install
 
 run: venv settings.cfg
 	GIT_TAG=$(shell git describe --long) FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=$(PWD)/settings.cfg venv/bin/flask run --host 0.0.0.0 --port $(PORT)
