@@ -93,7 +93,6 @@ def check_ldap_bind(email, password):
         return False
 
 
-
 class SimpleAuth:
     class User(UserMixin, UserModel):
         pass

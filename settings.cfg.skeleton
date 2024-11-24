@@ -48,3 +48,13 @@ SQLALCHEMY_DATABASE_URI = ''
 # MAIL_USERNAME = None
 # MAIL_PASSWORD = None
 
+# LDAP Settings
+# LDAP_URI = 'ldap://12.34.56.78:389'
+# LDAP_USERNAME = 'cn=Bind,dc=ldap,dc=com'
+# LDAP_PASSWORD = 'password'
+# LDAP_BASE = 'dc=ldap,dc=com'
+# LDAP_PROTOCOL = 3
+# LDAP_FILTER = '(objectClass=person)'
+# LDAP_ATTRIBUTE = 'mail'
+# LDAP_SCOPE = 'subtree'
+# LDAP_DOMAIN = 'ldap.com'

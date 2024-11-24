@@ -54,6 +54,11 @@ app.config.update(
     SIDEBAR_SHORTCUTS="home pageindex createpage",
     ROBOTS_TXT="allow",
     WIKILINK_STYLE="",
+    LDAP_URI="",
+    LDAP_PROTOCOL=3,
+    LDAP_FILTER="(objectClass=person)",
+    LDAP_ATTRIBUTE="mail",
+    LDAP_SCOPE="subtree",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
