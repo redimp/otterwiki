@@ -31,6 +31,12 @@ from otterwiki.models import User as UserModel
 from datetime import datetime
 import hmac
 
+try:
+    import ldap
+    has_ldap = True
+except ImportError:
+    has_ldap = False
+
 
 def check_password_hash_backport(pwhash, password):
     # split pwhash to check the method
@@ -44,6 +50,48 @@ def check_password_hash_backport(pwhash, password):
             hmac.new(salt, password, method).hexdigest(), hashval
         )
     return check_password_hash(pwhash, password)
+
+
+def check_ldap_bind(email, password):
+    if not has_ldap or not app.config.get("LDAP_URI"):
+        return False
+
+    try:
+        conn = ldap.initialize(app.config["LDAP_URI"])
+        conn.set_option(ldap.OPT_REFERRALS, 0)
+        conn.protocol = int(app.config["LDAP_PROTOCOL"])
+
+        conn.simple_bind_s(app.config["LDAP_USERNAME"],
+                           app.config["LDAP_PASSWORD"])
+    except Exception as e:
+        app.logger.error("check_ldap_bind(): Exception {}".format(e))
+        return False
+
+    try:
+        scope = app.config.get("LDAP_SCOPE", "").upper()
+
+        if scope == "BASE":
+            scope = ldap.SCOPE_BASE
+        elif scope == "ONELEVEL":
+            scope = ldap.SCOPE_ONELEVEL
+        else:
+            scope = ldap.SCOPE_SUBTREE
+
+        filter_ = "(&{}({}={}))".format(app.config["LDAP_FILTER"],
+                                        app.config["LDAP_ATTRIBUTE"], email)
+        result = conn.search_s(app.config["LDAP_BASE"], scope, filter_)
+
+        if not result:
+            return False
+
+        conn.simple_bind_s(result[0][0], password)
+        return True
+    except ldap.INVALID_CREDENTIALS:
+        return False
+    except Exception as e:
+        app.logger.error("check_ldap_bind(): Exception {}".format(e))
+        return False
+
 
 
 class SimpleAuth:
@@ -102,11 +150,16 @@ class SimpleAuth:
 
     def check_credentials(self, email, password):
         user = self.User.query.filter_by(email=email).first()
-        if not user or not check_password_hash_backport(
+        if not user:
+            return None
+        elif user.provider == "local" and check_password_hash_backport(
             user.password_hash, password
         ):
-            return None
-        return user
+            return user
+        elif user.provider == "ldap" and check_ldap_bind(email, password):
+            return user
+
+        return None
 
     def handle_login(self, email=None, password=None, remember=None):
         if email is not None:
@@ -214,16 +267,23 @@ class SimpleAuth:
             # generate random password
             password = random_password()
         # hash password
-        hashed_password = generate_password_hash(password, method="scrypt")
+        if email.split("@", 1)[-1] == app.config.get("LDAP_DOMAIN"):
+            hashed_password = ""
+            provider = "ldap"
+        else:
+            hashed_password = generate_password_hash(password, method="scrypt")
+            provider = "local"
         # handle flags
         # first user is admin
         if len(self.User.query.all()) < 1:
             is_admin = True
             is_approved = True
+            email_confirmed = False
         else:
             is_admin = False
             # handle auto approval
             is_approved = app.config["AUTO_APPROVAL"] is True
+            email_confirmed = provider != "local"
         # create user object
         user = self.User(  # pyright: ignore
             name=name,
@@ -233,6 +293,8 @@ class SimpleAuth:
             last_seen=datetime.now(),
             is_admin=is_admin,
             is_approved=is_approved,
+            provider=provider,
+            email_confirmed=email_confirmed,
         )
         # add to database
         db.session.add(user)
@@ -241,7 +303,8 @@ class SimpleAuth:
         app.logger.info(
             "auth: New user registered: {} <{}>".format(name, email)
         )
-        if app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin:
+        if app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin and \
+                provider == "local":
             self.request_confirmation(email)
         else:
             # notify user
@@ -314,6 +377,9 @@ class SimpleAuth:
             toast("The passwords do not match.", "error")
         elif password1 is None or len(password1) < 8:
             toast("The password must be at least 8 characters long.", "error")
+        elif email.split("@", 1)[-1] == app.config.get("LDAP_DOMAIN") and \
+                not check_ldap_bind(email, password1):
+            toast("Invalid email address or password.", "error")
         else:
             # register account
             self.create_user(email, name, password=password1)
@@ -404,6 +470,8 @@ class SimpleAuth:
             toast("This email address is invalid.", "error")
         elif user is None:
             toast("This email address is unknown.", "error")
+        elif user.provider != "local":
+            toast("Can't change password from this provider.", "error")
         else:
             # recovery process
             token = serialize(email, salt="lost-password-email")

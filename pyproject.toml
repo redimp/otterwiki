@@ -55,6 +55,7 @@ dev = [
     "git-changelog",
     "pre-commit",
     ]
+ldap = ["python-ldap>=3.4.4"]
 
 [build-system]
 requires = [

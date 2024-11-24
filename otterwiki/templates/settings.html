@@ -71,7 +71,7 @@
 </div>
 {#
 #}
-{% if auth_supported_features['passwords'] %}
+{% if current_user.provider == "local" and auth_supported_features['passwords'] %}
 <div class="card">
 <div class="mw-full w-600">
 <h2 class="card-title">Change Password</h2>

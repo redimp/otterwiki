@@ -58,6 +58,7 @@ class User(db.Model):
     allow_read = db.Column(db.Boolean(), default=False)
     allow_write = db.Column(db.Boolean(), default=False)
     allow_upload = db.Column(db.Boolean(), default=False)
+    provider = db.Column(db.String(8), default="local")
 
     def __repr__(self):
         permissions = ""
@@ -69,4 +70,4 @@ class User(db.Model):
             permissions += "U"
         if self.is_admin:
             permissions += "A"
-        return f"<User {self.id} '{self.name} <{self.email}>' {permissions}>"
+        return f"<User {self.id} '{self.name} <{self.email}>' {permissions} {self.provider}>"
