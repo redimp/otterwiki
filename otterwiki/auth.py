@@ -83,6 +83,7 @@ def authenticate_ldap_user(email, password):
         filter_ = "(&{}({}={}))".format(app.config["LDAP_FILTER"],
                                         app.config["LDAP_ATTRIBUTE_MAIL"],
                                         email)
+                                        app.config["LDAP_ATTRIBUTE"], email)
         result = conn.search_s(app.config["LDAP_BASE"], scope, filter_)
 
         if not result:
@@ -315,8 +316,8 @@ class SimpleAuth:
         app.logger.info(
             "auth: New user registered: {} <{}>".format(name, email)
         )
-        if (app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin
-                and provider == "local"):
+        if app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin and \
+                provider == "local":
             self.request_confirmation(email)
         else:
             # notify user
