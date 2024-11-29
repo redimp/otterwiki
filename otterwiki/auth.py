@@ -282,7 +282,7 @@ class SimpleAuth:
             is_admin = False
             # handle auto approval
             is_approved = app.config["AUTO_APPROVAL"] is True
-            email_confirmed = provider != "local"
+            email_confirmed = provider == "ldap"
         # create user object
         user = self.User(  # pyright: ignore
             name=name,

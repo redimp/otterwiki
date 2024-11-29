@@ -25,7 +25,7 @@ def test_db(app_with_user):
 
     # query all user
     all_user = SimpleAuth.User.query.all()
-    assert len(all_user) == 2
+    assert len(all_user) == 3
 
     # query created user
     user = SimpleAuth.User.query.filter_by(email="mail@example.org").first()
@@ -111,8 +111,25 @@ def login(client):
     )
 
 
+def login_ldap(client):
+    return client.post(
+        "/-/login",
+        data={
+            "email": "user@ldap.org",
+            "password": "12345678",
+        },
+        follow_redirects=True,
+    )
+
+
 def test_login(app_with_user, test_client):
     result = login(test_client)
+    html = result.data.decode()
+    assert "You logged in successfully." in html
+
+
+def test_login_ldap(app_with_user, test_client):
+    result = login_ldap(test_client)
     html = result.data.decode()
     assert "You logged in successfully." in html
 
@@ -141,12 +158,48 @@ def test_login_fail_wrong_username(app_with_user, test_client):
     assert "Invalid email address or password." in html
 
 
+def test_login_ldap_fail_wrong_username(app_with_user, test_client):
+    html = test_client.post(
+        "/-/login",
+        data={
+            "email": "none@ldap.org",
+            "password": "",
+        },
+        follow_redirects=True,
+    ).data.decode()
+    assert "Invalid email address or password." in html
+
+
 def test_login_fail_wrong_password(app_with_user, test_client):
     html = test_client.post(
         "/-/login",
         data={
             "email": "mail@example.org",
             "password": "xxx",
+        },
+        follow_redirects=True,
+    ).data.decode()
+    assert "Invalid email address or password." in html
+
+
+def test_login_ldap_fail_wrong_password(app_with_user, test_client):
+    html = test_client.post(
+        "/-/login",
+        data={
+            "email": "user@ldap.org",
+            "password": "xxx",
+        },
+        follow_redirects=True,
+    ).data.decode()
+    assert "Invalid email address or password." in html
+
+
+def test_login_ldap_fail_empty_password(app_with_user, test_client):
+    html = test_client.post(
+        "/-/login",
+        data={
+            "email": "user@ldap.org",
+            "password": "",
         },
         follow_redirects=True,
     ).data.decode()
@@ -561,6 +614,14 @@ def test_lost_password_form_address(app_with_user, test_client):
         follow_redirects=True,
     )
     assert "This email address is unknown." in rv.data.decode()
+    rv = test_client.post(
+        "/-/lost_password",
+        data={
+            "email": "user@ldap.org",
+        },
+        follow_redirects=True,
+    )
+    assert "Can't change password from this provider." in rv.data.decode()
 
 
 def test_lost_password_invalid_token(app_with_user, test_client):
@@ -584,13 +645,13 @@ def test_lost_password_invalid_token(app_with_user, test_client):
 #
 # register
 #
-def test_register_and_login(app_with_user, test_client, req_ctx):
+@pytest.mark.parametrize("email,password", [("mail2@example.org", "1234567890"),
+                                            ("staff@ldap.org", "password")])
+def test_register_and_login(app_with_user, test_client, req_ctx, email, password):
     app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = False
     app_with_user.config["AUTO_APPROVAL"] = True
     # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
     app_with_user.test_mail.state.suppress = True
-    email = "mail2@example.org"
-    password = "1234567890"
 
     rv = test_client.post(
         "/-/register",
@@ -756,3 +817,16 @@ def test_register_errors(app_with_user, test_client, req_ctx):
     assert "password must be at least" in rv.data.decode()
     assert "account has been created" not in rv.data.decode()
     assert "account is waiting for approval" not in rv.data.decode()
+    # wrong ldap password
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": "staff@ldap.org",
+            "name": "John Doe",
+            "password1": "wrong password",
+            "password2": "wrong password",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert "Invalid email address or password" in rv.data.decode()

@@ -54,6 +54,7 @@ dev = [
     "rjsmin",
     "git-changelog",
     "pre-commit",
+    "fakeldap",
     ]
 ldap = ["python-ldap>=3.4.4"]
 
