@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/root/.cache \
 # copy otterwiki source and tests
 COPY otterwiki /src/otterwiki
 # install the otterwiki
-RUN pip install .[production]
+RUN pip install .[ldap]
 
 #
 # production stage

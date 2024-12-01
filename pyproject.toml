@@ -56,7 +56,7 @@ dev = [
     "pre-commit",
     "fakeldap",
     ]
-production = [
+ldap = [
     "python-ldap>=3.4.4",
 ]
 
