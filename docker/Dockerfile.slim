@@ -5,7 +5,8 @@ FROM alpine:3.20.1 AS compile-stage
 LABEL maintainer="Ralph Thesen <mail@redimp.de>"
 # install build environment (mostly necessary to build Pillow on armv6/7)
 RUN apk add python3 python3-dev py3-virtualenv \
-            zlib-dev jpeg-dev gcc musl-dev
+            zlib-dev jpeg-dev gcc musl-dev \
+            build-base openldap-dev
 # prepare environment
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
@@ -24,7 +25,7 @@ RUN --mount=type=cache,target=/root/.cache \
 # copy otterwiki source and tests
 COPY otterwiki /src/otterwiki
 # install the otterwiki
-RUN pip install .
+RUN pip install .[production]
 
 #
 # production stage
@@ -42,7 +43,7 @@ RUN delgroup www-data && \
     adduser -S -D -u 33 -s /sbin/nologin -h /app -G www-data www-data
 # install python and git
 RUN apk add python3 git uwsgi uwsgi-python3 \
-            zlib jpeg
+            zlib jpeg openldap
 # copy virtual environment
 COPY --chown=www-data:www-data --from=compile-stage /opt/venv /opt/venv
 # Make sure we use the virtualenv:
