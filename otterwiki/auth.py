@@ -34,7 +34,8 @@ import hmac
 try:
     import ldap
     has_ldap = True
-except ImportError:
+except ImportError as e:
+    app.logger.debug(f"Unable to import ldap: {e}")
     has_ldap = False
 
 
@@ -53,6 +54,7 @@ def check_password_hash_backport(pwhash, password):
 
 
 def check_ldap_bind(email, password):
+    app.logger.debug(f"check_ldap_bind({email=})")
     if not has_ldap or not app.config.get("LDAP_URI"):
         return False
 
