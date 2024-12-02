@@ -15,4 +15,4 @@ RUN dnf install -y epel-release procps \
 
 EXPOSE 389/tcp
 
-ENTRYPOINT /sbin/slapd -u ldap -h "ldap:/// ldapi:///" -d 1
+ENTRYPOINT /sbin/slapd -u ldap -h "ldap:/// ldapi:///" -d 256

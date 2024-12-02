@@ -55,10 +55,14 @@ app.config.update(
     ROBOTS_TXT="allow",
     WIKILINK_STYLE="",
     LDAP_URI="",
+    LDAP_USERNAME="",
+    LDAP_PASSWORD="",
+    LDAP_BASE="",
     LDAP_PROTOCOL=3,
     LDAP_FILTER="(objectClass=person)",
     LDAP_ATTRIBUTE="mail",
     LDAP_SCOPE="subtree",
+    LDAP_DOMAIN="",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 

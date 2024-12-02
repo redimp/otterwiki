@@ -49,7 +49,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128))
     email = db.Column(db.String(128), index=True, unique=True)
-    password_hash = db.Column(db.String(512))
+    password_hash = db.Column(db.String(512), default="")
     first_seen = db.Column(TimeStamp())
     last_seen = db.Column(TimeStamp())
     is_approved = db.Column(db.Boolean(), default=False)

@@ -194,7 +194,7 @@ class SimpleAuth:
             if not next_page or urlsplit(next_page).netloc != "":
                 next_page = url_for("index")
             # check if the users password_hash is going to be deprecated
-            if user.password_hash.startswith("sha256$"):
+            if user.password_hash and user.password_hash.startswith("sha256$"):
                 app.logger.warning(
                     f"User has deprecated password hash: {user.email}"
                 )
