@@ -16,6 +16,8 @@ services:
       - LDAP_BASE=dc=ldap,dc=local
       - LDAP_SCOPE=subtree
       - LDAP_DOMAIN=ldap.org
+      # fixed SECRET_KEY for easier testing while keeping the session
+      - SECRET_KEY=aabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabb
     volumes:
       - app-data:/app-data
     command:
