@@ -408,7 +408,7 @@ def handle_user_add(form):
     # update user from form
     user.name = form.get("name").strip()  # pyright: ignore
     user.email = form.get("email").strip()  # pyright: ignore
-    user.provider = form.get("provider").strip()  # pyright: ignore
+    user.provider = form.get("provider", "").strip()  # pyright: ignore
 
     for value, _ in [
         ("email_confirmed", "email confirmed"),

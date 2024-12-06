@@ -233,6 +233,30 @@ def test_settins_minimal(app_with_user, test_client):
     assert "Change Password" in html
 
 
+def test_login_ldap_auto_register(app_with_user, test_client):
+    app_with_user.config["DISABLE_REGISTRATION"] = True
+    html = test_client.post(
+        "/-/login",
+        data={
+            "email": "staff@ldap.org",
+            "password": "password",
+        },
+        follow_redirects=True,
+    ).data.decode()
+    assert "Invalid email address or password" in html
+
+    app_with_user.config["DISABLE_REGISTRATION"] = False
+    html = test_client.post(
+        "/-/login",
+        data={
+            "email": "staff@ldap.org",
+            "password": "password",
+        },
+        follow_redirects=True,
+    ).data.decode()
+    assert "You logged in successfully" in html
+
+
 #
 # test permissions
 #

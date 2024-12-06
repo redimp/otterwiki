@@ -17,11 +17,13 @@ DIRECTORY = {
         "mail": ["user@ldap.org"],
         "objectClass": ["person"],
         "userPassword": ["12345678"],
+        "cn": [b"User Ldap"],
     },
     "cn=staff directory,dc=ldap,dc=org": {
         "mail": ["staff@ldap.org"],
         "objectClass": ["person"],
         "userPassword": ["password"],
+        "cn": [b"Staff Ldap"],
     },
 }
 
