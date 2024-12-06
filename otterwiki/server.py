@@ -60,7 +60,8 @@ app.config.update(
     LDAP_BASE="",
     LDAP_PROTOCOL=3,
     LDAP_FILTER="(objectClass=person)",
-    LDAP_ATTRIBUTE="mail",
+    LDAP_ATTRIBUTE_MAIL="mail",
+    LDAP_ATTRIBUTE_NAME="cn",
     LDAP_SCOPE="subtree",
     LDAP_DOMAIN="",
 )
