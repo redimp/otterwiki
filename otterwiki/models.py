@@ -49,7 +49,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128))
     email = db.Column(db.String(128), index=True, unique=True)
-    password_hash = db.Column(db.String(512))
+    password_hash = db.Column(db.String(512), default="")
     first_seen = db.Column(TimeStamp())
     last_seen = db.Column(TimeStamp())
     is_approved = db.Column(db.Boolean(), default=False)
@@ -58,6 +58,7 @@ class User(db.Model):
     allow_read = db.Column(db.Boolean(), default=False)
     allow_write = db.Column(db.Boolean(), default=False)
     allow_upload = db.Column(db.Boolean(), default=False)
+    provider = db.Column(db.String(8), default="local")
 
     def __repr__(self):
         permissions = ""
@@ -69,4 +70,4 @@ class User(db.Model):
             permissions += "U"
         if self.is_admin:
             permissions += "A"
-        return f"<User {self.id} '{self.name} <{self.email}>' {permissions}>"
+        return f"<User {self.id} '{self.name} <{self.email}>' {permissions} {self.provider}>"

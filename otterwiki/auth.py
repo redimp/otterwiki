@@ -31,6 +31,13 @@ from otterwiki.models import User as UserModel
 from datetime import datetime
 import hmac
 
+try:
+    import ldap
+    has_ldap = True
+except ImportError as e:
+    app.logger.debug(f"Unable to import ldap: {e}")
+    has_ldap = False
+
 
 def check_password_hash_backport(pwhash, password):
     # split pwhash to check the method
@@ -44,6 +51,50 @@ def check_password_hash_backport(pwhash, password):
             hmac.new(salt, password, method).hexdigest(), hashval
         )
     return check_password_hash(pwhash, password)
+
+
+def authenticate_ldap_user(email, password):
+    app.logger.debug(f"authenticate_ldap_user({email=})")
+
+    if not has_ldap or not app.config["LDAP_URI"]:
+        return False
+
+    try:
+        conn = ldap.initialize(app.config["LDAP_URI"])
+        conn.set_option(ldap.OPT_REFERRALS, 0)
+        conn.protocol = int(app.config["LDAP_PROTOCOL"])
+
+        conn.simple_bind_s(app.config["LDAP_USERNAME"],
+                           app.config["LDAP_PASSWORD"])
+    except Exception as e:
+        app.logger.error("authenticate_ldap_user(): Exception {}".format(e))
+        return False
+
+    try:
+        scope = app.config["LDAP_SCOPE"].upper()
+
+        if scope == "BASE":
+            scope = ldap.SCOPE_BASE
+        elif scope == "ONELEVEL":
+            scope = ldap.SCOPE_ONELEVEL
+        else:
+            scope = ldap.SCOPE_SUBTREE
+
+        filter_ = "(&{}({}={}))".format(app.config["LDAP_FILTER"],
+                                        app.config["LDAP_ATTRIBUTE_MAIL"],
+                                        email)
+        result = conn.search_s(app.config["LDAP_BASE"], scope, filter_)
+
+        if not result:
+            return False
+
+        conn.simple_bind_s(result[0][0], password)
+        return result[0]  # HACK
+    except ldap.INVALID_CREDENTIALS:
+        return False
+    except Exception as e:
+        app.logger.error("authenticate_ldap_user(): Exception {}".format(e))
+        return False
 
 
 class SimpleAuth:
@@ -102,17 +153,31 @@ class SimpleAuth:
 
     def check_credentials(self, email, password):
         user = self.User.query.filter_by(email=email).first()
-        if not user or not check_password_hash_backport(
+        if not user:
+            return None
+        elif user.provider == "local" and check_password_hash_backport(
             user.password_hash, password
         ):
-            return None
-        return user
+            return user
+        elif user.provider == "ldap" and authenticate_ldap_user(email, password):
+            return user
+
+        return None
 
     def handle_login(self, email=None, password=None, remember=None):
         if email is not None:
             email = email.lower()
         # query user
         user = self.User.query.filter_by(email=email).first()
+
+        # auto-register ldap users
+        if (not user and app.config["LDAP_URI"]
+                and not app.config["DISABLE_REGISTRATION"]
+                and email.split("@")[-1] == app.config["LDAP_DOMAIN"]):
+            if result := authenticate_ldap_user(email, password):
+                name = result[1][app.config["LDAP_ATTRIBUTE_NAME"]][0].decode()
+                user = self.create_user(email, name, "", True)
+
         next_page = request.form.get("next")
         user = self.check_credentials(email, password)
         if user is not None:
@@ -140,7 +205,7 @@ class SimpleAuth:
             if not next_page or urlsplit(next_page).netloc != "":
                 next_page = url_for("index")
             # check if the users password_hash is going to be deprecated
-            if user.password_hash.startswith("sha256$"):
+            if user.password_hash and user.password_hash.startswith("sha256$"):
                 app.logger.warning(
                     f"User has deprecated password hash: {user.email}"
                 )
@@ -207,23 +272,30 @@ class SimpleAuth:
         self.request_confirmation(email)
         return redirect(url_for("login"))
 
-    def create_user(self, email, name, password=None):
+    def create_user(self, email, name, password=None, auto=False):
         if email is not None:
             email = email.lower()
         if password is None:
             # generate random password
             password = random_password()
         # hash password
-        hashed_password = generate_password_hash(password, method="scrypt")
+        if email.split("@")[-1] == app.config["LDAP_DOMAIN"]:
+            hashed_password = ""
+            provider = "ldap"
+        else:
+            hashed_password = generate_password_hash(password, method="scrypt")
+            provider = "local"
         # handle flags
         # first user is admin
         if len(self.User.query.all()) < 1:
             is_admin = True
             is_approved = True
+            email_confirmed = False
         else:
             is_admin = False
             # handle auto approval
             is_approved = app.config["AUTO_APPROVAL"] is True
+            email_confirmed = provider == "ldap"
         # create user object
         user = self.User(  # pyright: ignore
             name=name,
@@ -233,6 +305,8 @@ class SimpleAuth:
             last_seen=datetime.now(),
             is_admin=is_admin,
             is_approved=is_approved,
+            provider=provider,
+            email_confirmed=email_confirmed,
         )
         # add to database
         db.session.add(user)
@@ -241,17 +315,21 @@ class SimpleAuth:
         app.logger.info(
             "auth: New user registered: {} <{}>".format(name, email)
         )
-        if app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin:
+        if (app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin
+                and provider == "local"):
             self.request_confirmation(email)
         else:
             # notify user
             if user.is_approved:
-                toast("Your account has been created. You can log in now.")
+                if not auto:  # notify if not self-registered
+                    toast("Your account has been created. You can log in now.")
             else:
                 toast("Your account is waiting for approval.", "warning")
             # notify admins
             if app.config['NOTIFY_ADMINS_ON_REGISTER']:
                 self.activated_user_notify_admins(name, email)
+
+        return user
 
     def activated_user_notify_admins(self, name, email):
         # fetch all admin email adresses
@@ -314,6 +392,9 @@ class SimpleAuth:
             toast("The passwords do not match.", "error")
         elif password1 is None or len(password1) < 8:
             toast("The password must be at least 8 characters long.", "error")
+        elif (email.split("@")[-1] == app.config["LDAP_DOMAIN"]
+              and not authenticate_ldap_user(email, password1)):
+            toast("Invalid email address or password.", "error")
         else:
             # register account
             self.create_user(email, name, password=password1)
@@ -404,6 +485,8 @@ class SimpleAuth:
             toast("This email address is invalid.", "error")
         elif user is None:
             toast("This email address is unknown.", "error")
+        elif user.provider != "local":
+            toast("Can't change password from this provider.", "error")
         else:
             # recovery process
             token = serialize(email, salt="lost-password-email")

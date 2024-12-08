@@ -1,0 +1,49 @@
+dn: dc=ldap,dc=local
+dc: ldap
+o: ldap
+objectClass: dcObject
+objectClass: organization
+objectClass: top
+
+dn: ou=Main,dc=ldap,dc=local
+ou: Main
+objectClass: organizationalUnit
+objectClass: top
+
+dn: ou=Branch,dc=ldap,dc=local
+ou: Branch
+objectClass: organizationalUnit
+objectClass: top
+
+dn: cn=John Doe,ou=Main,dc=ldap,dc=local
+cn: John Doe
+givenName: John
+sn: Doe
+objectClass: inetOrgPerson
+objectClass: person
+objectClass: top
+userPassword: 12345678
+uid: john
+mail: john@ldap.org
+
+dn: cn=Fulano de Tal,ou=Main,dc=ldap,dc=local
+cn: Fulano de Tal
+givenName: Fulano
+sn: de Tal
+objectClass: inetOrgPerson
+objectClass: person
+objectClass: top
+userPassword: password
+uid: fulano
+mail: fulano@ldap.org
+
+dn: cn=Max Mustermann,ou=Branch,dc=ldap,dc=local
+cn: Max Mustermann
+givenName: Max
+sn: Mustermann
+objectClass: inetOrgPerson
+objectClass: person
+objectClass: top
+userPassword: qwertyui
+uid: max
+mail: max@ldap.org

@@ -408,6 +408,7 @@ def handle_user_add(form):
     # update user from form
     user.name = form.get("name").strip()  # pyright: ignore
     user.email = form.get("email").strip()  # pyright: ignore
+    user.provider = form.get("provider", "").strip()  # pyright: ignore
 
     for value, _ in [
         ("email_confirmed", "email confirmed"),
@@ -505,6 +506,9 @@ def handle_user_edit(uid, form):
         else:
             user.password_hash = generate_password_hash(form.get("password1"))
             msgs.append("Updated password")
+    if user.provider != form.get("provider","local"):
+        user.provider = form.get("provider","local").strip()  # pyright: ignore
+        msgs.append("Updated provider")
     user_was_already_approved = user.is_approved
     # handle all the flags
     for value, label in [
