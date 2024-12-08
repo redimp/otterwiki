@@ -18,6 +18,8 @@ services:
       - LDAP_DOMAIN=ldap.org
       # fixed SECRET_KEY for easier testing while keeping the session
       - SECRET_KEY=aabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabb
+      - AUTO_APPROVAL=true
+      - EMAIL_NEEDS_CONFIRMATION=false
     volumes:
       - app-data:/app-data
     command:
@@ -46,7 +48,7 @@ services:
         );
         INSERT INTO user VALUES(2,'John','john@ldap.org',NULL,'2024-12-01 19:28:13.273738','2024-12-01 19:28:13.273750',1,1,1,1,1,1,'ldap');
         INSERT INTO user VALUES(3,'Fulano','fulano@ldap.org',NULL,'2024-12-01 19:28:49.696271','2024-12-01 19:28:49.696281',1,0,0,1,1,0,'ldap');
-        INSERT INTO user VALUES(4,'Max','max@ldap.org',NULL,'2024-12-01 19:29:11.958025','2024-12-01 19:29:11.958039',1,0,0,1,1,1,'ldap');
+        # INSERT INTO user VALUES(4,'Max','max@ldap.org',NULL,'2024-12-01 19:29:11.958025','2024-12-01 19:29:11.958039',1,0,0,1,1,1,'ldap');
         COMMIT;
         EOF
         test -f /app-data/db.sqlite || sqlite3 -init /tmp/provider.sql /app-data/db.sqlite
