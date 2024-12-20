@@ -18,10 +18,17 @@ If you run into any issues, please report them via [github](https://github.com/r
 
 ## Installing the Chart
 
-To install the chart with the release name `my-otterwiki` run:
+The Helm repository can be found here:
 
 ```bash
-helm install my-otterwiki --version 0.1.0 oci://registry-1.docker.io/redimp/otterwiki
+helm repo add otterwiki https://charts.otterwiki.com
+helm repo update
+```
+
+After that, to install the chart with the release name `my-otterwiki`, run:
+
+```bash
+helm install my-otterwiki --version 0.1.0 otterwiki/otterwiki
 ```
 
 The command deploys An Otter Wiki on the kubernetes cluster in the default namespace
@@ -63,7 +70,7 @@ helm install my-otterwiki \
   --set ingress.enabled=true \
   --set ingress.hosts[0].host="helm.otterwiki.com" \
   --version 0.1.0 \
-  oci://registry-1.docker.io/redimp/otterwiki
+  otterwiki/otterwiki
 ```
 
 Alternatively, you can use a yaml-file to set the parameters, for example when creating a `values.yaml` with
@@ -83,13 +90,13 @@ and deploy it with
 helm install my-otterwiki \
   --values values.yaml \
   --version 0.1.0 \
-  oci://registry-1.docker.io/redimp/otterwiki
+  otterwiki/otterwiki
 ```
 
 The most recent default `values.yaml` can be fetched using
 
 ```bash
-helm show values --version 0.1.0 oci://registry-1.docker.io/redimp/otterwiki > values.yaml
+helm show values --version 0.1.0 otterwiki/otterwiki > values.yaml
 ```
 
 ### Application configuration
