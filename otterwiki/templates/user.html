@@ -27,6 +27,15 @@
         <label for="password2" class="w-md-200">Confirm password</label>
         <input type="password" class="form-control" name="password2" id="password2" placeholder="" value="">
       </div>
+      <div class="form-group">
+          <label for="provider" class="required w-md-200">Provider</label>
+          <select class="form-control" id="provider" name="provider">
+            <option {% if user.provider == "local" -%} selected="selected" {%- endif %} value="local">local</option>
+          {% if config.LDAP_URI %}
+            <option {% if user.provider == "ldap" -%} selected="selected" {%- endif %} value="ldap">ldap</option>
+          {% endif %}
+        </select>
+      </div>
     <h3 class="card-title">Flags and Permissions</h3>
     <div class="container-fluid">
       <div class="row">

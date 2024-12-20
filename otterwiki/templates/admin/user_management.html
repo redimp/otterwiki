@@ -16,6 +16,7 @@
         <th>Write</th>
         <th>Upload</th>
         <th>Admin</th>
+        <th>Provider</th>
       </tr>
     </thead>
     <tbody>
@@ -68,6 +69,9 @@
                 user.is_admin }} {% if not auth_supported_features['editing'] %}disabled{% endif %}>
             <label for="checkbox-e-{{user.id}}"></label>
           </div>
+        </td>
+        <td>
+            {{user.provider}}
         </td>
       </tr>
 {% endfor %}
