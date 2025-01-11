@@ -116,3 +116,34 @@
 .page table > :last-child > tr:last-child > th {
     border-bottom: 0;
 }
+
+/* highlighttable with linenumbers */
+
+.highlight table.highlighttable {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    background-color: transparent;
+}
+
+.highlight table > tbody > tr > td.linenos {
+    padding: 0;
+    margin: 0;
+    width: 0;
+    border-right: 0;
+    background-color: transparent;
+}
+
+.highlight table > tbody > tr > td.linenos > div.linenodiv > pre {
+    background-color: rgba(0, 0, 0, 0.1);
+    margin-block-start: 0;
+    margin-block-end: 0;
+    border: 1px solid rgba(0,0,0,.05);
+}
+
+.page table > tbody > tr > td.code {
+    padding: 0;
+    border: 0;
+    margin: 0;
+    background-color: transparent;
+}

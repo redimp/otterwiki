@@ -58,7 +58,7 @@ class CodeHtmlFormatter(html.HtmlFormatter):
         yield 0, '</pre></div>'
 
 
-def pygments_render(code, lang):
+def pygments_render(code, lang, linenumbers=False):
     try:
         lexer = get_lexer_by_name(lang, stripall=True)
     except ClassNotFound:
@@ -71,8 +71,8 @@ def pygments_render(code, lang):
                 mistune.escape(code.strip()),
             )
         )
-    formatter = CodeHtmlFormatter(classprefix=".highlight ")
-    # formatter = html.HtmlFormatter(classprefix=".highlight ")
+    linenos = "table" if linenumbers else None
+    formatter = CodeHtmlFormatter(classprefix=".highlight ", linenos=linenos)
     return highlight(code, lexer, formatter)
 
 
@@ -161,8 +161,9 @@ def clean_html(html: str) -> str:
             break
         try:
             if any(
-                x in element.attrs.keys() for x in REMOVE_ATTRIBUTES
-            ):  # pyright: ignore
+                x in element.attrs.keys()
+                for x in REMOVE_ATTRIBUTES  # pyright: ignore
+            ):
                 _escape = True
                 break
         except AttributeError:
@@ -209,7 +210,8 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
 
     def block_code(self, code, info=None):
         prefix = ""
-        if not info:
+        linenumbers = False
+        if not info or not len(info):
             return (
                 '\n'
                 + _pre_copy_to_clipboard_tag()
@@ -218,6 +220,9 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         if cursormagicword in info:
             info = info.replace(cursormagicword, "")
             prefix = cursormagicword
+        if info[-1] == "=":
+            info = info[:-1]
+            linenumbers = True
         cursorline, code = hidemagicword(code)
         if info == "math":
             html = "".join(
@@ -232,7 +237,9 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             html = '\n<pre class="mermaid">{}\n</pre>\n'.format(code.strip())
             return html
         else:
-            html = prefix + pygments_render(code, info)
+            html = prefix + pygments_render(
+                code, info, linenumbers=linenumbers
+            )
         html = showmagicword(cursorline, html)
         return prefix + html
 

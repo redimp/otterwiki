@@ -81,6 +81,25 @@ n = 0
     )
     assert pre_code is not None
     assert pre_code.text.startswith('non_existing_lexer')
+    # test highlight with line numbers
+    html, _ = render.markdown(
+        """```python=
+n = 2
+```"""
+    )
+    assert '<table class="highlighttable">' in html
+    table_code = BeautifulSoup(html, "html.parser").find(
+        'table', attrs={"class": "highlighttable"}
+    )
+    assert table_code is not None
+    td_linenos = table_code.find(
+        "td", attrs={"class": "linenos"}
+    )  # pyright: ignore
+    assert td_linenos is not None
+    assert td_linenos.text.startswith('1')
+    td_code = table_code.find("td", attrs={"class": "code"})  # pyright: ignore
+    assert td_code is not None
+    assert td_code.text.startswith('n = 2')
 
 
 def test_img():
