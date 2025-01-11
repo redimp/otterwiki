@@ -195,6 +195,7 @@ Inline code <code>int n = 1</code> with backticks.
 </div>
 </div>
 
+
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
 <pre>```
@@ -205,18 +206,39 @@ Code Blocks
 </div>
 </div>
 
+
+<div class="row">
+To add syntax highlighting, specify a language next to the backticks before the fenced code block.
+</div>
+
 <div class="row">
 <div class="col-md-6 col-sm-12 p-5">
 <pre class="block-compact">```python
 #!/usr/bin/env python
 assert 1 + 1 == 2
-print("Hello World!")```</pre>
+print("Hello World!")
+```</pre>
 </div>
 <div class="col-md-6 col-sm-12 p-5">
 <div class="highlight"><pre class="block-compact"><span></span><span class=".highlight ch">#!/usr/bin/env python</span>
 <span class=".highlight k">assert</span> <span class=".highlight mi">1</span> <span class=".highlight o">+</span> <span class=".highlight mi">1</span> <span class=".highlight o">==</span> <span class=".highlight mi">2</span>
 <span class=".highlight nb">print</span><span class=".highlight p">(</span><span class=".highlight s2">&quot;Hello World!&quot;</span><span class=".highlight p">)</span>
 </pre></div>
+</div>
+</div>
+
+<div class="row">
+To enable line numbers in the code block, append an equal sign <code>=</code> to the language.
+</div>
+<div class="row">
+<div class="col-md-6 col-sm-12 p-5">
+<pre class="block-compact">```python=
+print("Hello Line Numbers!")
+```</pre>
+</div>
+<div class="col-md-6 col-sm-12">
+<div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><div class="copy-to-clipboard-outer"><div class="copy-to-clipboard-inner"><button class="btn alt-dm btn-xsm copy-to-clipboard" onclick="otterwiki.copy_to_clipboard(this);" type="button"><i "="" alt="Copy to clipboard" aria-hidden="true" class="fa fa-copy"></i></button></div><pre class="copy-to-clipboard code"><span class=".highlight nb">print</span><span class=".highlight p">(</span><span class=".highlight s2">"Hello Line Numbers!"</span><span class=".highlight p">)</span>
+</pre></div></div></td></tr></tbody></table></div>
 </div>
 </div>
 
@@ -406,4 +428,3 @@ There's actually a lot more to Markdown than this. See the official
 <a href="http://daringfireball.net/projects/markdown/syntax">syntax</a> for more information.
 
 Please Note: An Otter Wiki is not using the official implementation. This might lead to small differences in the little things.
-
