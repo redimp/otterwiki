@@ -106,8 +106,8 @@ else:
 
 
 # check if the git repository is empty
-if (len(storage.list()[0]) < 1) and (
-    len(storage.log()) < 1
+if (len(storage.list()[0]) < 1) and (  # pyright: ignore
+    len(storage.log()) < 1  # pyright: ignore
 ):  # pyright: ignore
     # we have a brand new repository here
     with open(os.path.join(app.root_path, "initial_home.md")) as f:
@@ -166,6 +166,8 @@ def update_app_config():
 
 with app.app_context():
     db.create_all()
+    migrate_database()
+
 update_app_config()
 
 
