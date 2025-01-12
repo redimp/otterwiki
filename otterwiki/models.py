@@ -5,7 +5,6 @@ import sys
 from otterwiki.server import db
 from datetime import datetime, UTC
 
-
 __all__ = ['Preferences', 'Drafts', 'User', 'Cache', 'migrate_database']
 
 
@@ -74,6 +73,7 @@ class User(db.Model):
         if self.is_admin:
             permissions += "A"
         return f"<User {self.id} '{self.name} <{self.email}>' {permissions} {self.provider}>"
+
 
 
 class Cache(db.Model):
