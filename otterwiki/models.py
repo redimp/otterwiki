@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
+import sys
 
 from otterwiki.server import db
 from datetime import datetime, UTC
 
-__all__ = ['Preferences', 'Drafts']
+__all__ = ['Preferences', 'Drafts', 'User', 'migrate_database']
 
 
 class TimeStamp(db.types.TypeDecorator):
@@ -49,7 +50,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128))
     email = db.Column(db.String(128), index=True, unique=True)
-    password_hash = db.Column(db.String(512))
+    password_hash = db.Column(db.String(512), default="")
     first_seen = db.Column(TimeStamp())
     last_seen = db.Column(TimeStamp())
     is_approved = db.Column(db.Boolean(), default=False)
@@ -58,6 +59,7 @@ class User(db.Model):
     allow_read = db.Column(db.Boolean(), default=False)
     allow_write = db.Column(db.Boolean(), default=False)
     allow_upload = db.Column(db.Boolean(), default=False)
+    provider = db.Column(db.String(8), default="local")
 
     def __repr__(self):
         permissions = ""
@@ -69,4 +71,44 @@ class User(db.Model):
             permissions += "U"
         if self.is_admin:
             permissions += "A"
-        return f"<User {self.id} '{self.name} <{self.email}>' {permissions}>"
+        return f"<User {self.id} '{self.name} <{self.email}>' {permissions} {self.provider}>"
+
+
+def migrate_database():
+    # An Otter Wiki <= 2.8.0 has no column User.provider check if the colum exists
+    # This has been tested with sqlite3, mariadb 11, postgres 17.
+    table_name = db.engine.dialect.identifier_preparer.quote("user")
+    try:
+        result = db.session.execute(
+            db.text(f"SELECT * FROM {table_name} WHERE 0 = 1;")
+        )
+        user_columns = list(result.keys())
+    except:
+        user_columns = []
+    if 'provider' not in user_columns:
+        column_type = User.provider.type.compile(db.engine.dialect)
+        column_name = db.engine.dialect.identifier_preparer.quote("provider")
+        sql = f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type} NOT NULL DEFAULT 'local';"
+        try:
+            db.session.execute(db.text(sql))
+            db.session.commit()
+        except Exception as e:
+            print(
+                "*** *** *** *** *** *** *** *** *** *** *** *** *** *** ***",
+                file=sys.stderr,
+            )
+            print(
+                "*** Fatal Error: Database migration failed.", file=sys.stderr
+            )
+            print(
+                "*** Please upon up an issue in https://github.com/redimp/otterwiki/issues",
+                file=sys.stderr,
+            )
+            print("*** and report the exception:", file=sys.stderr)
+            print(e, file=sys.stderr)
+            print(
+                "*** *** *** *** *** *** *** *** *** *** *** *** *** *** ***",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        print("migrate_database(): added column user.provider")

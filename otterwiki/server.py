@@ -54,6 +54,16 @@ app.config.update(
     SIDEBAR_SHORTCUTS="home pageindex createpage",
     ROBOTS_TXT="allow",
     WIKILINK_STYLE="",
+    LDAP_URI="",
+    LDAP_USERNAME="",
+    LDAP_PASSWORD="",
+    LDAP_BASE="",
+    LDAP_PROTOCOL=3,
+    LDAP_FILTER="(objectClass=person)",
+    LDAP_ATTRIBUTE_MAIL="mail",
+    LDAP_ATTRIBUTE_NAME="cn",
+    LDAP_SCOPE="subtree",
+    LDAP_DOMAIN="",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
@@ -96,8 +106,8 @@ else:
 
 
 # check if the git repository is empty
-if (len(storage.list()[0]) < 1) and (
-    len(storage.log()) < 1
+if (len(storage.list()[0]) < 1) and (  # pyright: ignore
+    len(storage.log()) < 1  # pyright: ignore
 ):  # pyright: ignore
     # we have a brand new repository here
     with open(os.path.join(app.root_path, "initial_home.md")) as f:
@@ -156,6 +166,8 @@ def update_app_config():
 
 with app.app_context():
     db.create_all()
+    migrate_database()
+
 update_app_config()
 
 

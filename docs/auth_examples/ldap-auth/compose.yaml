@@ -1,0 +1,64 @@
+services:
+  otterwiki:
+    depends_on:
+      - ldap
+    image: otterwiki-test-ldap
+    build:
+      context: ../../..
+      dockerfile: docker/Dockerfile.slim
+    ports:
+      - "8080:8080"
+    environment:
+      - LOG_LEVEL=DEBUG
+      - LDAP_URI=ldap://ldap:389
+      - LDAP_USERNAME=cn=Manager,dc=ldap,dc=local
+      - LDAP_PASSWORD=secret
+      - LDAP_BASE=dc=ldap,dc=local
+      - LDAP_SCOPE=subtree
+      - LDAP_DOMAIN=ldap.org
+      # fixed SECRET_KEY for easier testing while keeping the session
+      - SECRET_KEY=aabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabb
+      - AUTO_APPROVAL=true
+      - EMAIL_NEEDS_CONFIRMATION=false
+    volumes:
+      - app-data:/app-data
+    command:
+      - sh
+      - -c
+      - |
+        cat <<EOF >> /tmp/provider.sql
+        PRAGMA foreign_keys=OFF;
+        BEGIN TRANSACTION;
+        DROP TABLE IF EXISTS user;
+        CREATE TABLE user (
+                id INTEGER NOT NULL,
+                name VARCHAR(128),
+                email VARCHAR(128),
+                password_hash VARCHAR(512),
+                first_seen DATETIME,
+                last_seen DATETIME,
+                is_approved BOOLEAN,
+                is_admin BOOLEAN,
+                email_confirmed BOOLEAN,
+                allow_read BOOLEAN,
+                allow_write BOOLEAN,
+                allow_upload BOOLEAN,
+                provider VARCHAR(8),
+                PRIMARY KEY (id)
+        );
+        INSERT INTO user VALUES(2,'John','john@ldap.org',NULL,'2024-12-01 19:28:13.273738','2024-12-01 19:28:13.273750',1,1,1,1,1,1,'ldap');
+        INSERT INTO user VALUES(3,'Fulano','fulano@ldap.org',NULL,'2024-12-01 19:28:49.696271','2024-12-01 19:28:49.696281',1,0,0,1,1,0,'ldap');
+        # INSERT INTO user VALUES(4,'Max','max@ldap.org',NULL,'2024-12-01 19:29:11.958025','2024-12-01 19:29:11.958039',1,0,0,1,1,1,'ldap');
+        COMMIT;
+        EOF
+        test -f /app-data/db.sqlite || sqlite3 -init /tmp/provider.sql /app-data/db.sqlite
+        /entrypoint.sh
+        /usr/sbin/uwsgi --ini /app/uwsgi.ini
+    stop_signal: SIGINT
+  ldap:
+    image: otterwiki-example-ldap
+    build: example-ldap
+    stop_signal: SIGINT
+
+volumes:
+  app-data:

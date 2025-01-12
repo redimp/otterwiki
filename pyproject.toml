@@ -54,7 +54,11 @@ dev = [
     "rjsmin",
     "git-changelog",
     "pre-commit",
+    "fakeldap",
     ]
+ldap = [
+    "python-ldap>=3.4.4",
+]
 
 [build-system]
 requires = [
@@ -84,6 +88,7 @@ envlist = py3{11,12,13}
 isolated_build = True
 [testenv]
 deps = pytest
+extras = dev
 commands =
     pytest tests
 """
