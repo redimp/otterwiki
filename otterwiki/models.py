@@ -75,6 +75,6 @@ class User(db.Model):
 
 class Cache(db.Model):
     __tablename__ = "cache"
-    key = db.Column(db.String(64), primary_key=True)
+    key = db.Column(db.String(64), index=True, primary_key=True)
     value = db.Column(db.Text)
     datetime = db.Column(TimeStamp())

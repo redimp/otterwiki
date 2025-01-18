@@ -3,6 +3,7 @@
 
 import pytest
 import flask
+from datetime import datetime
 import otterwiki
 import otterwiki.gitstorage
 
@@ -252,3 +253,31 @@ def test_get_pagename_prefixes(test_client):
             'Example',
             'Random page',
         ]
+
+
+def test_ftoc_cache(create_app, req_ctx):
+    assert create_app
+    assert req_ctx
+    from otterwiki.helper import get_ftoc, update_ftoc_cache
+
+    mtime = datetime.fromtimestamp(0)
+    filename = "ftoc.md"
+    ftoc = [
+        [0, "Ftoc", 1, "Ftoc", "ftoc"],
+        [1, "Header 2", 2, "Header 2", "header-2"],
+        [2, "Header 3", 3, "Header 3", "header-3"],
+    ]
+    update_ftoc_cache(filename=filename, ftoc=ftoc, mtime=mtime)
+    assert get_ftoc(filename=filename, mtime=mtime) == ftoc
+    # store the file
+    assert True == create_app.storage.store(
+        filename,
+        content="# Header 1\n\n## Header 2",
+        author=("John", "john@doe.com"),
+        message=f"added {filename}",
+    )
+
+    assert [
+        (0, 'Header 1', 1, 'Header 1', 'header-1'),
+        (1, 'Header 2', 2, 'Header 2', 'header-2'),
+    ] == get_ftoc(filename)

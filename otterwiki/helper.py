@@ -11,8 +11,12 @@ lightweight as utils.
 
 import os
 import re
+import os
+from hashlib import sha256
+import json
+from datetime import datetime
 from collections import namedtuple
-from otterwiki.server import app, mail, storage, Preferences
+from otterwiki.server import app, mail, storage, Preferences, db, app_renderer
 from otterwiki.gitstorage import StorageError
 from flask import flash, url_for, session
 from threading import Thread
@@ -20,6 +24,7 @@ from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from otterwiki.util import split_path, join_path, clean_slashes, titleSs
 from otterwiki.renderer import OtterwikiRenderer
+from otterwiki.models import Cache
 
 
 class SerializeError(ValueError):
@@ -283,3 +288,53 @@ def patchset2urlmap(patchset, rev_b, rev_a=None):
         }
         url_map[file.path] = namedtuple('UrlData', d.keys())(*d.values())
     return url_map
+
+
+def sha256sum(s: str) -> str:
+    hash = sha256()
+    hash.update(s.encode())
+    return hash.hexdigest()
+
+
+def update_ftoc_cache(filename, ftoc, mtime=None):
+    if mtime is None:
+        mtime = storage.mtime(filename)
+    hash = sha256sum(f"ftoc://{filename}")
+    value = json.dumps({"filename": filename, "ftoc": ftoc})
+    # check if key exists in Cache
+    c = Cache.query.filter(Cache.key == hash).first()
+    if c is None:
+        c = Cache()
+        c.key = hash
+    c.value = value
+    c.datetime = mtime
+    # and update in the database
+    db.session.add(c)
+    db.session.commit()
+
+
+def get_ftoc(filename, mtime=None):
+    if mtime is None:
+        mtime = storage.mtime(filename)
+    hash = sha256sum(f"ftoc://{filename}")
+    # check if hash is in the Cache
+    result = Cache.query.filter(
+        db.and_(Cache.key == hash, Cache.datetime >= mtime)
+    ).first()
+    if result is not None:
+        try:
+            value = json.loads(result.value)
+            try:
+                # check
+                if filename == value["filename"]:
+                    return value["ftoc"]
+            except KeyError:
+                pass
+        except:
+            pass
+    content = storage.load(filename)
+    # parse file contents
+    _, ftoc = app_renderer.markdown(content)
+    update_ftoc_cache(filename, ftoc, mtime)
+
+    return ftoc

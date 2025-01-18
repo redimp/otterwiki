@@ -43,6 +43,8 @@ from otterwiki.helper import (
     patchset2urlmap,
     get_breadcrumbs,
     upsert_pagecrumbs,
+    get_ftoc,
+    update_ftoc_cache,
 )
 from otterwiki.auth import has_permission, current_user
 from otterwiki.plugins import chain_hooks
@@ -144,10 +146,8 @@ class PageIndex:
                 f,
                 full=False,
             )
-            # read file
-            content = storage.load(f)
-            # parse file contents
-            _, ftoc = app_renderer.markdown(content)
+            ftoc = get_ftoc(f)
+
             # add headers to page toc
             # (4, '2 L <strong>bold</strong>', 1, '2 L bold', '2-l-bold')
             for i, header in enumerate(ftoc):
@@ -549,6 +549,7 @@ class Page:
         htmlcontent, toc = app_renderer.markdown(
             self.content, page_url=self.page_url
         )
+        update_ftoc_cache(self.filename, ftoc=toc)
 
         if len(toc) > 0:
             # use first headline to overwrite pagename
