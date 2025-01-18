@@ -12,7 +12,7 @@ repository
 .coverage
 coverage_html
 app-data*
-settings.cfg
+settings*.cfg
 tmp
 docker-compose.override.yml
 .env
