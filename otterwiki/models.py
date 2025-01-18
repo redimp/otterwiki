@@ -4,13 +4,14 @@
 from otterwiki.server import db
 from datetime import datetime, UTC
 
-__all__ = ['Preferences', 'Drafts']
+__all__ = ['Preferences', 'Drafts', 'User', 'Cache']
 
 
 class TimeStamp(db.types.TypeDecorator):
     # thanks to https://mike.depalatis.net/blog/sqlalchemy-timestamps.html
     impl = db.types.DateTime
     LOCAL_TIMEZONE = datetime.now(UTC).astimezone().tzinfo
+    cache_ok = True
 
     def process_bind_param(self, value: datetime, dialect):
         if value.tzinfo is None:
@@ -70,3 +71,10 @@ class User(db.Model):
         if self.is_admin:
             permissions += "A"
         return f"<User {self.id} '{self.name} <{self.email}>' {permissions}>"
+
+
+class Cache(db.Model):
+    __tablename__ = "cache"
+    key = db.Column(db.String(64), primary_key=True)
+    value = db.Column(db.Text)
+    datetime = db.Column(TimeStamp())
