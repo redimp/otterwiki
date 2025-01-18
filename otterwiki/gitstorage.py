@@ -51,6 +51,11 @@ class GitStorage(object):
     def exists(self, filename):
         return os.path.exists(os.path.join(self.path, filename))
 
+    def mtime(self, filename):
+        return datetime.fromtimestamp(
+            os.path.getmtime(os.path.join(self.path, filename))
+        )
+
     def isdir(self, dirname):
         return os.path.isdir(os.path.join(self.path, dirname))
 
