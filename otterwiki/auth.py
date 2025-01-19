@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+from uuid import uuid4
+import flask_login
 from otterwiki.util import is_valid_email
 from werkzeug.security import generate_password_hash, check_password_hash
 from urllib.parse import urlsplit
@@ -10,6 +12,7 @@ from flask import (
     url_for,
     render_template,
     abort,
+    session,
 )
 from flask_login import (
     LoginManager,
@@ -30,6 +33,7 @@ from otterwiki.util import random_password, empty
 from otterwiki.models import User as UserModel
 from datetime import datetime
 import hmac
+from uuid import uuid4
 
 
 def check_password_hash_backport(pwhash, password):
@@ -610,10 +614,21 @@ class ProxyHeaderAuth:
         return permission.upper() in user.permissions
 
 
+class OtterWikiAnonymousUser(flask_login.AnonymousUserMixin):
+    def anonymous_uid(self):
+        if "anonymous_uid" not in session:
+            # create a rando uid, prefix with 'anonymous_uid' to make
+            # it usable in e.g. Drafts as author_email
+            session["anonymous_uid"] = f"anonymous_uid:{str(uuid4())}"
+            session.modified = True
+        return session["anonymous_uid"]
+
+
 # create login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"  # pyright: ignore
+login_manager.anonymous_user = OtterWikiAnonymousUser
 
 # create auth_manager
 if app.config.get("AUTH_METHOD") in ["", "SIMPLE"]:
