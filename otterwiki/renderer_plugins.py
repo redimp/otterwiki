@@ -584,17 +584,20 @@ class mistunePluginWikiLink:
     WIKI_LINK_MOD_RE = re.compile(WIKI_LINK_MOD)
 
     def parse_wikilink(self, inline, m, state):
-        title, link = m.group(2), m.group(4) or ""
+        left, right = m.group(2), m.group(4) or ""
+
+        if right == "":
+            right = left
 
         WIKILINK_STYLE = inline.env.get("config", {}).get("WIKILINK_STYLE", "")
         if WIKILINK_STYLE.upper().replace("_", "").strip() in [
             "LINKTITLE",
             "PAGENAMETITLE",
         ]:
-            title, link = link, title
+            link, title = left, right
+        else:
+            title, link = left, right
 
-        if link == '':
-            link = title
         if not link.startswith("/"):
             link = f"/{link}"
         # quote link (and just in case someone encoded already: unquote)
