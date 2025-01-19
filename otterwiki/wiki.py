@@ -52,6 +52,7 @@ from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
 from urllib.parse import unquote
 from io import BytesIO
+from uuid import uuid4
 
 import PIL.Image
 
@@ -1080,33 +1081,31 @@ class Page:
 
     def load_draft(self, author):
         if current_user.is_anonymous:
-            try:
-                d = session["drafts"][self.pagepath]
-                return namedtuple('SessionDraft', d.keys())(*d.values())
-            except KeyError:
+            if "drafts_uid" not in session:
                 return None
+            else:
+                author_email = session["drafts_uid"]
         else:
-            draft = Drafts.query.filter_by(
-                pagepath=self.pagepath, author_email=author[1]
-            ).first()
-            return draft
+            author_email = author[1]
+
+        draft = Drafts.query.filter_by(
+            pagepath=self.pagepath, author_email=author_email
+        ).first()
+        return draft
 
     def discard_draft(self, author):
         if current_user.is_anonymous:
-            if "drafts" not in session:
-                session["drafts"] = {}
+            if "drafts_uid" not in session:
+                return
             else:
-                try:
-                    # delete draft from session
-                    del session["drafts"][self.pagepath]
-                    session.modified = True
-                except KeyError:
-                    pass
+                author_email = session["drafts_uid"]
         else:
-            Drafts.query.filter_by(
-                pagepath=self.pagepath, author_email=author[1]
-            ).delete()
-            db.session.commit()
+            author_email = author[1]
+
+        Drafts.query.filter_by(
+            pagepath=self.pagepath, author_email=author_email
+        ).delete()
+        db.session.commit()
 
     def save_draft(
         self, author, content, revision="", cursor_line=0, cursor_ch=0
@@ -1115,38 +1114,28 @@ class Page:
             abort(403)
         # Handle anonymous users, save draft in session
         if current_user.is_anonymous:
-            if "drafts" not in session:
-                session["drafts"] = {}
-            # save draft in session
-            d = {
-                "content": content,
-                "revision": revision,
-                "cursor_line": cursor_line,
-                "cursor_ch": cursor_ch,
-                "datetime": datetime.now(UTC),
-            }
-            session["drafts"][self.pagepath] = d
-            # flask.session: modifications on mutable structures are not picked up automatically
-            session.modified = True
-            return {
-                "status": "draft saved in session",
-            }
+            if "drafts_uid" not in session:
+                session["drafts_uid"] = str(uuid4())
+                session.modified = True
+            author_email = session["drafts_uid"]
+        else:
+            author_email = author[1]
 
         # find existing Draft
         draft = Drafts.query.filter_by(
-            pagepath=self.pagepath, author_email=author[1]
+            pagepath=self.pagepath, author_email=author_email
         ).first()
         if draft is None:
             draft = Drafts()
             draft.pagepath = self.pagepath
-            draft.author_email = author[1]
+            draft.author_email = author_email
         # update content, timestamp, revision, line
         draft.content = content
         draft.datetime = datetime.now(UTC)
         draft.revision = revision
         draft.cursor_line = cursor_line
         draft.cursor_ch = cursor_ch
-
+        print(f"{draft}")
         db.session.add(draft)
         db.session.commit()
 
