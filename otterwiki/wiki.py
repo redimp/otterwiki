@@ -52,7 +52,6 @@ from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
 from urllib.parse import unquote
 from io import BytesIO
-from uuid import uuid4
 
 import PIL.Image
 
@@ -1079,12 +1078,22 @@ class Page:
         # show edit form
         return a.edit()
 
+    def expire_anonymous_drafts(self):
+        drafts_to_expire = Drafts.query.filter(
+            db.and_(
+                Drafts.author_email.like("anonymous_uid:%"),
+                Drafts.datetime < datetime.now() - timedelta(days=1),
+            )
+        ).all()
+        for draft in drafts_to_expire:
+            db.session.delete(draft)
+        db.session.commit()
+
     def load_draft(self, author):
+        self.expire_anonymous_drafts()
+
         if current_user.is_anonymous:
-            if "drafts_uid" not in session:
-                return None
-            else:
-                author_email = session["drafts_uid"]
+            author_email = current_user.anonymous_uid()
         else:
             author_email = author[1]
 
@@ -1095,10 +1104,7 @@ class Page:
 
     def discard_draft(self, author):
         if current_user.is_anonymous:
-            if "drafts_uid" not in session:
-                return
-            else:
-                author_email = session["drafts_uid"]
+            author_email = current_user.anonymous_uid()
         else:
             author_email = author[1]
 
@@ -1114,10 +1120,7 @@ class Page:
             abort(403)
         # Handle anonymous users, save draft in session
         if current_user.is_anonymous:
-            if "drafts_uid" not in session:
-                session["drafts_uid"] = str(uuid4())
-                session.modified = True
-            author_email = session["drafts_uid"]
+            author_email = current_user.anonymous_uid()
         else:
             author_email = author[1]
 
@@ -1135,7 +1138,7 @@ class Page:
         draft.revision = revision
         draft.cursor_line = cursor_line
         draft.cursor_ch = cursor_ch
-        print(f"{draft}")
+
         db.session.add(draft)
         db.session.commit()
 
