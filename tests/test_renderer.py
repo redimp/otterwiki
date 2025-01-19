@@ -135,6 +135,12 @@ def test_wiki_link(req_ctx):
     text = "[[Text with spaces|Link with spaces]]"
     html, _ = render.markdown(text)
     assert '<a href="/Link%20with%20spaces">Text with spaces</a>' in html
+    text = "[[A long long long page name]]"
+    html, _ = render.markdown(text)
+    assert (
+        '<a href="/A%20long%20long%20long%20page%20name">A long long long page name</a>'
+        in html
+    )
 
 
 def test_wiki_link_subspace(req_ctx):
@@ -143,13 +149,19 @@ def test_wiki_link_subspace(req_ctx):
     assert '<a href="/people/Paul">Paul</a>' in html
 
 
-def test_wiki_link_compatibilty_mode(req_ctx):
+def test_wiki_link_compatibility_mode(req_ctx):
     configured_renderer = OtterwikiRenderer(
         config={"WIKILINK_STYLE": "LinkTitle"}
     )
     text = "[[people/Paul|Paul]]"
     html, _ = configured_renderer.markdown(text)
     assert '<a href="/people/Paul">Paul</a>' in html
+    text = "[[/people/Paul|Paul]]"
+    html, _ = configured_renderer.markdown(text)
+    assert '<a href="/people/Paul">Paul</a>' in html
+    text = "[[Link]]"
+    html, _ = render.markdown(text)
+    assert '<a href="/Link">Link</a>' in html
 
 
 def test_wiki_link_in_table(req_ctx):
