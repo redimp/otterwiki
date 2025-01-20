@@ -107,9 +107,9 @@ class SidebarPageIndex:
         # convert OrderedDict into list
         entries = list(tree.items())
         # decide sort_key lambda on mode
-        sort_key = None
+        sort_key = lambda k: (True, str.lower(k[0]))
         if self.mode in ["DIRECTORIES_GROUPED"]:
-            sort_key = lambda k: (len(k[1]["children"]) == 0, k[0])
+            sort_key = lambda k: (len(k[1]["children"]) == 0, str.lower(k[0]))
         # sort entries
         filtered_list = sorted(entries, key=sort_key)
         # filter entries
