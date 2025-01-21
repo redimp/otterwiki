@@ -67,13 +67,23 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
 {##}
 <h3 class="card-title">Page Index</h3>
     <div class="form-group">
-        <label for="sidebar_menutree_mode" class="required">Page Index Mode</label>
+        <label for="sidebar_menutree_mode">Page Index Mode</label>
         <select class="form-control w-md-400" id="sidebar_menutree_mode" name="sidebar_menutree_mode">
 {% for mode in [("", "Not displayed"),("SORTED","Directories and pages, sorted"),("DIRECTORIES_GROUPED","Directories and pages, with directories grouped first"),("DIRECTORIES_ONLY","Directories only")] %}
             <option value="{{mode[0]}}"{%if config.SIDEBAR_MENUTREE_MODE == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
 {% endfor %}
         </select>
     </div>
+{##}
+{%if config.RETAIN_PAGE_NAME_CASE %}
+    <div class="form-group">
+      <div class="custom-checkbox">
+        <input {%if config.SIDEBAR_MENUTREE_IGNORE_CASE %}checked{% endif %} type="checkbox" id="menutree_ignore_case" name="sidebar_menutree_ignore_case" value="True">
+        <label for="menutree_ignore_case">Sort case insensitive</label>
+      </div>
+    </div>
+{% endif %}
+{##}
     <div class="form-group">
         <label for="sidebar_menutree_maxdepth">Maximal depth of pages and directories listed.</label>
         <input name="sidebar_menutree_maxdepth" type="text" placeholder="unlimited" class="form-control w-md-400" id="sidebar_menutree_maxdepth" value="{{ config.SIDEBAR_MENUTREE_MAXDEPTH or "" }}">
