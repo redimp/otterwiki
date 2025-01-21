@@ -204,19 +204,34 @@ class GitStorage(object):
 
         return metadata
 
-    def log(self, filename=None, fail_on_git_error=False):
+    def log(self, filename=None, fail_on_git_error=False, max_count=None):
         if filename is None:
             try:
-                rawlog = self.repo.git.log("--name-only", "-z")
+                if max_count:
+                    rawlog = self.repo.git.log(
+                        "--name-only", "-z", f"--max-count={max_count}"
+                    )
+                else:
+                    rawlog = self.repo.git.log("--name-only", "-z")
             except git.exc.GitCommandError as e:
                 if fail_on_git_error:
                     raise StorageNotFound(str(e))
                 return []
         else:
             try:
-                rawlog = self.repo.git.log(
-                    "--name-only", "-z", "--follow", "--", filename
-                )
+                if max_count:
+                    rawlog = self.repo.git.log(
+                        "--name-only",
+                        "-z",
+                        "--follow",
+                        f"--max-count={max_count}",
+                        "--",
+                        filename,
+                    )
+                else:
+                    rawlog = self.repo.git.log(
+                        "--name-only", "-z", "--follow", "--", filename
+                    )
             except git.exc.GitCommandError as e:
                 raise StorageNotFound(str(e))
 

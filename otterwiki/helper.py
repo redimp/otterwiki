@@ -9,6 +9,7 @@ lightweight as utils.
 
 """
 
+import os
 import re
 from collections import namedtuple
 from otterwiki.server import app, mail, storage, Preferences
@@ -100,8 +101,10 @@ def health_check():
     # check if storage is readable, the database works and auth is healthy
     msg = []
     # storage check
+    if not os.access(storage.path, os.W_OK):
+        msg += [f"{storage.path} is not writeable."]
     try:
-        storage.log(fail_on_git_error=True)
+        storage.log(fail_on_git_error=True, max_count=1)
     except StorageError as e:
         msg += [f"StorageError in {storage.path}: {e}"]
     # db check
