@@ -116,3 +116,14 @@ def test_preview_list_bug(create_app, req_ctx):
     assert "<li>eins" in data['preview_content']
     assert "<li>zwei" in data['preview_content']
     assert "<li>drei" in data['preview_content']
+
+
+def test_preview_italic_bug(create_app, req_ctx):
+    from otterwiki.wiki import Page
+
+    p = Page("test")
+    content = """# Header
+
+_A paragraph_"""
+    data = p.preview(content=content, cursor_line=3)
+    assert "<em>A paragraph</em>" in data['preview_content']

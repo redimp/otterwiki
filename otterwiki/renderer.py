@@ -32,7 +32,7 @@ from otterwiki.plugins import chain_hooks
 from bs4 import BeautifulSoup
 
 # the cursor magic word which is ignored by the rendering
-cursormagicword = "CuRsoRm4g1cW0Rd"
+cursormagicword = "<!-- CuRsoRm4g1cW0Rd -->"
 
 #
 # patch mistune table_plugin so that not all the newlines at the end of a table are removed
