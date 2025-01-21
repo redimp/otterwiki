@@ -134,6 +134,10 @@ def handle_sidebar_preferences(form):
     _update_preference(
         "SIDEBAR_MENUTREE_MODE", form.get("sidebar_menutree_mode", "")
     )
+    for checkbox in [
+        "sidebar_menutree_ignore_case",
+    ]:
+        _update_preference(checkbox.upper(), form.get(checkbox, "False"))
     # commit changes to the database
     db.session.commit()
     update_app_config()

@@ -47,6 +47,7 @@ app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     MINIFY_HTML=True,
     SIDEBAR_MENUTREE_MODE="SORTED",
+    SIDEBAR_MENUTREE_IGNORE_CASE=False,
     SIDEBAR_MENUTREE_MAXDEPTH="",
     SIDEBAR_CUSTOM_MENU="",
     COMMIT_MESSAGE="REQUIRED",  # OPTIONAL DIISABLED
@@ -135,6 +136,7 @@ def update_app_config():
                 "NOTIFY_ADMINS_ON_REGISTER",
                 "NOTIFY_USER_ON_APPROVAL",
                 "RETAIN_PAGE_NAME_CASE",
+                "SIDEBAR_MENUTREE_IGNORE_CASE",
                 "GIT_WEB_SERVER",
                 "HIDE_LOGO",
             ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
