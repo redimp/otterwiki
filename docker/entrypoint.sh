@@ -76,4 +76,11 @@ for PLUGIN in /app-data/plugins/*/ /plugins/*/; do
     pip install -U . || echo "Error: Installation of plugin in $PLUGIN failed." >&2
 done
 
+# print nginx version
+nginx -v
+# run nginx config test
+nginx -t
+echo -n "supervisord version "
+supervisord -v
+
 exec "$@"
