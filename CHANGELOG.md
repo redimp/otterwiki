@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.9.0](https://github.com/redimp/otterwiki/releases/tag/v2.9.0) - 2025-01-23
+
+<small>[Compare with v2.8.0](https://github.com/redimp/otterwiki/compare/v2.8.0...v2.9.0)</small>
+
+### Features
+
+- added optional caseless sorting of the sidebar ([47aefc0](https://github.com/redimp/otterwiki/commit/47aefc012d5cac58f63ac35c7726902bb1596ee6) and [#187](https://github.com/redimp/otterwiki/pull/187) by [rhartmann](https://github.com/rhartmann).
+- added some responsiveness to the sidebar, see #185 ([a69f514](https://github.com/redimp/otterwiki/commit/a69f514d51ae84981f7537bc1111250c55c733e2)).
+- PageIndex uses `get_ftoc` for cached ftocs to reduce load time, see #183 ([ea24cd0](https://github.com/redimp/otterwiki/commit/ea24cd07139bdddbf019a3e3aa9a457167143b4c)).
+- added option to add line numbers to code blocks, see #176 ([76d13c2](https://github.com/redimp/otterwiki/commit/76d13c2a81994b18977a688f46d884d7c2e30a00)).
+- print otterwiki, nginx and supervisord versions, see #188 ([0d49d1b](https://github.com/redimp/otterwiki/commit/0d49d1b41d19c80236c1e405d5c3b8cc8c487e0c)).
+
+### Bug Fixes
+
+- preview of a paragaph with `_italic_` markup, see #167 ([c364efb](https://github.com/redimp/otterwiki/commit/c364efb60518833a1236492c8b6634a94d2dec5e)).
+- word-break n the sidebar optimized. Do not break the `::before` element, see #169 ([ecfe061](https://github.com/redimp/otterwiki/commit/ecfe061e46131fe7f0ae924621cdb40276188aac)).
+
+### Code Refactoring
+
+- anonoymous users drafts are now stored in the database ([091a9e7](https://github.com/redimp/otterwiki/commit/091a9e7c933ffa26f1b59e7e0e2ee3582b6c7bd9)).
+- An `anonymous_user` has now a uid stored in the session ([1ebeb8d](https://github.com/redimp/otterwiki/commit/1ebeb8d3eae39c05b36f5929c10482480ce2bef5)).
+
 ## [v2.8.0](https://github.com/redimp/otterwiki/releases/tag/v2.8.0) - 2024-11-17
 
 <small>[Compare with v2.7.0](https://github.com/redimp/otterwiki/compare/v2.7.0...v2.8.0)</small>
@@ -163,7 +185,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Sidebar on small screen (mobile devices) will not expaned but overlay [#124](https://github.com/redimp/otterwiki/issues/124)
 - Better CSS for media: print [#126](https://github.com/redimp/otterwiki/issues/126)
-- Part of the release are slim images, built with only uWSGI, without nginx and supervisord based on alpine 3.20.1. Running as unpriviliged user, listening on port 8080. docker image tags get -slim appended e.g. `redimp/otterwiki:2.4.4-slim` [#121](https://github.com/redimp/otterwiki/issues/121)
+- Part of the release are slim images, built with only uWSGI, without nginx and supervisord based on alpine 3.20.1. Running as unprivileged user, listening on port 8080. docker image tags get -slim appended e.g. `redimp/otterwiki:2.4.4-slim` [#121](https://github.com/redimp/otterwiki/issues/121)
 
 ## [v2.4.3](https://github.com/redimp/otterwiki/tags/v2.4.3) - 2024-06-16
 
