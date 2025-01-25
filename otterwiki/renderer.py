@@ -73,7 +73,14 @@ def pygments_render(code, lang, linenumbers=False):
         )
     linenos = "table" if linenumbers else None
     formatter = CodeHtmlFormatter(classprefix=".highlight ", linenos=linenos)
-    return highlight(code, lexer, formatter)
+    html = highlight(code, lexer, formatter)
+    # make sure wikilinks are not present in the code block
+    html = (
+        html.replace("&#39;", "&apos;")
+        .replace("[", "&#91;")
+        .replace("]", "&#93;")
+    )
+    return html
 
 
 def hidemagicword(text):
@@ -161,16 +168,17 @@ def clean_html(html: str) -> str:
             break
         try:
             if any(
-                x in element.attrs.keys()
-                for x in REMOVE_ATTRIBUTES  # pyright: ignore
+                x in element.attrs.keys()  # pyright: ignore
+                for x in REMOVE_ATTRIBUTES
             ):
                 _escape = True
                 break
         except AttributeError:
-            break
+            continue
     if _escape:
         # take nom prisoners
         html = escape(html)
+
     return html
 
 
@@ -212,11 +220,12 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         prefix = ""
         linenumbers = False
         if not info or not len(info):
-            return (
+            html = (
                 '\n'
                 + _pre_copy_to_clipboard_tag()
                 + '{}</pre></div>\n'.format(mistune.escape(code.strip()))
             )
+            return html
         if cursormagicword in info:
             info = info.replace(cursormagicword, "")
             prefix = cursormagicword
@@ -372,7 +381,7 @@ class OtterwikiRenderer:
         elif cursor is not None:
             html = self.htmlcursor + html
 
-        text = chain_hooks("renderer_html_postprocess", text)
+        html = chain_hooks("renderer_html_postprocess", html)
 
         # clean magicword out of toc
         toc = [
