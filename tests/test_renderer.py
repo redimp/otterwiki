@@ -3,7 +3,12 @@
 
 import pytest
 from bs4 import BeautifulSoup
-from otterwiki.renderer import render, clean_html, OtterwikiRenderer
+from otterwiki.renderer import (
+    render,
+    clean_html,
+    OtterwikiRenderer,
+    pygments_render,
+)
 
 
 def test_lastword():
@@ -531,3 +536,28 @@ graph TD;
     A--&gt;B;\n</pre>"""
         in html
     )
+
+
+def test_pygments_render_python_doublebracket():
+    code = """df[['a', "b"]]"""
+    html = pygments_render(code, "python", linenumbers=False)
+    code = BeautifulSoup(html, "html.parser").find(
+        'div', {'class': 'highlight'}
+    )
+    assert code
+    code = str(code.text)
+    assert """df[['a', "b"]]""" in code
+
+
+def test_render_python_doublebracket():
+    # https://github.com/redimp/otterwiki/issues/190
+    md = """```python
+df[['a', "b"]]
+```"""
+    html, _ = render.markdown(md)
+    code = BeautifulSoup(html, "html.parser").find(
+        'div', {'class': 'highlight'}
+    )
+    assert code
+    code = code.text
+    assert """df[['a', "b"]]""" in code
