@@ -51,11 +51,12 @@ app.config.update(
     SIDEBAR_MENUTREE_IGNORE_CASE=False,
     SIDEBAR_MENUTREE_MAXDEPTH="",
     SIDEBAR_CUSTOM_MENU="",
-    COMMIT_MESSAGE="REQUIRED",  # OPTIONAL DIISABLED
+    COMMIT_MESSAGE="REQUIRED",  # OPTIONAL DISABLED
     GIT_WEB_SERVER=False,
     SIDEBAR_SHORTCUTS="home pageindex createpage",
     ROBOTS_TXT="allow",
     WIKILINK_STYLE="",
+    MAX_FORM_MEMORY_SIZE=1_000_0000,
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
@@ -69,7 +70,12 @@ print(
 for key in app.config:
     if key in os.environ:
         if type(app.config[key]) == bool:
-            app.config[key] = os.environ[key].lower() in ["true", "yes"]
+            app.config[key] = os.environ[key].lower() in [
+                "true",
+                "yes",
+                "on",
+                "1",
+            ]
         else:
             app.config[key] = os.environ[key]
 
