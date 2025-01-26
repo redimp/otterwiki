@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.9.1](https://github.com/redimp/otterwiki/releases/tag/v2.9.1) - 2025-01-26
+
+<small>[Compare with v2.9.0](https://github.com/redimp/otterwiki/compare/v2.9.0...v2.9.1)</small>
+
+### Bug Fixes
+
+- added setting `MAX_FORM_MEMORY_SIZE`, see #179 ([95d661e](https://github.com/redimp/otterwiki/commit/95d661e5b34d0f104b27b3e08572c7e50ec58c7b)).
+- in `pygments_render` replace [] with numeric codes, see #190 ([666cfd0](https://github.com/redimp/otterwiki/commit/666cfd004175023afd493c5c86a3a37d30786d6a)).
+
 ## [v2.9.0](https://github.com/redimp/otterwiki/releases/tag/v2.9.0) - 2025-01-23
 
 <small>[Compare with v2.8.0](https://github.com/redimp/otterwiki/compare/v2.8.0...v2.9.0)</small>
