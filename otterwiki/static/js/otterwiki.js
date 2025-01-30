@@ -195,6 +195,8 @@ var otterwiki_editor = {
     strikethrough: function() {
         otterwiki_editor._toggleBlock("~~", "strikethrough");
     },
+    // TODO: How do we handle multiple levels of spoilers, expands etc.?
+    //       Maybe we could hijack the Tab indentation?
     spoiler: function() {
         otterwiki_editor._toggleLines(">! ", [/\s*>!\s+/], "spoiler");
     },
@@ -217,6 +219,9 @@ var otterwiki_editor = {
     },
     code: function() {
         otterwiki_editor._toggleBlock(["`","```"], "code");
+    },
+    quote: function () {
+        otterwiki_editor._toggleLines("> ", [/\s*>\s+/], "quote")
     },
     ul: function() {
         otterwiki_editor._toggleLines("- ",[/\s*[-+*]\s+/], "ul");
