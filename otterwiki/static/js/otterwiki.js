@@ -33,10 +33,17 @@ var otterwiki_editor = {
         }
         return { anchor: {line: pos.line, ch: start}, head: { line: pos.line, ch: end }};
     },
-    _toggleBlock: function(syntax_chars, token) {
+    _toggleBlock: function(syntax_chars, token, separate_end_chars) {
+        // FIXME: with multiline blocks that include newlines in their chars, this is pretty wonky...
         if (!(syntax_chars instanceof Array)) {
             syntax_chars = [syntax_chars];
         }
+        if (separate_end_chars !== undefined && !(separate_end_chars instanceof Array) ) {
+            separate_end_chars = [separate_end_chars];
+        } else {
+            separate_end_chars = [];
+        }
+
         var anythingSelected = true;
         var toggle_off = false;
         // store cursor
@@ -49,41 +56,73 @@ var otterwiki_editor = {
         }
         if (cm_editor.getSelection().trim().length == 0) {
             // if still nothing is selected, just insert the syntax characters at the cursor
-            cm_editor.doc.replaceRange(syntax_chars[0]+syntax_chars[0], cursor);
+            start_char = syntax_chars[0]
+            end_char = syntax_chars[0]
+
+            if (separate_end_chars.length) {
+                end_char = separate_end_chars[0]
+            }
+            cm_editor.doc.replaceRange(start_char + end_char, cursor);
         } else {
             // selection that is supposed to be toggled
             const cursor_start = cm_editor.getCursor('start');
             const cursor_end = cm_editor.getCursor('end');
             var text = cm_editor.getSelection()
-            // check if block starts with syntax_chars
+            // check if block starts or ends with syntax_chars/separate_end_chars
             toggle_off = false;
             for (const chars of syntax_chars) {
-                if (text.startsWith(chars) && text.endsWith(chars)) {
+
+                // determine whether the selected block already has start & end chars
+                // and which combination they are
+                let start_matches = false;
+                let end_matches = false;
+                let end_length = 0;
+
+                if (text.startsWith(chars)) start_matches = true;
+
+                if (separate_end_chars.length) {
+                    for (const end_char of syntax_chars) {
+                        if (text.endsWith(end_char)) {
+                            end_matches = true;
+                            end_length = end_char.length;
+                            break;
+                        }
+                    }
+                } else {
+                    if (text.endsWith(chars)) {
+                        end_matches = true;
+                        end_length = chars.length;
+                    }
+                }
+
+                if (start_matches && end_matches) {
                     toggle_off = true;
                     // slice off syntax chars
-                    text = text.slice(chars.length, text.length - chars.length);
+                    text = text.slice(chars.length, text.length - end_length);
                     cm_editor.replaceSelection(text);
                     // update end cursor (start cursor is fine)
-                    cursor_end.ch = cursor_end.ch - chars.length;
-                    // if on the same line
-                    if (cursor_start.line == cursor_end.line) { cursor_end.ch = cursor_end.ch - chars.length; }
+                    cursor_end.ch = cursor_end.ch - end_length;
+                    // if on the same line // FIXME: Is this actually relevant? this is the same as the line above
+                    if (cursor_start.line == cursor_end.line) { cursor_end.ch = cursor_end.ch - end_length; }
                     // select new area
                     cm_editor.setSelection(cursor_start, cursor_end);
                 }
             }
             if (!toggle_off) {
-                text = syntax_chars[0] + text + syntax_chars[0];
+                const end_char = separate_end_chars.length ? separate_end_chars[0] : syntax_chars[0];
+                text = syntax_chars[0] + text + end_char;
                 cm_editor.replaceSelection(text);
                 // update end cursor (start cursor is fine)
-                cursor_end.ch = cursor_end.ch + syntax_chars[0].length
-                // if on the same line
-                if (cursor_start.line == cursor_end.line) { cursor_end.ch = cursor_end.ch + syntax_chars[0].length; }
+                cursor_end.ch = cursor_end.ch + end_char.length;
+                // if on the same line // FIXME: Is this actually relevant? this is the same as the line above
+                if (cursor_start.line == cursor_end.line) { cursor_end.ch = cursor_end.ch + end_char.length; }
                 // select new area
                 cm_editor.setSelection(cursor_start, cursor_end);
             }
         }
         if (!anythingSelected) {
             if (toggle_off) {
+                // FIXME: with the potentially different end chars, this will probably not work?
                 setTimeout(() => {
                     cursor.ch -= syntax_chars[0].length;
                     cm_editor.setCursor(cursor);
@@ -95,8 +134,6 @@ var otterwiki_editor = {
                 }, 0);
             }
         }
-
-        cm_editor.focus();
     },
     _toggleLines: function(line_prefix, line_re, token) {
         if (!(line_re instanceof Array)) {
