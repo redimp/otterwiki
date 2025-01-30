@@ -269,6 +269,15 @@ var otterwiki_editor = {
     cl: function() {
         otterwiki_editor._toggleLines("- [ ] ",[/\s*[-+*] \[ \]\s+/], "ul");
     },
+    block_notice: function() {
+        otterwiki_editor._toggleBlock(":::info\n", "notice", "\n:::");
+    },
+    block_warning: function() {
+        otterwiki_editor._toggleBlock(":::warning\n", "warning", "\n:::");
+    },
+    block_danger: function() {
+        otterwiki_editor._toggleBlock(":::danger\n", "danger", "\n:::");
+    },
     img: function(img = "![]()") {
         if (!cm_editor) { return; }
         state = otterwiki_editor._getState();
