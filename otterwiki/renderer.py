@@ -32,7 +32,7 @@ from otterwiki.plugins import chain_hooks
 from bs4 import BeautifulSoup
 
 # the cursor magic word which is ignored by the rendering
-cursormagicword = "<!-- CuRsoRm4g1cW0Rd -->"
+cursormagicword = "CuRsoRm4g1cW0Rd"
 
 #
 # patch mistune table_plugin so that not all the newlines at the end of a table are removed
@@ -335,7 +335,7 @@ class OtterwikiRenderer:
             ],
             env=self.env,
         )
-        self.lastword = re.compile(r"([a-zA-Z_0-9\.]+)$")
+        self.lastword = re.compile(r"([a-zA-Z\-0-9\.]+)$")
         self.htmlcursor = " <span id=\"otterwiki_cursor\"></span> "
         # thanks to https://github.com/lepture/mistune/issues/158#issuecomment-830481284
         # we can enable tables in lists

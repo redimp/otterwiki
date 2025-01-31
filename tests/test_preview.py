@@ -127,3 +127,27 @@ def test_preview_italic_bug(create_app, req_ctx):
 _A paragraph_"""
     data = p.preview(content=content, cursor_line=3)
     assert "<em>A paragraph</em>" in data['preview_content']
+    soup = bs4.BeautifulSoup(data['preview_content'], "html.parser").find("em")
+    assert soup
+    text = soup.text.strip()
+    assert "A paragraph" == text
+
+
+def test_preview_cursor_in_codeblock(create_app, req_ctx):
+    from otterwiki.wiki import Page
+
+    p = Page("test")
+    content = """# Header
+
+    ```
+    code in block
+    ```
+    """
+    data = p.preview(content=content, cursor_line=1)
+    print(data)
+    soup = bs4.BeautifulSoup(data['preview_content'], "html.parser").find(
+        "pre"
+    )
+    assert soup
+    text = soup.text.strip("`\n")
+    assert "code in block" == text
