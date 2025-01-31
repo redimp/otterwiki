@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.9.2](https://github.com/redimp/otterwiki/releases/tag/v2.9.2) - 2025-01-31
+
+<small>[Compare with v2.9.1](https://github.com/redimp/otterwiki/compare/v2.9.1...v2.9.2)</small>
+
+### Bug Fixes
+
+- With `RETAIN_PAGE_NAME_CASE` enabled only the capitalization of the filename determines the captialization of the Page name, see #193 ([83dd439](https://github.com/redimp/otterwiki/commit/83dd4395d12802a773ffbe0f1d08e0fa1527b669)).
+- cursormagicword back to just characters, see #167 ([f930d44](https://github.com/redimp/otterwiki/commit/f930d44cf4759f93820cdc79299a3b04cb3d058b)).
+- saving application preferences does not change content and editing preferences anymore, see #192 ([5b76af3](https://github.com/redimp/otterwiki/commit/5b76af35d12dd7b4cc3b4e110ab765f4c3bc2cae)).
+
 ## [v2.9.1](https://github.com/redimp/otterwiki/releases/tag/v2.9.1) - 2025-01-26
 
 <small>[Compare with v2.9.0](https://github.com/redimp/otterwiki/compare/v2.9.0...v2.9.1)</small>
