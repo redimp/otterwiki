@@ -51,6 +51,13 @@ Attachments will be moved with the renamed page.
 
 A page (with all its attachments) can be deleted with <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span> <i class="fas fa-caret-right"></i> <span class="btn btn-square btn-sm"><i class="far fa-trash-alt"></i></span> Delete</span>. Please note: This deletion can be reverted. An Otter Wiki never makes the repository forget.
 
+#### Page name
+
+The page name can be anything that can be stored in the file system, with some sanitization: `?$.#\` and trailing slashes `/` will be removed.
+Since all pages are stored in all lowercase filenames, the capitalization of the page name is determined by the first header.
+
+Note: When `RETAIN_PAGE_NAME_CASE` is enabled, the capitalization of the filename determines the capitalization of the page name.
+
 ---
 
 ### Attachments
@@ -62,7 +69,7 @@ The pasted image will be uploaded and attached to the page you are editing.
 
 #### Editing attachments
 
-Open the attachment menu via <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span> <i class="fas fa-caret-right"></i> <span class="btn btn-square btn-sm"><i class="fa fa-paperclip"></i></span> Attachments</span>. 
+Open the attachment menu via <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span> <i class="fas fa-caret-right"></i> <span class="btn btn-square btn-sm"><i class="fa fa-paperclip"></i></span> Attachments</span>.
 In addition to uploading, each attachment can also be opened via the <span class="help-button"><a hre="#"><i class="fas fa-edit"></i></a></span> for editing, which allows you to replace, rename or delete the attachment. The history of the attachment is displayed and offers the possibility to revert changes using <span class="help-button"><a hre="#"><i class="fas fa-undo"></i></a></span>.
 
 #### Inline attached images
@@ -105,7 +112,7 @@ case</em> and <em>Regular expression</em>.</p>
 ### Page index
 
 An overview about all pages is given by the Page index, you can open it with
-<span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-list"></i></span> A-Z</span> from the left sidebar. All listed pages are sorted by page name and 
+<span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-list"></i></span> A-Z</span> from the left sidebar. All listed pages are sorted by page name and
 grouped by their first letter.
 
 To list the headings of all pages use the toggle on top of the page:

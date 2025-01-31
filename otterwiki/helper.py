@@ -184,19 +184,23 @@ def get_pagename(filepath, full=False, header=None):
         filepath = filepath[:-3]
 
     arr = split_path(filepath)
-    for i, part in enumerate(arr):
-        hint = part
-        # if basename use header as hint
-        if i == len(arr) - 1 and header is not None:
-            hint = header
-        if (hint != part and hint.lower() == part.lower()) or (
-            hint == part and hint != part.lower()
-        ):
-            arr[i] = hint
-        else:
-            arr[i] = (
-                part if app.config["RETAIN_PAGE_NAME_CASE"] else titleSs(part)
-            )
+    if app.config["RETAIN_PAGE_NAME_CASE"]:
+        # When RETAIN_PAGE_NAME_CASE is set the pagename is deduced by just the filename. No magic.
+        pass
+    else:
+        # When RETAIN_PAGE_NAME_CASE is not set, all files are lowercase, so headers can be used to
+        # configure a pagename. else default to titleSs
+        for i, part in enumerate(arr):
+            hint = part
+            # if basename use header as hint
+            if i == len(arr) - 1 and header is not None:
+                hint = header
+            if (hint != part and hint.lower() == part.lower()) or (
+                hint == part and hint != part.lower()
+            ):
+                arr[i] = hint
+            else:
+                arr[i] = titleSs(part)
 
     if not full:
         return arr[-1]

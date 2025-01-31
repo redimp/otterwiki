@@ -211,16 +211,18 @@ def test_get_pagename_raw(create_app_raw_filenames, req_ctx):
     # updated version wich respects upper and lowercase
     assert "ExamplE" == get_pagename("ExamplE")
     assert "two words" == get_pagename("two words.md")
+    assert "Two words" == get_pagename("Two words.md")
+    assert "two Words" == get_pagename("two Words.md")
     assert "two words" == get_pagename("two words")
     assert "Two words" == get_pagename("Two words")
-    assert "Two words" == get_pagename("two words", header="Two words")
+    assert "two words" == get_pagename("two words", header="Two words")
     # and with subdirectories
-    assert "Two words" == get_pagename("subdir/two words", header="Two words")
-    assert "Two words" == get_pagename(
+    assert "two words" == get_pagename("subdir/two words", header="Two words")
+    assert "two words" == get_pagename(
         "subdir/two words.md", header="Two words"
     )
     assert "Two words" == get_pagename(
-        "subdir1/subdir2/two words.md", header="Two words"
+        "subdir1/subdir2/Two words.md", header="Two words"
     )
     assert "two words" == get_pagename("subdir1/subdir2/two words.md")
     assert "Two Words" == get_pagename("subdir1/subdir2/Two Words")
