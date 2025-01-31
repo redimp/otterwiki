@@ -156,8 +156,6 @@ def handle_app_preferences(form):
         _update_preference(name.upper(), form.get(name, ""))
     for checkbox in [
         "hide_logo",
-        "retain_page_name_case",
-        "git_web_server",
     ]:
         _update_preference(checkbox.upper(), form.get(checkbox, "False"))
     # commit changes to the database
