@@ -181,6 +181,55 @@ var otterwiki_editor = {
         }
         cm_editor.focus();
     },
+    _toggleAlert: function(header) {
+
+        const headerValue = "[!" + header.toUpperCase() + "]";
+        const headerRegex = "^> \\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\\]\\s*$";
+        let selectedLines = otterwiki_editor._getSelectedLines();
+
+        if (selectedLines.length == 0) return;
+
+        // Decide whether to add or remove the alert block, and whether the first line already
+        // has content. In the latter case, we have to insert an extra line for the alert
+        // header, because it needs to be on its own line.
+        const firstLine = cm_editor.getLine(selectedLines[0]);
+
+        // The first line already is a header
+        // Determine whether we should unalert, or change the header
+        if (firstLine.match(headerRegex)) {
+
+            // the first line includes the header of the alert block -> "unalert"
+            if (firstLine.includes(headerValue)) {
+                otterwiki_editor._setLine(selectedLines[0], "> "); // keep the quote, as this is handled below
+
+            } else { // the first line is a header, but a different one -> replace header and quit
+                otterwiki_editor._setLine(selectedLines[0], firstLine.replace(/\[![A-Z]+]/, headerValue));
+                return;
+            }
+
+        } else if (!firstLine.match("^$")) { // when the first selected line is not empty
+            otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
+
+            // set the selection so the newly added extra line is being included as well
+            cm_editor.setSelection(
+                head={
+                    line: selectedLines[0],
+                    ch: 0
+                },
+                anchor={
+                    line: selectedLines[selectedLines.length - 1] + 1,
+                    ch: lineEnd
+                }
+            );
+
+        } else {
+            otterwiki_editor._setLine(selectedLines[0], headerValue);
+        }
+
+        // Finally, simply quote all selected lines (the header part is what makes alerts special)
+        // TODO: once we allow multilevel quotes, we need to consider this here and set a max-quote-level
+        otterwiki_editor.quote();
+    },
     _getState: function(pos) {
         var cm = cm_editor;
         pos = pos || cm.getCursor('start');
@@ -294,55 +343,6 @@ var otterwiki_editor = {
         cm_editor.replaceSelection(text + link);
 
         cm_editor.focus();
-    },
-    _toggleAlert: function(header) {
-
-        const headerValue = "[!" + header.toUpperCase() + "]";
-        const headerRegex = "^> \\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\\]\\s*$";
-        let selectedLines = otterwiki_editor._getSelectedLines();
-
-        if (selectedLines.length == 0) return;
-
-        // Decide whether to add or remove the alert block, and whether the first line already
-        // has content. In the latter case, we have to insert an extra line for the alert
-        // header, because it needs to be on its own line.
-        const firstLine = cm_editor.getLine(selectedLines[0]);
-
-        // The first line already is a header
-        // Determine whether we should unalert, or change the header
-        if (firstLine.match(headerRegex)) {
-
-            // the first line includes the header of the alert block -> "unalert"
-            if (firstLine.includes(headerValue)) {
-                otterwiki_editor._setLine(selectedLines[0], "> "); // keep the quote, as this is handled below
-
-            } else { // the first line is a header, but a different one -> replace header and quit
-                otterwiki_editor._setLine(selectedLines[0], firstLine.replace(/\[![A-Z]+]/, headerValue));
-                return;
-            }
-
-        } else if (!firstLine.match("^$")) { // when the first selected line is not empty
-            otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
-
-            // set the selection so the newly added extra line is being included as well
-            cm_editor.setSelection(
-                head={
-                    line: selectedLines[0],
-                    ch: 0
-                },
-                anchor={
-                    line: selectedLines[selectedLines.length - 1] + 1,
-                    ch: lineEnd
-                }
-            );
-
-        } else {
-            otterwiki_editor._setLine(selectedLines[0], headerValue);
-        }
-
-        // Finally, simply quote all selected lines (the header part is what makes alerts special)
-        // TODO: once we allow multilevel quotes, we need to consider this here and set a max-quote-level
-        otterwiki_editor.quote();
     },
     alert_note: function() {
         otterwiki_editor._toggleAlert("note");
