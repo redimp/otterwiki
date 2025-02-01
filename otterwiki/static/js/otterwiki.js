@@ -1,5 +1,7 @@
 /* vim: set et sts=4 ts=4 sw=4 ai: */
 
+const lineEnd = 999999;
+
 var otterwiki_editor = {
     /* simple functions */
     undo: function() {
@@ -18,7 +20,7 @@ var otterwiki_editor = {
     _setLine: function(n, text) {
         cm_editor.replaceRange(
             text, { line: n, ch: 0, },
-                  { line: n, ch: 999999, }
+                  { line: n, ch: lineEnd, }
         );
     },
     _findWordAt: function(pos) {
@@ -135,7 +137,7 @@ var otterwiki_editor = {
             }
         }
     },
-    _toggleLines: function(line_prefix, line_re, token) {
+    _toggleLines: function(line_prefix, line_re, token, special_first_line) {
         if (!(line_re instanceof Array)) {
             line_re = [line_re];
         }
@@ -290,6 +292,50 @@ var otterwiki_editor = {
         cm_editor.replaceSelection(text + link);
 
         cm_editor.focus();
+    },
+    _toggleAlert: function(header) {
+
+        // TODO: add functionality to "unalert" the selection
+        const headerValue = "[!" + header.toUpperCase() + "]";
+        let selectedLines = otterwiki_editor._getSelectedLines();
+
+        if (selectedLines.length == 0) return;
+
+        // Decide whether we need to add an extra line at the top for the header
+        // this is required to not overwrite any content that might already be there
+        const firstLine = cm_editor.getLine(selectedLines[0]);
+        if (!firstLine.match("^$")) { // when the first selected line is not empty
+            otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine)
+            cm_editor.setSelection(head={
+                line: selectedLines[0],
+                ch: 0
+            }, anchor={
+                line: selectedLines[selectedLines.length - 1] + 1,
+                ch: lineEnd
+            });
+
+            selectedLines = otterwiki_editor._getSelectedLines();
+        } else {
+            otterwiki_editor._setLine(selectedLines[0], headerValue);
+        }
+
+        // Finally, simply quote all selected lines (the header part is what makes alerts special)
+        otterwiki_editor.quote();
+    },
+    alert_note: function() {
+        otterwiki_editor._toggleAlert("note");
+    },
+    alert_tip: function() {
+        otterwiki_editor._toggleAlert("tip");
+    },
+    alert_important: function() {
+        otterwiki_editor._toggleAlert("important");
+    },
+    alert_warning: function() {
+        otterwiki_editor._toggleAlert("warning");
+    },
+    alert_caution: function() {
+        otterwiki_editor._toggleAlert("caution");
     },
     link: function(text = "description", url = "https://") {
         if (!cm_editor) { return; }
