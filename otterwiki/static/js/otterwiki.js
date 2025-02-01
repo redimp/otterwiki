@@ -310,6 +310,7 @@ var otterwiki_editor = {
     code: function() {
         otterwiki_editor._toggleBlock(["`","```"], "code");
     },
+    // quote: increase the markdown quote level till five, remove afterwards
     quote: function () {
         otterwiki_editor._toggleLinesMultiLevel(indentChar=">");
     },
