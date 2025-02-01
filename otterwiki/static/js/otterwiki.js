@@ -1,6 +1,7 @@
 /* vim: set et sts=4 ts=4 sw=4 ai: */
 
 const lineEnd = 999999;
+const maxMultiLevels = 5;
 
 var otterwiki_editor = {
     /* simple functions */
@@ -161,7 +162,7 @@ var otterwiki_editor = {
         }
         cm_editor.focus();
     },
-    _toggleLinesMultiLevel: function(indentChar, maxLevel=5) {
+    _toggleLinesMultiLevel: function(indentChar, maxLevel=maxMultiLevels) {
         if (!cm_editor) { return; }
         for (const i of otterwiki_editor._getSelectedLines())
         {
@@ -227,8 +228,7 @@ var otterwiki_editor = {
         }
 
         // Finally, simply quote all selected lines (the header part is what makes alerts special)
-        // TODO: once we allow multilevel quotes, we need to consider this here and set a max-quote-level
-        otterwiki_editor.quote();
+        otterwiki_editor.quote(multilevel=false);
     },
     _getState: function(pos) {
         var cm = cm_editor;
@@ -311,8 +311,8 @@ var otterwiki_editor = {
         otterwiki_editor._toggleBlock(["`","```"], "code");
     },
     // quote: increase the markdown quote level till five, remove afterwards
-    quote: function () {
-        otterwiki_editor._toggleLinesMultiLevel(indentChar=">");
+    quote: function (multilevel=true) {
+        otterwiki_editor._toggleLinesMultiLevel(indentChar=">", maxLevel=multilevel ? maxMultiLevels : 1);
     },
     ul: function() {
         otterwiki_editor._toggleLines("- ",[/\s*[-+*]\s+/], "ul");
