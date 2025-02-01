@@ -161,6 +161,26 @@ var otterwiki_editor = {
         }
         cm_editor.focus();
     },
+    _toggleLinesMultiLevel: function(indentChar, maxLevel=5) {
+        if (!cm_editor) { return; }
+        for (const i of otterwiki_editor._getSelectedLines())
+        {
+            var line = cm_editor.doc.getLine(i);
+            var lineHLevel = line.search("[^" + indentChar + "]");
+            // In case of a line composed of only "indentChar"
+            if (lineHLevel < 0) { lineHLevel = line.length; }
+            if (lineHLevel == 0) {
+                otterwiki_editor._setLine(i, indentChar + " " + line);
+            } else if (lineHLevel < maxLevel) {
+                // add a level
+                otterwiki_editor._setLine(i, indentChar + line);
+            } else {
+                // Remove all indentChars (not sure why the RegExp is needed. It won't work without, though)
+                otterwiki_editor._setLine(i, line.replace(new RegExp("^" + indentChar + "+\\s*"), ''));
+            }
+        }
+        cm_editor.focus();
+    },
     _getState: function(pos) {
         var cm = cm_editor;
         pos = pos || cm.getCursor('start');
@@ -204,26 +224,8 @@ var otterwiki_editor = {
     },
     /* formating functions */
     // header: increase the mardown header level till five remove afterwards
-    // TODO: refactor so that it works with quotes, too.
     header: function() {
-        if (!cm_editor) { return; }
-        for (const i of otterwiki_editor._getSelectedLines())
-        {
-            var line = cm_editor.doc.getLine(i);
-            var lineHLevel = line.search(/[^#]/);
-            // In case of a line composed of only "#"
-            if (lineHLevel < 0) { lineHLevel = line.length; }
-            if (lineHLevel == 0) {
-                otterwiki_editor._setLine(i, "# " + line);
-            } else if (lineHLevel < 5) {
-                // add a level
-                otterwiki_editor._setLine(i, "#" + line);
-            } else {
-                // Remove Heading
-                otterwiki_editor._setLine(i, line.replace(/^#+\s*/,''));
-            }
-        }
-        cm_editor.focus();
+        otterwiki_editor._toggleLinesMultiLevel(indentChar="#");
     },
     bold: function() {
         otterwiki_editor._toggleBlock(["**","__"], "bold");
@@ -260,7 +262,7 @@ var otterwiki_editor = {
         otterwiki_editor._toggleBlock(["`","```"], "code");
     },
     quote: function () {
-        otterwiki_editor._toggleLines("> ", [/\s*>\s+/], "quote")
+        otterwiki_editor._toggleLinesMultiLevel(indentChar=">");
     },
     ul: function() {
         otterwiki_editor._toggleLines("- ",[/\s*[-+*]\s+/], "ul");
