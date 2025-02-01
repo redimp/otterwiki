@@ -104,7 +104,7 @@ var otterwiki_editor = {
                     cm_editor.replaceSelection(text);
                     // update end cursor (start cursor is fine)
                     cursor_end.ch = cursor_end.ch - end_length;
-                    // if on the same line // FIXME: Is this actually relevant? this is the same as the line above
+                    // if on the same line
                     if (cursor_start.line == cursor_end.line) { cursor_end.ch = cursor_end.ch - end_length; }
                     // select new area
                     cm_editor.setSelection(cursor_start, cursor_end);
@@ -116,7 +116,7 @@ var otterwiki_editor = {
                 cm_editor.replaceSelection(text);
                 // update end cursor (start cursor is fine)
                 cursor_end.ch = cursor_end.ch + end_char.length;
-                // if on the same line // FIXME: Is this actually relevant? this is the same as the line above
+                // if on the same line
                 if (cursor_start.line == cursor_end.line) { cursor_end.ch = cursor_end.ch + end_char.length; }
                 // select new area
                 cm_editor.setSelection(cursor_start, cursor_end);
@@ -295,7 +295,6 @@ var otterwiki_editor = {
     },
     _toggleAlert: function(header) {
 
-        // TODO: add functionality to "unalert" the selection
         const headerValue = "[!" + header.toUpperCase() + "]";
         const headerRegex = "^> \\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\\]\\s*$";
         let selectedLines = otterwiki_editor._getSelectedLines();
