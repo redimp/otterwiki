@@ -14,6 +14,18 @@ var otterwiki_editor = {
         cm_editor.redo();
     },
     /* helper functions */
+    _setSelection: function(lines) {
+        cm_editor.setSelection(
+            head = {
+                line: lines[0],
+                ch: 0
+            },
+            anchor = {
+                line: lines[lines.length - 1] + 1,
+                ch: lineEnd
+            }
+        );
+    },
     _getSelectedLines: function() {
         const [s, e] = [cm_editor.getCursor('start').line, cm_editor.getCursor('end').line]
         return [...Array(e - s + 1).keys()].map(i => i + s);
@@ -155,16 +167,7 @@ var otterwiki_editor = {
             otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
 
             // set the selection so the newly added extra line is being included as well
-            cm_editor.setSelection(
-                head={
-                    line: selectedLines[0],
-                    ch: 0
-                },
-                anchor={
-                    line: selectedLines[selectedLines.length - 1] + 1,
-                    ch: lineEnd
-                }
-            );
+            otterwiki_editor._setSelection(selectedLines);
 
             selectedLines = otterwiki_editor._getSelectedLines();
 
@@ -201,17 +204,7 @@ var otterwiki_editor = {
             otterwiki_editor._setLine(lastLineNum, prefix + tailValue);
 
             // update the selection
-            // TODO: This is exactly the same code as for firstLine - consider refactoring?
-            cm_editor.setSelection(
-                head={
-                    line: selectedLines[0],
-                    ch: 0
-                },
-                anchor={
-                    line: selectedLines[selectedLines.length - 1] + 1,
-                    ch: lineEnd
-                }
-            );
+            otterwiki_editor._setSelection(selectedLines);
         }
     },
     _toggleLines: function(line_prefix, line_re, token) {
@@ -288,16 +281,7 @@ var otterwiki_editor = {
             otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
 
             // set the selection so the newly added extra line is being included as well
-            cm_editor.setSelection(
-                head={
-                    line: selectedLines[0],
-                    ch: 0
-                },
-                anchor={
-                    line: selectedLines[selectedLines.length - 1] + 1,
-                    ch: lineEnd
-                }
-            );
+            otterwiki_editor._setSelection(selectedLines);
 
         } else {
             otterwiki_editor._setLine(selectedLines[0], headerValue);
