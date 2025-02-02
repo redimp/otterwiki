@@ -14,7 +14,7 @@ var otterwiki_editor = {
         cm_editor.redo();
     },
     /* helper functions */
-    _setSelection: function(lines) {
+    _setSelectedLines: function(lines) {
         cm_editor.setSelection(
             head = {
                 line: lines[0],
@@ -165,7 +165,7 @@ var otterwiki_editor = {
             otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
 
             // set the selection so the newly added extra line is being included as well
-            otterwiki_editor._setSelection(selectedLines);
+            otterwiki_editor._setSelectedLines(selectedLines);
 
             selectedLines = otterwiki_editor._getSelectedLines();
 
@@ -202,7 +202,7 @@ var otterwiki_editor = {
             otterwiki_editor._setLine(lastLineNum, prefix + tailValue);
 
             // update the selection
-            otterwiki_editor._setSelection(selectedLines);
+            otterwiki_editor._setSelectedLines(selectedLines);
         }
     },
     _toggleLines: function(line_prefix, line_re, token) {
@@ -279,7 +279,7 @@ var otterwiki_editor = {
             otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
 
             // set the selection so the newly added extra line is being included as well
-            otterwiki_editor._setSelection(selectedLines);
+            otterwiki_editor._setSelectedLines(selectedLines);
 
         } else {
             otterwiki_editor._setLine(selectedLines[0], headerValue);
