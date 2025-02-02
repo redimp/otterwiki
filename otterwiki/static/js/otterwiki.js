@@ -291,20 +291,22 @@ var otterwiki_editor = {
         otterwiki_editor._toggleLines(">! ", [/\s*>!\s+/], "spoiler");
     },
     expand: function() {
-        // FIXME: This does seem a little hacky - it works, though...
-        // add the header line first
+        // Determine the current format of the first selected line
+        // If it already is a header -> undo the expand blcok
+        // otherwise, add a markdown header indicator
         const first_line = otterwiki_editor._getSelectedLines()[0];
         const line = cm_editor.getLine(first_line);
 
-        // drop the header prefix but leave any expand syntax in-place for now
+        // Apply the header regex (matches both, lines with expand and lines without)
         let updated_line = line.replace(/(\s*>\|\s+)?#\s+/, "$1")
-        // if the re didn't alter the line, add the prefix
+        // if the regex did not alter the line, there is no header present yet
+        // --> add the header prefix
         if (updated_line == line) {
             updated_line = "# " + line;
         }
         otterwiki_editor._setLine(first_line, updated_line);
 
-        // then add the expand syntax
+        // Finally, add the expand syntax on each selected line
         otterwiki_editor._toggleLines(">| ", [/\s*>\|\s+/], "expand");
     },
     code: function() {
