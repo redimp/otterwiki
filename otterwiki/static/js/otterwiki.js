@@ -142,7 +142,7 @@ var otterwiki_editor = {
         // Determine whether we should remove, or change the header
         if (header_regex !== null && firstLine.match(header_regex)) {
 
-            // Decide whether the first line is a header line
+            // Decide whether the first line is the current header line
             let isHeader = false;
             for (const startChar of syntax_start_chars) {
                 if (firstLine.trim() == startChar) {
@@ -367,8 +367,11 @@ var otterwiki_editor = {
         // Finally, add the expand syntax on each selected line
         otterwiki_editor._toggleLines(">| ", [/\s*>\|\s+/], "expand");
     },
-    code: function() { // TODO: split this into single and multiline
+    code: function() {
         otterwiki_editor._toggleBlock(["`","```"], "code");
+    },
+    codeBlock: function() {
+        otterwiki_editor._toggleMultilineBlock("```", /^```\w*/)
     },
     // quote: increase the markdown quote level till five, remove afterwards
     quote: function (multilevel=true) {
