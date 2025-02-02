@@ -138,7 +138,7 @@ var otterwiki_editor = {
             }
         }
     },
-    _toggleLines: function(line_prefix, line_re, token, special_first_line) {
+    _toggleLines: function(line_prefix, line_re, token) {
         if (!(line_re instanceof Array)) {
             line_re = [line_re];
         }
