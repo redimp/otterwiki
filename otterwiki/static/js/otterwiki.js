@@ -112,7 +112,7 @@ var otterwiki_editor = {
         }
 
         cm_editor.focus();
-    }, // TODO: consider renaming toggleBlock to toggleSelection?
+    },
     _toggleMultilineBlock: function(syntax_start_chars, header_regex=null, syntax_end_chars=null) {
         // This function prepends and appends a selection of one or more entire lines
         // with a new line of "syntax_(start|end)_chars".
