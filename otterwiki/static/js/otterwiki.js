@@ -117,8 +117,6 @@ var otterwiki_editor = {
         // This function prepends and appends a selection of one or more entire lines
         // with a new line of "syntax_(start|end)_chars".
 
-        // TODO: Can we re-use this for alerts?
-
         if (!(syntax_start_chars instanceof Array)) {
             syntax_start_chars = [syntax_start_chars];
         }
