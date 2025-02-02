@@ -422,7 +422,7 @@ var otterwiki_editor = {
         // Finally, add the expand syntax on each selected line
         otterwiki_editor._toggleLines(">| ", [/\s*>\|\s+/], "expand");
     },
-    code: function() {
+    code: function() { // TODO: split this into single and multiline
         otterwiki_editor._toggleBlock(["`","```"], "code");
     },
     // quote: increase the markdown quote level till five, remove afterwards
