@@ -37,7 +37,7 @@ var otterwiki_editor = {
         return { anchor: {line: pos.line, ch: start}, head: { line: pos.line, ch: end }};
     },
     _toggleBlock: function(syntax_chars, token, separate_end_chars) {
-        // FIXME: with multiline blocks that include newlines in their chars, this is pretty wonky...
+        // TODO: Undo changes to this function vs upstream once toggleMultilineBlock is finalised
         if (!(syntax_chars instanceof Array)) {
             syntax_chars = [syntax_chars];
         }
@@ -136,6 +136,119 @@ var otterwiki_editor = {
                     cm_editor.setCursor(cursor);
                 }, 0);
             }
+        }
+    }, // TODO: consider renaming toggleBlock to toggleSelection?
+    _toggleMultilineBlock: function(syntax_start_chars, header_regex=null, syntax_end_chars=null) {
+        // This function prepends and appends a selection of one or more entire lines
+        // with a new line of "syntax_(start|end)_chars".
+
+        // TODO: Can we re-use this for alerts?
+
+        if (!(syntax_start_chars instanceof Array)) {
+            syntax_start_chars = [syntax_start_chars];
+        }
+        if (syntax_end_chars !== null && !(syntax_end_chars instanceof Array) ) {
+            syntax_end_chars = [syntax_end_chars];
+        } else {
+            syntax_end_chars = syntax_start_chars;
+        }
+
+        let selectedLines = otterwiki_editor._getSelectedLines();
+        if (selectedLines.length == 0) return;
+
+        const headerValue = syntax_start_chars[0];
+        const tailValue = syntax_end_chars[0];
+        let removeBlock = false;
+
+        // Decide whether to add or remove the block, and whether the first line already
+        // has content. In the latter case, we have to insert an extra line for the header,
+        // because it needs to be on its own line.
+        const firstLine = cm_editor.getLine(selectedLines[0]);
+
+        // The first line already is a header
+        // Determine whether we should remove, or change the header
+        if (header_regex !== null && firstLine.match(header_regex)) {
+
+            // Decide whether the first line is a header line
+            let isHeader = false;
+            for (const startChar of syntax_start_chars) {
+                if (firstLine.trim() == startChar) {
+                    isHeader = true;
+                    break;
+                }
+            }
+
+            // the first line includes the header of the block -> remove it
+            if (isHeader) {
+                otterwiki_editor._setLine(selectedLines[0], "");
+                removeBlock = true;
+
+            } else { // the first line is a header, but a different one -> replace header and quit
+                otterwiki_editor._setLine(selectedLines[0], headerValue);
+                return;
+            }
+
+        } else if (!firstLine.match("^$")) { // when the first selected line is not empty
+            otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
+
+            // set the selection so the newly added extra line is being included as well
+            cm_editor.setSelection(
+                head={
+                    line: selectedLines[0],
+                    ch: 0
+                },
+                anchor={
+                    line: selectedLines[selectedLines.length - 1] + 1,
+                    ch: lineEnd
+                }
+            );
+
+            selectedLines = otterwiki_editor._getSelectedLines();
+
+        } else {
+            otterwiki_editor._setLine(selectedLines[0], headerValue);
+        }
+
+        if (removeBlock) {
+            for (const ln of selectedLines.splice(1)) {
+                const lineValue = cm_editor.getLine(ln);
+
+                for (const endChar of syntax_end_chars) {
+                    if (lineValue.trim() == endChar) {
+                        otterwiki_editor._setLine(ln, "");
+                        return;
+                    }
+                }
+            }
+
+            // We only get here when the ending line was not found in the selection
+            // TODO: Find block end based on the syntax chars, abort if no end found
+            console.log("ERROR: No block end found! Remove manually.")
+
+        } else {
+
+            // Determine whether the last line is empty, and we may just set the block end
+            // or it already contains text, requiring us to add another line
+            const lastLineNum = selectedLines[selectedLines.length - 1]
+            const lastLine = cm_editor.getLine(selectedLines[lastLineNum]);
+            let prefix = ""
+            if (!lastLine.match("^$")) { // last selected line is not empty
+                prefix = lastLine + "\n";
+            }
+            otterwiki_editor._setLine(lastLineNum, prefix + tailValue);
+
+            // update the selection
+            // TODO: This is exactly the same code as for firstLine - consider refactoring?
+            cm_editor.setSelection(
+                head={
+                    line: selectedLines[0],
+                    ch: 0
+                },
+                anchor={
+                    line: selectedLines[selectedLines.length - 1] + 1,
+                    ch: lineEnd
+                }
+            );
         }
     },
     _toggleLines: function(line_prefix, line_re, token) {
@@ -326,13 +439,13 @@ var otterwiki_editor = {
         otterwiki_editor._toggleLines("- [ ] ",[/\s*[-+*] \[ \]\s+/], "ul");
     },
     block_notice: function() {
-        otterwiki_editor._toggleBlock(":::info\n", "notice", "\n:::");
+        otterwiki_editor._toggleMultilineBlock(":::info", /^:::(info|warning|danger)/, ":::");
     },
     block_warning: function() {
-        otterwiki_editor._toggleBlock(":::warning\n", "warning", "\n:::");
+        otterwiki_editor._toggleMultilineBlock(":::warning", /^:::(info|warning|danger)/, ":::");
     },
     block_danger: function() {
-        otterwiki_editor._toggleBlock(":::danger\n", "danger", "\n:::");
+        otterwiki_editor._toggleMultilineBlock(":::danger", /^:::(info|warning|danger)/, ":::");
     },
     img: function(img = "![]()") {
         if (!cm_editor) { return; }
