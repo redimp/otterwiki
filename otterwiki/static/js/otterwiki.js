@@ -113,24 +113,24 @@ var otterwiki_editor = {
 
         cm_editor.focus();
     },
-    _toggleMultilineBlock: function(syntax_start_chars, header_regex=null, syntax_end_chars=null) {
+    _toggleMultilineBlock: function(syntaxStartChars, headerRegex=null, syntaxEndChars=null) {
         // This function prepends and appends a selection of one or more entire lines
         // with a new line of "syntax_(start|end)_chars".
 
-        if (!(syntax_start_chars instanceof Array)) {
-            syntax_start_chars = [syntax_start_chars];
+        if (!(syntaxStartChars instanceof Array)) {
+            syntaxStartChars = [syntaxStartChars];
         }
-        if (syntax_end_chars !== null && !(syntax_end_chars instanceof Array) ) {
-            syntax_end_chars = [syntax_end_chars];
+        if (syntaxEndChars !== null && !(syntaxEndChars instanceof Array) ) {
+            syntaxEndChars = [syntaxEndChars];
         } else {
-            syntax_end_chars = syntax_start_chars;
+            syntaxEndChars = syntaxStartChars;
         }
 
         let selectedLines = otterwiki_editor._getSelectedLines();
         if (selectedLines.length == 0) return;
 
-        const headerValue = syntax_start_chars[0];
-        const tailValue = syntax_end_chars[0];
+        const headerValue = syntaxStartChars[0];
+        const tailValue = syntaxEndChars[0];
         let removeBlock = false;
 
         // Decide whether to add or remove the block, and whether the first line already
@@ -140,11 +140,11 @@ var otterwiki_editor = {
 
         // The first line already is a header
         // Determine whether we should remove, or change the header
-        if (header_regex !== null && firstLine.match(header_regex)) {
+        if (headerRegex !== null && firstLine.match(headerRegex)) {
 
             // Decide whether the first line is the current header line
             let isHeader = false;
-            for (const startChar of syntax_start_chars) {
+            for (const startChar of syntaxStartChars) {
                 if (firstLine.trim() == startChar) {
                     isHeader = true;
                     break;
@@ -177,7 +177,7 @@ var otterwiki_editor = {
             for (const ln of selectedLines.splice(1)) {
                 const lineValue = cm_editor.getLine(ln);
 
-                for (const endChar of syntax_end_chars) {
+                for (const endChar of syntaxEndChars) {
                     if (lineValue.trim() == endChar) {
                         otterwiki_editor._setLine(ln, "");
                         return;
@@ -352,17 +352,17 @@ var otterwiki_editor = {
         // Determine the current format of the first selected line
         // If it already is a header -> undo the expand blcok
         // otherwise, add a markdown header indicator
-        const first_line = otterwiki_editor._getSelectedLines()[0];
-        const line = cm_editor.getLine(first_line);
+        const firstLine = otterwiki_editor._getSelectedLines()[0];
+        const line = cm_editor.getLine(firstLine);
 
         // Apply the header regex (matches both, lines with expand and lines without)
-        let updated_line = line.replace(/(\s*>\|\s+)?#\s+/, "$1")
+        let updatedLine = line.replace(/(\s*>\|\s+)?#\s+/, "$1")
         // if the regex did not alter the line, there is no header present yet
         // --> add the header prefix
-        if (updated_line == line) {
-            updated_line = "# " + line;
+        if (updatedLine == line) {
+            updatedLine = "# " + line;
         }
-        otterwiki_editor._setLine(first_line, updated_line);
+        otterwiki_editor._setLine(firstLine, updatedLine);
 
         // Finally, add the expand syntax on each selected line
         otterwiki_editor._toggleLines(">| ", [/\s*>\|\s+/], "expand");
