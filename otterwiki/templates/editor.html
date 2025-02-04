@@ -31,7 +31,7 @@
 <button onclick="otterwiki_editor.strikethrough()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Strikethrough"><i class="fa fa-strikethrough"></i></button>
 {##}
 <div class="dropdown">
-  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-spoiler" title="Spoiler Menu">
+  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-spoiler" title="Expandables Menu">
     <i class="fas fa-eye-slash"></i>
   </button>
   <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-spoiler">
@@ -39,13 +39,13 @@
         <span class="dropdown-icon">
             <i class="fas fa-eye-slash"></i>
         </span>
-        Spoiler
+        Spoiler Block
     </a>
     <a onclick="otterwiki_editor.expand()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-caret-square-down"></i>
         </span>
-        Expandable summary
+        Folded Block
     </a>
   </div>
 </div>
@@ -59,13 +59,13 @@
         <span class="dropdown-icon">
             <i class="fas fa-code"></i>
         </span>
-        Code element
+        Inline Code
     </a>
     <a onclick="otterwiki_editor.codeBlock()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-code"></i>
         </span>
-        Code block
+        Code Block
     </a>
   </div>
 </div>
