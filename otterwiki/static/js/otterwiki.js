@@ -186,15 +186,28 @@ var otterwiki_editor = {
             }
 
             // We only get here when the ending line was not found in the selection
-            // TODO: Find block end based on the syntax chars, abort if no end found
-            console.log("ERROR: No block end found! Remove manually.")
+            // Find block end based on the syntax chars, abort if no end found
+            let blockEndLine = -1;
+            for (const endChar of syntaxEndChars) {
+                blockEndLine = otterwiki_editor._findNextOccurenceLine(endChar)
+
+                if (blockEndLine !== -1) {
+                    break;
+                }
+            }
+
+            if (blockEndLine !== -1) {
+                otterwiki_editor._setLine(blockEndLine, "");
+            } else {
+                console.log("ERROR: No block end found! Remove manually.")
+            }
 
         } else {
 
             // Determine whether the last line is empty, and we may just set the block end
             // or it already contains text, requiring us to add another line
             const lastLineNum = selectedLines[selectedLines.length - 1]
-            const lastLine = cm_editor.getLine(selectedLines[lastLineNum]);
+            const lastLine = cm_editor.getLine(lastLineNum);
             let prefix = ""
             if (!lastLine.match("^$")) { // last selected line is not empty
                 prefix = lastLine + "\n";
@@ -434,6 +447,19 @@ var otterwiki_editor = {
         cm_editor.replaceSelection(text + link);
 
         cm_editor.focus();
+    },
+    _findNextOccurenceLine: function(lineContent) {
+        // Find the next line starting AFTER the current selection that matches lineContent
+        const selectedLines = otterwiki_editor._getSelectedLines();
+        const lineAfterSelection = selectedLines[selectedLines.length - 1];
+        const editorLastLine = cm_editor.doc.lineCount();
+
+        for (let l = lineAfterSelection; l < editorLastLine; l++) {
+            if (cm_editor.getLine(l) == lineContent) {
+                return l;
+            }
+        }
+        return -1;
     },
     _findBlock: function(selectBlock = false) {
         var block_start = Number.MAX_SAFE_INTEGER;
