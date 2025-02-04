@@ -386,13 +386,13 @@ var otterwiki_editor = {
     cl: function() {
         otterwiki_editor._toggleLines("- [ ] ",[/\s*[-+*] \[ \]\s+/], "ul");
     },
-    block_notice: function() {
+    panelNotice: function() {
         otterwiki_editor._toggleMultilineBlock(":::info", /^:::(info|warning|danger)/, ":::");
     },
-    block_warning: function() {
+    panelWarning: function() {
         otterwiki_editor._toggleMultilineBlock(":::warning", /^:::(info|warning|danger)/, ":::");
     },
-    block_danger: function() {
+    panelDanger: function() {
         otterwiki_editor._toggleMultilineBlock(":::danger", /^:::(info|warning|danger)/, ":::");
     },
     img: function(img = "![]()") {
