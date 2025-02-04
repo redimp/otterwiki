@@ -29,47 +29,7 @@
 <button onclick="otterwiki_editor.bold()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Bold"><i class="fa fa-bold"></i></button>
 <button onclick="otterwiki_editor.italic()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Italic"><i class="fa fa-italic"></i></button>
 <button onclick="otterwiki_editor.strikethrough()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Strikethrough"><i class="fa fa-strikethrough"></i></button>
-<button onclick="otterwiki_editor.header()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Header"><i class="fa fa-heading"></i></button>
-{##}
-<div class="dropdown">
-  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-spoiler" title="Expandables Menu">
-    <i class="fas fa-eye-slash"></i>
-  </button>
-  <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-spoiler">
-    <a onclick="otterwiki_editor.spoiler()" href="#" class="dropdown-item-with-icon">
-        <span class="dropdown-icon">
-            <i class="fas fa-eye-slash"></i>
-        </span>
-        Spoiler Block
-    </a>
-    <a onclick="otterwiki_editor.expand()" href="#" class="dropdown-item-with-icon">
-        <span class="dropdown-icon">
-            <i class="fas fa-caret-square-down"></i>
-        </span>
-        Folded Block
-    </a>
-  </div>
-</div>
-{##}
-<div class="dropdown">
-  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-code" title="Code Menu">
-    <i class="fas fa-code"></i>
-  </button>
-  <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-code">
-    <a onclick="otterwiki_editor.code()" href="#" class="dropdown-item-with-icon">
-        <span class="dropdown-icon">
-            <i class="fas fa-code"></i>
-        </span>
-        Inline Code
-    </a>
-    <a onclick="otterwiki_editor.codeBlock()" href="#" class="dropdown-item-with-icon">
-        <span class="dropdown-icon">
-            <i class="fas fa-code"></i>
-        </span>
-        Code Block
-    </a>
-  </div>
-</div>
+<button onclick="otterwiki_editor.header()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Header"><i class="fa fa-heading"></i></button>
 <button onclick="otterwiki_editor.quote()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Block Quote"><i class="fa fa-quote-left"></i></button>
 {##}
 <div class="dropdown">
@@ -94,6 +54,46 @@
             <i class="fas fa-check-square"></i>
         </span>
         Checklist
+    </a>
+  </div>
+</div>
+{##}
+<div class="dropdown">
+  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-code" title="Code Menu">
+    <i class="fas fa-code"></i>
+  </button>
+  <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-code">
+    <a onclick="otterwiki_editor.code()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-code"></i>
+        </span>
+        Inline Code
+    </a>
+    <a onclick="otterwiki_editor.codeBlock()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-code"></i>
+        </span>
+        Code Block
+    </a>
+  </div>
+</div>
+{##}
+<div class="dropdown">
+  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-spoiler" title="Expandables Menu">
+    <i class="fas fa-eye-slash"></i>
+  </button>
+  <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-spoiler">
+    <a onclick="otterwiki_editor.spoiler()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-eye-slash"></i>
+        </span>
+        Spoiler Block
+    </a>
+    <a onclick="otterwiki_editor.expand()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-caret-square-down"></i>
+        </span>
+        Folded Block
     </a>
   </div>
 </div>
@@ -125,7 +125,7 @@
 </div>
 {##}
 <div class="dropdown">
-  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-alerts" title="Alert Menu">
+  <button class="btn btn-editor hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-alerts" title="Alert Menu">
     <i class="fas fa-bell"></i> {# TODO: does this fit? another option would be 'bell-icon'. This is really similar to info-circle, though #}
   </button>
   <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-alerts">
@@ -164,7 +164,9 @@
 </div>
 {##}
 <button onclick="otterwiki_editor.link()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Link"><i class="fas fa-link"></i></button>
+<!-- TODO: Create "References Menu" and add footnote as option? -->
 <button onclick="otterwiki_editor.img()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Picture"><i class="far fa-image"></i></button>
+<!-- TODO: Create "Graphics Menu" and add diamgram as option? -->
 {##}
 <div class="dropdown">
   <button class="btn btn-editor ml-5 mr-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-table" title="Table Menu">
