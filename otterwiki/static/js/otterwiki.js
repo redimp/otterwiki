@@ -408,19 +408,19 @@ var otterwiki_editor = {
 
         cm_editor.focus();
     },
-    alert_note: function() {
+    alertNote: function() {
         otterwiki_editor._toggleAlert("note");
     },
-    alert_tip: function() {
+    alertTip: function() {
         otterwiki_editor._toggleAlert("tip");
     },
-    alert_important: function() {
+    alertImportant: function() {
         otterwiki_editor._toggleAlert("important");
     },
-    alert_warning: function() {
+    alertWarning: function() {
         otterwiki_editor._toggleAlert("warning");
     },
-    alert_caution: function() {
+    alertCaution: function() {
         otterwiki_editor._toggleAlert("caution");
     },
     link: function(text = "description", url = "https://") {
