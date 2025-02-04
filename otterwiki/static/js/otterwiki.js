@@ -158,6 +158,7 @@ var otterwiki_editor = {
 
             } else { // the first line is a header, but a different one -> replace header and quit
                 otterwiki_editor._setLine(selectedLines[0], headerValue);
+                cm_editor.focus();
                 return;
             }
 
@@ -180,7 +181,7 @@ var otterwiki_editor = {
                 for (const endChar of syntaxEndChars) {
                     if (lineValue.trim() == endChar) {
                         otterwiki_editor._setLine(ln, "");
-                        return;
+                        break;
                     }
                 }
             }
@@ -217,6 +218,8 @@ var otterwiki_editor = {
             // update the selection
             otterwiki_editor._setSelectedLines(selectedLines);
         }
+
+        cm_editor.focus();
     },
     _toggleLines: function(line_prefix, line_re, token) {
         if (!(line_re instanceof Array)) {
