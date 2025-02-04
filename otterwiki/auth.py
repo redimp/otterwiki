@@ -33,6 +33,7 @@ import hmac
 
 try:
     import ldap
+
     has_ldap = True
 except ImportError as e:
     app.logger.debug(f"Unable to import ldap: {e}")
@@ -64,8 +65,9 @@ def authenticate_ldap_user(email, password):
         conn.set_option(ldap.OPT_REFERRALS, 0)
         conn.protocol = int(app.config["LDAP_PROTOCOL"])
 
-        conn.simple_bind_s(app.config["LDAP_USERNAME"],
-                           app.config["LDAP_PASSWORD"])
+        conn.simple_bind_s(
+            app.config["LDAP_USERNAME"], app.config["LDAP_PASSWORD"]
+        )
     except Exception as e:
         app.logger.error("authenticate_ldap_user(): Exception {}".format(e))
         return False
@@ -80,10 +82,9 @@ def authenticate_ldap_user(email, password):
         else:
             scope = ldap.SCOPE_SUBTREE
 
-        filter_ = "(&{}({}={}))".format(app.config["LDAP_FILTER"],
-                                        app.config["LDAP_ATTRIBUTE_MAIL"],
-                                        email)
-                                        app.config["LDAP_ATTRIBUTE"], email)
+        filter_ = "(&{}({}={}))".format(
+            app.config["LDAP_FILTER"], app.config["LDAP_ATTRIBUTE_MAIL"], email
+        )
         result = conn.search_s(app.config["LDAP_BASE"], scope, filter_)
 
         if not result:
@@ -160,7 +161,9 @@ class SimpleAuth:
             user.password_hash, password
         ):
             return user
-        elif user.provider == "ldap" and authenticate_ldap_user(email, password):
+        elif user.provider == "ldap" and authenticate_ldap_user(
+            email, password
+        ):
             return user
 
         return None
@@ -172,9 +175,12 @@ class SimpleAuth:
         user = self.User.query.filter_by(email=email).first()
 
         # auto-register ldap users
-        if (not user and app.config["LDAP_URI"]
-                and not app.config["DISABLE_REGISTRATION"]
-                and email.split("@")[-1] == app.config["LDAP_DOMAIN"]):
+        if (
+            not user
+            and app.config["LDAP_URI"]
+            and not app.config["DISABLE_REGISTRATION"]
+            and email.split("@")[-1] == app.config["LDAP_DOMAIN"]
+        ):
             if result := authenticate_ldap_user(email, password):
                 name = result[1][app.config["LDAP_ATTRIBUTE_NAME"]][0].decode()
                 user = self.create_user(email, name, "", True)
@@ -316,8 +322,11 @@ class SimpleAuth:
         app.logger.info(
             "auth: New user registered: {} <{}>".format(name, email)
         )
-        if app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin and \
-                provider == "local":
+        if (
+            app.config["EMAIL_NEEDS_CONFIRMATION"]
+            and not is_admin
+            and provider == "local"
+        ):
             self.request_confirmation(email)
         else:
             # notify user
@@ -393,8 +402,9 @@ class SimpleAuth:
             toast("The passwords do not match.", "error")
         elif password1 is None or len(password1) < 8:
             toast("The password must be at least 8 characters long.", "error")
-        elif (email.split("@")[-1] == app.config["LDAP_DOMAIN"]
-              and not authenticate_ldap_user(email, password1)):
+        elif email.split("@")[-1] == app.config[
+            "LDAP_DOMAIN"
+        ] and not authenticate_ldap_user(email, password1):
             toast("Invalid email address or password.", "error")
         else:
             # register account
