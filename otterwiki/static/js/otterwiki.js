@@ -239,12 +239,12 @@ var otterwiki_editor = {
             if (lineHLevel < 0) { lineHLevel = line.length; }
             if (lineHLevel == 0) {
                 otterwiki_editor._setLine(i, indentChar + " " + line);
-            } else if (lineHLevel < maxLevel) {
+            } else if (lineHLevel/indentChar.length < maxLevel) {
                 // add a level
                 otterwiki_editor._setLine(i, indentChar + line);
             } else {
                 // Remove all indentChars (not sure why the RegExp is needed. It won't work without, though)
-                otterwiki_editor._setLine(i, line.replace(new RegExp("^" + indentChar + "+\\s*"), ''));
+                otterwiki_editor._setLine(i, line.replace(new RegExp("^(?:" + indentChar + ")+\\s*"), ''));
             }
         }
         cm_editor.focus();
@@ -343,11 +343,10 @@ var otterwiki_editor = {
     strikethrough: function() {
         otterwiki_editor._toggleBlock("~~", "strikethrough");
     },
-    // TODO: How do we handle multiple levels of spoilers, expands etc.?
-    //       Maybe we could hijack the Tab indentation?
     spoiler: function() {
-        otterwiki_editor._toggleLines(">! ", [/\s*>!\s+/], "spoiler");
+        otterwiki_editor._toggleLinesMultiLevel(">!");
     },
+    // TODO: How do we handle multiple levels of expands?
     expand: function() {
         // Determine the current format of the first selected line
         // If it already is a header -> undo the expand blcok
