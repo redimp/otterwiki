@@ -423,6 +423,9 @@ var otterwiki_editor = {
 
         cm_editor.focus();
     },
+    diagram: function() {
+        otterwiki_editor._toggleMultilineBlock("```mermaid", /^```mermaid/, "```");
+    },
     alertNote: function() {
         otterwiki_editor._toggleAlert("note");
     },
@@ -450,6 +453,9 @@ var otterwiki_editor = {
         cm_editor.replaceSelection(text + link);
 
         cm_editor.focus();
+    },
+    footnote: function() {
+        // TODO: Insert [^selectedword] AND [^selectedword]: description
     },
     _findNextOccurenceLine: function(lineContent) {
         // Find the next line starting AFTER the current selection that matches lineContent

@@ -163,10 +163,45 @@
   </div>
 </div>
 {##}
-<button onclick="otterwiki_editor.link()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Link"><i class="fas fa-link"></i></button>
-<!-- TODO: Create "References Menu" and add footnote as option? -->
-<button onclick="otterwiki_editor.img()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Picture"><i class="far fa-image"></i></button>
-<!-- TODO: Create "Graphics Menu" and add diamgram as option? -->
+<div class="dropdown">
+  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-references" title="References Menu">
+    <i class="fas fa-link"></i>
+  </button>
+  <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-references">
+    <a onclick="otterwiki_editor.link()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-link"></i>
+        </span>
+        Link
+    </a>
+    <a onclick="otterwiki_editor.footnote()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-asterisk"></i>
+        </span>
+        Footnote
+    </a>
+  </div>
+</div>
+{##}
+<div class="dropdown">
+  <button class="btn btn-editor hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-graphics" title="Graphics Menu">
+    <i class="fas fa-images"></i>
+  </button>
+  <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-graphics">
+    <a onclick="otterwiki_editor.img()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-image"></i>
+        </span>
+        Picture
+    </a>
+    <a onclick="otterwiki_editor.diagram()" href="#" class="dropdown-item-with-icon">
+        <span class="dropdown-icon">
+            <i class="fas fa-project-diagram"></i>
+        </span>
+        Diagram
+    </a>
+  </div>
+</div>
 {##}
 <div class="dropdown">
   <button class="btn btn-editor ml-5 mr-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-table" title="Table Menu">
