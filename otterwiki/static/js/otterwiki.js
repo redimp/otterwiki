@@ -21,7 +21,7 @@ var otterwiki_editor = {
                 ch: 0
             },
             anchor = {
-                line: lines[lines.length - 1] + 1,
+                line: lines[lines.length - 1],
                 ch: lineEnd
             }
         );
@@ -166,6 +166,7 @@ var otterwiki_editor = {
             otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
 
             // set the selection so the newly added extra line is being included as well
+            selectedLines.push(selectedLines[selectedLines.length - 1] + 1);
             otterwiki_editor._setSelectedLines(selectedLines);
 
             selectedLines = otterwiki_editor._getSelectedLines();
@@ -218,6 +219,9 @@ var otterwiki_editor = {
             let prefix = "";
             if (!lastLine.trim().match(/^$/)) { // last selected line is not empty
                 prefix = lastLine + "\n";
+
+                // as we are adding a newline, we need to extend the selected lines by 1
+                selectedLines.push(selectedLines[selectedLines.length - 1] + 1);
             }
             otterwiki_editor._setLine(lastLineNum, prefix + tailValue);
 
@@ -301,6 +305,7 @@ var otterwiki_editor = {
             otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
 
             // set the selection so the newly added extra line is being included as well
+            selectedLines.push(selectedLines[selectedLines.length - 1] + 1);
             otterwiki_editor._setSelectedLines(selectedLines);
 
         } else {
