@@ -455,7 +455,18 @@ var otterwiki_editor = {
         cm_editor.focus();
     },
     footnote: function() {
-        // TODO: Insert [^selectedword] AND [^selectedword]: description
+        if (otterwiki_editor._getSelectedLines().length > 1) {
+            return;
+            // TODO: we really should tell the user that multiple lines are not supported
+        }
+
+        // TODO
+        /*
+        - If nothing is selected, insert [^#] and select the #
+        - If there is a selection, insert [^ before the selection, and ] after the selection
+
+        In all cases, write the same footnote to the end of the editor, directly after other footnotes
+        */
     },
     _findNextOccurenceLine: function(lineContent) {
         // Find the next line starting AFTER the current selection that matches lineContent
