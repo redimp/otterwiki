@@ -175,32 +175,38 @@ var otterwiki_editor = {
         }
 
         if (removeBlock) {
+            let endFound = false;
             for (const ln of selectedLines.splice(1)) {
                 const lineValue = cm_editor.getLine(ln);
 
                 for (const endChar of syntaxEndChars) {
                     if (lineValue.trim() == endChar) {
                         otterwiki_editor._setLine(ln, "");
+                        endFound = true;
                         break;
                     }
                 }
+
+                if (endFound) break;
             }
 
-            // We only get here when the ending line was not found in the selection
-            // Find block end based on the syntax chars, abort if no end found
-            let blockEndLine = -1;
-            for (const endChar of syntaxEndChars) {
-                blockEndLine = otterwiki_editor._findNextOccurenceLine(endChar)
+            if (!endFound) {
+                // We only get here when the ending line was not found in the selection
+                // Find block end based on the syntax chars, abort if no end found
+                let blockEndLine = -1;
+                for (const endChar of syntaxEndChars) {
+                    blockEndLine = otterwiki_editor._findNextOccurenceLine(endChar)
+
+                    if (blockEndLine !== -1) {
+                        break;
+                    }
+                }
 
                 if (blockEndLine !== -1) {
-                    break;
+                    otterwiki_editor._setLine(blockEndLine, "");
+                } else {
+                    console.log("ERROR: No block end found! Remove manually.")
                 }
-            }
-
-            if (blockEndLine !== -1) {
-                otterwiki_editor._setLine(blockEndLine, "");
-            } else {
-                console.log("ERROR: No block end found! Remove manually.")
             }
 
         } else {
