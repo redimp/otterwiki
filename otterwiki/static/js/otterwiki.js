@@ -162,7 +162,7 @@ var otterwiki_editor = {
                 return;
             }
 
-        } else if (!firstLine.match("^$")) { // when the first selected line is not empty
+        } else if (!firstLine.trim().match("^$")) { // when the first selected line is not empty
             otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
 
             // set the selection so the newly added extra line is being included as well
@@ -215,8 +215,8 @@ var otterwiki_editor = {
             // or it already contains text, requiring us to add another line
             const lastLineNum = selectedLines[selectedLines.length - 1]
             const lastLine = cm_editor.getLine(lastLineNum);
-            let prefix = ""
-            if (!lastLine.match("^$")) { // last selected line is not empty
+            let prefix = "";
+            if (!lastLine.trim().match(/^$/)) { // last selected line is not empty
                 prefix = lastLine + "\n";
             }
             otterwiki_editor._setLine(lastLineNum, prefix + tailValue);
