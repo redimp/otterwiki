@@ -756,3 +756,63 @@ def test_register_errors(app_with_user, test_client, req_ctx):
     assert "password must be at least" in rv.data.decode()
     assert "account has been created" not in rv.data.decode()
     assert "account is waiting for approval" not in rv.data.decode()
+
+
+def test_user_with_empty_password_issues_204_205(app_with_user, test_client):
+    from otterwiki.auth import SimpleAuth, db
+    from datetime import datetime
+
+    email = "empty@example.org"
+
+    # create a user with empty password field
+    user = SimpleAuth.User(  # pyright: ignore
+        name="Test User E",  # pyright: ignore
+        email=email,  # pyright: ignore
+        password_hash=None,  # pyright: ignore
+        first_seen=datetime.now(),  # pyright: ignore
+        last_seen=datetime.now(),  # pyright: ignore
+        is_admin=False,  # pyright: ignore
+    )
+    db.session.add(user)
+    db.session.commit()
+
+    rv = test_client.post(
+        "/-/login",
+        data={
+            "email": email,
+            "password": "",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
+    app_with_user.test_mail.state.suppress = True
+    # record outbox
+    with app_with_user.test_mail.record_messages() as outbox:
+        assert len(outbox) == 0
+        rv = test_client.post(
+            "/-/lost_password",
+            data={
+                "email": email,
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        assert len(outbox) == 1
+        assert "Password Recovery" in outbox[0].subject
+        assert "/-/recover_password/" in outbox[0].body
+        assert email in outbox[0].recipients
+        # find token
+        m = re.search(
+            r"\/-\/recover_password\/(\S+)", outbox[0].body, flags=re.MULTILINE
+        )
+        assert m is not None
+        token = m.group(1)
+        assert len(token) > 0
+        # test token
+        rv = test_client.get(
+            f"/-/recover_password/{token}",
+            follow_redirects=True,
+        )
+        assert "please update your password." in rv.data.decode()

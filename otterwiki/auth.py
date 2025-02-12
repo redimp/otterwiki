@@ -37,8 +37,14 @@ from uuid import uuid4
 
 
 def check_password_hash_backport(pwhash, password):
+    if pwhash is None or len(pwhash.strip()) < 0:
+        app.logger.warning(f"")
+        return False
     # split pwhash to check the method
-    method, salt, hashval = pwhash.split("$", 2)
+    triplet = pwhash.split("$", 2)
+    if len(triplet) != 3:
+        return False
+    method, salt, hashval = triplet
     # sha256 is no longer supported by werkzeug>=3.x
     if method in ["sha256", "sha512"]:
         # encode salt and passwd
@@ -106,9 +112,15 @@ class SimpleAuth:
 
     def check_credentials(self, email, password):
         user = self.User.query.filter_by(email=email).first()
-        if not user or not check_password_hash_backport(
-            user.password_hash, password
-        ):
+        if not user:
+            return None
+        if empty(user.password_hash):
+            # log this. it might be intended. if not it's hard to debug.
+            app.logger.warning(
+                f"User with an empty password hash: {user.email}"
+            )
+            return None
+        if not check_password_hash_backport(user.password_hash, password):
             return None
         return user
 
