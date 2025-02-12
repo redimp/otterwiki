@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.9.3](https://github.com/redimp/otterwiki/releases/tag/v2.9.3) - 2025-02-12
+
+<small>[Compare with v2.9.2](https://github.com/redimp/otterwiki/compare/v2.9.2...v2.9.3)</small>
+
+### Bug Fixes
+
+- Users with empty (or None) password hashes can try to login and recover their passwords, see #204 and #205 ([bd594fa](https://github.com/redimp/otterwiki/commit/bd594faa12c1ff2663697b58a4e8fe051dc4af2e)).
+- Page blame for a page where the file has trailing new lines, see #200 ([ffefcad](https://github.com/redimp/otterwiki/commit/ffefcadadb199e979d5d4f06355dbc3526821eb6)).
+
 ## [v2.9.2](https://github.com/redimp/otterwiki/releases/tag/v2.9.2) - 2025-01-31
 
 <small>[Compare with v2.9.1](https://github.com/redimp/otterwiki/compare/v2.9.1...v2.9.2)</small>
