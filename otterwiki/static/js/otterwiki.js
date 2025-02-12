@@ -114,6 +114,7 @@ var otterwiki_editor = {
         cm_editor.focus();
     },
     _toggleMultilineBlock: function(syntaxStartChars, headerRegex=null, syntaxEndChars=null) {
+        // TODO: Add placeholder values in case this is inserted on an empty line
         // This function prepends and appends a selection of one or more entire lines
         // with a new line of "syntax_(start|end)_chars".
 
@@ -276,6 +277,7 @@ var otterwiki_editor = {
         cm_editor.focus();
     },
     _toggleAlert: function(header) {
+        // TODO: Add placeholder values in case this is inserted on an empty line
 
         const headerValue = "[!" + header.toUpperCase() + "]";
         const headerRegex = "^> \\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\\]\\s*$";
@@ -371,10 +373,12 @@ var otterwiki_editor = {
         otterwiki_editor._toggleBlock("~~", "strikethrough");
     },
     spoiler: function() {
+        // TODO: Add placeholder values in case this is inserted on an empty line
         otterwiki_editor._toggleLinesMultiLevel(">!");
     },
     // TODO: How do we handle multiple levels of expands?
     expand: function() {
+        // TODO: Add placeholder values in case this is inserted on an empty line
         // Determine the current format of the first selected line
         // If it already is a header -> undo the expand blcok
         // otherwise, add a markdown header indicator
@@ -468,7 +472,7 @@ var otterwiki_editor = {
     footnote: function() {
         if (otterwiki_editor._getSelectedLines().length > 1) {
             return;
-            // TODO: we really should tell the user that multiple lines are not supported
+            // TODO: If multiple lines are selected, just consider the last one to add the foot note to
         }
 
         // TODO
