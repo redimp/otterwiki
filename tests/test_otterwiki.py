@@ -583,3 +583,18 @@ def test_nested_files(test_client):
     assert nest_file_location.exists() == False
     rv = test_client.get("/{}".format(pagename))
     assert rv.status_code == 404
+
+
+def test_blame_issue200_empty_trailing_lines(test_client, create_app):
+    # store the file
+    pagename = "blametesttrailinglines"
+    content = "# Blame Test 1\n\nBlame Test\n\n\n"
+    assert True == create_app.storage.store(
+        f"{pagename}.md",
+        content=content,
+        author=("John", "john@doe.com"),
+        message=f"added {pagename}",
+    )
+    # check blame
+    rv = test_client.get("/{}/blame".format(pagename))
+    assert rv.status_code == 200

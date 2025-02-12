@@ -739,8 +739,11 @@ class Page:
         oddeven = "odd"
         # use highlighted lines
         for row in data:
-            line = markup_lines[int(row[3]) - 1]
-            # line = row[4] # markup_lines[int(row[3])-1]
+            try:
+                line = markup_lines[int(row[3]) - 1]
+            except IndexError:
+                # this happens when the file has trailing empty lines that were removed bu the pygments_render
+                line = ""
             if row[0] != last:
                 oddeven = "odd" if oddeven == "even" else "even"
                 fdata.append(
