@@ -144,7 +144,6 @@ def test_preview_cursor_in_codeblock(create_app, req_ctx):
     ```
     """
     data = p.preview(content=content, cursor_line=1)
-    print(data)
     soup = bs4.BeautifulSoup(data['preview_content'], "html.parser").find(
         "pre"
     )
