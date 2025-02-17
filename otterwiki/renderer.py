@@ -60,15 +60,15 @@ class CodeHtmlFormatter(html.HtmlFormatter):
 
 def pygments_render(code, lang, linenumbers=False):
     try:
-        lexer = get_lexer_by_name(lang, stripall=True)
+        lexer = get_lexer_by_name(lang.strip(), stripall=False)
     except ClassNotFound:
         return (
             '\n'
             + _pre_copy_to_clipboard_tag()
             + '%s\n%s</pre></div>\n'
             % (
-                mistune.escape(lang.strip()),
-                mistune.escape(code.strip()),
+                mistune.escape(lang),
+                mistune.escape(code),
             )
         )
     linenos = "table" if linenumbers else None
@@ -223,7 +223,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             html = (
                 '\n'
                 + _pre_copy_to_clipboard_tag()
-                + '{}</pre></div>\n'.format(mistune.escape(code.strip()))
+                + '{}</pre></div>\n'.format(mistune.escape(code))
             )
             return html
         if cursormagicword in info:

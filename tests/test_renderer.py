@@ -561,3 +561,53 @@ df[['a', "b"]]
     assert code
     code = code.text
     assert """df[['a', "b"]]""" in code
+
+
+def test_indent_preformatted_issue206():
+    md = """# Preformatted
+
+     Hello :) This is at 5 spaces.
+     5 spaces here as well."""
+    html, _ = render.markdown(md)
+    pre = BeautifulSoup(html, "html.parser").find('pre')
+    assert pre
+    assert (
+        """ Hello :) This is at 5 spaces.
+ 5 spaces here as well.\n"""
+        == pre.text
+    )
+    # backtick block
+    md = """# Code block
+
+```
+ One leading space here
+  and two here.
+```
+"""
+    html, _ = render.markdown(md)
+    pre = BeautifulSoup(html, "html.parser").find('pre')
+    assert pre
+    assert (
+        """ One leading space here
+  and two here.\n"""
+        == pre.text
+    )
+
+    # backtick block with language
+    md = """# Code block
+
+```c
+ int main(int argc, char **argv) {
+  }
+```
+"""
+    html, _ = render.markdown(md)
+    code = BeautifulSoup(html, "html.parser").find(
+        'div', {'class': 'highlight'}
+    )
+    assert code
+    assert (
+        """ int main(int argc, char **argv) {
+  }\n"""
+        == code.text
+    )
