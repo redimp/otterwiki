@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.9.4](https://github.com/redimp/otterwiki/releases/tag/v2.9.4) - 2025-02-27
+
+<small>[Compare with v2.9.3](https://github.com/redimp/otterwiki/compare/v2.9.3...v2.9.4)</small>
+
+### Bug Fixes
+
+- use full path for pages when displaying single commits, see #209 ([0bdd563](https://github.com/redimp/otterwiki/commit/0bdd5634491db2ef3fc17031c33b719c46e003d1)).
+- handle FileNotFoundError on updating the ftoc cache ([2e6c502](https://github.com/redimp/otterwiki/commit/2e6c50287cc8f2105d332f08863caac3d3f413aa)).
+- don't strip whitespace from code blocks #206 ([680f74a](https://github.com/redimp/otterwiki/commit/680f74a8ad30f02653f3dd473d3bc7c400e853aa)).
+
 ## [v2.9.3](https://github.com/redimp/otterwiki/releases/tag/v2.9.3) - 2025-02-12
 
 <small>[Compare with v2.9.2](https://github.com/redimp/otterwiki/compare/v2.9.2...v2.9.3)</small>
