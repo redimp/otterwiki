@@ -389,7 +389,8 @@ class Changelog:
 
         url_map = patchset2urlmap(patchset, revision)
         if len(url_map) == 1:
-            pagepath = get_pagepath(get_pagename(list(url_map.keys())[0]))
+            filename = list(url_map.keys())[0]
+            pagepath = get_pagepath(get_pagename(filename, full=True))
 
         menutree = SidebarPageIndex(get_page_directoryname(pagepath or "/"))
 
