@@ -302,7 +302,13 @@ def sha256sum(s: str) -> str:
 
 def update_ftoc_cache(filename, ftoc, mtime=None):
     if mtime is None:
-        mtime = storage.mtime(filename)
+        try:
+            mtime = storage.mtime(filename)
+        except FileNotFoundError as e:
+            app.logger.warning(
+                f"{e} while running update_ftoc_cache({filename})"
+            )
+            return
     hash = sha256sum(f"ftoc://{filename}")
     value = json.dumps({"filename": filename, "ftoc": ftoc})
     # check if key exists in Cache
