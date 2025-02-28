@@ -27,6 +27,7 @@ from otterwiki.renderer_plugins import (
     plugin_math,
     plugin_alerts,
     plugin_wikilink,
+    plugin_frontmatter,
 )
 from otterwiki.plugins import chain_hooks
 from bs4 import BeautifulSoup
@@ -332,6 +333,7 @@ class OtterwikiRenderer:
                 plugin_math,
                 plugin_alerts,
                 plugin_wikilink,
+                plugin_frontmatter,
             ],
             env=self.env,
         )
