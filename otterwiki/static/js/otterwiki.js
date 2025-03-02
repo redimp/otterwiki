@@ -113,8 +113,7 @@ var otterwiki_editor = {
 
         cm_editor.focus();
     },
-    _toggleMultilineBlock: function(syntaxStartChars, headerRegex=null, syntaxEndChars=null) {
-        // TODO: Add placeholder values in case this is inserted on an empty line
+    _toggleMultilineBlock: function(syntaxStartChars, headerRegex=null, syntaxEndChars=null, placeholderContent=null) {
         // This function prepends and appends a selection of one or more entire lines
         // with a new line of "syntax_(start|end)_chars".
 
@@ -127,20 +126,42 @@ var otterwiki_editor = {
             syntaxEndChars = syntaxStartChars;
         }
 
+        if (placeholderContent !== null && !(placeholderContent instanceof Array) ) {
+            placeholderContent = [placeholderContent];
+        } else if (placeholderContent === null) {
+            placeholderContent = [];
+        }
+
         let selectedLines = otterwiki_editor._getSelectedLines();
         if (selectedLines.length == 0) return;
 
         const headerValue = syntaxStartChars[0];
         const tailValue = syntaxEndChars[0];
         let removeBlock = false;
+        const firstLine = cm_editor.getLine(selectedLines[0]);
+
+        // The user wants to insert the block on an empty line -> insert with place holder values
+        if (selectedLines.length == 1 && firstLine.match(/^$/)) { // user selected an empty line
+            const placeholderBlock = headerValue + "\n" + placeholderContent.join("\n") + "\n" + tailValue;
+            otterwiki_editor._setLine(selectedLines[0], placeholderBlock);
+
+            const firstLineNum = selectedLines[0];
+            selectedLines = []
+
+            // update selected lines to select only the placeholder content
+            for (let i = 1; i <= placeholderContent.length; i++) {
+                selectedLines.push(firstLineNum + i);
+            }
+            otterwiki_editor._setSelectedLines(selectedLines);
+
+            cm_editor.focus();
+            return
+        }
 
         // Decide whether to add or remove the block, and whether the first line already
         // has content. In the latter case, we have to insert an extra line for the header,
         // because it needs to be on its own line.
-        const firstLine = cm_editor.getLine(selectedLines[0]);
-
-        // The first line already is a header
-        // Determine whether we should remove, or change the header
+        // The first line already is a header =>  Determine whether we should remove, or change the header
         if (headerRegex !== null && firstLine.match(headerRegex)) {
 
             // Decide whether the first line is the current header line
@@ -401,7 +422,7 @@ var otterwiki_editor = {
         otterwiki_editor._toggleBlock(["`","```"], "code");
     },
     codeBlock: function() {
-        otterwiki_editor._toggleMultilineBlock("```", /^```\w*/)
+        otterwiki_editor._toggleMultilineBlock("```", /^```\w*/, null, "code");
     },
     // quote: increase the markdown quote level till five, remove afterwards
     quote: function (multilevel=true) {
@@ -417,13 +438,13 @@ var otterwiki_editor = {
         otterwiki_editor._toggleLines("- [ ] ",[/\s*[-+*] \[ \]\s+/], "ul");
     },
     panelNotice: function() {
-        otterwiki_editor._toggleMultilineBlock(":::info", /^:::(info|warning|danger)/, ":::");
+        otterwiki_editor._toggleMultilineBlock(":::info", /^:::(info|warning|danger)/, ":::", ["# Header", "Content"]);
     },
     panelWarning: function() {
-        otterwiki_editor._toggleMultilineBlock(":::warning", /^:::(info|warning|danger)/, ":::");
+        otterwiki_editor._toggleMultilineBlock(":::warning", /^:::(info|warning|danger)/, ":::", ["# Header", "Content"]);
     },
     panelDanger: function() {
-        otterwiki_editor._toggleMultilineBlock(":::danger", /^:::(info|warning|danger)/, ":::");
+        otterwiki_editor._toggleMultilineBlock(":::danger", /^:::(info|warning|danger)/, ":::", ["# Header", "Content"]);
     },
     img: function(img = "![]()") {
         if (!cm_editor) { return; }
@@ -439,7 +460,7 @@ var otterwiki_editor = {
         cm_editor.focus();
     },
     diagram: function() {
-        otterwiki_editor._toggleMultilineBlock("```mermaid", /^```mermaid/, "```");
+        otterwiki_editor._toggleMultilineBlock("```mermaid", /^```mermaid/, "```", "See https://mermaid.js.org/intro/");
     },
     alertNote: function() {
         otterwiki_editor._toggleAlert("note");
