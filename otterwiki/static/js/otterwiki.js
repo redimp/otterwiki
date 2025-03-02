@@ -480,20 +480,54 @@ var otterwiki_editor = {
             selectedLines = otterwiki_editor._getSelectedLines();
         }
 
+        // Determine how to insert the footnote in the text
+        let footNoteValue = "footnote_identifier";
         const selectedText = cm_editor.getSelection();
-        let newLine = startChar + "#" + endChar;
+        const lineContent = cm_editor.getLine(selectedLines[0]);
 
-        if (selectedText) {
-            const lineContent = cm_editor.getLine(selectedLines[0]);
-            const startIndex = lineContent.indexOf(selectedText);
-            const endIndex = startIndex + selectedText.length;
+        // default values for assumption that the line is empty and no text is selected
+        let newLine = startChar + footNoteValue + endChar;
+        let fnIdentifierStart = startChar.length;
+        let fnIdentifierEnd = fnIdentifierStart + footNoteValue.length;
 
-            newLine = lineContent.slice(0, startIndex) + startChar + selectedText + endChar + lineContent.slice(endIndex);
+        if (selectedText) { // Text is selected, make it the footnote content
+            const selectedTextStart = lineContent.indexOf(selectedText);
+            const selectedTextEnd = selectedTextStart + selectedText.length;
+
+            footNoteValue = selectedText;
+
+            newLine = lineContent.slice(0, selectedTextStart) + startChar + footNoteValue + endChar + lineContent.slice(selectedTextEnd);
+
+            fnIdentifierStart = selectedTextStart + startChar.length;
+            fnIdentifierEnd = selectedTextEnd + startChar.length
+
+        } else if (lineContent.length) { // No text is selected, but line is not empty
+            const cursorPos = cm_editor.getCursor('start');
+            newLine = lineContent.slice(0, cursorPos.ch) + newLine + lineContent.slice(cursorPos.ch);
+
+            fnIdentifierStart = cursorPos.ch + startChar.length;
+            fnIdentifierEnd = fnIdentifierStart + footNoteValue.length;
         }
 
         otterwiki_editor._setLine(selectedLines[0], newLine);
-        // TODO: Update text selection so the content of the footnote is selected
-        // TODO: Write the same footnote to the end of the editor
+
+        // Add the footnote to the end of the document
+        // TODO: It would be more user-friendly to insert the footnote at the correct position
+        const lastLine = cm_editor.lineCount() - 1;
+        const lastLineContent = cm_editor.getLine(lastLine);
+
+        // if the last line already is a foot note reference, simply append our current footnote
+        // otherwise, add an _extra_ newline to get some spacing to the actual content
+        const separator = lastLineContent.startsWith(startChar) && lastLineContent.includes(endChar + ": ") ? "" : "\n";
+        otterwiki_editor._setLine(lastLine, lastLineContent + separator + "\n" + startChar + footNoteValue + endChar + ": footnote_description");
+
+        // NOTE: it seems as though footnote references are supported anywhere in the document
+        //       as long as the lines starts with a correctly formatted footnote reference.
+        //       This is not considered here, footnote references are always appended to the document's end
+
+        // Last, select the newly added footnote's identifier
+        cm_editor.setSelection({line: selectedLines[0], ch: fnIdentifierStart}, {line: selectedLines[0], ch: fnIdentifierEnd});
+        cm_editor.focus()
     },
     _findNextOccurenceLine: function(lineContent) {
         // Find the next line starting AFTER the current selection that matches lineContent
