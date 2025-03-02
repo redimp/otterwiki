@@ -297,22 +297,41 @@ var otterwiki_editor = {
         }
         cm_editor.focus();
     },
-    _toggleAlert: function(header) {
-        // TODO: Add placeholder values in case this is inserted on an empty line
-
+    _toggleAlert: function(header, placeholderContent = null) {
         const headerValue = "[!" + header.toUpperCase() + "]";
         const headerRegex = "^> \\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\\]\\s*$";
-        let selectedLines = otterwiki_editor._getSelectedLines();
 
+        if (placeholderContent !== null && !(placeholderContent instanceof Array) ) {
+            placeholderContent = [placeholderContent];
+        } else if (placeholderContent === null) {
+            placeholderContent = [];
+        }
+
+        let selectedLines = otterwiki_editor._getSelectedLines();
         if (selectedLines.length == 0) return;
+
+        const firstLine = cm_editor.getLine(selectedLines[0]);
+        let placeholderUsed = false;
+
+        // The user wants to insert the block on an empty line -> insert with place holder values
+        if (selectedLines.length == 1 && firstLine.match(/^$/)) { // user selected an empty line
+            placeholderUsed = true;
+
+            const firstLineNum = selectedLines[0];
+            otterwiki_editor._setLine(firstLineNum, "\n" + placeholderContent.join("\n"));
+
+            // update selected lines to select only the placeholder content
+            selectedLines = [];
+            for (let i = 0; i <= placeholderContent.length; i++) {
+                selectedLines.push(firstLineNum + i);
+            }
+            otterwiki_editor._setSelectedLines(selectedLines);
+        }
 
         // Decide whether to add or remove the alert block, and whether the first line already
         // has content. In the latter case, we have to insert an extra line for the alert
         // header, because it needs to be on its own line.
-        const firstLine = cm_editor.getLine(selectedLines[0]);
-
-        // The first line already is a header
-        // Determine whether we should unalert, or change the header
+        // The first line already is a header => Determine whether we should unalert, or change the header
         if (firstLine.match(headerRegex)) {
 
             // the first line includes the header of the alert block -> "unalert"
@@ -335,8 +354,14 @@ var otterwiki_editor = {
             otterwiki_editor._setLine(selectedLines[0], headerValue);
         }
 
-        // Finally, simply quote all selected lines (the header part is what makes alerts special)
+        // Now, simply quote all selected lines (the header part is what makes alerts special)
         otterwiki_editor.quote(multilevel=false);
+
+        // Finally, update the selection in case a placeholder was used
+        if (placeholderUsed) {
+            const lastLine =selectedLines[selectedLines.length - 1];
+            cm_editor.setSelection({line: lastLine, ch: 2}, {line: lastLine, ch: lineEnd})
+        }
     },
     _getState: function(pos) {
         var cm = cm_editor;
@@ -463,19 +488,19 @@ var otterwiki_editor = {
         otterwiki_editor._toggleMultilineBlock("```mermaid", /^```mermaid/, "```", "See https://mermaid.js.org/intro/");
     },
     alertNote: function() {
-        otterwiki_editor._toggleAlert("note");
+        otterwiki_editor._toggleAlert("note", ["Content"]);
     },
     alertTip: function() {
-        otterwiki_editor._toggleAlert("tip");
+        otterwiki_editor._toggleAlert("tip", ["Content"]);
     },
     alertImportant: function() {
-        otterwiki_editor._toggleAlert("important");
+        otterwiki_editor._toggleAlert("important", ["Content"]);
     },
     alertWarning: function() {
-        otterwiki_editor._toggleAlert("warning");
+        otterwiki_editor._toggleAlert("warning", ["Content"]);
     },
     alertCaution: function() {
-        otterwiki_editor._toggleAlert("caution");
+        otterwiki_editor._toggleAlert("caution", ["Content"]);
     },
     link: function(text = "description", url = "https://") {
         if (!cm_editor) { return; }
