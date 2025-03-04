@@ -361,7 +361,7 @@ $latex3$"""
     assert "\\(latex6\\)" in html
 
 
-def test_footnote():
+def test_footnote_named():
     md = """Footnote identifier[^1] are single characters or words[^bignote].
 And can be referenced multiple[^1] times.
 
@@ -379,6 +379,10 @@ And can be referenced multiple[^1] times.
     assert 'href="#fn-1"' in html
     assert 'id="fnref-1"' in html
     assert 'href="#fnref-1"' in html
+    assert 'id="fn-2"' in html
+    assert 'href="#fn-2"' in html
+    assert 'id="fnref-2"' in html
+    assert 'href="#fnref-2"' in html
 
 
 def test_footnote_multiref():
