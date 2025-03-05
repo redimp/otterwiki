@@ -81,6 +81,7 @@ class mistunePluginFootnotes:
     def parse_footnote_item(self, block, k, refs, state):
         def_footnotes = state['def_footnotes']
         text = def_footnotes[k]
+        idx = list(def_footnotes.keys()).index(k) + 1
         stripped_text = text.strip()
         if '\n' not in stripped_text:
             children = [{'type': 'paragraph', 'text': stripped_text}]
@@ -100,7 +101,7 @@ class mistunePluginFootnotes:
         return {
             'type': 'footnote_item',
             'children': children,
-            'params': (k, refs),
+            'params': (k, idx, refs),
         }
 
     def md_footnotes_hook(self, md, result, state):
@@ -118,9 +119,7 @@ class mistunePluginFootnotes:
         return result + output
 
     def render_html_footnote_ref(self, key, index, fn):
-        i = str(index)
-        html = '<sup class="footnote-ref" id="fnref-' + i + '">'
-        return html + '<a href="#fn-' + str(i) + '">' + str(i) + '</a></sup>'
+        return f'<sup class="footnote-ref" id="fnref-{fn}"><a href="#fn-{index}">{index}</a></sup>'
 
     def render_html_footnotes(self, text):
         return (
@@ -129,7 +128,7 @@ class mistunePluginFootnotes:
             + '</ol>\n</section>\n'
         )
 
-    def render_html_footnote_item(self, text, key, refs):
+    def render_html_footnote_item(self, text, key, kindex, refs):
         if len(refs) == 1:
             back = (
                 '<a href="#fnref-'
@@ -151,10 +150,11 @@ class mistunePluginFootnotes:
 
         text = text.rstrip()
         if text.startswith('<p>'):
-            text = '<p>' + back + text[3:]
-        else:
-            text = back + text
-        return '<li id="fn-' + str(key) + '">' + text + '</li>\n'
+            text = text[3:]
+        if text.endswith('</p>'):
+            text = text[:-4]
+        text = back + text
+        return '<li id="fn-' + str(kindex) + '">' + text + '</li>\n'
 
     def __call__(self, md):
         md.inline.register_rule(

@@ -67,7 +67,7 @@
 {%- block bodytop %}
 {% endblock -%}
     <!-- Page wrapper start -->
-    <div id="page-wrapper" class="page-wrapper {% block page_wrapper_config -%}with-navbar with-sidebar{%-endblock%}" {%if request.cookies.get('halfmoon_sidebar') == "hidden" %}data-sidebar-hidden="hidden"{%-elif request.cookies.get('halfmoon_sidebar') == "visible" %} data-show-sidebar-onload-sm-and-down="visible"{%-endif-%} data-sidebar-type="overlayed-sm-and-down">
+    <div id="page-wrapper" class="page-wrapper {% block page_wrapper_config -%}with-navbar with-sidebar{%-endblock%}" {%if request.cookies.get('halfmoon_sidebar') == "hidden" %}data-sidebar-hidden="hidden" {%elif request.cookies.get('halfmoon_sidebar') == "visible" %}data-show-sidebar-onload-sm-and-down="visible" {%endif%}data-sidebar-type="overlayed-sm-and-down">
 
         <!-- Sticky alerts -->
         <div class="sticky-alerts"></div>
