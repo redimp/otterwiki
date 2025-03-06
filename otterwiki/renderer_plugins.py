@@ -2,6 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import re
+import yaml
 
 from mistune.inline_parser import LINK_LABEL
 from mistune.util import unikey, ESCAPE_TEXT
@@ -81,7 +82,6 @@ class mistunePluginFootnotes:
     def parse_footnote_item(self, block, k, refs, state):
         def_footnotes = state['def_footnotes']
         text = def_footnotes[k]
-        idx = list(def_footnotes.keys()).index(k) + 1
         stripped_text = text.strip()
         if '\n' not in stripped_text:
             children = [{'type': 'paragraph', 'text': stripped_text}]
@@ -101,7 +101,7 @@ class mistunePluginFootnotes:
         return {
             'type': 'footnote_item',
             'children': children,
-            'params': (k, idx, refs),
+            'params': (k, refs),
         }
 
     def md_footnotes_hook(self, md, result, state):
@@ -119,7 +119,9 @@ class mistunePluginFootnotes:
         return result + output
 
     def render_html_footnote_ref(self, key, index, fn):
-        return f'<sup class="footnote-ref" id="fnref-{fn}"><a href="#fn-{index}">{index}</a></sup>'
+        i = str(index)
+        html = '<sup class="footnote-ref" id="fnref-' + i + '">'
+        return html + '<a href="#fn-' + str(i) + '">' + str(i) + '</a></sup>'
 
     def render_html_footnotes(self, text):
         return (
@@ -128,7 +130,7 @@ class mistunePluginFootnotes:
             + '</ol>\n</section>\n'
         )
 
-    def render_html_footnote_item(self, text, key, kindex, refs):
+    def render_html_footnote_item(self, text, key, refs):
         if len(refs) == 1:
             back = (
                 '<a href="#fnref-'
@@ -150,11 +152,10 @@ class mistunePluginFootnotes:
 
         text = text.rstrip()
         if text.startswith('<p>'):
-            text = text[3:]
-        if text.endswith('</p>'):
-            text = text[:-4]
-        text = back + text
-        return '<li id="fn-' + str(kindex) + '">' + text + '</li>\n'
+            text = '<p>' + back + text[3:]
+        else:
+            text = back + text
+        return '<li id="fn-' + str(key) + '">' + text + '</li>\n'
 
     def __call__(self, md):
         md.inline.register_rule(
@@ -656,6 +657,21 @@ class mistunePluginFrontmatter:
 
     def parse_frontmatter(self, block, m, state):
         frontmatter = m.group(1)
+        try:
+            if 'env' not in state:
+                state['env'] = {}
+            frontmatter_data = yaml.safe_load(frontmatter)
+            state['env']['frontmatter'] = frontmatter_data
+            
+            # Extract title if it exists
+            if isinstance(frontmatter_data, dict) and 'title' in frontmatter_data:
+                title = frontmatter_data['title']
+                if isinstance(title, str) and title.strip():
+                    state['env']['frontmatter_title'] = title.strip('"\'')
+        except Exception as e:
+            if 'env' not in state:
+                state['env'] = {}
+            state['env']['frontmatter'] = {}
         return {
             'type': 'frontmatter',
             'text': frontmatter,
@@ -682,6 +698,53 @@ class mistunePluginFrontmatter:
             md.renderer.register('frontmatter', self.render_html_frontmatter)
 
 
+class mistunePluginFrontmatterTitle:
+    """
+    This plugin adds an H1 title based on the frontmatter title property.
+    It depends on mistunePluginFrontmatter being registered first.
+    
+    The H1 will only be added if there isn't already an H1 heading in the markdown.
+    This allows users to choose between using frontmatter titles automatically
+    or explicitly defining their own H1 headings in the markdown content.
+    """
+    
+    def before_parse(self, md, s, state):
+        # Initialize state if needed
+        if 'env' not in state:
+            state['env'] = {}
+        if 'has_h1_heading' not in state['env']:
+            state['env']['has_h1_heading'] = False
+            
+        # Check if the document has an H1 header
+        # Look for ATX style headers (# Title) with proper regex
+        # that accounts for optional spaces at start of line
+        h1_pattern = re.compile(r'^\s*#\s+\S.*$', re.MULTILINE)
+        if h1_pattern.search(s):
+            state['env']['has_h1_heading'] = True
+            
+        return s, state
+    
+    def after_render(self, md, result, state):
+        # Add H1 title if we have frontmatter title and no existing H1
+        if state.get('env', {}).get('frontmatter_title') and not state.get('env', {}).get('has_h1_heading', False):
+            title = state['env']['frontmatter_title']
+            h1_element = f'<h1>{title}</h1>'
+            
+            # Insert after frontmatter if present
+            if '<details class="collapse-panel" id="frontmatter">' in result:
+                result = result.replace('</details>', '</details>\n' + h1_element, 1)
+            else:
+                # Insert at the beginning if no frontmatter found
+                result = h1_element + '\n' + result
+                
+        return result
+    
+    def __call__(self, md):
+        # Register hooks to run before parsing and after rendering
+        md.before_parse_hooks.append(self.before_parse)
+        md.after_render_hooks.append(self.after_render)
+
+
 plugin_task_lists = mistunePluginTaskLists()
 plugin_footnotes = mistunePluginFootnotes()
 plugin_mark = mistunePluginMark()
@@ -692,3 +755,4 @@ plugin_math = mistunePluginMath()
 plugin_alerts = mistunePluginAlerts()
 plugin_wikilink = mistunePluginWikiLink()
 plugin_frontmatter = mistunePluginFrontmatter()
+plugin_frontmatter_title = mistunePluginFrontmatterTitle()
