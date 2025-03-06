@@ -330,14 +330,14 @@ class OtterwikiRenderer:
             "config": config,
         }
         self.md_renderer = OtterwikiMdRenderer(env=self.env)
-        self.inline_renderer = OtterwikiInlineParser(
+        self.inline_parser = OtterwikiInlineParser(
             env=self.env, renderer=self.md_renderer, hard_wrap=False
         )
         self.block_parser = OtterwikiBlockParser()
 
         self.mistune = OtterwikiMdParser(
             renderer=self.md_renderer,
-            inline=self.inline_renderer,
+            inline=self.inline_parser,
             block=self.block_parser,
             plugins=[
                 plugin_table,
@@ -365,6 +365,12 @@ class OtterwikiRenderer:
         self.md_renderer.reset_toc()
         # do the preparsing
         text = chain_hooks("renderer_markdown_preprocess", text)
+        # to avoid that preparsing removes the trailing newline and to be
+        # able to deal with manually comitted files that lack the trailing newline
+        # we add one in case it is missing
+        if text[-1] != "\n":
+            text += "\n"
+
         # add cursor position
         if cursor is not None:
             text_arr = text.splitlines()
