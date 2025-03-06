@@ -272,6 +272,23 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         return rv
 
 
+class OtterwikiBlockParser(mistune.BlockParser):
+    INDENT_CODE = re.compile(r'((?:\n*)(?:(?: {4}| *\t)[^\n]+\n*)+)\n')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def parse_indent_code(self, m, state):
+        """
+        Overrides mistunes rendering, since mistune catches one \n too much
+        """
+        raw = m.group(1)
+        text = mistune.block_parser.expand_leading_tab(raw)
+        code = mistune.block_parser._INDENT_CODE_TRIM.sub('', text)
+        code = code.lstrip('\n')
+        return self.tokenize_block_code(code, None, state)
+
+
 class OtterwikiInlineParser(mistune.InlineParser):
     def __init__(self, env, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -316,9 +333,12 @@ class OtterwikiRenderer:
         self.inline_renderer = OtterwikiInlineParser(
             env=self.env, renderer=self.md_renderer, hard_wrap=False
         )
+        self.block_parser = OtterwikiBlockParser()
+
         self.mistune = OtterwikiMdParser(
             renderer=self.md_renderer,
             inline=self.inline_renderer,
+            block=self.block_parser,
             plugins=[
                 plugin_table,
                 plugin_url,
