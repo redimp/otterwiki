@@ -106,10 +106,6 @@ pre,
 button.copy-to-clipboard {
 }
 
-.page > .alert > p {
-    margin-block-end: 0.2em;
-}
-
 .dark-mode code,
 .dark-mode pre,
 .dark-mode .code {
@@ -153,6 +149,22 @@ pre.mermaid {
 .dark-mode .quote-alert-warning { border-color: var(--yellow-color); }
 .quote-alert-caution { border-color: var(--danger-color); }
 .quote-alert-important { border-color: var(--indigo-color); }
+
+.page > .alert > h4.alert-heading,
+.dark-mode .page > .alert > h4.alert-heading {
+    font-size: 2.2rem;
+}
+
+.dark-mode .page > .alert > p,
+.page > .alert > p,
+.dark-mode .page > .alert > ul,
+.page > .alert > ul
+.dark-mode .page > .alert > ol,
+.page > .alert > ol
+{
+    margin-block-start: 0.2em;
+    margin-block-end: 0.2em;
+}
 
 .revision-small {
     font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
