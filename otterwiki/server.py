@@ -56,7 +56,7 @@ app.config.update(
     SIDEBAR_SHORTCUTS="home pageindex createpage",
     ROBOTS_TXT="allow",
     WIKILINK_STYLE="",
-    MAX_FORM_MEMORY_SIZE=1_000_0000,
+    MAX_FORM_MEMORY_SIZE=1_000_000,
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
