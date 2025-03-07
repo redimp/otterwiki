@@ -299,8 +299,7 @@ class mistunePluginFancyBlocks:
     FANCY_BLOCK_HEADER = re.compile(r'^#{1,5}\s*(.*)\n+')
 
     def parse_fancy_block(self, block, m, state):
-        # get text and the newline that has been eaten up
-        text = m.group(4) or "" + "\n"
+        text = m.group(4) or ""
         family = m.group(3).strip().lower()
 
         # find (and remove) the header from the text block
@@ -314,6 +313,10 @@ class mistunePluginFancyBlocks:
         rules = list(block.rules)
         rules.remove('axt_heading')
         rules.remove('setex_heading')
+
+        # add a trailing newline, so that the childen get rendered correctly
+        if text[-1] != "\n":
+            text += "\n"
 
         children = block.parse(text, state, rules)
         if not isinstance(children, list):
@@ -370,8 +373,6 @@ class mistunePluginSpoiler:
         # the syntax >!
         text = self.SPOILER_LEADING.sub('', text)
 
-        text = text.strip()
-
         children = block.parse(text, state)
         if not isinstance(children, list):
             children = [children]
@@ -426,8 +427,9 @@ class mistunePluginFold:
             header = header.group(1)
             text = self.FOLD_BLOCK_HEADER.sub('', text, 1)
 
-        # clean up trailing spaces
-        text = "\n".join([x.rstrip() for x in text.strip().splitlines()])
+        # add a trailing newline, so that the childen get rendered correctly
+        if text[-1] != "\n":
+            text += "\n"
 
         children = block.parse(text, state)
         if not isinstance(children, list):
@@ -534,8 +536,6 @@ class mistunePluginAlerts:
         # we are searching for the complete bock, so we have to remove
         # syntax from the beginning of each line>
         text = self.ALERT_LEADING.sub('', text)
-
-        text = text.strip()
 
         children = block.parse(text, state)
         if not isinstance(children, list):
