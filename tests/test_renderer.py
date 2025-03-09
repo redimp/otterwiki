@@ -627,3 +627,21 @@ This is regular."""
     pre = BeautifulSoup(html, "html.parser").find('pre')
     assert pre
     assert """This is preformatted.\n""" == pre.text
+
+
+def test_nested_list():
+    md = """# Nested lists
+1. A
+    - B
+    - C
+2. D
+"""
+    html, _ = render.markdown(md)
+    ol = BeautifulSoup(html, "html.parser").find('ol')
+    assert ol
+    li = ol.find_all("li")  # pyright: ignore
+    assert len(li) == 4
+    ul = li[0].find("ul")
+    assert ul
+    li = ul.find_all("li")  # pyright: ignore
+    assert len(li) == 2
