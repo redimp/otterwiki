@@ -645,3 +645,15 @@ def test_nested_list():
     assert ul
     li = ul.find_all("li")  # pyright: ignore
     assert len(li) == 2
+
+
+def test_empty_blocks_issue216():
+    md = """:::info
+:::
+    """
+    html, _ = render.markdown(md)
+    assert html
+
+    md = """>|"""
+    html, _ = render.markdown(md)
+    assert html

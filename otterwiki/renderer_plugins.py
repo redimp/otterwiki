@@ -315,7 +315,7 @@ class mistunePluginFancyBlocks:
         rules.remove('setex_heading')
 
         # add a trailing newline, so that the childen get rendered correctly
-        if text[-1] != "\n":
+        if len(text) < 1 or text[-1] != "\n":
             text += "\n"
 
         children = block.parse(text, state, rules)
@@ -428,7 +428,7 @@ class mistunePluginFold:
             text = self.FOLD_BLOCK_HEADER.sub('', text, 1)
 
         # add a trailing newline, so that the childen get rendered correctly
-        if text[-1] != "\n":
+        if len(text) < 1 or text[-1] != "\n":
             text += "\n"
 
         children = block.parse(text, state)

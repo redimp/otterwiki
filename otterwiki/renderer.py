@@ -368,7 +368,7 @@ class OtterwikiRenderer:
         # to avoid that preparsing removes the trailing newline and to be
         # able to deal with manually comitted files that lack the trailing newline
         # we add one in case it is missing
-        if text[-1] != "\n":
+        if len(text) < 1 or text[-1] != "\n":
             text += "\n"
 
         # add cursor position
