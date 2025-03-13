@@ -455,6 +455,14 @@
                 return false
             },
             "Shift-Tab": "indentLess",
+            // Better Tab
+            "Tab": (cm) => {
+                if (cm.somethingSelected()) {
+                    cm.execCommand('indentMore');
+                } else {
+                    cm.execCommand('insertSoftTab');
+                }
+            }
         },
       });
     cm_editor.setCursor({ line: {{cursor_line or 0}}, ch: {{cursor_ch or 0}} } );
