@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.10.1](https://github.com/redimp/otterwiki/releases/tag/v2.10.1) - 2025-03-13
+
+<small>[Compare with v2.10.0](https://github.com/redimp/otterwiki/compare/v2.10.0...v2.10.1)</small>
+
+### Bug Fixes
+
+- `<TAB>` now inserts softtabs (4 spaces) and indents when lines are selected, see #196. ([3d6d4d5](https://github.com/redimp/otterwiki/commit/3d6d4d54eece42a43a4540f40f3e415ab78deb69)).
+- Handle empty fancy- or folded blocks correct. ([29a6b2d](https://github.com/redimp/otterwiki/commit/29a6b2df1f33968a5695c50d8359cd78d7636425)).
+
+### Documentation
+
+- Improved the Documentation of nested lists, see #196. ([cd47a41](https://github.com/redimp/otterwiki/commit/cd47a4113f2722984281c92c4bf93363c686b940))
+
 ## [v2.10.0](https://github.com/redimp/otterwiki/releases/tag/v2.10.0) - 2025-03-09
 
 <small>[Compare with v2.9.4](https://github.com/redimp/otterwiki/compare/v2.9.4...v2.10.0)</small>
