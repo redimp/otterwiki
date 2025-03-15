@@ -78,12 +78,11 @@
   </div>
 </div>
 {##}
-{# TODO: Consider merging spoiler and folds with the panel blocks below - decide for a new icon #}
 <div class="dropdown">
-  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-spoiler" title="Expandables Menu">
-    <i class="fas fa-eye-slash"></i>
+  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-blocks" title="Block Menu">
+    <i class="fas fa-layer-group"></i>
   </button>
-  <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-spoiler">
+  <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-blocks">
     <a onclick="otterwiki_editor.spoiler()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-eye-slash"></i>
@@ -96,14 +95,6 @@
         </span>
         Folded Block
     </a>
-  </div>
-</div>
-{##}
-<div class="dropdown">
-  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-blocks" title="Panel Menu">
-    <i class="fas fa-info-circle"></i>
-  </button>
-  <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-blocks">
     <a onclick="otterwiki_editor.panelNotice()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-info-circle"></i>
