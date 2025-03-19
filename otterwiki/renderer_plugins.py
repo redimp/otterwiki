@@ -651,6 +651,37 @@ class mistunePluginWikiLink:
             md.renderer.register('wikilink', self.render_html_wikilink)
 
 
+class mistunePluginFrontmatter:
+    FRONTMATTER_PATTERN = re.compile(r'^---\n(.*?)\n---', re.DOTALL)
+
+    def parse_frontmatter(self, block, m, state):
+        frontmatter = m.group(1)
+        return {
+            'type': 'frontmatter',
+            'text': frontmatter,
+        }
+
+    def render_html_frontmatter(self, text):
+        text = text.strip()
+        return f'''
+        <details class="collapse-panel" id="frontmatter">
+            <summary class="collapse-header">Properties</summary>
+            <div class="collapse-content">
+                <pre>{text}</pre>
+            </div>
+        </details>
+        '''
+
+    def __call__(self, md):
+        md.block.register_rule(
+            'frontmatter', self.FRONTMATTER_PATTERN, self.parse_frontmatter
+        )
+        md.block.rules.insert(0, 'frontmatter')  # Ensure it runs early
+
+        if md.renderer.NAME == 'html':
+            md.renderer.register('frontmatter', self.render_html_frontmatter)
+
+
 plugin_task_lists = mistunePluginTaskLists()
 plugin_footnotes = mistunePluginFootnotes()
 plugin_mark = mistunePluginMark()
@@ -660,3 +691,4 @@ plugin_fold = mistunePluginFold()
 plugin_math = mistunePluginMath()
 plugin_alerts = mistunePluginAlerts()
 plugin_wikilink = mistunePluginWikiLink()
+plugin_frontmatter = mistunePluginFrontmatter()
