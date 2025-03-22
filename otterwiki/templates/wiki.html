@@ -30,7 +30,7 @@
                 </a>
 {% endif %}
 {% if has_permission('WRITE') and "createpage" in config.SIDEBAR_SHORTCUTS.lower().split() %}
-                <a href="{{ url_for("create") }}" class="sidebar-link sidebar-link-with-icon">
+                <a href="{{ url_for("create") }}" id="create-page-btn" class="sidebar-link sidebar-link-with-icon">
                     <span class="sidebar-icon">
                         <i class="far fa-file"></i>
                     </span>
