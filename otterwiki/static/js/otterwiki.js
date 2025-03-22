@@ -1160,9 +1160,14 @@ var MathJax = {
 };
 
 /* Hot Keys */
-window.addEventListener("keypress", function() {
+window.addEventListener("keydown", function() {
     var isInputElement = event.srcElement instanceof HTMLInputElement;
     var isTextAreaElement = event.srcElement instanceof HTMLTextAreaElement;
+
+    if (document.getElementById("save-page-btn") != null && event.ctrlKey && event.key === 's') {
+        document.getElementById("save-page-btn").click();
+        event.preventDefault();
+    }
 
     if(isInputElement || isTextAreaElement) {
         return;
@@ -1170,6 +1175,16 @@ window.addEventListener("keypress", function() {
 
 	if (document.getElementById("search-query") != null && event.key === '/') {
         document.getElementById("search-query").focus();
+        event.preventDefault();
+    }
+
+    if (document.getElementById("toggle-sidebar-btn") != null && event.key === '[') {
+        document.getElementById("toggle-sidebar-btn").click();
+        event.preventDefault();
+    }
+
+    if (document.getElementById("edit-page-btn") != null && event.key === 'e') {
+        document.getElementById("edit-page-btn").click();
         event.preventDefault();
     }
 });
