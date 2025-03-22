@@ -1179,13 +1179,18 @@ window.addEventListener("keydown", function() {
     }
 
     if (document.getElementById("toggle-sidebar-btn") != null && event.key === '[') {
-        document.getElementById("toggle-sidebar-btn").click();
         event.preventDefault();
+        document.getElementById("toggle-sidebar-btn").click();
+    }
+
+    if (document.getElementById("create-page-btn") != null && event.key === 'c') {
+        event.preventDefault();
+        document.getElementById("create-page-btn").click();
     }
 
     if (document.getElementById("edit-page-btn") != null && event.key === 'e') {
-        document.getElementById("edit-page-btn").click();
         event.preventDefault();
+        document.getElementById("edit-page-btn").click();
     }
 });
 
