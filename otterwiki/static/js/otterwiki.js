@@ -1164,7 +1164,7 @@ window.addEventListener("keydown", function() {
     var isInputElement = event.srcElement instanceof HTMLInputElement;
     var isTextAreaElement = event.srcElement instanceof HTMLTextAreaElement;
 
-    if (document.getElementById("save-page-btn") != null && event.ctrlKey && event.key === 's') {
+    if (document.getElementById("save-page-btn") != null && (event.ctrlKey || event.metaKey) && event.key === 's') {
         document.getElementById("save-page-btn").click();
         event.preventDefault();
     }
