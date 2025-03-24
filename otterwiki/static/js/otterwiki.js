@@ -1165,8 +1165,20 @@ window.addEventListener("keydown", function() {
     var isTextAreaElement = event.srcElement instanceof HTMLTextAreaElement;
 
     if (document.getElementById("save-page-btn") != null && (event.ctrlKey || event.metaKey) && event.key === 's') {
-        document.getElementById("save-page-btn").click();
         event.preventDefault();
+        document.getElementById("save-page-btn").click();
+    }
+
+    // Bind CTRL / CMD + p to toggle preview / edit when editing a page
+    const preview_buttons = ["preview_btn", "editor_btn"];
+    for (let i = 0; i < preview_buttons.length; i++) {
+        let button_id = preview_buttons[i];
+        let button = document.getElementById(button_id);
+        if (button != null && button.style.display !== 'none' && (event.ctrlKey || event.metaKey) && event.key === 'p') {
+            event.preventDefault();
+            button.click();
+            break;
+        }
     }
 
     if(isInputElement || isTextAreaElement) {
