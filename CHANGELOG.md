@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.10.2](https://github.com/redimp/otterwiki/releases/tag/v2.10.2) - 2025-03-25
+
+<small>[Compare with v2.10.1](https://github.com/redimp/otterwiki/compare/v2.10.1...v2.10.2)</small>
+
+### Features
+
+- keyboard shortcuts for edit, create, toggle sidebar, save and toggle preview
+  by Dan Falcone @dafalcon, see [PR#224](https://github.com/redimp/otterwiki/pull/224)
+- editor buttons reorganized, by Thierry Trafelet @ttrafelet([d8cc33a](https://github.com/redimp/otterwiki/commit/d8cc33a3d6e3ba3dc4f9c6d82a36bbfd6c8cd387))
+
 ## [v2.10.1](https://github.com/redimp/otterwiki/releases/tag/v2.10.1) - 2025-03-13
 
 <small>[Compare with v2.10.0](https://github.com/redimp/otterwiki/compare/v2.10.0...v2.10.1)</small>
