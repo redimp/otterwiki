@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.10.3](https://github.com/redimp/otterwiki/releases/tag/v2.10.3) - 2025-03-26
+
+<small>[Compare with v2.10.2](https://github.com/redimp/otterwiki/compare/v2.10.2...v2.10.3)</small>
+
+### Bug Fixes
+
+- the hotkey c (for create page) must not prevent Ctrl-C or CMD-C ([60d13fb](https://github.com/redimp/otterwiki/commit/60d13fb1dce4460628f491fcce5624e74a813a8c)).
+
 ## [v2.10.2](https://github.com/redimp/otterwiki/releases/tag/v2.10.2) - 2025-03-25
 
 <small>[Compare with v2.10.1](https://github.com/redimp/otterwiki/compare/v2.10.1...v2.10.2)</small>
