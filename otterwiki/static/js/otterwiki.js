@@ -1195,12 +1195,12 @@ window.addEventListener("keydown", function() {
         document.getElementById("toggle-sidebar-btn").click();
     }
 
-    if (document.getElementById("create-page-btn") != null && event.key === 'c') {
+    if (document.getElementById("create-page-btn") != null && event.key === 'c' && !(event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)) {
         event.preventDefault();
         document.getElementById("create-page-btn").click();
     }
 
-    if (document.getElementById("edit-page-btn") != null && event.key === 'e') {
+    if (document.getElementById("edit-page-btn") != null && event.key === 'e' && !(event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)) {
         event.preventDefault();
         document.getElementById("edit-page-btn").click();
     }
