@@ -1161,8 +1161,9 @@ var MathJax = {
 
 /* Hot Keys */
 window.addEventListener("keydown", function() {
-    var isInputElement = event.srcElement instanceof HTMLInputElement;
-    var isTextAreaElement = event.srcElement instanceof HTMLTextAreaElement;
+    let tagName = event.target.tagName.toLowerCase();
+    let isContentEditable = event.target.isContentEditable;
+    let isEditable = (tagName === 'input' || tagName === 'textarea' || isContentEditable);
 
     if (document.getElementById("save-page-btn") != null && (event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault();
@@ -1181,7 +1182,7 @@ window.addEventListener("keydown", function() {
         }
     }
 
-    if(isInputElement || isTextAreaElement) {
+    if(isEditable) {
         return;
     }
 
