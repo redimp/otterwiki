@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.10.4](https://github.com/redimp/otterwiki/releases/tag/v2.10.4) - 2025-03-28
+
+<small>[Compare with v2.10.3](https://github.com/redimp/otterwiki/compare/v2.10.3...v2.10.4)</small>
+
+### Bug Fixes
+
+- Anther c hotkey related fix: disable hotkey on mobile browsers [PR#227](https://github.com/redimp/otterwiki/pull/227)
+
 ## [v2.10.3](https://github.com/redimp/otterwiki/releases/tag/v2.10.3) - 2025-03-26
 
 <small>[Compare with v2.10.2](https://github.com/redimp/otterwiki/compare/v2.10.2...v2.10.3)</small>
