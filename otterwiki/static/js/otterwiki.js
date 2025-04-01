@@ -1,5 +1,8 @@
 /* vim: set et sts=4 ts=4 sw=4 ai: */
 
+const lineEnd = 999999;
+const maxMultiLevels = 5;
+
 var otterwiki_editor = {
     /* simple functions */
     undo: function() {
@@ -11,6 +14,18 @@ var otterwiki_editor = {
         cm_editor.redo();
     },
     /* helper functions */
+    _setSelectedLines: function(lines) {
+        cm_editor.setSelection(
+            head = {
+                line: lines[0],
+                ch: 0
+            },
+            anchor = {
+                line: lines[lines.length - 1],
+                ch: lineEnd
+            }
+        );
+    },
     _getSelectedLines: function() {
         const [s, e] = [cm_editor.getCursor('start').line, cm_editor.getCursor('end').line]
         return [...Array(e - s + 1).keys()].map(i => i + s);
@@ -18,7 +33,7 @@ var otterwiki_editor = {
     _setLine: function(n, text) {
         cm_editor.replaceRange(
             text, { line: n, ch: 0, },
-                  { line: n, ch: 999999, }
+                  { line: n, ch: lineEnd, }
         );
     },
     _findWordAt: function(pos) {
@@ -98,6 +113,146 @@ var otterwiki_editor = {
 
         cm_editor.focus();
     },
+    _toggleMultilineBlock: function(syntaxStartChars, headerRegex = null, syntaxEndChars = null, placeholderContent = null) {
+        // This function prepends and appends a selection of one or more entire lines
+        // with a new line of "syntax_(start|end)_chars".
+
+        if (!(syntaxStartChars instanceof Array)) {
+            syntaxStartChars = [syntaxStartChars];
+        }
+        if (syntaxEndChars !== null && !(syntaxEndChars instanceof Array)) {
+            syntaxEndChars = [syntaxEndChars];
+        } else {
+            syntaxEndChars = syntaxStartChars;
+        }
+
+        if (placeholderContent !== null && !(placeholderContent instanceof Array)) {
+            placeholderContent = [placeholderContent];
+        } else if (placeholderContent === null) {
+            placeholderContent = [];
+        }
+
+        let selectedLines = otterwiki_editor._getSelectedLines();
+        if (selectedLines.length == 0) return;
+
+        const headerValue = syntaxStartChars[0];
+        const tailValue = syntaxEndChars[0];
+        let removeBlock = false;
+        const firstLine = cm_editor.getLine(selectedLines[0]);
+
+        // The user wants to insert the block on an empty line -> insert with place holder values
+        if (selectedLines.length == 1 && firstLine.match(/^$/)) { // user selected an empty line
+            const placeholderBlock = headerValue + "\n" + placeholderContent.join("\n") + "\n" + tailValue;
+            otterwiki_editor._setLine(selectedLines[0], placeholderBlock);
+
+            const firstLineNum = selectedLines[0];
+            selectedLines = []
+
+            // update selected lines to select only the placeholder content
+            for (let i = 1; i <= placeholderContent.length; i++) {
+                selectedLines.push(firstLineNum + i);
+            }
+            otterwiki_editor._setSelectedLines(selectedLines);
+
+            cm_editor.focus();
+            return
+        }
+
+        // Decide whether to add or remove the block, and whether the first line already
+        // has content. In the latter case, we have to insert an extra line for the header,
+        // because it needs to be on its own line.
+        // The first line already is a header =>  Determine whether we should remove, or change the header
+        if (headerRegex !== null && firstLine.match(headerRegex)) {
+
+            // Decide whether the first line is the current header line
+            let isHeader = false;
+            for (const startChar of syntaxStartChars) {
+                if (firstLine.trim() == startChar) {
+                    isHeader = true;
+                    break;
+                }
+            }
+
+            // the first line includes the header of the block -> remove it
+            if (isHeader) {
+                otterwiki_editor._setLine(selectedLines[0], "");
+                removeBlock = true;
+
+            } else { // the first line is a header, but a different one -> replace header and quit
+                otterwiki_editor._setLine(selectedLines[0], headerValue);
+                cm_editor.focus();
+                return;
+            }
+
+        } else if (!firstLine.trim().match("^$")) { // when the first selected line is not empty
+            otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
+
+            // set the selection so the newly added extra line is being included as well
+            selectedLines.push(selectedLines[selectedLines.length - 1] + 1);
+            otterwiki_editor._setSelectedLines(selectedLines);
+
+            selectedLines = otterwiki_editor._getSelectedLines();
+
+        } else {
+            otterwiki_editor._setLine(selectedLines[0], headerValue);
+        }
+
+        if (removeBlock) {
+            let endFound = false;
+            for (const ln of selectedLines.splice(1)) {
+                const lineValue = cm_editor.getLine(ln);
+
+                for (const endChar of syntaxEndChars) {
+                    if (lineValue.trim() == endChar) {
+                        otterwiki_editor._setLine(ln, "");
+                        endFound = true;
+                        break;
+                    }
+                }
+
+                if (endFound) break;
+            }
+
+            if (!endFound) {
+                // We only get here when the ending line was not found in the selection
+                // Find block end based on the syntax chars, abort if no end found
+                let blockEndLine = -1;
+                for (const endChar of syntaxEndChars) {
+                    blockEndLine = otterwiki_editor._findNextOccurenceLine(endChar)
+
+                    if (blockEndLine !== -1) {
+                        break;
+                    }
+                }
+
+                if (blockEndLine !== -1) {
+                    otterwiki_editor._setLine(blockEndLine, "");
+                } else {
+                    console.log("ERROR: No block end found! Remove manually.")
+                }
+            }
+
+        } else {
+
+            // Determine whether the last line is empty, and we may just set the block end
+            // or it already contains text, requiring us to add another line
+            const lastLineNum = selectedLines[selectedLines.length - 1]
+            const lastLine = cm_editor.getLine(lastLineNum);
+            let prefix = "";
+            if (!lastLine.trim().match(/^$/)) { // last selected line is not empty
+                prefix = lastLine + "\n";
+
+                // as we are adding a newline, we need to extend the selected lines by 1
+                selectedLines.push(selectedLines[selectedLines.length - 1] + 1);
+            }
+            otterwiki_editor._setLine(lastLineNum, prefix + tailValue);
+
+            // update the selection
+            otterwiki_editor._setSelectedLines(selectedLines);
+        }
+
+        cm_editor.focus();
+    },
     _toggleLines: function(line_prefix, line_re, token) {
         if (!(line_re instanceof Array)) {
             line_re = [line_re];
@@ -121,6 +276,91 @@ var otterwiki_editor = {
             count += 1;
         }
         cm_editor.focus();
+    },
+    _toggleLinesMultiLevel: function(indentChar, maxLevel=maxMultiLevels) {
+        if (!cm_editor) { return; }
+        for (const i of otterwiki_editor._getSelectedLines()) {
+            var line = cm_editor.doc.getLine(i);
+            var lineHLevel = line.search("[^" + indentChar + "]");
+            // In case of a line composed of only "indentChar"
+            if (lineHLevel < 0) { lineHLevel = line.length; }
+            if (lineHLevel == 0) {
+                otterwiki_editor._setLine(i, indentChar + " " + line);
+            } else if (lineHLevel / indentChar.length < maxLevel) {
+                // add a level
+                otterwiki_editor._setLine(i, indentChar + line);
+            } else {
+                // Remove all indentChars (not sure why the RegExp is needed. It won't work without, though)
+                otterwiki_editor._setLine(i, line.replace(new RegExp("^(?:" + indentChar + ")+\\s*"), ''));
+            }
+        }
+        cm_editor.focus();
+    },
+    _toggleAlert: function(header, placeholderContent = null) {
+        const headerValue = "[!" + header.toUpperCase() + "]";
+        const headerRegex = "^> \\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\\]\\s*$";
+
+        if (placeholderContent !== null && !(placeholderContent instanceof Array)) {
+            placeholderContent = [placeholderContent];
+        } else if (placeholderContent === null) {
+            placeholderContent = [];
+        }
+
+        let selectedLines = otterwiki_editor._getSelectedLines();
+        if (selectedLines.length == 0) return;
+
+        const firstLine = cm_editor.getLine(selectedLines[0]);
+        let placeholderUsed = false;
+
+        // The user wants to insert the block on an empty line -> insert with place holder values
+        if (selectedLines.length == 1 && firstLine.match(/^$/)) { // user selected an empty line
+            placeholderUsed = true;
+
+            const firstLineNum = selectedLines[0];
+            otterwiki_editor._setLine(firstLineNum, "\n" + placeholderContent.join("\n"));
+
+            // update selected lines to select only the placeholder content
+            selectedLines = [];
+            for (let i = 0; i <= placeholderContent.length; i++) {
+                selectedLines.push(firstLineNum + i);
+            }
+            otterwiki_editor._setSelectedLines(selectedLines);
+        }
+
+        // Decide whether to add or remove the alert block, and whether the first line already
+        // has content. In the latter case, we have to insert an extra line for the alert
+        // header, because it needs to be on its own line.
+        // The first line already is a header => Determine whether we should unalert, or change the header
+        if (firstLine.match(headerRegex)) {
+
+            // the first line includes the header of the alert block -> "unalert"
+            if (firstLine.includes(headerValue)) {
+                otterwiki_editor._setLine(selectedLines[0], "> "); // keep the quote, as this is handled below
+
+            } else { // the first line is a header, but a different one -> replace header and quit
+                otterwiki_editor._setLine(selectedLines[0], firstLine.replace(/\[![A-Z]+]/, headerValue));
+                return;
+            }
+
+        } else if (!firstLine.match("^$")) { // when the first selected line is not empty
+            otterwiki_editor._setLine(selectedLines[0], headerValue + "\n" + firstLine);
+
+            // set the selection so the newly added extra line is being included as well
+            selectedLines.push(selectedLines[selectedLines.length - 1] + 1);
+            otterwiki_editor._setSelectedLines(selectedLines);
+
+        } else {
+            otterwiki_editor._setLine(selectedLines[0], headerValue);
+        }
+
+        // Now, simply quote all selected lines (the header part is what makes alerts special)
+        otterwiki_editor.quote(false);
+
+        // Finally, update the selection in case a placeholder was used
+        if (placeholderUsed) {
+            const lastLine = selectedLines[selectedLines.length - 1];
+            cm_editor.setSelection({ line: lastLine, ch: 2 }, { line: lastLine, ch: lineEnd })
+        }
     },
     _getState: function(pos) {
         var cm = cm_editor;
@@ -165,26 +405,8 @@ var otterwiki_editor = {
     },
     /* formating functions */
     // header: increase the mardown header level till five remove afterwards
-    // TODO: refactor so that it works with quotes, too.
     header: function() {
-        if (!cm_editor) { return; }
-        for (const i of otterwiki_editor._getSelectedLines())
-        {
-            var line = cm_editor.doc.getLine(i);
-            var lineHLevel = line.search(/[^#]/);
-            // In case of a line composed of only "#"
-            if (lineHLevel < 0) { lineHLevel = line.length; }
-            if (lineHLevel == 0) {
-                otterwiki_editor._setLine(i, "# " + line);
-            } else if (lineHLevel < 5) {
-                // add a level
-                otterwiki_editor._setLine(i, "#" + line);
-            } else {
-                // Remove Heading
-                otterwiki_editor._setLine(i, line.replace(/^#+\s*/,''));
-            }
-        }
-        cm_editor.focus();
+        otterwiki_editor._toggleLinesMultiLevel("#");
     },
     bold: function() {
         otterwiki_editor._toggleBlock(["**","__"], "bold");
@@ -195,8 +417,90 @@ var otterwiki_editor = {
     strikethrough: function() {
         otterwiki_editor._toggleBlock("~~", "strikethrough");
     },
+    spoiler: function() {
+        const placeholder = "Hidden content";
+        const selectedLines = otterwiki_editor._getSelectedLines();
+        const firstLine = cm_editor.getLine(selectedLines[0]);
+        let placeholderUsed = false;
+
+        if (selectedLines.length == 1 && firstLine.match(/^\s*$/)) {
+            otterwiki_editor._setLine(selectedLines[0], placeholder);
+            placeholderUsed = true;
+        }
+
+        otterwiki_editor._toggleLinesMultiLevel(">!");
+
+        // Update selection in case a placeholder was used
+        // we can only do this after the spoiler prefix has been added
+        if (placeholderUsed) {
+            cm_editor.setSelection({ line: selectedLines[0], ch: 3 }, { line: selectedLines[0], ch: 3 + placeholder.length });
+        }
+    },
+    expand: function() {
+        // Determine the current format of the first selected line
+        // If it already is a header -> undo the expand block
+        // otherwise, add a markdown header indicator
+        let selectedLines = otterwiki_editor._getSelectedLines()
+        const firstLineNum = selectedLines[0];
+        const firstLine = cm_editor.getLine(firstLineNum);
+
+        const headerPlaceholder = "Summary";
+        const contentPlaceholder = "Folded content";
+        let extendSelection = false;
+        let placeholderUsed = false;
+
+        // Apply the header regex (matches both, lines with expand and lines without)
+        let updatedLine = firstLine.replace(/(\s*>\|\s+)?#\s+/, "$1")
+
+        // if the regex did not alter the line, there is no header present yet
+        // --> add the header prefix
+        if (updatedLine.length > 0 && updatedLine == firstLine) {
+            updatedLine = "# " + firstLine;
+        } else if (updatedLine.length == 0) {
+            placeholderUsed = true;
+            updatedLine = "# " + headerPlaceholder;
+
+            // if the user selected only one line, add placeholder content as well
+            if (selectedLines.length == 1) {
+                updatedLine += "\n" + contentPlaceholder;
+                extendSelection = true;
+            }
+        }
+        otterwiki_editor._setLine(firstLineNum, updatedLine);
+
+        // we have to extend the selection AFTER updating the line
+        // otherwise this would fail if extending below the current max line
+        if (extendSelection) {
+            otterwiki_editor._setSelectedLines([firstLineNum, firstLineNum + 1]);
+            selectedLines = otterwiki_editor._getSelectedLines();
+        }
+
+        // Finally, add the expand syntax on each selected line
+        otterwiki_editor._toggleLines(">| ", [/\s*>\|\s+/], "expand");
+
+        // Update selection in case a placeholder was used
+        if (placeholderUsed && !extendSelection) {
+            // ... select the header value, in case only the header was added as placeholder
+            // offset of 5 comes from the expand syntax '>| ' and the header syntax '# '
+            cm_editor.setSelection({ line: firstLineNum, ch: 5 }, { line: firstLineNum, ch: 5 + headerPlaceholder.length });
+
+        } else if (placeholderUsed && extendSelection) {
+            // ... select the content placeholder in case header AND content were placeholders
+            const lastLine = selectedLines[selectedLines.length - 1];
+
+            // offset of 3 comes from the expand syntax '>| '
+            cm_editor.setSelection({ line: lastLine, ch: 3 }, { line: lastLine, ch: 3 + contentPlaceholder.length });
+        }
+    },
     code: function() {
-        otterwiki_editor._toggleBlock(["`","```"], "code");
+        otterwiki_editor._toggleBlock(["`", "```"], "code");
+    },
+    codeBlock: function() {
+        otterwiki_editor._toggleMultilineBlock("```", /^```\w*/, null, "code");
+    },
+    // quote: increase the markdown quote level till five, remove afterwards
+    quote: function (multilevel = true) {
+        otterwiki_editor._toggleLinesMultiLevel(">", multilevel ? maxMultiLevels : 1);
     },
     ul: function() {
         otterwiki_editor._toggleLines("- ",[/\s*[-+*]\s+/], "ul");
@@ -206,6 +510,15 @@ var otterwiki_editor = {
     },
     cl: function() {
         otterwiki_editor._toggleLines("- [ ] ",[/\s*[-+*] \[ \]\s+/], "ul");
+    },
+    panelNotice: function() {
+        otterwiki_editor._toggleMultilineBlock(":::info", /^:::(info|warning|danger)/, ":::", ["# Header", "Content"]);
+    },
+    panelWarning: function() {
+        otterwiki_editor._toggleMultilineBlock(":::warning", /^:::(info|warning|danger)/, ":::", ["# Header", "Content"]);
+    },
+    panelDanger: function() {
+        otterwiki_editor._toggleMultilineBlock(":::danger", /^:::(info|warning|danger)/, ":::", ["# Header", "Content"]);
     },
     img: function(img = "![]()") {
         if (!cm_editor) { return; }
@@ -220,6 +533,24 @@ var otterwiki_editor = {
 
         cm_editor.focus();
     },
+    diagram: function() {
+        otterwiki_editor._toggleMultilineBlock("```mermaid", /^```mermaid/, "```", "See https://mermaid.js.org/intro/");
+    },
+    alertNote: function() {
+        otterwiki_editor._toggleAlert("note", ["Content"]);
+    },
+    alertTip: function() {
+        otterwiki_editor._toggleAlert("tip", ["Content"]);
+    },
+    alertImportant: function() {
+        otterwiki_editor._toggleAlert("important", ["Content"]);
+    },
+    alertWarning: function() {
+        otterwiki_editor._toggleAlert("warning", ["Content"]);
+    },
+    alertCaution: function() {
+        otterwiki_editor._toggleAlert("caution", ["Content"]);
+    },
     link: function(text = "description", url = "https://") {
         if (!cm_editor) { return; }
         state = otterwiki_editor._getState();
@@ -232,6 +563,79 @@ var otterwiki_editor = {
         cm_editor.replaceSelection(text + link);
 
         cm_editor.focus();
+    },
+    footnote: function() {
+        const startChar = "[^";
+        const endChar = "]";
+
+        let selectedLines = otterwiki_editor._getSelectedLines();
+        if (selectedLines.length > 1) {
+            // If multiple lines are selected, use the last one
+            otterwiki_editor._setSelectedLines(selectedLines.slice(selectedLines.length - 1));
+            selectedLines = otterwiki_editor._getSelectedLines();
+        }
+
+        // Determine how to insert the footnote in the text
+        let footNoteValue = "footnote_identifier";
+        const selectedText = cm_editor.getSelection();
+        const lineContent = cm_editor.getLine(selectedLines[0]);
+
+        // default values for assumption that the line is empty and no text is selected
+        let newLine = startChar + footNoteValue + endChar;
+        let fnIdentifierStart = startChar.length;
+        let fnIdentifierEnd = fnIdentifierStart + footNoteValue.length;
+
+        if (selectedText) { // Text is selected, make it the footnote content
+            const selectedTextStart = lineContent.indexOf(selectedText);
+            const selectedTextEnd = selectedTextStart + selectedText.length;
+
+            footNoteValue = selectedText;
+
+            newLine = lineContent.slice(0, selectedTextStart) + startChar + footNoteValue + endChar + lineContent.slice(selectedTextEnd);
+
+            fnIdentifierStart = selectedTextStart + startChar.length;
+            fnIdentifierEnd = selectedTextEnd + startChar.length
+
+        } else if (lineContent.length) { // No text is selected, but line is not empty
+            const cursorPos = cm_editor.getCursor('start');
+            newLine = lineContent.slice(0, cursorPos.ch) + newLine + lineContent.slice(cursorPos.ch);
+
+            fnIdentifierStart = cursorPos.ch + startChar.length;
+            fnIdentifierEnd = fnIdentifierStart + footNoteValue.length;
+        }
+
+        otterwiki_editor._setLine(selectedLines[0], newLine);
+
+        // Add the footnote to the end of the document
+        // TODO: It would be more user-friendly to insert the footnote at the correct position
+        const lastLine = cm_editor.lineCount() - 1;
+        const lastLineContent = cm_editor.getLine(lastLine);
+
+        // if the last line already is a foot note reference, simply append our current footnote
+        // otherwise, add an _extra_ newline to get some spacing to the actual content
+        const separator = lastLineContent.startsWith(startChar) && lastLineContent.includes(endChar + ": ") ? "" : "\n";
+        otterwiki_editor._setLine(lastLine, lastLineContent + separator + "\n" + startChar + footNoteValue + endChar + ": footnote_description");
+
+        // NOTE: it seems as though footnote references are supported anywhere in the document
+        //       as long as the lines starts with a correctly formatted footnote reference.
+        //       This is not considered here, footnote references are always appended to the document's end
+
+        // Last, select the newly added footnote's identifier
+        cm_editor.setSelection({ line: selectedLines[0], ch: fnIdentifierStart }, { line: selectedLines[0], ch: fnIdentifierEnd });
+        cm_editor.focus()
+    },
+    _findNextOccurenceLine: function(lineContent) {
+        // Find the next line starting AFTER the current selection that matches lineContent
+        const selectedLines = otterwiki_editor._getSelectedLines();
+        const lineAfterSelection = selectedLines[selectedLines.length - 1];
+        const editorLastLine = cm_editor.doc.lineCount();
+
+        for (let l = lineAfterSelection; l < editorLastLine; l++) {
+            if (cm_editor.getLine(l) == lineContent) {
+                return l;
+            }
+        }
+        return -1;
     },
     _findBlock: function(selectBlock = false) {
         var block_start = Number.MAX_SAFE_INTEGER;
@@ -756,17 +1160,53 @@ var MathJax = {
 };
 
 /* Hot Keys */
-window.addEventListener("keypress", function() {
-    var isInputElement = event.srcElement instanceof HTMLInputElement;
-    var isTextAreaElement = event.srcElement instanceof HTMLTextAreaElement;
+window.addEventListener("keydown", function() {
+    let isInputElement = event.srcElement instanceof HTMLInputElement;
+    let isTextAreaElement = event.srcElement instanceof HTMLTextAreaElement;
+    let tagName = event.target.tagName.toLowerCase();
+    let isContentEditable = event.target.isContentEditable;
+    // I'm a bit paranoid here, want to be sure that nothing is missed again
+    let isEditable = (isInputElement || isTextAreaElement || tagName === 'input' || tagName === 'textarea' || isContentEditable);
 
-    if(isInputElement || isTextAreaElement) {
+    if (document.getElementById("save-page-btn") != null && (event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        document.getElementById("save-page-btn").click();
+    }
+
+    // Bind CTRL / CMD + p to toggle preview / edit when editing a page
+    const preview_buttons = ["preview_btn", "editor_btn"];
+    for (let i = 0; i < preview_buttons.length; i++) {
+        let button_id = preview_buttons[i];
+        let button = document.getElementById(button_id);
+        if (button != null && button.style.display !== 'none' && (event.ctrlKey || event.metaKey) && event.key === 'p') {
+            event.preventDefault();
+            button.click();
+            break;
+        }
+    }
+
+    if(isEditable) {
         return;
     }
 
 	if (document.getElementById("search-query") != null && event.key === '/') {
         document.getElementById("search-query").focus();
         event.preventDefault();
+    }
+
+    if (document.getElementById("toggle-sidebar-btn") != null && event.key === '[') {
+        event.preventDefault();
+        document.getElementById("toggle-sidebar-btn").click();
+    }
+
+    if (document.getElementById("create-page-btn") != null && event.key === 'c' && !(event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)) {
+        event.preventDefault();
+        document.getElementById("create-page-btn").click();
+    }
+
+    if (document.getElementById("edit-page-btn") != null && event.key === 'e' && !(event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)) {
+        event.preventDefault();
+        document.getElementById("edit-page-btn").click();
     }
 });
 
@@ -798,4 +1238,3 @@ document.querySelector('#content-wrapper').addEventListener('scroll', (event) =>
     }
   }
 });
-

@@ -15,7 +15,7 @@ dependencies = [
     "SQLAlchemy==2.0.36",
     "Flask-SQLAlchemy==3.1.1",
     "Flask==3.1.0",
-    "Jinja2==3.1.5",
+    "Jinja2==3.1.6",
     "gitpython==3.1.42",
     "cython==3.0.11",
     "mistune==2.0.5",

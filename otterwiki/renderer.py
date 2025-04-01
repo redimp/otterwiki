@@ -274,6 +274,23 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         return rv
 
 
+class OtterwikiBlockParser(mistune.BlockParser):
+    INDENT_CODE = re.compile(r'((?:\n*)(?:(?: {4}| *\t)[^\n]+\n*)+)\n')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def parse_indent_code(self, m, state):
+        """
+        Overrides mistunes rendering, since mistune catches one \n too much
+        """
+        raw = m.group(1)
+        text = mistune.block_parser.expand_leading_tab(raw)
+        code = mistune.block_parser._INDENT_CODE_TRIM.sub('', text)
+        code = code.lstrip('\n')
+        return self.tokenize_block_code(code, None, state)
+
+
 class OtterwikiInlineParser(mistune.InlineParser):
     def __init__(self, env, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -315,12 +332,15 @@ class OtterwikiRenderer:
             "config": config,
         }
         self.md_renderer = OtterwikiMdRenderer(env=self.env)
-        self.inline_renderer = OtterwikiInlineParser(
+        self.inline_parser = OtterwikiInlineParser(
             env=self.env, renderer=self.md_renderer, hard_wrap=False
         )
+        self.block_parser = OtterwikiBlockParser()
+
         self.mistune = OtterwikiMdParser(
             renderer=self.md_renderer,
-            inline=self.inline_renderer,
+            inline=self.inline_parser,
+            block=self.block_parser,
             plugins=[
                 plugin_table,
                 plugin_url,
@@ -349,6 +369,12 @@ class OtterwikiRenderer:
         self.md_renderer.reset_toc()
         # do the preparsing
         text = chain_hooks("renderer_markdown_preprocess", text)
+        # to avoid that preparsing removes the trailing newline and to be
+        # able to deal with manually comitted files that lack the trailing newline
+        # we add one in case it is missing
+        if len(text) < 1 or text[-1] != "\n":
+            text += "\n"
+
         # add cursor position
         if cursor is not None:
             text_arr = text.splitlines()

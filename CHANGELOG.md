@@ -6,6 +6,71 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.10.4](https://github.com/redimp/otterwiki/releases/tag/v2.10.4) - 2025-03-28
+
+<small>[Compare with v2.10.3](https://github.com/redimp/otterwiki/compare/v2.10.3...v2.10.4)</small>
+
+### Bug Fixes
+
+- Anther c hotkey related fix: disable hotkey on mobile browsers [PR#227](https://github.com/redimp/otterwiki/pull/227)
+
+## [v2.10.3](https://github.com/redimp/otterwiki/releases/tag/v2.10.3) - 2025-03-26
+
+<small>[Compare with v2.10.2](https://github.com/redimp/otterwiki/compare/v2.10.2...v2.10.3)</small>
+
+### Bug Fixes
+
+- the hotkey c (for create page) must not prevent Ctrl-C or CMD-C ([60d13fb](https://github.com/redimp/otterwiki/commit/60d13fb1dce4460628f491fcce5624e74a813a8c)).
+
+## [v2.10.2](https://github.com/redimp/otterwiki/releases/tag/v2.10.2) - 2025-03-25
+
+<small>[Compare with v2.10.1](https://github.com/redimp/otterwiki/compare/v2.10.1...v2.10.2)</small>
+
+### Features
+
+- keyboard shortcuts for edit, create, toggle sidebar, save and toggle preview
+  by Dan Falcone @dafalcon, see [PR#224](https://github.com/redimp/otterwiki/pull/224)
+- editor buttons reorganized, by Thierry Trafelet @ttrafelet([d8cc33a](https://github.com/redimp/otterwiki/commit/d8cc33a3d6e3ba3dc4f9c6d82a36bbfd6c8cd387))
+
+## [v2.10.1](https://github.com/redimp/otterwiki/releases/tag/v2.10.1) - 2025-03-13
+
+<small>[Compare with v2.10.0](https://github.com/redimp/otterwiki/compare/v2.10.0...v2.10.1)</small>
+
+### Bug Fixes
+
+- `<TAB>` now inserts softtabs (4 spaces) and indents when lines are selected, see #196. ([3d6d4d5](https://github.com/redimp/otterwiki/commit/3d6d4d54eece42a43a4540f40f3e415ab78deb69)).
+- Handle empty fancy- or folded blocks correct. ([29a6b2d](https://github.com/redimp/otterwiki/commit/29a6b2df1f33968a5695c50d8359cd78d7636425)).
+
+### Documentation
+
+- Improved the Documentation of nested lists, see #196. ([cd47a41](https://github.com/redimp/otterwiki/commit/cd47a4113f2722984281c92c4bf93363c686b940))
+
+## [v2.10.0](https://github.com/redimp/otterwiki/releases/tag/v2.10.0) - 2025-03-09
+
+<small>[Compare with v2.9.4](https://github.com/redimp/otterwiki/compare/v2.9.4...v2.10.0)</small>
+
+### Features
+
+- Extend menu buttons with (some) missing functionality (alerts, panels, quote,
+  spoiler, expand etc.), by Thierry Trafelet @ttrafelet see [#202](https://github.com/redimp/otterwiki/pull/202)
+
+### Bug Fixes
+
+- fix: rendering of lists (etc) in fancy-, alert-, spoiler- and folded blocks,
+  see #214 ([11cdf82](https://github.com/redimp/otterwiki/commit/11cdf821c0a7dde9140d4e7b8102e0c96f2236ba)).
+- tweaking the alert blocks, so that light and dark mode match, see #213 ([76ad321](https://github.com/redimp/otterwiki/commit/76ad321fc7d63c832e6067e744dcdc7fc5481e8b)).
+- make sure no extra newlines are added to pre formatted blocks, see #212 ([518d9f0](https://github.com/redimp/otterwiki/commit/518d9f0be889cde90c0a88f6a7307fde3c4b7ae9)).
+- remove the "copy-to-clipboard" block from syntax documentation, see #212 ([2316bc9](https://github.com/redimp/otterwiki/commit/2316bc9f560104beeb1392c82b973b2d72718598)).
+- correct spacing in div.page-wrapper layout.html, see #212 ([0e8011b](https://github.com/redimp/otterwiki/commit/0e8011bb63227b8a75f29a3e80fc6e31f1304953)).
+- Named footnotes not linking correctly, see #211 ([bdabb71](https://github.com/redimp/otterwiki/commit/bdabb712118cf5b49065c3a4bf819a9a361382b5)).
+- use full path for pages when displaying single commits, see #209 ([5ade21c](https://github.com/redimp/otterwiki/commit/5ade21c26bc3e4b37b0d7258880e315390fda416)).
+- handle `FileNotFoundError` on updating the ftoc cache ([6bfe892](https://github.com/redimp/otterwiki/commit/6bfe8923a7f17c94606dacefc66bbb818a49ed9a)).
+- typo in the `MAX_FORM_MEMORY_SIZE variable`  ([0d5eab5](https://github.com/redimp/otterwiki/commit/0d5eab5ec2305a574c198bdb1b80220e66db6f11)).
+
+### Docs
+
+- added documentation about how to indent items in nested lists, see #196 ([131644d](https://github.com/redimp/otterwiki/commit/131644db87ecb16ca3a07ed37da14486e63e3f60))
+
 ## [v2.9.4](https://github.com/redimp/otterwiki/releases/tag/v2.9.4) - 2025-02-27
 
 <small>[Compare with v2.9.3](https://github.com/redimp/otterwiki/compare/v2.9.3...v2.9.4)</small>

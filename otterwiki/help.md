@@ -8,10 +8,21 @@ To create a page use the <span class="help-button"><span class="btn btn-square b
 
 You can preview your changes using <span class="btn btn-primary btn-sm btn-hlp"><i class="far fa-eye"></i></span>. Either while editing or from previewing the article your changes can be committed via <span class="btn btn-success btn-sm btn-hlp"> <i class="fas fa-save"></i></span>. This will open a modal where you can enter a commit message. To discard your changes use <span class="btn btn-danger btn-sm btn-hlp" style="border: None;" role="button"><i class="fas fa-window-close"></i></span> and return to the view of the page.
 
+#### General Shortcuts
+
+| Operation      | Linux/Windows/MacOS |
+|----------------|---------------------|
+| Create page    | <kbd>c</kbd>        |
+| Edit page      | <kbd>e</kbd>        |
+| Toggle sidebar | <kbd>[</kbd>        |
+| Search         | <kbd>/</kbd>        |
+
 #### Editor Shortcuts
 
 | Operation     | Linux/Windows                | MacOS                       |
 |---------------|------------------------------|-----------------------------|
+| Save          | <kbd>Ctrl</kbd>-<kbd>S</kbd> | <kbd>Cmd</kbd>-<kbd>S</kbd> |
+| Toggle preview | <kbd>Ctrl</kbd>-<kbd>P</kbd> | <kbd>Cmd</kbd>-<kbd>P</kbd> |
 | Search        | <kbd>Ctrl</kbd>-<kbd>F</kbd> | <kbd>Cmd</kbd>-<kbd>F</kbd> |
 | Find next     | <kbd>Ctrl</kbd>-<kbd>G</kbd> | <kbd>Cmd</kbd>-<kbd>G</kbd> |
 | Find previous | <kbd>Shift</kbd>-<kbd>Ctrl</kbd>-<kbd>G</kbd> | <kbd>Shift</kbd>-<kbd>Cmd</kbd>-<kbd>G</kbd> |

@@ -577,7 +577,7 @@ def test_indent_preformatted_issue206():
     assert pre
     assert (
         """ Hello :) This is at 5 spaces.
- 5 spaces here as well.\n"""
+ 5 spaces here as well."""
         == pre.text
     )
     # backtick block
@@ -615,3 +615,45 @@ def test_indent_preformatted_issue206():
   }\n"""
         == code.text
     )
+
+
+def test_indent_preformatted_issue212():
+    md = """# Example page
+
+    This is preformatted.
+
+This is regular."""
+    html, _ = render.markdown(md)
+    pre = BeautifulSoup(html, "html.parser").find('pre')
+    assert pre
+    assert """This is preformatted.\n""" == pre.text
+
+
+def test_nested_list():
+    md = """# Nested lists
+1. A
+    - B
+    - C
+2. D
+"""
+    html, _ = render.markdown(md)
+    ol = BeautifulSoup(html, "html.parser").find('ol')
+    assert ol
+    li = ol.find_all("li")  # pyright: ignore
+    assert len(li) == 4
+    ul = li[0].find("ul")
+    assert ul
+    li = ul.find_all("li")  # pyright: ignore
+    assert len(li) == 2
+
+
+def test_empty_blocks_issue216():
+    md = """:::info
+:::
+    """
+    html, _ = render.markdown(md)
+    assert html
+
+    md = """>|"""
+    html, _ = render.markdown(md)
+    assert html
