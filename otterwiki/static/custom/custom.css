@@ -7,7 +7,7 @@
  * see https://otterwiki.com/Customization for examples.
  *
 */
-// Arrow
+
 .collapse-header:not(.without-arrow),
 .collapse-panel[open] .collapse-header:not(.without),
 {
