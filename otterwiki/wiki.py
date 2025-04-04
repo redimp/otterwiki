@@ -743,19 +743,19 @@ class Page:
             try:
                 line = markup_lines[int(row[3]) - 1]
             except IndexError:
-                # this happens when the file has trailing empty lines that were removed bu the pygments_render
+                # this happens when the file has trailing empty lines that were removed by the pygments_render
                 line = ""
             if row[0] != last:
                 oddeven = "odd" if oddeven == "even" else "even"
                 fdata.append(
                     (
-                        row[0],
-                        row[1],
-                        row[2],
-                        int(row[3]),
-                        line,
-                        f"chunk-start chunk-start-{oddeven}",
-                        row[0],
+                        row[0],  # revision
+                        row[1],  # author
+                        row[2],  # datetime
+                        int(row[3]),  # linenumber
+                        line,  # the actual line
+                        f"chunk-start chunk-start-{oddeven}",  # alternating css class
+                        row[0],  # revision used as border-color
                     )
                 )
                 last = row[0]
