@@ -10,8 +10,6 @@ See docs/plugin_examples for examples.
 """
 
 import pluggy
-import re
-import urllib.parse
 
 hookspec = pluggy.HookspecMarker("otterwiki")
 hookimpl = pluggy.HookimplMarker("otterwiki")

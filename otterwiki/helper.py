@@ -11,10 +11,8 @@ lightweight as utils.
 
 import os
 import re
-import os
 from hashlib import sha256
 import json
-from datetime import datetime
 from collections import namedtuple
 from otterwiki.server import app, mail, storage, Preferences, db, app_renderer
 from otterwiki.gitstorage import StorageError
@@ -23,7 +21,6 @@ from threading import Thread
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from otterwiki.util import split_path, join_path, clean_slashes, titleSs
-from otterwiki.renderer import OtterwikiRenderer
 from otterwiki.models import Cache
 
 

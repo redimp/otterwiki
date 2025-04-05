@@ -3,59 +3,58 @@
 
 import os
 import re
-from collections import namedtuple
-from unidiff import PatchSet
+from datetime import UTC, datetime, timedelta
+from io import BytesIO
+from timeit import default_timer as timer
+from urllib.parse import unquote
+
+import PIL.Image
 from flask import (
-    redirect,
     abort,
-    url_for,
-    render_template,
-    make_response,
-    send_file,
     jsonify,
-    session,
+    make_response,
+    redirect,
+    render_template,
+    send_file,
+    url_for,
 )
 from markupsafe import escape as html_escape
-from otterwiki.gitstorage import StorageNotFound, StorageError
-from otterwiki.server import app, storage, db, app_renderer
-from otterwiki.models import Drafts
-from otterwiki.renderer import pygments_render
-from otterwiki.sidebar import SidebarPageIndex, SidebarMenu
-from otterwiki.util import (
-    split_path,
-    join_path,
-    empty,
-    guess_mimetype,
-    sizeof_fmt,
-    get_pagepath,
-    get_page_directoryname,
-    sanitize_pagename,
-    patchset2filedict,
-    get_header,
-)
+from unidiff import PatchSet
+from werkzeug.http import http_date
+from werkzeug.utils import secure_filename
+
+from otterwiki.auth import current_user, has_permission
+from otterwiki.gitstorage import StorageError, StorageNotFound
 from otterwiki.helper import (
-    toast,
     auto_url,
-    get_filename,
     get_attachment_directoryname,
+    get_breadcrumbs,
+    get_filename,
+    get_ftoc,
     get_pagename,
     get_pagename_prefixes,
     patchset2urlmap,
-    get_breadcrumbs,
-    upsert_pagecrumbs,
-    get_ftoc,
+    toast,
     update_ftoc_cache,
+    upsert_pagecrumbs,
 )
-from otterwiki.auth import has_permission, current_user
+from otterwiki.models import Drafts
 from otterwiki.plugins import chain_hooks
-from datetime import timedelta, datetime, UTC
-from timeit import default_timer as timer
-from werkzeug.http import http_date
-from werkzeug.utils import secure_filename
-from urllib.parse import unquote
-from io import BytesIO
-
-import PIL.Image
+from otterwiki.renderer import pygments_render
+from otterwiki.server import app, app_renderer, db, storage
+from otterwiki.sidebar import SidebarMenu, SidebarPageIndex
+from otterwiki.util import (
+    empty,
+    get_header,
+    get_page_directoryname,
+    get_pagepath,
+    guess_mimetype,
+    join_path,
+    patchset2filedict,
+    sanitize_pagename,
+    sizeof_fmt,
+    split_path,
+)
 
 if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
     PIL.Image.Resampling = PIL.Image

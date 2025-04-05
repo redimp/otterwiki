@@ -4,34 +4,29 @@
 import re
 
 import mistune
-from mistune.plugins import (
-    plugin_table,
-    plugin_url,
-    plugin_strikethrough,
-)
-
+from bs4 import BeautifulSoup
+from markupsafe import Markup, escape
+from mistune.plugins import plugin_strikethrough, plugin_table, plugin_url
 from pygments import highlight
-from pygments.lexers import get_lexer_by_name
 from pygments.formatters import html
+from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
 
-from markupsafe import Markup, escape
-from otterwiki.util import slugify, empty
+from otterwiki.plugins import chain_hooks
 from otterwiki.renderer_plugins import (
-    plugin_task_lists,
+    plugin_alerts,
+    plugin_fancy_blocks,
+    plugin_fold,
     plugin_footnotes,
     plugin_mark,
-    plugin_fancy_blocks,
-    plugin_spoiler,
-    plugin_fold,
     plugin_math,
-    plugin_alerts,
+    plugin_spoiler,
+    plugin_task_lists,
     plugin_wikilink,
     plugin_frontmatter,
     plugin_frontmatter_title,
 )
-from otterwiki.plugins import chain_hooks
-from bs4 import BeautifulSoup
+from otterwiki.util import empty, slugify
 
 # the cursor magic word which is ignored by the rendering
 cursormagicword = "CuRsoRm4g1cW0Rd"
