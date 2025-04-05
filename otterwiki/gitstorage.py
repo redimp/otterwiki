@@ -5,6 +5,7 @@ import os
 import pathlib
 import re
 from datetime import datetime
+from typing import List, cast
 
 import git
 import git.exc
@@ -140,7 +141,12 @@ class GitStorage(object):
         blamedata = []
         metadata_cache = {}
         n = 1
-        for commit, lines in commits:
+        # blame can return an iterable blame if incremental=True
+        # casting to keep it obvious we aren't doing that
+        # can be removed if gitpython adds an overload on incremental
+        for commit, lines in cast(
+            List[List[git.Commit | List[str | bytes] | None]], commits
+        ):
             try:
                 metadata = metadata_cache[commit]
             except KeyError:
@@ -264,7 +270,14 @@ class GitStorage(object):
         # build and return logfile
         return [self._get_metadata_of_commit(commit) for commit in commits]
 
-    def store(self, filename, content, message="", author=("", ""), mode="w"):
+    def store(
+        self,
+        filename,
+        content,
+        message: str | None = "",
+        author=("", ""),
+        mode="w",
+    ):
         if message is None:
             message = ""
         dirname = os.path.dirname(filename)

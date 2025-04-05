@@ -8,6 +8,6 @@ from .version import __version__
 __all__ = ["fatal_error"]
 
 
-def fatal_error(msg):
+def fatal_error(msg: str | Exception):
     print("\nError: {}\n".format(msg), file=sys.stderr)
     sys.exit(1)
