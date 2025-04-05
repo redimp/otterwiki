@@ -10,7 +10,7 @@ from otterwiki.auth import current_user, has_permission, check_credentials
 
 
 class GitHttpServer:
-    def __init__(self, path):
+    def __init__(self, path: str):
         self.path = path
         # configure git to allow pushing into the current branch
         # of the non-bare repository, see https://git-scm.com/docs/git-config#Documentation/git-config.txt-receivedenyCurrentBranch

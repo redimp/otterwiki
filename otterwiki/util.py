@@ -11,6 +11,7 @@ import string
 import time
 import unicodedata
 from functools import lru_cache
+from typing import List
 
 
 def ttl_lru_cache(ttl: int = 60, maxsize: int = 128):
@@ -86,7 +87,7 @@ def sanitize_pagename(value, allow_unicode=True):
     return value
 
 
-def split_path(path):
+def split_path(path: str) -> List[str]:
     if path == "":
         return []
     head = os.path.dirname(path)
@@ -114,12 +115,12 @@ def get_pagepath(pagename):
     return pagename
 
 
-def get_page_directoryname(pagepath):
+def get_page_directoryname(pagepath: str) -> str:
     parts = split_path(pagepath)
     return join_path(parts[:-1])
 
 
-def join_path(path_arr):
+def join_path(path_arr: List[str]) -> str:
     if len(path_arr) < 1:
         return ""
     return os.path.join(*path_arr)

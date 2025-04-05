@@ -6,6 +6,7 @@ import re
 from datetime import UTC, datetime, timedelta
 from io import BytesIO
 from timeit import default_timer as timer
+from typing import List, cast
 from urllib.parse import unquote
 
 import PIL.Image
@@ -240,7 +241,7 @@ class Changelog:
         for orig_entry in storage.log():
             entry = dict(orig_entry)
             entry["files"] = {}
-            for filename in orig_entry["files"]:
+            for filename in cast(List[str], orig_entry["files"]):
                 entry["files"][filename] = {}
                 (
                     entry["files"][filename]["name"],
@@ -1482,7 +1483,7 @@ class Search:
                 summary = [matches.pop(0)]
                 # overwrite key[4]
                 key[4] = self.rei.sub(
-                    r'<span class="page-match">\1</span>', key[4]
+                    r'<span class="page-match">\1</span>', cast(str, key[4])
                 )
             front, end = [], []
             while len("".join(front) + "".join(end)) < 200:

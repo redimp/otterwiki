@@ -196,7 +196,7 @@ for plugin, dist in plugininfo:
 # template extensions
 #
 @app.template_filter("debug_unixtime")
-def template_debug_unixtime(s):
+def template_debug_unixtime(s: int) -> str:
     if app.debug:
 
         return "{}?{}".format(s, datetime.datetime.now().strftime("%s"))
@@ -205,7 +205,7 @@ def template_debug_unixtime(s):
 
 
 @app.template_filter("format_datetime")
-def format_datetime(value, format="medium"):
+def format_datetime(value: datetime.datetime, format="medium") -> str:
     if format == "medium":
         format = "%Y-%m-%d %H:%M"
     if format == "deltanow":

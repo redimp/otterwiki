@@ -4,6 +4,8 @@
 import re
 import json
 from datetime import datetime
+from typing import cast
+from otterwiki.models import User
 from otterwiki.util import is_valid_email
 from flask import (
     redirect,
@@ -405,8 +407,8 @@ def user_edit_form(uid):
 def handle_user_add(form):
     if not has_permission("ADMIN"):
         abort(403)
-    # get empty user object
-    user = get_user(None)
+    # get empty user object, it will never be null
+    user = cast(User, get_user(None))
     # update user from form
     user.name = form.get("name").strip()  # pyright: ignore
     user.email = form.get("email").strip()  # pyright: ignore
