@@ -134,7 +134,7 @@ class GitStorage(object):
         if revision is None:
             revision = "HEAD"
         try:
-            commits = list(self.repo.blame(revision, filename))
+            commits = list(self.repo.blame(revision, filename) or [])
         except (ValueError, IndexError, git.exc.GitCommandError):
             raise StorageNotFound
         # initialize data and helper
@@ -152,7 +152,7 @@ class GitStorage(object):
             except KeyError:
                 metadata = self._get_metadata_of_commit(commit)
                 metadata_cache[commit] = metadata
-            for line in lines:
+            for line in cast(List[str | bytes], lines) or []:
                 blamedata.append(
                     (
                         metadata["revision"],
@@ -173,32 +173,35 @@ class GitStorage(object):
 
         return self._get_metadata_of_commit(commit)
 
-    def _get_metadata_of_log(self, logentry):
-        logentry = logentry.split("\n")
+    def _get_metadata_of_log(self, logentry: str):
+        logentry_lines = logentry.split("\n")
         # Get revision
-        revision = re.findall(r"commit ([a-z0-9]*)", logentry[0])[0]
+        revision = re.findall(r"commit ([a-z0-9]*)", logentry_lines[0])[0]
         # Check if a offset for entries is necessary
         offset = 0
-        if logentry[1].startswith("Merge:"):
+        if logentry_lines[1].startswith("Merge:"):
             offset = 1
         # Find author data
         author_info = re.findall(
-            r"Author: ([^\<]*) <([^\>]*)>", logentry[offset + 1]
+            r"Author: ([^\<]*) <([^\>]*)>", logentry_lines[offset + 1]
         )[0]
         author_name = author_info[0]
         author_email = author_info[1]
         # Get and convert Datetime
-        datetime_str = re.findall("Date: (.*)", logentry[offset + 2])[
+        datetime_str = re.findall("Date: (.*)", logentry_lines[offset + 2])[
             0
         ].strip()
         datetime_obj = datetime.strptime(
             datetime_str, "%a %b %d %H:%M:%S %Y %z"
         )
         # Get commit msg
-        message = "\n".join([x.strip() for x in logentry[offset + 4 : -2]])
+        message = "\n".join(
+            [x.strip() for x in logentry_lines[offset + 4 : -2]]
+        )
 
-        files = logentry[-1].split("\x00")
+        files = logentry_lines[-1].split("\x00")
 
+        # TODO: make an object?
         metadata = {
             "revision-full": revision,
             "revision": revision[0:6],
