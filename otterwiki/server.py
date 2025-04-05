@@ -111,9 +111,9 @@ else:
 
 
 # check if the git repository is empty
-if (len(storage.list()[0]) < 1) and (
-    len(storage.log()) < 1
-):  # pyright: ignore
+if (len(storage.list()[0]) < 1) and (  # pyright: ignore never unbound
+    len(storage.log()) < 1  # pyright: ignore
+):
     # we have a brand new repository here
     with open(os.path.join(app.root_path, "initial_home.md")) as f:
         content = f.read()
@@ -228,4 +228,6 @@ import otterwiki.remote
 
 githttpserver = otterwiki.remote.GitHttpServer(path=app.config["REPOSITORY"])
 
-import otterwiki.views
+# contains application routes,
+# using side-effect of import executing the file to get
+import otterwiki.views  # pyright: ignore
