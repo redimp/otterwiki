@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import datetime
 import os
 import sys
-import logging
-import datetime
+
 from flask import Flask
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
-from otterwiki import fatal_error, __version__
+
 import otterwiki.gitstorage
 import otterwiki.util
+from otterwiki import __version__, fatal_error
 from otterwiki.plugins import plugin_manager
 from otterwiki.renderer import OtterwikiRenderer
 

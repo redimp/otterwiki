@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import datetime
+import mimetypes
 import os.path
 import pathlib
-import re
-import unicodedata
-from email.utils import parseaddr
 import random
+import re
 import string
-import mimetypes
 import time
-import datetime
+import unicodedata
 from functools import lru_cache
 
 

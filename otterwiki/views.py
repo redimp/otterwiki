@@ -12,7 +12,7 @@ from flask import (
     redirect,
     url_for,
 )
-from otterwiki.server import app, storage, githttpserver
+from otterwiki.server import app, githttpserver
 from otterwiki.wiki import (
     Page,
     PageIndex,
@@ -25,7 +25,7 @@ import otterwiki.preferences
 from otterwiki.renderer import render
 from otterwiki.helper import toast, health_check, get_pagename_prefixes
 from otterwiki.version import __version__
-from otterwiki.util import sanitize_pagename, split_path, join_path
+from otterwiki.util import sanitize_pagename
 
 from flask_login import login_required
 

@@ -2,13 +2,14 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
+import pathlib
 import re
+from datetime import datetime
+
 import git
 import git.exc
-from datetime import datetime
+
 from otterwiki.util import split_path, ttl_lru_cache
-import pathlib
-import os
 
 
 class StorageError(Exception):
