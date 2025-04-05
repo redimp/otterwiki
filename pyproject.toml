@@ -55,7 +55,8 @@ dev = [
     "rjsmin",
     "git-changelog",
     "pre-commit",
-    ]
+    "types-Flask>=1.1.6",
+]
 
 [build-system]
 requires = [
@@ -99,6 +100,23 @@ filterwarnings = [
 [tool.pyright]
 venvPath = "."
 venv = "venv"
+typeCheckingMode = "strict"
+reportMissingImports = "error"
+reportUnnecessaryComparison = "error" # debatably a warning, but there are a few
+reportUntypedFunctionDecorator = "warning"
+reportUnusedExpression = "warning"
+reportUnusedVariable = "warning"
+reportUntypedNamedTuple = "warning"
+reportMissingTypeArgument = "information"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportAttributeAccessIssue = false
+reportUnknownParameterType = false
+reportMissingParameterType = false
+reportUnknownArgumentType = false
+reportCallIssue = false
+reportUnknownLambdaType = false
 
 [tool.git-changelog]
 bump = "auto"
