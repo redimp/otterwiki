@@ -281,7 +281,9 @@ class OtterwikiBlockParser(mistune.BlockParser):
         """
         raw = m.group(1)
         text = mistune.block_parser.expand_leading_tab(raw)
-        code = mistune.block_parser._INDENT_CODE_TRIM.sub('', text)
+        code = mistune.block_parser._INDENT_CODE_TRIM.sub(  # pyright: ignore
+            '', text
+        )
         code = code.lstrip('\n')
         return self.tokenize_block_code(code, None, state)
 
