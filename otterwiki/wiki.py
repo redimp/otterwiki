@@ -1337,7 +1337,7 @@ class Attachment:
             # set header, caching, etc
             response.headers["Last-Modified"] = http_date(metadata['datetime'])
             response.headers["Cache-Control"] = "max-age=604800, immutable"
-            response.headers["Date"] = http_date(self.datetime.utctimetuple())
+            response.headers["Date"] = http_date(datetime.now(UTC))
 
         return response
 
@@ -1368,13 +1368,14 @@ class Attachment:
             )
         )
         # build response
+        now_utc = datetime.now(UTC)
         response = make_response(send_file(buffer, mimetype=self.mimetype))
-        response.headers["Date"] = http_date(self.datetime.utctimetuple())
+        response.headers["Date"] = http_date(now_utc)
         response.headers["Expires"] = http_date(
-            (self.datetime + timedelta(hours=1)).utctimetuple()
+            (now_utc + timedelta(hours=1)).astimezone(UTC)
         )
         response.headers["Last-Modified"] = http_date(
-            self.datetime.utctimetuple()
+            self.datetime.astimezone(UTC)
         )
 
         return response
