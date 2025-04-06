@@ -21,6 +21,7 @@ dependencies = [
     "mistune==2.0.5",
     "pygments==2.18.0",
     "Pillow==10.4.0",
+    "PyYAML==6.0.2",
     "unidiff==0.7.5",
     "beautifulsoup4==4.12.3",
     "pluggy==1.5.0",
