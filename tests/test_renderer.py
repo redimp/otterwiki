@@ -657,3 +657,26 @@ def test_empty_blocks_issue216():
     md = """>|"""
     html, _ = render.markdown(md)
     assert html
+
+
+def test_frontmatter():
+    md = """---
+title: Title from frontmatter
+tag: test
+date: 2025-04-06 11:05:01
+---
+    """
+    html, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup
+    # check if the "title" key added a <h1></h1>
+    h1 = soup.find("h1")
+    assert h1
+    assert h1.text == "Title from frontmatter"
+    # check if the tag was aded to the frontmatter
+    details = soup.find("details", {"id": "frontmatter"})
+    assert details
+    pre = details.find("pre")
+    assert pre is not None
+    assert hasattr(pre, "text")
+    assert "tag: test" in pre.text  # pyright:ignore
