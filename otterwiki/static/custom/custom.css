@@ -7,33 +7,3 @@
  * see https://otterwiki.com/Customization for examples.
  *
 */
-
-.collapse-header:not(.without-arrow),
-.collapse-panel[open] .collapse-header:not(.without),
-{
-    background-position: 0px !important;
-    position: relative; 
-    left: -12px;
-}
-// Properties Text
-#frontmatter .collapse-header {
-	padding: 0 0 0 1.3rem;
-	margin-bottom: 0rem;
-}
-// Remove underline (Cleaner)
-body #page-wrapper .collapse-header, 
-body #page-wrapper .collapse-header:focus {
-    border-bottom: 0px solid green !important;
-}
-
-.page #frontmatter pre {
-	padding: .7rem .7rem !important;
-	margin-left: 0rem;
-	margin-block-start: .2rem !important;
-    margin-block-end: 0rem !important;
-    background: rgba(0, 0, 0, 0.09);
-}
-.page #frontmatter,
-.page #frontmatter pre a {
-	color: #ddd;
-}	
