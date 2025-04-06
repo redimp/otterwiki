@@ -662,9 +662,12 @@ class mistunePluginFrontmatter:
                 state['env'] = {}
             frontmatter_data = yaml.safe_load(frontmatter)
             state['env']['frontmatter'] = frontmatter_data
-            
+
             # Extract title if it exists
-            if isinstance(frontmatter_data, dict) and 'title' in frontmatter_data:
+            if (
+                isinstance(frontmatter_data, dict)
+                and 'title' in frontmatter_data
+            ):
                 title = frontmatter_data['title']
                 if isinstance(title, str) and title.strip():
                     state['env']['frontmatter_title'] = title.strip('"\'')
@@ -702,43 +705,47 @@ class mistunePluginFrontmatterTitle:
     """
     This plugin adds an H1 title based on the frontmatter title property.
     It depends on mistunePluginFrontmatter being registered first.
-    
+
     The H1 will only be added if there isn't already an H1 heading in the markdown.
     This allows users to choose between using frontmatter titles automatically
     or explicitly defining their own H1 headings in the markdown content.
     """
-    
+
     def before_parse(self, md, s, state):
         # Initialize state if needed
         if 'env' not in state:
             state['env'] = {}
         if 'has_h1_heading' not in state['env']:
             state['env']['has_h1_heading'] = False
-            
+
         # Check if the document has an H1 header
         # Look for ATX style headers (# Title) with proper regex
         # that accounts for optional spaces at start of line
         h1_pattern = re.compile(r'^\s*#\s+\S.*$', re.MULTILINE)
         if h1_pattern.search(s):
             state['env']['has_h1_heading'] = True
-            
+
         return s, state
-    
+
     def after_render(self, md, result, state):
         # Add H1 title if we have frontmatter title and no existing H1
-        if state.get('env', {}).get('frontmatter_title') and not state.get('env', {}).get('has_h1_heading', False):
+        if state.get('env', {}).get('frontmatter_title') and not state.get(
+            'env', {}
+        ).get('has_h1_heading', False):
             title = state['env']['frontmatter_title']
             h1_element = f'<h1>{title}</h1>'
-            
+
             # Insert after frontmatter if present
             if '<details class="collapse-panel" id="frontmatter">' in result:
-                result = result.replace('</details>', '</details>\n' + h1_element, 1)
+                result = result.replace(
+                    '</details>', '</details>\n' + h1_element, 1
+                )
             else:
                 # Insert at the beginning if no frontmatter found
                 result = h1_element + '\n' + result
-                
+
         return result
-    
+
     def __call__(self, md):
         # Register hooks to run before parsing and after rendering
         md.before_parse_hooks.append(self.before_parse)
