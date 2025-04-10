@@ -66,14 +66,16 @@ class SimpleAuth:
     def get_all_user(self):
         return self.User.query.all()
 
-    def get_user(self, uid=None, email=None):
+    def get_user(
+        self, uid: str | None = None, email: str | None = None
+    ) -> User | None:
         if uid is not None:
             return self.User.query.filter_by(id=uid).first()
         if email is not None:
             return self.User.query.filter_by(email=email).first()
         return self.User()
 
-    def update_user(self, user):
+    def update_user(self, user: User) -> User:
         # validation check
         if not user.is_admin:
             # check if any user is admin
@@ -84,7 +86,7 @@ class SimpleAuth:
         db.session.commit()
         return user
 
-    def delete_user(self, user):
+    def delete_user(self, user: User):
         db.session.delete(user)
         db.session.commit()
 
