@@ -412,7 +412,12 @@ class Changelog:
 
 
 class Page:
-    def __init__(self, pagepath=None, pagename=None, revision=None):
+    def __init__(
+        self,
+        pagepath: str | None = None,
+        pagename: str | None = None,
+        revision: str | None = None,
+    ):
 
         if pagepath is not None:
             self.pagepath = sanitize_pagename(pagepath)
@@ -452,7 +457,7 @@ class Page:
     def breadcrumbs(self):
         return get_breadcrumbs(self.pagepath)
 
-    def load(self, revision):
+    def load(self, revision: str | None):
         metadata = None
         content = None
         try:
@@ -466,8 +471,8 @@ class Page:
 
         return content, metadata
 
-    def exists_or_404(self):
-        if not self.exists:
+    def exists_or_404(self, in_git: bool = False):
+        if not self.exists or (in_git and self.metadata is None):
             app.logger.warning("Not found {}".format(self.pagename))
             response404 = make_response(
                 render_template(
@@ -722,7 +727,7 @@ class Page:
         if not has_permission("READ"):
             abort(403)
         # handle case that the page doesn't exists
-        self.exists_or_404()
+        self.exists_or_404(in_git=True)
 
         data = storage.blame(self.filename, self.revision)
 
@@ -802,20 +807,14 @@ class Page:
             breadcrumbs=self.breadcrumbs(),
         )
 
-    def history(self, rev_a=None, rev_b=None):
+    def history(self, rev_a: str | None = None, rev_b: str | None = None):
         if not has_permission("READ"):
             abort(403)
-        try:
-            orig_log = storage.log(self.filename)
-        except StorageNotFound:
-            return (
-                render_template(
-                    "page404.html",
-                    pagename=self.pagename,
-                    pagepath=self.pagepath,
-                ),
-                404,
-            )
+
+        self.exists_or_404(in_git=True)
+
+        orig_log = storage.log(self.filename)
+
         if rev_a is not None and rev_b is not None and rev_a != rev_b:
             return redirect(
                 url_for("diff", path=self.pagepath, rev_a=rev_a, rev_b=rev_b)
@@ -824,9 +823,9 @@ class Page:
         log = []
         for i, orig_entry in enumerate(orig_log):
             if len(orig_log) > 1 and i == 0 and rev_b is None:
-                rev_b = orig_entry['revision']
+                rev_b = str(orig_entry['revision'])
             elif len(orig_log) > 1 and i == 1 and rev_a is None:
-                rev_a = orig_entry['revision']
+                rev_a = str(orig_entry['revision'])
             entry = dict(orig_entry)
             entry["url"] = url_for(
                 "view", path=self.pagepath, revision=entry["revision"]
