@@ -1189,12 +1189,12 @@ window.addEventListener("keydown", function() {
         return;
     }
 
-	if (document.getElementById("search-query") != null && event.key === '/') {
+	if (document.getElementById("search-query") != null && event.key === '/' && !(event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)) {
         document.getElementById("search-query").focus();
         event.preventDefault();
     }
 
-    if (document.getElementById("toggle-sidebar-btn") != null && event.key === '[') {
+    if (document.getElementById("toggle-sidebar-btn") != null && event.key === '[' && !(event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)) {
         event.preventDefault();
         document.getElementById("toggle-sidebar-btn").click();
     }
