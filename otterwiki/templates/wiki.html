@@ -47,7 +47,7 @@
 
 {% block navbardropdown %}
 {% if has_permission('WRITE') and not "createpage" in config.SIDEBAR_SHORTCUTS.lower().split() %}
-                    <a href="{{ url_for("create") }}" class="dropdown-item-with-icon">
+                    <a href="{{ url_for("create") }}" class="dropdown-item-with-icon" id="create-page-btn">
                         <span class="dropdown-icon">
                             <i class="far fa-file"></i>
                         </span>
