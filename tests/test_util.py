@@ -19,6 +19,7 @@ from otterwiki.util import (
     patchset2filedict,
     get_header,
     strfdelta_round,
+    is_valid_name,
 )
 
 
@@ -62,6 +63,26 @@ def test_is_valid_email():
         assert is_valid_email(e) is False
     for e in ["", " ", None]:
         assert is_valid_email(e) is False
+
+
+def test_is_valid_name():
+    for n in [
+        "James S. A. Corey",
+        "Marc-Uwe Kling",
+        "Masamune Shirow 士郎 正宗",
+        "Liu Cixin 刘慈欣",
+        "Félix José Palma Macías",
+        "Peter Høeg",
+    ]:
+        assert is_valid_name(n)[0] is True
+    for n in ["", "A"]:
+        assert is_valid_name(n, min_length=2)[0] is False
+    for n in [
+        "Click for discount drugs: http://example.com/uri",
+        "<random tags>",
+        "Click%20for%20discount%20drugs%3A%20http%3A%2F%2Fexample.com%2Furi",
+    ]:
+        assert is_valid_name(n)[0] is False
 
 
 def test_empty():

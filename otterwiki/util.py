@@ -7,11 +7,13 @@ import os.path
 import pathlib
 import random
 import re
+import regex
 import string
 import time
 import unicodedata
 from functools import lru_cache
-from typing import List
+import unicodedata
+from typing import List, Tuple, Literal, Optional
 
 
 def ttl_lru_cache(ttl: int = 60, maxsize: int = 128):
@@ -252,3 +254,105 @@ def strfdelta_round(tdelta, round_period='second'):
             break
 
     return s
+
+
+def is_valid_name(
+    name: str,
+    min_length: int = 1,
+    max_length: int = 50,
+) -> Tuple[bool, str]:
+    """
+    Validates if a name meets security and usability requirements,
+    supporting international characters.
+
+    Args:
+        name: The name to validate
+        min_length: Minimum acceptable length
+        max_length: Maximum acceptable length
+
+    Returns:
+        A tuple containing (is_valid, reason_if_invalid)
+    """
+
+    # Check if name is None or empty
+    if not name or name.strip() == "":
+        return False, "name cannot be empty"
+
+    # Trim whitespace
+    name = name.strip()
+
+    # Check length
+    if len(name) < min_length:
+        return (
+            False,
+            f"name must be at least {min_length} character(s) long",
+        )
+    if len(name) > max_length:
+        return False, f"name cannot exceed {max_length} characters"
+
+    # Normalize unicode characters
+    name = unicodedata.normalize('NFC', name)
+
+    # Check for invisible/control characters
+    if any(unicodedata.category(char).startswith('C') for char in name):
+        return (
+            False,
+            f"name contains invisible or control characters",
+        )
+
+    # Allow letters from any language, spaces, hyphens, apostrophes
+    # Common in names across cultures: spaces, hyphens, apostrophes, periods
+    valid_chars: str = r'^[\p{L}\s\'\-\.]+$'
+
+    if not regex.match(valid_chars, name, regex.UNICODE):
+        return (
+            False,
+            f"name can only contain letters, spaces, hyphens, apostrophes, and periods",
+        )
+
+    # Check for reasonable spacing (no double spaces, etc.)
+    if '  ' in name:
+        return False, f"name cannot contain consecutive spaces"
+
+    # Check for reasonable use of special characters
+    if re.search(r'[\'\-\.]{2,}', name):
+        return (
+            False,
+            f"name cannot contain consecutive special characters",
+        )
+
+    # Check for names that are just special characters
+    if regex.match(r'^[\s\'\-\.]+$', name):
+        return False, f"name must contain at least one letter"
+
+    # Check for names that are suspiciously repetitive
+    if re.search(r'(.)\1{4,}', name):
+        return (
+            False,
+            f"name contains too many consecutive repeated characters",
+        )
+
+    # Check for common placeholder names
+    placeholder_names: list[str] = [
+        "test",
+        "user",
+        "name",
+        "firstname",
+        "lastname",
+        "first",
+        "last",
+        "none",
+        "nil",
+        "null",
+        "undefined",
+        "anonymous",
+        "unknown",
+    ]
+    if name.lower() in placeholder_names:
+        return False, f"name appears to be a placeholder"
+
+    # Check for names with excessive capitalization
+    if name.isupper() and len(name) > 2:
+        return False, f"name should not be all uppercase"
+
+    return True, f"name is valid"
