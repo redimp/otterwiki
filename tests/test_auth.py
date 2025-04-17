@@ -711,6 +711,24 @@ def test_register_errors(app_with_user, test_client, req_ctx):
     assert "already registered" in rv.data.decode()
     assert "account has been created" not in rv.data.decode()
     assert "account is waiting for approval" not in rv.data.decode()
+    # invalid name
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": "mail@example.com",
+            "name": "Click for discount drugs: http://example.com/uri",
+            "password1": "",
+            "password2": "",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert (
+        "name can only contain letters, spaces, hyphens, apostrophes, and periods"
+        in rv.data.decode()
+    )
+    assert "account has been created" not in rv.data.decode()
+    assert "account is waiting for approval" not in rv.data.decode()
     # empty name
     rv = test_client.post(
         "/-/register",

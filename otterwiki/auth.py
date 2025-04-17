@@ -3,7 +3,7 @@
 
 from uuid import uuid4
 import flask_login
-from otterwiki.util import is_valid_email
+from otterwiki.util import is_valid_email, is_valid_name
 from werkzeug.security import generate_password_hash, check_password_hash
 from urllib.parse import urlsplit
 from flask import (
@@ -321,6 +321,7 @@ class SimpleAuth:
     def handle_register(self, email, name, password1, password2):
         # check if email exists
         user = self.User.query.filter_by(email=email).first()
+        name_check = is_valid_name(name)
         # check if email is valid
         if not is_valid_email(email):
             toast("This email address is invalid.", "error")
@@ -328,6 +329,8 @@ class SimpleAuth:
             toast("This email address is already registered.", "error")
         elif name is None or len(name) < 1:
             toast("Please enter your name.", "error")
+        elif not name_check[0]:
+            toast(f"Error: Your {name_check[1]}", "error")
         elif password1 != password2:
             toast("The passwords do not match.", "error")
         elif password1 is None or len(password1) < 8:
