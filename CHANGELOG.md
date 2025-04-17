@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.10.5](https://github.com/redimp/otterwiki/releases/tag/v2.10.5) - 2025-04-16
+
+<small>[Compare with v2.10.4](https://github.com/redimp/otterwiki/compare/v2.10.4...v2.10.5)</small>
+
+### Chores
+
+Usually chores are not part of the changelog, here an exception is made:
+
+- with [PR233](https://github.com/redimp/otterwiki/pull/233) a pile pf type
+  hints have been introduced into An Otter Wiki which increases the code quality
+  and should help with further development.
+
+### Features
+
+- yaml frontmatter renderer plugin added see [PR#207](https://github.com/redimp/otterwiki/pull/207) by @ReessKennedy.
+- check if registered name is looks sane, to prevent spam. See #235 ([778fc4f](https://github.com/redimp/otterwiki/commit/778fc4f2fd703509548a2097a14059d147779c9d)).
+
+### Bug Fixes
+
+- Fixed line spacing in the editor. Set `pre margin-bottom` only when viewing ([8a3a6ed](https://github.com/redimp/otterwiki/commit/8a3a6ed0590ffd08f481c7f3ee3ae0ea83844985)).
+- `/<Pagename>/blame` links to the "view" endpoint which uses `?revision=`, see #230 ([40ee3bf](https://github.com/redimp/otterwiki/commit/40ee3bfae9f0c2543a4ec6c7d8761d281a8a6159)).
+- correct date headers for attachments, see #231 and #232 ([5dbccf](https://github.com/redimp/otterwiki/pull/232/commits/5dbccfdf8e35b5037e974deda0b805168fc3face)).
+- docker: bumped up the uwsgi buffer size, see #184 ([ae4d3aa](https://github.com/redimp/otterwiki/commit/ae4d3aad688a1cb04ff8d5c89983aad3d629bbb5)).
+- Disable hotkeys <kbd>[</kbd> and <kbd>/</kbd> when modifiers are enabled by @dafalcon, see #236 ([1359032](https://github.com/redimp/otterwiki/commit/13590322e312a47094589f1bebecdba8e0c4d174)).
+
+### Dependencies
+
+- updated mermaid to 11.6.0 ([f3b38be](https://github.com/redimp/otterwiki/commit/f3b38be2c1775a8f8c3bd1672acbeb62a6be8f65)).
+
 ## [v2.10.4](https://github.com/redimp/otterwiki/releases/tag/v2.10.4) - 2025-03-28
 
 <small>[Compare with v2.10.3](https://github.com/redimp/otterwiki/compare/v2.10.3...v2.10.4)</small>
