@@ -58,6 +58,8 @@ app.config.update(
     ROBOTS_TXT="allow",
     WIKILINK_STYLE="",
     MAX_FORM_MEMORY_SIZE=1_000_000,
+    HTML_EXTRA_HEAD="",
+    HTML_EXTRA_BODY="",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 

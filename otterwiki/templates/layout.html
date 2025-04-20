@@ -46,6 +46,7 @@
     <!-- custom.css for tweaking the default themes -->
     <link href="{{ url_for("static", filename="custom/custom.css") }}" rel="stylesheet" media="screen" />
     <!-- Documentation styles -->
+    {{config.HTML_EXTRA_HEAD|safe}}
 {%- block head %}
 {% endblock -%}
 {%- if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}
@@ -248,5 +249,7 @@
 </script>
   <!-- custom js for tweaking an otter wiki -->
   <script src="{{ url_for("static", filename="custom/custom.js") }}"></script>
+  <!-- custom HTML -->
+  {{config.HTML_EXTRA_BODY|safe}}
 </body>
 </html>
