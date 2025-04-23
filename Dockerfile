@@ -62,6 +62,7 @@ RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
     apt-get install -y --no-install-recommends \
     nginx supervisor git \
     python3.11 python3-wheel python3-venv libpython3.11 \
+    uwsgi uwsgi-plugin-python3 curl \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
     && rm -rf /var/lib/apt/lists/*
