@@ -84,6 +84,9 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/
 COPY --chmod=0755 docker/stop-supervisor.sh /etc/supervisor/
 # Copy the entrypoint that will generate Nginx additional configs
 COPY --chmod=0755 ./docker/entrypoint.sh /entrypoint.sh
+# configure a healthcheck
+HEALTHCHECK --interval=1m --timeout=3s --retries=3 \
+    CMD curl -A "docker-healthcheck" -f http://localhost:8080/-/healthz || exit 1
 # configure the entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
 # and the default command: supervisor which takes care of nginx and uWSGI

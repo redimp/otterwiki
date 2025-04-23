@@ -57,7 +57,9 @@ COPY otterwiki/static /app/otterwiki/static
 COPY docker/uwsgi-slim.ini /app/uwsgi.ini
 # Copy the entrypoint that will generate Nginx additional configs
 COPY --chmod=0755 ./docker/entrypoint-slim.sh /entrypoint.sh
-
+# configure a healthcheck
+HEALTHCHECK --interval=1m --timeout=3s --retries=3 \
+    CMD curl -A "docker-healthcheck" -f http://localhost:8080/-/healthz || exit 1
 USER www-data
 # configure the entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
