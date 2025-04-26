@@ -143,6 +143,11 @@ def test_titleSs():
     assert "ßabc Def" == titleSs("ßabc def")
     assert "Åbcd Éfgh" == titleSs("åbcd éfgh")
     assert "Test Magicword" == titleSs("Test MAGICWORD")
+    assert "Test M🙉A🙈G🙊I🐤C🐣W🐥O🦆R🐔D" == titleSs(
+        "Test M🙉A🙈G🙊I🐤C🐣W🐥O🦆R🐔D"
+    )
+    assert "\"Foobarß\"" == titleSs("\"foobarß\"")
+    assert "Foobarß" == titleSs("foobarß")
 
 
 def test_patchset2filedict():

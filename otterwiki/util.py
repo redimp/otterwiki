@@ -105,12 +105,12 @@ def titleSs(s):
     """
     if 'ß' not in s:
         return s.title()
-    magicword = 'M🙉A🙈G🙊I🐤C🐣W🐥O🦆R🐔D'
-    while magicword in s:
-        magicword = 2 * magicword
-    s = s.replace('ß', magicword)
+    _magicword = 'M🙉A🙈G🙊I🐤C🐣W🐥O🦆R🐔D'
+    while _magicword in s:
+        _magicword = 2 * _magicword
+    s = s.replace('ß', _magicword)
     s = s.title()
-    return s.replace(magicword, 'ß')
+    return re.sub(re.escape(_magicword), 'ß', s, flags=re.IGNORECASE)
 
 
 def get_pagepath(pagename):
