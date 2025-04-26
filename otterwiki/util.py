@@ -12,8 +12,8 @@ import string
 import time
 import unicodedata
 from functools import lru_cache
-import unicodedata
-from typing import List, Tuple, Literal, Optional
+from typing import List, Tuple
+from unidiff import PatchSet
 
 
 def ttl_lru_cache(ttl: int = 60, maxsize: int = 128):
@@ -356,3 +356,33 @@ def is_valid_name(
         return False, f"name should not be all uppercase"
 
     return True, f"name is valid"
+
+
+def get_PatchSet(s: str) -> PatchSet:
+    """
+    Proxy as workaround for unidiff.PatchSet not supporting quotes in filenames (yet).
+    """
+
+    RE_DIFF_HEAD_WITH_QUOTED_FILENAMES = re.compile(
+        r'^diff --git (\"(?P<source>a/[^\t\n]+)\") (\"(?P<target>b/[^\t\n]+)\")$',
+        flags=re.M,
+    )
+
+    m = RE_DIFF_HEAD_WITH_QUOTED_FILENAMES.search(s)
+
+    while m is not None:
+        source = m.group('source')
+        target = m.group('target')
+        # remove escaping from the quotes
+        source_n = source.replace('\\"', '"')
+        target_n = target.replace('\\"', '"')
+        s = s.replace(m.group(0), f"diff --git {source_n} {target_n}")
+        s = re.sub(
+            r'^--- "' + re.escape(source) + '"', source_n, s, flags=re.M
+        )
+        s = re.sub(
+            r'^\+\+\+ "' + re.escape(target) + '"', target_n, s, flags=re.M
+        )
+        m = RE_DIFF_HEAD_WITH_QUOTED_FILENAMES.search(s)
+
+    return PatchSet(s)

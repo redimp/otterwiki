@@ -20,7 +20,6 @@ from flask import (
     url_for,
 )
 from markupsafe import escape as html_escape
-from unidiff import PatchSet
 from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
 
@@ -55,6 +54,7 @@ from otterwiki.util import (
     sanitize_pagename,
     sizeof_fmt,
     split_path,
+    get_PatchSet,
 )
 
 if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
@@ -384,7 +384,7 @@ class Changelog:
             app.logger.error(e)
             abort(404)
 
-        patchset = PatchSet(diff)
+        patchset = get_PatchSet(diff)
         pagepath = None
 
         url_map = patchset2urlmap(patchset, revision)
@@ -785,7 +785,7 @@ class Page:
         self.exists_or_404()
 
         diff = storage.diff(rev_a, rev_b)
-        patchset = PatchSet(diff)
+        patchset = get_PatchSet(diff)
         url_map = patchset2urlmap(patchset, rev_b, rev_a)
         file_diffs = patchset2filedict(patchset)
 
