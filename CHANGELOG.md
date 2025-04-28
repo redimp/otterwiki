@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.10.6](https://github.com/redimp/otterwiki/releases/tag/v2.10.6) - 2025-04-28
+
+<small>[Compare with v2.10.5](https://github.com/redimp/otterwiki/compare/v2.10.5...v2.10.6)</small>
+
+### Deployment Features
+
+- added curl to the Docker images for health checks, see #242 ([f311403](https://github.com/redimp/otterwiki/commit/f3114034cab94db1aa09e937d981dce607fcdbe8)).
+
+### Bug Fixes
+
+- titleSs() handles now ß at the end of the page correct, see #243 ([d71e8f1](https://github.com/redimp/otterwiki/commit/d71e8f125d8491d99ab6d1243098163fd2651e06)).
+- commits and diffs of filenames with quotes can be rendered, see #244 ([fedfd48](https://github.com/redimp/otterwiki/commit/fedfd485b1a32f486d4cf00fa60017ae178ebe78)).
+
 ## [v2.10.5](https://github.com/redimp/otterwiki/releases/tag/v2.10.5) - 2025-04-16
 
 <small>[Compare with v2.10.4](https://github.com/redimp/otterwiki/compare/v2.10.4...v2.10.5)</small>
