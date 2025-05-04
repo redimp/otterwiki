@@ -1160,17 +1160,29 @@ var MathJax = {
 };
 
 /* Hot Keys */
-window.addEventListener("keydown", function() {
+window.addEventListener("keydown", function(event) {
     let isInputElement = event.srcElement instanceof HTMLInputElement;
     let isTextAreaElement = event.srcElement instanceof HTMLTextAreaElement;
     let tagName = event.target.tagName.toLowerCase();
     let isContentEditable = event.target.isContentEditable;
     // I'm a bit paranoid here, want to be sure that nothing is missed again
     let isEditable = (isInputElement || isTextAreaElement || tagName === 'input' || tagName === 'textarea' || isContentEditable);
+    let inCodeMirror = document.getElementsByClassName("CodeMirror");
+    inCodeMirror = inCodeMirror.length === 1 && inCodeMirror[0].contains(event.target);
 
-    if (document.getElementById("save-page-btn") != null && (event.ctrlKey || event.metaKey) && event.key === 's') {
+    let command = event.ctrlKey || event.metaKey;
+    let alt = event.altKey;
+    let shift = event.shiftKey;
+    let key = event.key;
+    let noModifiers = !(command || alt || shift);
+
+    // Note: each keybinding must check the state of all modifier keys to avoid unintended conflicts.
+
+    let savePageBtn = document.getElementById("save-page-btn");
+    if (command && !shift && !alt && key === 's' && savePageBtn != null) {
         event.preventDefault();
         document.getElementById("save-page-btn").click();
+        return;
     }
 
     // Bind CTRL / CMD + p to toggle preview / edit when editing a page
@@ -1178,10 +1190,80 @@ window.addEventListener("keydown", function() {
     for (let i = 0; i < preview_buttons.length; i++) {
         let button_id = preview_buttons[i];
         let button = document.getElementById(button_id);
-        if (button != null && button.style.display !== 'none' && (event.ctrlKey || event.metaKey) && event.key === 'p') {
+        if (command && !shift && !alt && key === 'p' && button != null && button.style.display !== 'none') {
             event.preventDefault();
             button.click();
             break;
+        }
+    }
+
+    // Editor keybindings
+    if (inCodeMirror) {
+        if (command && !shift && !alt && key === 'b') {
+            otterwiki_editor.bold();
+            event.preventDefault();
+            return;
+        }
+
+        if (command && !shift && !alt && key === 'i') {
+            otterwiki_editor.italic();
+            event.preventDefault();
+            return;
+        }
+
+        if (command && !shift && !alt && key === 'k') {
+            otterwiki_editor.link();
+            event.preventDefault();
+            return;
+        }
+
+        if (command && !shift && !alt && key === 'm') {
+            otterwiki_editor.img();
+            event.preventDefault();
+            return;
+        }
+
+        if (command && shift && !alt && key === 's') {
+            otterwiki_editor.strikethrough();
+            event.preventDefault();
+            return;
+        }
+
+        if (command && shift && !alt && key === 'b') {
+            otterwiki_editor.ul();
+            event.preventDefault();
+            return;
+        }
+
+        if (command && shift && !alt && key === 'n') {
+            otterwiki_editor.ol();
+            event.preventDefault();
+            return;
+        }
+
+        if (command && shift && !alt && key === 't') {
+            otterwiki_editor.cl();
+            event.preventDefault();
+            return;
+        }
+
+        if (command && shift && !alt && key === 'c') {
+            otterwiki_editor.codeBlock();
+            event.preventDefault();
+            return;
+        }
+
+        if (!command && !shift && alt && key === "ArrowUp") {
+            otterwiki_editor.table_add_row();
+            event.preventDefault();
+            return;
+        }
+
+        if (!command && !shift && alt && key === "ArrowDown") {
+            otterwiki_editor.table_add_row();
+            otterwiki_editor.table_move_row_down();
+            event.preventDefault();
+            return;
         }
     }
 
@@ -1189,24 +1271,31 @@ window.addEventListener("keydown", function() {
         return;
     }
 
-	if (document.getElementById("search-query") != null && event.key === '/' && !(event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)) {
-        document.getElementById("search-query").focus();
+    let searchQuery = document.getElementById("search-query")
+	if (noModifiers && key === '/' && searchQuery != null) {
+        searchQuery.focus();
         event.preventDefault();
+        return;
     }
 
-    if (document.getElementById("toggle-sidebar-btn") != null && event.key === '[' && !(event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)) {
+    let toggleSidebarBtn = document.getElementById("toggle-sidebar-btn");
+    if (noModifiers && key === '[' && toggleSidebarBtn != null) {
+        toggleSidebarBtn.click();
         event.preventDefault();
-        document.getElementById("toggle-sidebar-btn").click();
+        return;
     }
 
-    if (document.getElementById("create-page-btn") != null && event.key === 'c' && !(event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)) {
+    let createPageBtn = document.getElementById("create-page-btn");
+    if (noModifiers && key === 'c' && createPageBtn != null) {
         event.preventDefault();
         document.getElementById("create-page-btn").click();
+        return;
     }
 
-    if (document.getElementById("edit-page-btn") != null && event.key === 'e' && !(event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)) {
+    let editPageBtn = document.getElementById("edit-page-btn");
+    if (noModifiers && key === 'e' && editPageBtn != null) {
         event.preventDefault();
-        document.getElementById("edit-page-btn").click();
+        editPageBtn.click();
     }
 });
 
