@@ -139,7 +139,7 @@ def test_rename_page_with_attachment(app_with_attachments, test_client):
         author=author,
         message="added attachment to testa",
     )
-    # test attachment exsists
+    # test attachment exists
     rv = test_client.get("/Testa/a/attachment0.txt")
     assert rv.status_code == 200
     # rename page

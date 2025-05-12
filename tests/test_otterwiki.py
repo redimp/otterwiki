@@ -88,7 +88,7 @@ def test_create_page(test_client, req_ctx):
     assert "Test test 12345678" in html
     assert "<title>{}".format(pagename.title()) in html
     assert "<p><strong>strong</strong></p>" in html
-    # check exisiting page
+    # check existing page
     html = test_client.post(
         "/-/create",
         data={
@@ -123,7 +123,7 @@ def test_create_page_notlower(test_client, req_ctx):
     assert "Test test 12345678" in html
     assert "<title>Test page" in html
     assert "<p><strong>strong</strong></p>" in html
-    # check exisiting page
+    # check existing page
     html = test_client.post(
         "/-/create",
         data={
@@ -160,7 +160,7 @@ def test_pageindex(test_client):
         "added nested page",
     )
     html = test_client.get("/-/index").data.decode()
-    # check captializing (from # Random page)
+    # check capitalizing (from # Random page)
     assert 'Random page' in html
     assert 'href="/Random%20page"' in html
     # Test nested page
@@ -547,7 +547,7 @@ def test_nested_files(test_client):
     assert 'Page Index' in rv.data.decode()
     assert _file_name.capitalize() in rv.data.decode()
 
-    # upload an iamge
+    # upload an image
     file_name = 'test_image.png'
     _file_path = pathlib.Path(__file__).parent / file_name
     data = dict(
