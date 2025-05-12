@@ -272,7 +272,7 @@ class SimpleAuth:
                 self.activated_user_notify_admins(name, email)
 
     def activated_user_notify_admins(self, name, email):
-        # fetch all admin email adresses
+        # fetch all admin email addresses
         admin_list = self.User.query.filter_by(is_admin=True).all()
         admin_emails = [str(u.email) for u in admin_list]
         text_body = render_template(
@@ -291,7 +291,7 @@ class SimpleAuth:
 
     def _user_needs_approvement(self):
         # check if the user needs to be approved by checking
-        # if beeing REGISTERED is a lower requirement anywhere
+        # if being REGISTERED is a lower requirement anywhere
         return "REGISTERED" not in [
             app.config[permission].upper()
             for permission in [

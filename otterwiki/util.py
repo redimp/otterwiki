@@ -101,7 +101,7 @@ def split_path(path: str) -> List[str]:
 
 def titleSs(s):
     """
-    This function is a workaround for str.title() not knowing upercase 'ß'.
+    This function is a workaround for str.title() not knowing uppercase 'ß'.
     """
     if 'ß' not in s:
         return s.title()

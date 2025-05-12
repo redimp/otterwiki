@@ -128,7 +128,7 @@ class SidebarPageIndex:
             ]
         # after filtering and ordering: back to OrderedDict
         stree = OrderedDict(filtered_list)
-        # recursivly take care of the child nodes
+        # recursively take care of the child nodes
         for key, values in stree.items():
             if values["children"]:
                 stree[key]["children"] = self.order_tree(
