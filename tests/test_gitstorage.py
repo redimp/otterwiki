@@ -443,7 +443,7 @@ def test_get_parent_revision(storage):
     revision3 = [x['revision'] for x in log if x['message'] == "operation 3"][
         0
     ]
-    # now we check the parent revision of the renamed file, with the revison of the
+    # now we check the parent revision of the renamed file, with the revision of the
     # commit that did the renaming as child
     parent_revision = storage.get_parent_revision(
         filename=filename1, revision=revision3

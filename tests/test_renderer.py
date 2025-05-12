@@ -673,7 +673,7 @@ date: 2025-04-06 11:05:01
     h1 = soup.find("h1")
     assert h1
     assert h1.text == "Title from frontmatter"
-    # check if the tag was aded to the frontmatter
+    # check if the tag was added to the frontmatter
     details = soup.find("details", {"id": "frontmatter"})
     assert details
     pre = details.find("pre")

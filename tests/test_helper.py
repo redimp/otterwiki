@@ -171,7 +171,7 @@ def test_get_pagename(create_app, req_ctx):
     assert "Subspace/Example" == get_pagename("subspace/example", full=True)
     assert "Example" == get_pagename("example.md")
     assert "Example" == get_pagename("example.md", full=True)
-    # updated version wich respects upper and lowercase
+    # updated version which respects upper and lowercase
     assert "ExamplE" == get_pagename("ExamplE")
     assert "Two Words" == get_pagename("two words.md")
     assert "Two Words" == get_pagename("two words")
@@ -208,7 +208,7 @@ def test_get_pagename_raw(create_app_raw_filenames, req_ctx):
     assert "subspace/example" == get_pagename("subspace/example", full=True)
     assert "example" == get_pagename("example.md")
     assert "example" == get_pagename("example.md", full=True)
-    # updated version wich respects upper and lowercase
+    # updated version which respects upper and lowercase
     assert "ExamplE" == get_pagename("ExamplE")
     assert "two words" == get_pagename("two words.md")
     assert "Two words" == get_pagename("Two words.md")
