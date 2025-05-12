@@ -362,7 +362,7 @@ def permissions_and_registration_form():
 def sidebar_preferences_form():
     if not has_permission("ADMIN"):
         abort(403)
-    # we re-use SidebarPageIndex to generate a list of all pages
+    # we reuse SidebarPageIndex to generate a list of all pages
     sn = SidebarPageIndex("", mode="*")
     pages = [
         get_pagename(fh[0], full=True, header=fh[1])

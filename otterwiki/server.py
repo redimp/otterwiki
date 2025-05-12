@@ -180,7 +180,7 @@ update_app_config()
 #
 # a renderer configured with the app.config
 #
-# initiliaze renderer
+# initialize renderer
 app_renderer = OtterwikiRenderer(config=app.config)
 
 

@@ -310,12 +310,12 @@ class mistunePluginFancyBlocks:
             text = self.FANCY_BLOCK_HEADER.sub('', text, 1)
 
         # parse the text inside the block, remove headings from the rules
-        # -- we dont wont them in the toc so these are handled extra
+        # -- we don't want them in the toc so these are handled extra
         rules = list(block.rules)
         rules.remove('axt_heading')
         rules.remove('setex_heading')
 
-        # add a trailing newline, so that the childen get rendered correctly
+        # add a trailing newline, so that the children get rendered correctly
         if len(text) < 1 or text[-1] != "\n":
             text += "\n"
 
@@ -428,7 +428,7 @@ class mistunePluginFold:
             header = header.group(1)
             text = self.FOLD_BLOCK_HEADER.sub('', text, 1)
 
-        # add a trailing newline, so that the childen get rendered correctly
+        # add a trailing newline, so that the children get rendered correctly
         if len(text) < 1 or text[-1] != "\n":
             text += "\n"
 

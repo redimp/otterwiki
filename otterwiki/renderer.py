@@ -238,7 +238,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             html = "".join(
                 ["\\[{}\\]".format(line) for line in code.strip().splitlines()]
             )
-            # replace \n with <br/> for convinient diagram writing (and match the github syntax)
+            # replace \n with <br/> for convenient diagram writing (and match the github syntax)
             code = code.replace("\\n", "<br/>")
             html = '\n<pre class="mermaid">{}\n</pre>\n'.format(code.strip())
             return html
@@ -367,7 +367,7 @@ class OtterwikiRenderer:
         # do the preparsing
         text = chain_hooks("renderer_markdown_preprocess", text)
         # to avoid that preparsing removes the trailing newline and to be
-        # able to deal with manually comitted files that lack the trailing newline
+        # able to deal with manually committed files that lack the trailing newline
         # we add one in case it is missing
         if len(text) < 1 or text[-1] != "\n":
             text += "\n"

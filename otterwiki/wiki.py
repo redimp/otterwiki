@@ -1244,7 +1244,7 @@ class Attachment:
         }
 
     def __repr__(self):
-        return "<Attachemnt '{}' of '{}'>".format(self.filename, self.pagepath)
+        return "<Attachment '{}' of '{}'>".format(self.filename, self.pagepath)
 
     def rename(self, new_filename, message, author):
         if not has_permission("UPLOAD"):
@@ -1454,7 +1454,7 @@ class Search:
             # TODO
             # use git log -S
             # see https://git-scm.com/docs/git-log#Documentation/git-log.txt--Sltstringgt
-            # search trough commits to find the one that added the string
+            # search through commits to find the one that added the string
             pass
 
         t_start = timer()

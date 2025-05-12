@@ -28,7 +28,7 @@ class SerializeError(ValueError):
     pass
 
 
-# initiliaze serializer
+# initialize serializer
 _serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
 
