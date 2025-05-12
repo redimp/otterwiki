@@ -136,7 +136,7 @@ else
 endif
 
 docker-push: test
-# check if we are in the main branch (to avoid accidently pushing a feature branch
+# check if we are in the main branch (to avoid accidentally pushing a feature branch
 ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
 # check if git is clean
 ifneq ($(strip $(shell git status --porcelain)),)
