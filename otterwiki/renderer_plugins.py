@@ -7,6 +7,7 @@ import yaml
 from mistune.inline_parser import LINK_LABEL
 from mistune.util import unikey, ESCAPE_TEXT
 import urllib.parse
+from otterwiki.util import slugify
 
 __all__ = ['plugin_task_lists', 'plugin_footnotes']
 
@@ -585,10 +586,10 @@ class mistunePluginWikiLink:
     WIKI_LINK_MOD_RE = re.compile(WIKI_LINK_MOD)
 
     def parse_wikilink(self, inline, m, state):
-        left, right = m.group(2), m.group(4) or ""
-
-        if right == "":
-            right = left
+        if m.group(4) and len(m.group(4)):
+            left, right = m.group(2), m.group(4)
+        else:
+            left, right = m.group(2), m.group(1)
 
         WIKILINK_STYLE = inline.env.get("config", {}).get("WIKILINK_STYLE", "")
         if WIKILINK_STYLE.upper().replace("_", "").strip() in [
@@ -601,18 +602,18 @@ class mistunePluginWikiLink:
 
         if not link.startswith("/"):
             link = f"/{link}"
+        # parse link
+        link_p = urllib.parse.urlparse(link)
+        # slugify the fragment to match the anchors generate by OtterwikiMdRenderer.heading
+        if len(link_p.fragment):
+            link = link_p._replace(fragment=slugify(link_p.fragment)).geturl()
+
         # quote link (and just in case someone encoded already: unquote)
         link = urllib.parse.quote(urllib.parse.unquote(link), safe="/#")
-
         return "wikilink", inline.render(title, state), link
 
     def render_html_wikilink(self, text, link):
         return '<a href="' + link + '">' + text + '</a>'
-
-    def replace_wikilinks(self, match):
-        if match.group(3) and len(match.group(3)):
-            return "[[" + match.group(2) + "%" + match.group(4) + "]]"
-        return "[[" + match.group(2) + "]]"
 
     def before_parse(self, md, s, state):
         def replace(match):
@@ -624,7 +625,7 @@ class mistunePluginWikiLink:
                     + match.group(4)
                     + "]]"
                 )
-            return "[[" + match.group(2) + "]]"
+            return "[[" + match.group(1) + "]]"
 
         s = self.WIKI_LINK_RE.sub(replace, s)
         return s, state

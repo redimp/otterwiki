@@ -130,7 +130,7 @@ def test_html_mark():
     assert "<mark>mark</mark>" in html
 
 
-def test_wiki_link(req_ctx):
+def test_wiki_link():
     text = "[[Title|Link]]"
     html, _ = render.markdown(text)
     assert '<a href="/Link">Title</a>' in html
@@ -148,13 +148,36 @@ def test_wiki_link(req_ctx):
     )
 
 
-def test_wiki_link_subspace(req_ctx):
+def test_wiki_link_anchor():
+    text = "[[Link with#anchor]]"
+    html, _ = render.markdown(text)
+    assert '<a href="/Link%20with#anchor">Link with</a>' in html
+    text = "[[Link with#Some Heading]]"
+    html, _ = render.markdown(text)
+    assert '<a href="/Link%20with#some-heading">Link with</a>' in html
+
+
+def test_wiki_link_anchor2():
+    text = "[[Link with anchor and title|Link with#anchor]]"
+    html, _ = render.markdown(text)
+    assert (
+        '<a href="/Link%20with#anchor">Link with anchor and title</a>' in html
+    )
+    text = "[[Link with title and#Some Heading]]"
+    html, _ = render.markdown(text)
+    assert (
+        '<a href="/Link%20with%20title%20and#some-heading">Link with title and</a>'
+        in html
+    )
+
+
+def test_wiki_link_subspace():
     text = "[[Paul|people/Paul]]"
     html, _ = render.markdown(text)
     assert '<a href="/people/Paul">Paul</a>' in html
 
 
-def test_wiki_link_compatibility_mode(req_ctx):
+def test_wiki_link_compatibility_mode():
     configured_renderer = OtterwikiRenderer(
         config={"WIKILINK_STYLE": "LinkTitle"}
     )
@@ -169,7 +192,7 @@ def test_wiki_link_compatibility_mode(req_ctx):
     assert '<a href="/Link">Link</a>' in html
 
 
-def test_wiki_link_in_table(req_ctx):
+def test_wiki_link_in_table():
     text = """| name | date | link |
 | -------- | -------- | -------- |
 | John | 01/31/1996 | [[people/John]] |
@@ -185,7 +208,7 @@ def test_wiki_link_in_table(req_ctx):
     assert '<td><a href="/people/Mary">Mary</a></td>' in html
 
 
-def test_wiki_link_in_code(req_ctx):
+def test_wiki_link_in_code():
     text = """`[[people/John]]`
 
 ```
