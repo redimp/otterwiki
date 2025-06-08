@@ -264,47 +264,47 @@ class Changelog:
         # pagination
         if self.commit_start is None:
             self.commit_start = log[0]["revision"]
-        if self.commit_count is not None:
-            log_page = []
-            started = False
-            start_n = 0
-            for n, entry in enumerate(log):
-                if entry["revision"] == self.commit_start:
-                    started = True
-                    start_n = n
-                elif not started:
-                    continue
-                log_page.append(entry)
-                if len(log_page) > self.commit_count:
-                    break
-            # find paging revisions
-            commit_i = 0
-            page_i = 1
-            while commit_i < len(log):
-                if (commit_i >= start_n) and (
-                    commit_i < start_n + self.commit_count
-                ):
-                    active_page = page_i
-                    try:
-                        previous_page = pages[-1]["revision"]
-                    except IndexError:
-                        pass
-                pages.append(
-                    {
-                        "i": page_i,
-                        "revision": log[commit_i]["revision"],
-                        "active": active_page == page_i,
-                        "dummy": False,
-                    }
-                )
+
+        log_page = []
+        started = False
+        start_n = 0
+        for n, entry in enumerate(log):
+            if entry["revision"] == self.commit_start:
+                started = True
+                start_n = n
+            elif not started:
+                continue
+            log_page.append(entry)
+            if len(log_page) > self.commit_count:
+                break
+        # find paging revisions
+        commit_i = 0
+        page_i = 1
+        while commit_i < len(log):
+            if (commit_i >= start_n) and (
+                commit_i < start_n + self.commit_count
+            ):
+                active_page = page_i
                 try:
-                    if pages[-2]["active"]:
-                        next_page = pages[-1]["revision"]
+                    previous_page = pages[-1]["revision"]
                 except IndexError:
                     pass
-                commit_i += self.commit_count
-                page_i += 1
-            log = log_page
+            pages.append(
+                {
+                    "i": page_i,
+                    "revision": log[commit_i]["revision"],
+                    "active": active_page == page_i,
+                    "dummy": False,
+                }
+            )
+            try:
+                if pages[-2]["active"]:
+                    next_page = pages[-1]["revision"]
+            except IndexError:
+                pass
+            commit_i += self.commit_count
+            page_i += 1
+        log = log_page
         # store first and last page
         first_page = pages[0]["revision"]
         last_page = pages[-1]["revision"]
@@ -371,6 +371,7 @@ class Changelog:
             storage.revert(revision, message=message, author=author)
         except StorageError as e:
             toast("Error: Unable to revert {}.".format(revision), "error")
+            app.logger.error(f"Unable to revert {revision}: {e}")
         else:
             toast(toast_message)
         return redirect(url_for("changelog"))
@@ -467,7 +468,7 @@ class Page:
             if all([not metadata, not content]):
                 # If both are None, raise the exception. Otherwise, a warning will show on the page that
                 # the file is not under version control.
-                raise
+                raise e
 
         return content, metadata
 
