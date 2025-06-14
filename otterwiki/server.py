@@ -4,6 +4,7 @@
 import datetime
 import os
 import sys
+import logging
 
 from flask import Flask
 from flask_mail import Mail
@@ -60,6 +61,7 @@ app.config.update(
     MAX_FORM_MEMORY_SIZE=1_000_000,
     HTML_EXTRA_HEAD="",
     HTML_EXTRA_BODY="",
+    LOG_LEVEL_WERKZEUG="INFO",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
@@ -82,7 +84,9 @@ for key in app.config:
         else:
             app.config[key] = os.environ[key]
 
+# configure logging
 app.logger.setLevel(app.config["LOG_LEVEL"])
+logging.getLogger('werkzeug').setLevel(app.config["LOG_LEVEL_WERKZEUG"])
 
 # setup database
 db = SQLAlchemy(app)
