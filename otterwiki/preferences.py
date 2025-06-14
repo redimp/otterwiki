@@ -136,6 +136,9 @@ def handle_sidebar_preferences(form):
     _update_preference(
         "SIDEBAR_MENUTREE_MODE", form.get("sidebar_menutree_mode", "")
     )
+    _update_preference(
+        "SIDEBAR_MENUTREE_FOCUS", form.get("sidebar_menutree_focus", "")
+    )
     for checkbox in [
         "sidebar_menutree_ignore_case",
     ]:

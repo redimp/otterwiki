@@ -5,6 +5,7 @@ import os
 import re
 import json
 from collections import OrderedDict
+from timeit import default_timer as timer
 from flask import url_for
 from otterwiki.server import storage, app
 from otterwiki.util import (
@@ -77,6 +78,7 @@ class SidebarPageIndex:
         except ValueError:
             self.max_depth = None
         self.mode = app.config["SIDEBAR_MENUTREE_MODE"]
+        self.focus = app.config["SIDEBAR_MENUTREE_FOCUS"]
         # overwrite mode if argument is given
         if mode:
             self.mode = mode
@@ -88,7 +90,12 @@ class SidebarPageIndex:
             self.tree = None
         else:
             self.tree = OrderedDict()
-            self.load()
+            # load all siblings and parents of the current page
+            self.load(self.path)
+            # check if focus has been disabled, via SIDEBAR_MENUTREE_FOCUS
+            if self.focus == "OFF" and path != "":
+                # without focus load all pages
+                self.load(path="")
             self.tree = self.order_tree(self.tree)
 
     def read_header(self, filename):
@@ -165,15 +172,19 @@ class SidebarPageIndex:
                 header,
             )
 
-    def load(self):
-        files, _ = storage.list(p=self.path)
+    def load(self, path):
+        t_start = timer()
+        files, _ = storage.list(p=path)
+        app.logger.debug(
+            f"SidebarPageIndex.load({path}) storage.list() files took {timer() - t_start:.3f} seconds."
+        )
 
+        t_start = timer()
         entries = []
         for filename in [
             f for f in files if f.endswith(".md")
         ]:  # filter .md files
-            if self.path is not None:
-                filename = os.path.join(self.path, filename)
+            filename = os.path.join(path, filename)
             parents = split_path(filename)[:-1]
             # ensure all parents are in the entries
             for i in range(len(parents)):
@@ -190,6 +201,9 @@ class SidebarPageIndex:
             self.filenames_and_header.append((entry, header))
             parts = split_path(entry)
             self.add_node(self.tree, [], parts, header)
+        app.logger.debug(
+            f"SidebarPageIndex.load({path}) reading entries, adding nodes took {timer() - t_start:.3f} seconds."
+        )
 
     def query(self):
         return self.tree
