@@ -358,6 +358,14 @@ def is_valid_name(
     return True, f"name is valid"
 
 
+def unquote_git_path(s: str) -> str:
+    # with git `config core.quotepath = True` converts "unusual" utf-8 with bytes > 0x80 to octcal e.g. \302\265
+    # see https://git-scm.com/docs/git-config#Documentation/git-config.txt-corequotePath
+    # We want to have utf-8, so we do
+    # 1. encode in bytes, 2. decode and interpret the byte values, 3. encode back in bytes and 4. finally to a proper utf-8 string
+    return s.encode().decode("unicode_escape").encode("latin1").decode("utf-8")
+
+
 def get_PatchSet(s: str) -> PatchSet:
     """
     Proxy as workaround for unidiff.PatchSet not supporting quotes in filenames (yet).
@@ -373,10 +381,14 @@ def get_PatchSet(s: str) -> PatchSet:
     while m is not None:
         source = m.group('source')
         target = m.group('target')
+        print(f"{source=} {target=}")
         # remove escaping from the quotes
         source_n = source.replace('\\"', '"')
         target_n = target.replace('\\"', '"')
+        source_n = unquote_git_path(source_n)
+        target_n = unquote_git_path(target_n)
         s = s.replace(m.group(0), f"diff --git {source_n} {target_n}")
+        print(f"get_PatchSet {s=}")
         s = re.sub(
             r'^--- "' + re.escape(source) + '"', source_n, s, flags=re.M
         )
