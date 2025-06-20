@@ -231,6 +231,18 @@ def changelog(revision=None):
     return chlg.render()
 
 
+@app.route("/-/changelog/feed.rss")
+def changelog_feed_rss():
+    chlg = Changelog()
+    return chlg.feed_rss()
+
+
+@app.route("/-/changelog/feed.atom")
+def changelog_feed_atom():
+    chlg = Changelog()
+    return chlg.feed_atom()
+
+
 @app.route("/-/index")
 def pageindex():
     idx = PageIndex()

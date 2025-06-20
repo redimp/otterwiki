@@ -2,7 +2,9 @@
 {% extends "wiki.html" %}
 {%block head %}
 {{ super() }}
-<meta name="robots" content="noindex, nofollow"/>
+    <meta name="robots" content="noindex, nofollow"/>
+    <link rel="alternate" type="application/rss+xml" title="Changelog RSS Feed" href="{{url_for("changelog_feed_rss", _external=True)}}" />
+    <link rel="alternate" type="application/atom+xml" title="Changelog Atom Feed" href="{{url_for("changelog_feed_atom", _external=True)}}" />
 {% endblock %}
 {% block extra_nav %}{% endblock %}
 {% block menu %}
@@ -55,6 +57,9 @@
     <i class="fa fa-angle-double-right" aria-hidden="true"></i>
     <span class="sr-only">Last page</span> <!-- sr-only = only for screen readers -->
   </a>
+</div>
+<div class="text-right">
+<i class="fas fa-rss"></i> <a href="{{url_for("changelog_feed_rss", _external=True)}}">rss</a> | <a href="{{url_for("changelog_feed_atom", _external=True)}}">atom</a>
 </div>
 </nav>
 {% endif %}

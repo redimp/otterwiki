@@ -23,6 +23,8 @@ from markupsafe import escape as html_escape
 from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
 
+from feedgen.feed import FeedGenerator
+
 from otterwiki.auth import current_user, has_permission
 from otterwiki.gitstorage import StorageError, StorageNotFound
 from otterwiki.helper import (
@@ -235,7 +237,7 @@ class Changelog:
         self.commit_count = 100
         pass
 
-    def get(self):
+    def get(self, _external=False):
         log = []
         # filter log
         for orig_entry in storage.log():
@@ -249,7 +251,9 @@ class Changelog:
                 ) = auto_url(
                     filename,
                     entry["revision"],
+                    _external=_external,
                 )
+                entry["files"][filename]["mimetype"] = guess_mimetype(filename)
             log.append(entry)
         return log
 
@@ -410,6 +414,84 @@ class Changelog:
             menutree=menutree.query(),
             custom_menu=SidebarMenu().query(),
         )
+
+    def get_feedgenerator(self):
+        t_start = timer()
+        log = self.get(_external=True)
+        fg = FeedGenerator()
+        # Wiki Core information
+        fg.title(app.config["SITE_NAME"] or "An Otter Wiki" + " -  Changelog")
+        fg.description(
+            app.config["SITE_DESCRIPTION"] or "All recent changes to the wiki"
+        )
+        # Logo
+        if app.config["SITE_LOGO"] and app.config["SITE_LOGO"].startswith("/"):
+            fg.logo(url_for("index", _external=True) + app.config["SITE_LOGO"])
+        if app.config["SITE_LOGO"] and app.config[
+            "SITE_LOGO"
+        ].lower().startswith(("http:/", "https:/")):
+            fg.logo(app.config["SITE_LOGO"])
+        else:
+            fg.logo(
+                url_for("static", filename="img/otterhead.png", _external=True)
+            )
+        # add the changelog
+        for entry in log:
+            fe = fg.add_entry()
+            if entry["author_name"]:
+                fe.author(
+                    {
+                        "name": entry["author_name"],
+                        "email": entry["author_email"] or "",
+                    }
+                )
+            # link to commit
+            fe.id(
+                url_for(
+                    "show_commit", revision=entry["revision"], _external=True
+                ),
+            )
+            fe.guid(
+                url_for(
+                    "show_commit", revision=entry["revision"], _external=True
+                ),
+                permalink=True,
+            )
+            elements = []
+            for _, details in entry["files"].items():
+                elements.append(details["name"])
+                if details["url"] and details["mimetype"]:
+                    if details["mimetype"] == "text/markdown":
+                        # since we render markdown as html, change the type
+                        fe.enclosure(url=details["url"], type="text/html")
+                    else:
+                        fe.enclosure(
+                            url=details["url"], type=details["mimetype"]
+                        )
+            title = ", ".join(elements)
+            fe.title(f"Commit " + entry["revision"] + ": " + title)
+            fe.description(entry["message"] or "-/-")
+            fe.published(entry["datetime"])
+
+        app.logger.debug(
+            f"get_feedgenerator() took {timer() - t_start:.3f} seconds."
+        )
+        return fg
+
+    def feed_rss(self):
+        fg = self.get_feedgenerator()
+        # update link
+        fg.link(href=url_for("changelog_feed_rss", _external=True), rel='self')
+        return fg.rss_str(pretty=True)
+
+    def feed_atom(self):
+        fg = self.get_feedgenerator()
+        fg.id(url_for("changelog_feed_atom", _external=True))
+        # update link
+        fg.link(
+            href=url_for("changelog_feed_atom", _external=True), rel='self'
+        )
+        return fg.atom_str(pretty=True)
 
 
 class Page:

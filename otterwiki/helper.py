@@ -119,7 +119,7 @@ def health_check():
     return False, msg
 
 
-def auto_url(filename, revision=None):
+def auto_url(filename, revision=None, _external=False):
     # handle attachments and pages
     arr = split_path(filename)
     if filename.endswith(".md"):
@@ -130,6 +130,7 @@ def auto_url(filename, revision=None):
                 "view",
                 path=get_pagename(filename, full=True),
                 revision=revision,
+                _external=_external,
             ),
         )
     else:
@@ -145,6 +146,7 @@ def auto_url(filename, revision=None):
                 pagepath=pagename,
                 filename=attached_filename,
                 revision=revision,
+                _external=_external,
             ),
         )
 
