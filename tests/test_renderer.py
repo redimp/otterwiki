@@ -151,10 +151,13 @@ def test_wiki_link():
 def test_wiki_link_anchor():
     text = "[[Link with#anchor]]"
     html, _ = render.markdown(text)
-    assert '<a href="/Link%20with#anchor">Link with</a>' in html
+    assert '<a href="/Link%20with#anchor">Link with#anchor</a>' in html
     text = "[[Link with#Some Heading]]"
     html, _ = render.markdown(text)
-    assert '<a href="/Link%20with#some-heading">Link with</a>' in html
+    assert (
+        '<a href="/Link%20with#some-heading">Link with#Some Heading</a>'
+        in html
+    )
 
 
 def test_wiki_link_anchor2():
@@ -166,7 +169,7 @@ def test_wiki_link_anchor2():
     text = "[[Link with title and#Some Heading]]"
     html, _ = render.markdown(text)
     assert (
-        '<a href="/Link%20with%20title%20and#some-heading">Link with title and</a>'
+        '<a href="/Link%20with%20title%20and#some-heading">Link with title and#Some Heading</a>'
         in html
     )
 

@@ -574,12 +574,12 @@ class mistunePluginWikiLink:
 
     PIPE_REPLACEMENT = "\ufeff"
 
-    WIKI_LINK = r"\[\[(([^|\]#]+)(?:#[^\]]*)?(?:(\|)([^\]]+))?)\]\]"
+    WIKI_LINK = r"\[\[(([^|\]]+)(?:#[^\]]*)?(?:(\|)([^\]]+))?)\]\]"
     WIKI_LINK_RE = re.compile(WIKI_LINK)
     WIKI_LINK_MOD = (
         r"\[\[(([^"
         + PIPE_REPLACEMENT
-        + r"\]#]+)(?:#[^\]]*)?(?:("
+        + r"\]]+)(?:#[^\]]*)?(?:("
         + PIPE_REPLACEMENT
         + r")([^\]]+))?)\]\]"
     )
@@ -600,7 +600,7 @@ class mistunePluginWikiLink:
         else:
             title, link = left, right
 
-        if not link.startswith("/"):
+        if not link.startswith(("/", "#")):
             link = f"/{link}"
         # parse link
         link_p = urllib.parse.urlparse(link)
