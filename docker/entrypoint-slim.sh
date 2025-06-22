@@ -12,6 +12,11 @@ if [ ! -d ${OTTERWIKI_REPOSITORY}/.git ]; then
     git init -b main ${OTTERWIKI_REPOSITORY}
 fi
 
+# configure git
+cd ${OTTERWIKI_REPOSITORY}
+git config user.name "Otterwiki Robot"
+git config user.email "noreply@otterwiki"
+
 # take care of the otterwiki settings file
 if [ ! -f ${OTTERWIKI_SETTINGS} ]; then
     RANDOM_SECRET_KEY=$(echo "$(date) ${RANDOM} ${RANDOM} ${RANDOM}" | md5sum | head -c 32)

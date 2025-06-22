@@ -49,7 +49,7 @@ COPY --chown=www-data:www-data --from=compile-stage /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 # create directories
 RUN mkdir -p /app-data /app/otterwiki && \
-    chown www-data:www-data /app-data
+    chmod 1777 /app-data
 VOLUME /app-data
 # copy static files for nginx
 COPY otterwiki/static /app/otterwiki/static
