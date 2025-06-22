@@ -9,7 +9,7 @@ RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
     apt-get update -y && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends python3.11 python3.11-venv \
-    python3-pip libjpeg-dev zlib1g-dev build-essential python3-dev
+    python3-pip libjpeg-dev zlib1g-dev build-essential python3-dev libxml2-dev libxslt-dev
 # prepare environment
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
