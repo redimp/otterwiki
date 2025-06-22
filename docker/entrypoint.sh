@@ -3,6 +3,9 @@
 
 set -e
 
+# handle PUID and PGUID
+usermod --uid $PUID www-data && groupmod --gid $PGID www-data
+
 # take care of repository dictionary
 if [ ! -d ${OTTERWIKI_REPOSITORY} ]; then
     mkdir -p ${OTTERWIKI_REPOSITORY}
