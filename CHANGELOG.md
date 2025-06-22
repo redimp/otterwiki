@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.11.0](https://github.com/redimp/otterwiki/releases/tag/v2.11.0) - 2025-06-22
+
+<small>[Compare with v2.10.6](https://github.com/redimp/otterwiki/compare/v2.10.6...v2.11.0)</small>
+
+### Features
+
+- added `SIDEBAR_MENUTREE_FOCUS` setting that allows to always display all pages in the sidebar, see #169 ([495cca1](https://github.com/redimp/otterwiki/commit/495cca13432f2a9cc334be6fd0055e598857fbcd)).
+- added rss/atom feeds of the changelog, see #255 ([8f53031](https://github.com/redimp/otterwiki/commit/8f5303168662c08fdc5c593958bfb75d147f2ba8)).
+- enable fragments in wikilinks, e.g. `[[wikilinks#fragment]]`, see #246 ([f60f6e9](https://github.com/redimp/otterwiki/commit/f60f6e900c5af981a144a43375eef301ea9a8850)).
+- the docker -slim image can handle --user to change the uid/gid, see #252 ([f32fd07](https://github.com/redimp/otterwiki/commit/f32fd07388eaf7cd81b3f1654eca38b6c22f1ba8)).
+- docker image: www-data uid/gid is set to PUID/PGID, see #252 ([a46520a](https://github.com/redimp/otterwiki/commit/a46520a79e143445b17f9b25fba3eae40bad24dc)).
+
+### Bug Fixes
+
+- Unicode characters breaking page history, see #253 ([3640ccf](https://github.com/redimp/otterwiki/commit/3640ccfa23471b6428224c865efb69ab56fb664f)).
+
+### Code Refactoring
+
+- followed pyright suggestions, cleaned up ([e24f648](https://github.com/redimp/otterwiki/commit/e24f648045e5a0052be652dc2bbbfdf03be8c881)).
+
 ## [v2.10.6](https://github.com/redimp/otterwiki/releases/tag/v2.10.6) - 2025-04-28
 
 <small>[Compare with v2.10.5](https://github.com/redimp/otterwiki/compare/v2.10.5...v2.10.6)</small>
