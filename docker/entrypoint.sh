@@ -11,11 +11,11 @@ if [ "$PGID" == "100" ]; then
 fi
 # handle PUID and PGUID in case it's not the default 33:33
 if [ "$PUID" != "33" ]; then
-    usermod --uid $PUID www-data
+    usermod --uid $PUID www-data || true
 fi
 
 if [ "$PGID" != "33" ]; then
-    groupmod --gid $PGID www-data
+    groupmod --gid $PGID www-data || true
 fi
 
 # take care of repository dictionary

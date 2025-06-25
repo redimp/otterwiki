@@ -52,8 +52,8 @@ FROM debian:12.11-slim
 # arg for marking dev images
 ARG GIT_TAG
 ENV GIT_TAG=$GIT_TAG
-ARG PUID=33
-ARG PGID=33
+ENV PUID=33
+ENV PGID=33
 # environment variables (I'm not sure if anyone ever would modify this)
 ENV OTTERWIKI_SETTINGS=/app-data/settings.cfg
 ENV OTTERWIKI_REPOSITORY=/app-data/repository
