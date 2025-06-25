@@ -3,8 +3,20 @@
 
 set -e
 
-# handle PUID and PGUID
-usermod --uid $PUID www-data && groupmod --gid $PGID www-data
+# workaround for the unraid template which sets PUID=99 and PGID=100
+# which doesn't work in default debian, where group users owns gid=100
+if [ "$PGID" == "100" ]; then
+    echo "Warning: Deleting group 'users', to make PGID=100 possible."
+    groupdel users
+fi
+# handle PUID and PGUID in case it's not the default 33:33
+if [ "$PUID" != "33" ]; then
+    usermod --uid $PUID www-data
+fi
+
+if [ "$PGID" != "33" ]; then
+    groupmod --gid $PGID www-data
+fi
 
 # take care of repository dictionary
 if [ ! -d ${OTTERWIKI_REPOSITORY} ]; then
