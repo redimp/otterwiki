@@ -730,7 +730,15 @@ class Page:
             cursor_ch = 0
 
         # check Drafts
+        app.logger.debug("Page.editor() Checking for draft")
+        t_start = timer()
         draft = self.load_draft(author=author)
+
+        app.logger.debug(
+            "Page.editor() load_draft(): {}, took {:.3f} seconds.".format(
+                "None" if draft is None else "found", timer() - t_start
+            )
+        )
         if draft is not None:
             if handle_draft is None:
                 return render_template(
@@ -759,7 +767,17 @@ class Page:
                 cursor_ch = draft.cursor_ch
 
         # get file listing
-        files = [f.data for f in self._attachments() if f.metadata is not None]
+        t_start = timer()
+        files = [
+            f.data
+            for f in self._attachments(maximum=100, exclude_extensions=".md")
+            if f.metadata is not None
+        ]
+        app.logger.debug(
+            "Page.editor() collecting {} attachments (files) took {:.3f} seconds.".format(
+                len(files), timer() - t_start
+            )
+        )
         # get page listing
         page_idx = PageIndex()
 
@@ -1062,8 +1080,10 @@ class Page:
             pagename=self.pagename,
         )
 
-    def _attachments(self, maximum=None):
+    def _attachments(self, maximum=None, exclude_extensions=None):
         files, _ = storage.list(self.attachment_directoryname, depth=0)
+        if exclude_extensions:
+            files = [f for f in files if not f.endswith(exclude_extensions)]
         if maximum:
             files = files[:maximum]
         # currently only attached files are handled
@@ -1075,7 +1095,11 @@ class Page:
         # handle case that the page doesn't exists
         self.exists_or_404()
         # get all attachments with metadata
-        files = [f.data for f in self._attachments() if f.metadata is not None]
+        files = [
+            f.data
+            for f in self._attachments(exclude_extensions=".md")
+            if f.metadata is not None
+        ]
         return render_template(
             "attachments.html",
             title="{} - Attachments".format(self.pagename),
@@ -1433,7 +1457,6 @@ class Attachment:
             or self.metadata is None
         ):
             return abort(404)
-        from timeit import default_timer as timer
 
         t_start = timer()
         image = PIL.Image.open(BytesIO(storage.load(self.filepath, mode="rb")))
