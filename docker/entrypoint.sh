@@ -75,6 +75,8 @@ echo "    location / {
     location @app {
         include uwsgi_params;
         uwsgi_pass unix:///tmp/uwsgi.sock;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
     }
     location $USE_STATIC_URL {
         alias $USE_STATIC_PATH;
