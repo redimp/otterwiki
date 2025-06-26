@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.11.1](https://github.com/redimp/otterwiki/releases/tag/v2.11.1) - 2025-06-26
+
+<small>[Compare with v2.11.0](https://github.com/redimp/otterwiki/compare/v2.11.0...v2.11.1)</small>
+
+### Bug Fixes
+
+- markdown files are no longer listed as attachments, see #254. ([514417a](https://github.com/redimp/otterwiki/commit/514417a09be37efc0eeace25a534398dbc61d761)).
+- Dockerfile use ENV not ARG for PUID and PGID ([438b4ac](https://github.com/redimp/otterwiki/commit/438b4accd62c75ef9ddaf45295bcbf69b335acf4)).
+- workaround for unraid templates with PGID=100, see #257 ([d27f993](https://github.com/redimp/otterwiki/commit/d27f993daf57134ac3e94b2deed8af1a8d51b91e)).
+
 ## [v2.11.0](https://github.com/redimp/otterwiki/releases/tag/v2.11.0) - 2025-06-22
 
 <small>[Compare with v2.10.6](https://github.com/redimp/otterwiki/compare/v2.10.6...v2.11.0)</small>
