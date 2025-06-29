@@ -33,6 +33,15 @@
     </div>
   </div>
 {##}
+  <div class="form-group">
+      <label for="site-lang">Site Language</label>
+    <input name="site_lang" type="text" placeholder="/static/img/otterhead.png" class="form-control" id="site-lang" value="{{ config.SITE_LANG or "" }}">
+    <div class="form-text">
+        Configures the <code>lang</code> attribute of the <code>&lt;html&gt;</code> lang used in the wiki. For example, <code>en</code> specifies English, but <code>en-GB</code> and <code>en-US</code> more precisely specify British English and American English, respectively.
+        <em>Note: This is not to be confused with configuring the lange and localization of the application. This is not yet supported.</em>
+    </div>
+  </div>
+{##}
     <div class="form-group">
         <label for="robots_txt">Robot Crawlers</label>
         <select class="form-control w-md-400" id="robots_txt" name="robots_txt">

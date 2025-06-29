@@ -129,6 +129,22 @@ def test_update_preferences_robotstxt(app_with_user, admin_client):
     assert "User-agent: *\nDisallow: /" in rv.data.decode()
 
 
+def test_update_preferences_site_lang(app_with_user, admin_client):
+    # allow
+    rv = admin_client.post(
+        "/-/admin",
+        data={
+            "site_lang": "de",
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert app_with_user.config['SITE_LANG'] == "de"
+    rv = admin_client.get("/")
+    assert "<html lang=\"de\"" in rv.data.decode()[0:256]
+
+
 def test_update_mail_preferences(app_with_user, admin_client):
     new_sender = "mail@example.com"
     new_server = "mail.example.com"

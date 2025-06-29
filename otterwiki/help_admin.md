@@ -14,10 +14,19 @@ name, while the <span class="help-button">Site Icon</span> (or favicon) is displ
 browser tab and in bookmarks. Both Site Logo and Site Icon can be attachments.
 An Otter Wikis logo is the default for both.
 
+To hide the logo of An Otter Wiki, check <span class="help-button"><input type="checkbox" style="display:inline;" id="hide-logo" checked> Hide logo of an An Otter Wiki n the sidebar</span>. A menu item linking the about information will be added to the <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span></span> menu.
+
+### Meta data
+
 The <span class="help-button">Site Description</span> is used in the
 `<meta name="description">` tag.
 
-To hide the logo of An Otter Wiki, check <span class="help-button"><input type="checkbox" style="display:inline;" id="hide-logo" checked> Hide logo of an An Otter Wiki n the sidebar</span>. A menu item linking the about information will be added to the <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span></span> menu.
+The <span class="help-button">Site Language</span> is used for configuring the `lang`
+attribute of the `<html>` tag generated on the pages of the wiki.
+
+The <span class="help-button">Robot Crawlers</span> configures what `robots.txt`
+is generated, when set to `Disallow` it indicates that to visiting crawlers that
+there not allowed to crawl the content.
 
 ### User management
 

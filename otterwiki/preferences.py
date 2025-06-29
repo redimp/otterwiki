@@ -156,6 +156,7 @@ def handle_app_preferences(form):
         "site_logo",
         "site_description",
         "site_icon",
+        "site_lang",
         "robots_txt",
     ]:
         _update_preference(name.upper(), form.get(name, ""))
