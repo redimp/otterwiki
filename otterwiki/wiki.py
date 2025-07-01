@@ -1435,11 +1435,16 @@ class Attachment:
             buffer = BytesIO()
             try:
                 buffer.write(content)
-            except:
+            except Exception as e:
+                app.error.log("Unable to write attachment to buffer: {e}")
                 abort(500)
             buffer.seek(0)
             # create response
-            response = make_response(send_file(buffer, mimetype=self.mimetype))
+            response = make_response(
+                send_file(
+                    buffer, mimetype=self.mimetype, download_name=self.filename
+                )
+            )
             # set header, caching, etc
             response.headers["Last-Modified"] = http_date(metadata['datetime'])
             response.headers["Cache-Control"] = "max-age=604800, immutable"
