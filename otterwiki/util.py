@@ -381,14 +381,12 @@ def get_PatchSet(s: str) -> PatchSet:
     while m is not None:
         source = m.group('source')
         target = m.group('target')
-        print(f"{source=} {target=}")
         # remove escaping from the quotes
         source_n = source.replace('\\"', '"')
         target_n = target.replace('\\"', '"')
         source_n = unquote_git_path(source_n)
         target_n = unquote_git_path(target_n)
         s = s.replace(m.group(0), f"diff --git {source_n} {target_n}")
-        print(f"get_PatchSet {s=}")
         s = re.sub(
             r'^--- "' + re.escape(source) + '"', source_n, s, flags=re.M
         )
