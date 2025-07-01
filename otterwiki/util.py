@@ -154,6 +154,8 @@ def empty(what):
 
 def guess_mimetype(path):
     mimetype, encoding = mimetypes.guess_type(path)
+    if mimetype is None:
+        mimetype = "application/octet-stream"
     return mimetype
 
 
