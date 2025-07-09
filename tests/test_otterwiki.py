@@ -6,6 +6,7 @@ import pathlib
 import re
 from io import BytesIO
 from flask import url_for
+import bs4
 
 
 def test_html(test_client):
@@ -598,3 +599,23 @@ def test_blame_issue200_empty_trailing_lines(test_client, create_app):
     # check blame
     rv = test_client.get("/{}/blame".format(pagename))
     assert rv.status_code == 200
+
+
+def test_meta_og(test_client):
+    pagename = "Meta Test"
+    content = (
+        "# Meta Test\n\n**strong text** with a [link](https://example.com).\n"
+    )
+    commit_message = "Meta test commit message"
+    save_shortcut(test_client, pagename, content, commit_message)
+    html = test_client.get("/{}".format(pagename)).data.decode()
+    soup = bs4.BeautifulSoup(html, "html.parser")
+    assert soup
+    title = soup.find("meta", property="og:title")
+    assert title
+    title = title.get("content", None)
+    description = soup.find("meta", property="og:description")
+    assert description
+    description = description.get("content", None)
+    assert title == pagename
+    assert description == "strong text with a link."

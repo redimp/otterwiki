@@ -8,7 +8,10 @@
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
   <meta name="viewport" content="width=device-width" />
 {# meta preview block [[ #}
-  <meta property="og:title" content="{%if title%}{{title}} - {%endif%}{%if config.SITE_NAME %}{{config.SITE_NAME}}{%else%}An Otter Wiki{%endif%}" />
+{%if title%}
+  <meta property="og:site_name" content="{%if config.SITE_NAME %}{{config.SITE_NAME}}{%else%}An Otter Wiki{%endif%}" />
+{% endif %}
+  <meta property="og:title" content="{%if title%}{{title}}{%elif config.SITE_NAME %}{{config.SITE_NAME}}{%else%}An Otter Wiki{%endif%}" />
   <meta property="og:type" content="website" />
 {%- if pagepath %}
   <meta property="og:url" content="{{ url_for('view', path=pagepath, _external=True) }}" />
@@ -16,10 +19,21 @@
   <meta property="og:url" content="{{ url_for("index", _external=True) }}" />
 {%- endif %}
   <meta property="og:description" content="{%if description%}{{description}}{%elif config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}A minimalistic wiki powered by python, markdown and git.{%endif%}" />
-{%- if config.SITE_LOGO %}
+{%- if pagelogo %}
+  <meta property="og:image" content="{{ pagelogo }}" />
+{%- if pagelogo_properties and pagelogo_properties.height %}
+<meta property="og:image:width" content="{{pagelogo_properties.height}}" />
+{%- endif %}
+{%- if pagelogo_properties and pagelogo_properties.width %}
+<meta property="og:image:width" content="{{pagelogo_properties.width}}" />
+{%- endif %}
+{%- elif config.SITE_LOGO %}
   <meta property="og:image" content="{{ config.SITE_LOGO }}" />
 {%- else %}
   <meta property="og:image" content="{{ url_for("static", filename="img/otterhead.png", _external=True) }}" />
+  <meta property="og:image:width" content="200" />
+  <meta property="og:image:height" content="144" />
+  <meta property="og:image:alt" content="An Otter Wiki Logo" />
 {%- endif %}
 {# meta preview block ]] #}
   <!-- Favicon and title -->

@@ -8,6 +8,7 @@ from io import BytesIO
 from timeit import default_timer as timer
 from typing import List, cast
 from urllib.parse import unquote
+import textwrap
 
 import PIL.Image
 from flask import (
@@ -24,6 +25,7 @@ from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
 
 from feedgen.feed import FeedGenerator
+from bs4 import BeautifulSoup
 
 from otterwiki.auth import current_user, has_permission
 from otterwiki.gitstorage import StorageError, StorageNotFound
@@ -213,15 +215,37 @@ class PageIndex:
             abort(403)
         menutree = SidebarPageIndex(get_page_directoryname(self.path or "/"))
 
+        # build the title and description used in the meta og tags ...
+        if self.path is None or self.path.rstrip("/") == "":
+            title = "Page Index"
+        else:
+            title = f"Page Index: /{self.path}"
+
+        pages = [p[0] for p in self.pages()]
+
+        if len(self.toc) == 1:
+            description = f"{len(pages)} entry: "
+        else:
+            description = f"{len(pages)} entries: "
+
+        description += ", ".join([x.strip("/") for x in pages])
+
+        description = textwrap.shorten(
+            description,
+            width=254,
+            placeholder="…",
+        )
+
         upsert_pagecrumbs(get_pagename(self.path or "/", full=True))
         return render_template(
             "pageindex.html",
-            title="Page Index",
+            title=title,
             pages=self.toc,
             pagepath=self.path or "/",
             menutree=menutree.query(),
             custom_menu=SidebarMenu().query(),
             breadcrumbs=self.breadcrumbs,
+            description=description,
         )
 
     def pages(self):
@@ -659,6 +683,25 @@ class Page:
             "page_view_htmlcontent_postprocess", htmlcontent, self
         )
 
+        # generate a description for the meta tag og:description
+        soup = BeautifulSoup(htmlcontent[0:1024], "html.parser")
+        # turn html into text
+        description = soup.text
+        # strip the title if the description starts with it
+        description = description.removeprefix(title)
+        # replace new lines with middle dots
+        description = re.sub(r'[\n]+', '\n', description.strip())
+        # add a seperator for better readability
+        description = description.replace("\n", "·")
+        # make sure the sperator does directly follow a punctuation mark
+        description = re.sub(r"([!.:,])\s*·", r"\1 ", description)
+        # finally shorten the description and use it as SITE_DESCRIPTION
+        description = textwrap.shorten(
+            description,
+            width=254,
+            placeholder="…",
+        )
+
         # render template
         return render_template(
             "page.html",
@@ -672,6 +715,7 @@ class Page:
             danger_alert=danger_alert,
             menutree=menutree.query(),
             custom_menu=SidebarMenu().query(),
+            description=description,
         )
 
     def preview(self, content=None, cursor_line=None):
