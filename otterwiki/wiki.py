@@ -503,10 +503,10 @@ class Page:
     ):
 
         if pagepath is not None:
-            self.pagepath = sanitize_pagename(pagepath)
+            self.pagepath = sanitize_pagename(pagepath, handle_md=True)
             self.pagename = get_pagename(pagepath)
         elif pagename is not None:
-            self.pagename = sanitize_pagename(pagename)
+            self.pagename = sanitize_pagename(pagename, handle_md=True)
             self.pagepath = get_pagepath(pagename)
 
         self.page_url = url_for("view", path=self.pagepath)
@@ -1669,6 +1669,9 @@ class AutoRoute:
             self.storage_path = join_path(
                 [self.pagepath.lower(), self.filename]
             )
+
+    def __repr__(self):
+        return f"<AutoRoute path: {self.path} pagepath: {self.pagepath}, storagepath: {self.storage_path} {storage.exists(self.storage_path)}, filename: {self.filename}>"
 
     def view(self):
         # check if the path leads to an attachment

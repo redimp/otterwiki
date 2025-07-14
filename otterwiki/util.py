@@ -65,7 +65,7 @@ def clean_slashes(value):
     return value
 
 
-def sanitize_pagename(value, allow_unicode=True):
+def sanitize_pagename(value, allow_unicode=True, handle_md=False):
     value = str(value)
     if allow_unicode:
         value = unicodedata.normalize("NFKC", value)
@@ -75,6 +75,8 @@ def sanitize_pagename(value, allow_unicode=True):
             .encode("ascii", "ignore")
             .decode("ascii")
         )
+    if handle_md:
+        value = re.sub(r".md$", "", value)
     # remove slashes, question marks ...
     value = re.sub(r"[?|$|.|!|#|\\]", r"", value)
 
