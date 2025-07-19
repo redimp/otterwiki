@@ -3,18 +3,27 @@
 
 set -e
 
-# workaround for the unraid template which sets PUID=99 and PGID=100
-# which doesn't work in default debian, where group users owns gid=100
-if [ "$PGID" == "100" ]; then
-    echo "Warning: Deleting group 'users', to make PGID=100 possible."
-    groupdel users
-fi
 # handle PUID and PGUID in case it's not the default 33:33
 if [ "$PUID" != "33" ]; then
     usermod --uid $PUID www-data || true
 fi
 
 if [ "$PGID" != "33" ]; then
+    if [ "$PGID" != "0" ]; then
+        echo "Fatal: PGID must not be 0 (root)." >&2
+        exit 1
+    fi
+    # check if GID exists
+    GROUPNAME=$(getent group $PGID | cut -d':' -f1)
+    # do nothing if the group does not exists or is already named www-data
+    if [ "$GROUPNAME" != "" ] && [ "$GROUPNAME" != "www-data" ]; then
+        # workaround for the unraid template which sets PUID=99 and PGID=100
+        # which doesn't work in default debian, where group users owns gid=100
+        echo "Warning: Deleting group $GROUPNAME to make PGID=$PGID possible."
+        groupdel $GROUPNAME
+    else
+        echo "Info: No need to touch group $GROUPNAME with GID=$PGID."
+    fi
     groupmod --gid $PGID www-data || true
 fi
 
