@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.12.0](https://github.com/redimp/otterwiki/releases/tag/v2.12.0) - 2025-07-20
+
+<small>[Compare with v2.11.1](https://github.com/redimp/otterwiki/compare/v2.11.1...v2.12.0)</small>
+
+### Features
+
+- handle `.md` suffix in URLs, pointing to Pages, see #267 ([a924afe](https://github.com/redimp/otterwiki/commit/a924afeafd6afbd7ff9a76cc16b7e7d4e333a20d)).
+- improved the `<head> <meta og:...>` tags: site name and descriptions based upon the pages content ([d10eea8](https://github.com/redimp/otterwiki/commit/d10eea8289614fa731a521d54fa8ff57159dc00b)).
+- added `SITE_LANG` to configure the lang attribute of the html element ([3d897a4](https://github.com/redimp/otterwiki/commit/3d897a42102f9efe183757d538e4010a423ff690)).
+
+### Bug Fixes
+
+- handle existing `PUID` and `PGIDs` so that containers can restart, see #257 ([ec9a3c6](https://github.com/redimp/otterwiki/commit/ec9a3c6ca9c123f34dce3b5abb5a2035ccba52ff)).
+- set the `download_name` when an attachment is requested by revision, see #260 ([e20de72](https://github.com/redimp/otterwiki/commit/e20de72028a38784d75768c4e6f32b2093f19982)).
+- default mimetype set to octet-stream, see #260 ([4eca70f](https://github.com/redimp/otterwiki/commit/4eca70ff3a6c2f12bd62121311233a816949487d)).
+- increased proxy read/send timeout for nginx, see #254 ([5d35f4a](https://github.com/redimp/otterwiki/commit/5d35f4a9d221a0c6a40dd4fc38993210c5428ce8)).
+
 ## [v2.11.1](https://github.com/redimp/otterwiki/releases/tag/v2.11.1) - 2025-06-26
 
 <small>[Compare with v2.11.0](https://github.com/redimp/otterwiki/compare/v2.11.0...v2.11.1)</small>
@@ -525,3 +542,5 @@ Usually chores are not part of the changelog, here an exception is made:
   * check lists
 * Uncommon additions like
   * spoiler and folded blocks.
+
+<!-- vim: set tw=0 nowrap: -->
