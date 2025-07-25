@@ -489,6 +489,10 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
     });
 
 
+    var cm_wrapper_el = cm_editor.getWrapperElement();
+    cm_wrapper_el.addEventListener('paste', function(e) {
+      otterwiki_editor.on_paste(e);
+    }, true);
 
     /* document elements */
     const content_wrapper = document.querySelector("#content-wrapper")

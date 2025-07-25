@@ -366,12 +366,25 @@ var otterwiki_editor = {
         var cm = cm_editor;
         pos = pos || cm.getCursor('start');
         var stat = cm.getTokenAt(pos);
-        if (!stat.type) return {};
-
-        var types = stat.type.split(' ');
 
         var ret = {},
             data, text;
+
+        if (stat.linkHref || stat.linkText || stat.linkTitle) {
+            ret.link = true;
+        }
+
+        if (stat.image || stat.imageAltText || stat.imageMarker) {
+            ret.image = true;
+        }
+
+        if (stat.code === -1 || stat.code === 1) {
+            ret.code = true;
+        }
+
+        if (!stat.type) return ret;
+
+        var types = stat.type.split(' ');
         for (var i = 0; i < types.length; i++) {
             data = types[i];
             if (data === 'strong') {
@@ -397,6 +410,8 @@ var otterwiki_editor = {
                 ret.link = true;
             } else if (data === 'image') {
                 ret.image = true;
+            } else if (data === 'url') {
+                ret.url = true;
             } else if (data.match(/^header(-[1-6])?$/)) {
                 ret[data.replace('header', 'heading')] = true;
             }
@@ -524,12 +539,16 @@ var otterwiki_editor = {
         if (!cm_editor) { return; }
         state = otterwiki_editor._getState();
         // we don't mess with existing tokens of these kinds
-        if (state.img || state.link) { return; }
+        if (state.image || state.link) { return; }
 
         const link = img;
 
         var text = cm_editor.getSelection();
         cm_editor.replaceSelection(text + link);
+
+        let cursor = cm_editor.getCursor();
+        cursor.ch -= 1;
+        cm_editor.setCursor(cursor);
 
         cm_editor.focus();
     },
@@ -553,14 +572,25 @@ var otterwiki_editor = {
     },
     link: function(text = "description", url = "https://") {
         if (!cm_editor) { return; }
-        state = otterwiki_editor._getState();
+        let state = otterwiki_editor._getState();
         // we don't mess with existing tokens of these kinds
-        if (state.img || state.link) { return; }
+        if (state.img || state.link || state.url ) { return; }
 
-        const link = "[" + text + "](" + url + ")";
-
-        var text = cm_editor.getSelection();
-        cm_editor.replaceSelection(text + link);
+        if (cm_editor.getSelection().length == 0) {
+            // if nothing is selected, select the word under the cursor
+            anythingSelected = false;
+            let word = otterwiki_editor._findWordAt(cm_editor.getCursor());
+            cm_editor.setSelection(word.anchor, word.head);
+        }
+        if (cm_editor.getSelection().trim().length == 0) {
+            cm_editor.replaceSelection("[description](https://)");
+        } else {
+            let text = cm_editor.getSelection();
+            cm_editor.replaceSelection("["+ text + "]" + "(https://)");
+        }
+        let cursor = cm_editor.getCursor();
+        cursor.ch -= 1;
+        cm_editor.setCursor(cursor);
 
         cm_editor.focus();
     },
@@ -1065,6 +1095,39 @@ var otterwiki_editor = {
         var page = element.value.split("//")[0];
         if (typeof(page) == 'undefined' || page == null || page == '') { return; }
         otterwiki_editor.img('[['+page+']]\n');
+    },
+    paste_url: function(url) {
+        if (!cm_editor) return false;
+        let selected_text = cm_editor.getSelection();
+        // dont replace an url with a markdown link
+        if (/^https?:\/\//.test(selected_text)) { return false; }
+        // if an url is pasted on a selected text, check if it should be
+        // replaced with a markdown link []()
+        if (cm_editor.getSelection().length > 0) {
+            state = otterwiki_editor._getState();
+            // we don't mess with existing tokens of these kinds
+            if (state.image || state.link || state.code || state.url) { return false; }
+
+            // build markdown link
+            const link = "[" + selected_text + "](" + url + ")";
+            // and replace it in the editor
+            cm_editor.replaceSelection(link);
+            return true;
+        }
+        return false;
+    },
+    on_paste: function(e) {
+        let clipboardData = e.clipboardData,
+            result = false;
+        if (typeof clipboardData === "object") {
+            let pastedText = clipboardData.getData("text/plain");
+            let matched = /^https?:\/\//.test(pastedText);
+            if (matched) {
+                result = otterwiki_editor.paste_url(pastedText);
+            }
+        }
+        if (result) { e.preventDefault(); }
+        return result;
     }
 }
 
