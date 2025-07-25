@@ -1217,11 +1217,13 @@ window.addEventListener("keydown", function(event) {
             return;
         }
 
+        /* // Disabled CMD-M since this is a MacOS shortcut for minimizing the current window.
         if (command && !shift && !alt && key === 'm') {
             otterwiki_editor.img();
             event.preventDefault();
             return;
         }
+        */
 
         if (command && shift && !alt && key === 's') {
             otterwiki_editor.strikethrough();
@@ -1229,30 +1231,39 @@ window.addEventListener("keydown", function(event) {
             return;
         }
 
+        /* // Disabled CMD-SHIFT-B since this opens the Bookmarks in Chrome
         if (command && shift && !alt && key === 'b') {
             otterwiki_editor.ul();
             event.preventDefault();
             return;
         }
+        */
 
+        /* // Disabled CMD-SHIFT-N since this is the Chrome shortcut for a new incognito window
         if (command && shift && !alt && key === 'n') {
             otterwiki_editor.ol();
             event.preventDefault();
             return;
         }
+        */
 
+        /* // Disabled CMD-SHIFT-T since this is the Chrome shortcut re-opening the last closed tab.
         if (command && shift && !alt && key === 't') {
             otterwiki_editor.cl();
             event.preventDefault();
             return;
         }
+        */
 
+        /* // Disabled since CTRL-SHIFT-C opens the dev console in Chrome on Windows
         if (command && shift && !alt && key === 'c') {
             otterwiki_editor.codeBlock();
             event.preventDefault();
             return;
         }
+        */
 
+        /* // Disabled since these shortcuts worked in no browser for me
         if (!command && !shift && alt && key === "ArrowUp") {
             otterwiki_editor.table_add_row();
             event.preventDefault();
@@ -1265,6 +1276,7 @@ window.addEventListener("keydown", function(event) {
             event.preventDefault();
             return;
         }
+        */
     }
 
     if(isEditable) {
