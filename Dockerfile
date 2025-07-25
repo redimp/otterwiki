@@ -8,7 +8,7 @@ RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
     rm /etc/apt/apt.conf.d/docker-clean && \
     apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends python3.11 python3.11-venv \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3.11 python3.11-venv \
     python3-pip libjpeg-dev zlib1g-dev build-essential python3-dev libxml2-dev libxslt-dev
 # prepare environment
 RUN python3 -m venv /opt/venv
@@ -61,7 +61,7 @@ ENV OTTERWIKI_REPOSITORY=/app-data/repository
 RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
     apt-get -y update && \
     apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     nginx supervisor git \
     python3.11 python3-wheel python3-venv libpython3.11 \
     uwsgi uwsgi-plugin-python3 curl \
