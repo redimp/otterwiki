@@ -9,7 +9,7 @@ if [ "$PUID" != "33" ]; then
 fi
 
 if [ "$PGID" != "33" ]; then
-    if [ "$PGID" != "0" ]; then
+    if [ "$PGID" == "0" ]; then
         echo "Fatal: PGID must not be 0 (root)." >&2
         exit 1
     fi
