@@ -1480,7 +1480,7 @@ class Attachment:
             try:
                 buffer.write(content)
             except Exception as e:
-                app.error.log("Unable to write attachment to buffer: {e}")
+                app.error.log(f"Unable to write attachment to buffer: {e}")
                 abort(500)
             buffer.seek(0)
             # create response
