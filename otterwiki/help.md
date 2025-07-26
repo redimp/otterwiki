@@ -10,8 +10,8 @@ You can preview your changes using <span class="btn btn-primary btn-sm btn-hlp">
 
 #### General Shortcuts
 
-| Operation      | Linux/Windows/MacOS |
-|----------------|---------------------|
+| Operation      | Linux, Windows,<br>MacOS |
+|----------------|:-------------------:|
 | Create page    | <kbd>c</kbd>        |
 | Edit page      | <kbd>e</kbd>        |
 | Toggle sidebar | <kbd>[</kbd>        |
@@ -19,7 +19,8 @@ You can preview your changes using <span class="btn btn-primary btn-sm btn-hlp">
 
 #### Editor Shortcuts
 
-| Operation     | Linux/Windows                | MacOS                       |
+
+| Operation     | Linux, Windows                | MacOS                       |
 |---------------|------------------------------|-----------------------------|
 | Save          | <kbd>Ctrl</kbd>-<kbd>S</kbd> | <kbd>Cmd</kbd>-<kbd>S</kbd> |
 | Toggle preview | <kbd>Ctrl</kbd>-<kbd>P</kbd> | <kbd>Cmd</kbd>-<kbd>P</kbd> |
@@ -28,6 +29,19 @@ You can preview your changes using <span class="btn btn-primary btn-sm btn-hlp">
 | Find previous | <kbd>Shift</kbd>-<kbd>Ctrl</kbd>-<kbd>G</kbd> | <kbd>Shift</kbd>-<kbd>Cmd</kbd>-<kbd>G</kbd> |
 | Replace       | <kbd>Shift</kbd>-<kbd>Ctrl</kbd>-<kbd>F</kbd> | <kbd>Cmd</kbd>-<kbd>Option</kbd>-<kbd>F</kbd> |
 | Replace all   | <kbd>Shift</kbd>-<kbd>Ctrl</kbd>-<kbd>R</kbd> | <kbd>Shift</kbd>-<kbd>Cmd</kbd>-<kbd>Option</kbd>-<kbd>F</kbd> |
+
+
+To make formatting easier the following shortcuts are available:
+
+
+|                     | Linux, Windows                | MacOS                       |
+|---------------------|-------------------------------|-----------------------------|
+| Bold                | <kbd>Ctrl</kbd>-<kbd>B</kbd>  | <kbd>Cmd</kbd>-<kbd>B</kbd> |
+| Italic              | <kbd>Ctrl</kbd>-<kbd>I</kbd>  | <kbd>Cmd</kbd>-<kbd>I</kbd> |
+| Strike through      | <kbd>Shift</kbd>-<kbd>Ctrl</kbd>-<kbd>S</kbd> | <kbd>Shift</kbd>-<kbd>Cmd</kbd>-<kbd>S</kbd> |
+| Link                | <kbd>Ctrl</kbd>-<kbd>K</kbd>  | <kbd>Cmd</kbd>-<kbd>K</kbd> |
+| Insert/Format Table | <kbd>Ctrl</kbd>-<kbd>J</kbd>  | <kbd>Cmd</kbd>-<kbd>J</kbd> |
+
 
 #### Page history
 
