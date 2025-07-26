@@ -1277,6 +1277,12 @@ window.addEventListener("keydown", function(event) {
             return;
         }
         */
+
+        if (command && !shift && !alt && key === 'j') {
+            otterwiki_editor.table();
+            event.preventDefault();
+            return;
+        }
     }
 
     if(isEditable) {
@@ -1284,7 +1290,7 @@ window.addEventListener("keydown", function(event) {
     }
 
     let searchQuery = document.getElementById("search-query")
-	if (noModifiers && key === '/' && searchQuery != null) {
+    if (noModifiers && key === '/' && searchQuery != null) {
         searchQuery.focus();
         event.preventDefault();
         return;
