@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Features
 
-- added editor shortcuts: bold, italic, link, insert/format table, mostly done by
+- added editor shortcuts: bold, italic, link, insert/format table, mostly done
   by Dan Falcone @dafalcon, see [PR#251](https://github.com/redimp/otterwiki/pull/251)
 - enabled spellchecking (via the browser) in the editor ([0a7e44a](https://github.com/redimp/otterwiki/commit/0a7e44a668e4c9fbda25f985c0c7b853ec85f1e7)).
 - url pasting: When pasting an url on a selected word, the url is pasted
