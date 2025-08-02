@@ -16,11 +16,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   by Dan Falcone @dafalcon, see [PR#251](https://github.com/redimp/otterwiki/pull/251)
 - enabled spellchecking (via the browser) in the editor ([0a7e44a](https://github.com/redimp/otterwiki/commit/0a7e44a668e4c9fbda25f985c0c7b853ec85f1e7)).
 - url pasting: When pasting an url on a selected word, the url is pasted
-  as markdown link `[word](https://pasted.url)`. This was discussed in #251.
+  as markdown link `[word](https://pasted.url)`. See #259.
 - url button (and shortcut): If a text has been selected when the button
   is pressed, a markdown link is inserted. The selected text becomes the
   description and the cursor is placed so that the url can be entered.
   ([379799](https://github.com/redimp/otterwiki/commit/add643344a7cbf6401c6ef0d1ef4d745e2379799)).
+  This was discussed in #251.
 
 ### Bug Fixes
 
