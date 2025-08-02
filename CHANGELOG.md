@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.13.0](https://github.com/redimp/otterwiki/releases/tag/v2.13.0) - 2025-08-02
+
+<small>[Compare with v2.12.0](https://github.com/redimp/otterwiki/compare/v2.12.0...v2.13.0)</small>
+
+### Features
+
+- added editor shortcuts: bold, italic, link, insert/format table, mostly done by
+  by Dan Falcone @dafalcon, see [PR#251](https://github.com/redimp/otterwiki/pull/251)
+- enabled spellchecking (via the browser) in the editor ([0a7e44a](https://github.com/redimp/otterwiki/commit/0a7e44a668e4c9fbda25f985c0c7b853ec85f1e7)).
+- url pasting: When pasting an url on a selected word, the url is pasted
+  as markdown link `[word](https://pasted.url)`. This was discussed in #251.
+- url button (and shortcut): If a text has been selected when the button
+  is pressed, a markdown link is inserted. The selected text becomes the
+  description and the cursor is placed so that the url can be entered.
+  ([379799](https://github.com/redimp/otterwiki/commit/add643344a7cbf6401c6ef0d1ef4d745e2379799)).
+
+### Bug Fixes
+
+- typo in PGID check ([a5bbeba](https://github.com/redimp/otterwiki/commit/a5bbeba1b666c804de81094c5c3181877553f160)).
+
 ## [v2.12.0](https://github.com/redimp/otterwiki/releases/tag/v2.12.0) - 2025-07-20
 
 <small>[Compare with v2.11.1](https://github.com/redimp/otterwiki/compare/v2.11.1...v2.12.0)</small>
