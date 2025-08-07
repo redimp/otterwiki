@@ -210,17 +210,11 @@ class PageIndex:
             f"PageIndex({self.path}) parsing files took {timer() - t_start:.3f} seconds."
         )
 
-    def render(self):
-        if not has_permission("READ"):
-            abort(403)
-        menutree = SidebarPageIndex(get_page_directoryname(self.path or "/"))
-
-        # build the title and description used in the meta og tags ...
-        if self.path is None or self.path.rstrip("/") == "":
-            title = "Page Index"
-        else:
-            title = f"Page Index: /{self.path}"
-
+    def meta_description(self):
+        """
+        Generate a description used as <meta og:description> containing the Pages
+        listed in the index.
+        """
         pages = [p[0] for p in self.pages()]
 
         if len(self.toc) == 1:
@@ -236,6 +230,19 @@ class PageIndex:
             placeholder="…",
         )
 
+        return description
+
+    def render(self):
+        if not has_permission("READ"):
+            abort(403)
+        menutree = SidebarPageIndex(get_page_directoryname(self.path or "/"))
+
+        # build the title and description used in the meta og tags ...
+        if self.path is None or self.path.rstrip("/") == "":
+            title = "Page Index"
+        else:
+            title = f"Page Index: /{self.path}"
+
         upsert_pagecrumbs(get_pagename(self.path or "/", full=True))
         return render_template(
             "pageindex.html",
@@ -245,7 +252,7 @@ class PageIndex:
             menutree=menutree.query(),
             custom_menu=SidebarMenu().query(),
             breadcrumbs=self.breadcrumbs,
-            description=description,
+            description=self.meta_description(),
         )
 
     def pages(self):
