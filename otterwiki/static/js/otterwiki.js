@@ -1089,12 +1089,35 @@ var otterwiki_editor = {
         // [![]({{f.thumbnail_url}})]({{f.url}})
     },
     insert_wikilink: function() {
+        if (!cm_editor) { return; }
+        let state = otterwiki_editor._getState();
+        // we don't mess with existing tokens of these kinds
+        if (state.img || state.link || state.url ) { return; }
+
         var element = document.getElementById("wikilink");
         if (typeof(element) == 'undefined' || element == null) { return; }
+
         // split value in filename, url and thumbnail_url
         var page = element.value.split("//")[0];
         if (typeof(page) == 'undefined' || page == null || page == '') { return; }
-        otterwiki_editor.img('[['+page+']]\n');
+
+        if (cm_editor.getSelection().length == 0) {
+            // if nothing is selected, select the word under the cursor
+            anythingSelected = false;
+            let word = otterwiki_editor._findWordAt(cm_editor.getCursor());
+            cm_editor.setSelection(word.anchor, word.head);
+        }
+        if (cm_editor.getSelection().trim().length == 0) {
+            cm_editor.replaceSelection('[['+page+']]\n');
+        } else {
+            let text = cm_editor.getSelection();
+            cm_editor.replaceSelection('[['+text+'|'+page+']]\n');
+        }
+        let cursor = cm_editor.getCursor();
+        cursor.ch -= 1;
+        cm_editor.setCursor(cursor);
+
+        cm_editor.focus();
     },
     paste_url: function(url) {
         if (!cm_editor) return false;
