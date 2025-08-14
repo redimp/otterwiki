@@ -69,6 +69,7 @@ persistence:
   size: 512Mi
   accessMode: ReadWriteOnce
   annotations: {}
+  storageClassName: ""
 
 nodeSelector: {}
 

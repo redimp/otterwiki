@@ -171,7 +171,13 @@ helm-build:
 	cd helm/ && helm lint ./
 	cd helm/ && helm package ./
 
-helm-push:
+helm-test:
+	cd helm/ && \
+	helm template otterwiki \
+		--set config.SITE_NAME=Template \
+		./
+
+helm-push: helm-build
 	set -e; \
 	CHARTS_POD=$$(kubectl get pods -n 'otterwiki' -l 'app.kubernetes.io/name=charts-otterwiki-com' -o jsonpath='{.items[0].metadata.name}'); \
 	kubectl cp -c chartexhibiton helm/otterwiki-$(HELM_VERSION).tgz otterwiki/$$CHARTS_POD:/data; \

@@ -6,6 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 {{- with .Values.persistence.annotations  }}
   annotations:
+    helm.sh/resource-policy: keep
 {{ toYaml . | indent 4 }}
 {{- end }}
   labels:
