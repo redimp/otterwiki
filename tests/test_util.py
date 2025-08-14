@@ -20,6 +20,7 @@ from otterwiki.util import (
     get_header,
     strfdelta_round,
     is_valid_name,
+    int_or_None,
 )
 
 
@@ -243,3 +244,17 @@ def test_strfdelta_round():
     assert (
         strfdelta_round(timedelta(days=21), round_period="minute") == "3 weeks"
     )
+
+
+def test_int_or_None():
+    assert int_or_None(10) == 10
+    assert int_or_None("20") == 20
+    assert int_or_None([1, 2]) is None
+    assert int_or_None(None) is None
+    assert int_or_None("abc") is None
+    assert int_or_None(3.14) == 3
+    assert int_or_None("") is None
+    assert int_or_None(True) == 1
+    assert int_or_None(False) == 0
+    assert int_or_None(10.9) == 10
+    assert int_or_None(2.7) == 2
