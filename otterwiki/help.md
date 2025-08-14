@@ -105,14 +105,22 @@ right hand side. There you can use <span class="help-button"><a href="#" class="
 and paste it in the editor. On the attachment page, markdown codes can be found by
  opening a pop-up using <span class="help-button"><a hre="#"><i class="fas fa-copy"></i></a></span> next to the <span class="help-button"><a href="#">filename.jpg</a></span>.
 
-##### Thumbnails
+##### Thumbnails and Image Resizing
 
-Adding `?thumbnail` to the URL of an attachment, e.g. `![](/Page/attachment.jpg?thumbnail)`
-you get a scaled down version of the attached image. Per default the image is scaled down to an
-image with a maximum size of 80x80. You can configure the maximum size by adding
-a number to the option. E.g. `?thumbnail=400` will scale the image
-symmetrically to have its longest side not larger than 400 pixels. Thumbnails are
-never scaled up.
+To generate a scaled-down version of an attached image, append `?thumbnail`
+to the image URL. For example: `![](/page/attachment.jpg?thumbnail)`.
+
+By default, thumbnails are scaled to a maximum size of 80x80 pixels. You can
+customize this size by adding a number to the `?thumbnail` option. For instance,
+`?thumbnail=400` will scale the image so that its longest side is no larger than
+400 pixels, maintaining the aspect ratio.
+
+**Important:** Thumbnails are *never* scaled up.
+
+For more precise control over image scaling, use the `?height=` or `?width=`
+parameters. These allow you to specify the desired height or width,
+respectively.  The aspect ratio will be preserved unless both `?width=` and
+`?height=` are specified.
 
 ---
 

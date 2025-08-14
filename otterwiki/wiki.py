@@ -60,6 +60,7 @@ from otterwiki.util import (
     sizeof_fmt,
     split_path,
     get_PatchSet,
+    int_or_None,
 )
 
 if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
@@ -1012,7 +1013,9 @@ class Page:
     def get_attachment(self, filename, revision=None):
         return Attachment(self.pagepath, filename, revision).get()
 
-    def get_attachment_thumbnail(self, filename, size=None, revision=None):
+    def get_attachment_thumbnail(
+        self, filename, size=None, revision=None, height=None, width=None
+    ):
         try:
             size = int(
                 size  # pyright: ignore -- the except takes care of None
@@ -1020,7 +1023,7 @@ class Page:
         except (TypeError, ValueError):
             size = 80
         return Attachment(self.pagepath, filename, revision).get_thumbnail(
-            size=size
+            size=size, width=width, height=height
         )
 
     def edit_attachment(
@@ -1307,21 +1310,61 @@ class Attachment:
 
         return response
 
-    def get_thumbnail(self, size=80):
+    def get_thumbnail(self, size=80, width=None, height=None):
+        """
+        Generates a thumbnail image.
+
+        Args:
+            size (int, optional): The size of the thumbnail (square).  If only size is provided, the thumbnail will be a square of this size. Defaults to 80.
+            width (int, optional): The desired width of the thumbnail. If provided, the height will be calculated to preserve aspect ratio. Defaults to None.
+            height (int, optional): The desired height of the thumbnail. If provided, the width will be calculated to preserve aspect ratio. Defaults to None.
+
+        Returns:
+            A Flask Response object containing the thumbnail image.
+        """
+
         if not has_permission("READ"):
             abort(403)
+
         if (
             not self.exists()
             or not self.mimetype
             or not self.mimetype.startswith("image")
             or self.metadata is None
         ):
-            return abort(404)
+            abort(404)
 
         t_start = timer()
         image = PIL.Image.open(BytesIO(storage.load(self.filepath, mode="rb")))
-        # resample thumbnail
-        image.thumbnail((size, size), resample=PIL.Image.Resampling.LANCZOS)
+        # store image information
+        aspect_ratio = image.width / image.height
+        orig_format = image.format
+        if width is None and height is None:
+            # Only size is set, keep the original behavior
+            image.thumbnail(
+                (size, size), resample=PIL.Image.Resampling.LANCZOS
+            )
+        elif width is not None and height is None:
+            # Width is set, calculate height to preserve aspect ratio
+            new_height = int(width / aspect_ratio)
+            image = image.resize(
+                (width, new_height), resample=PIL.Image.Resampling.LANCZOS
+            )
+            image.format = orig_format
+        elif width is None and height is not None:
+            # Height is set, calculate width to preserve aspect ratio
+            new_width = int(height * aspect_ratio)
+            image = image.resize(
+                (new_width, height), resample=PIL.Image.Resampling.LANCZOS
+            )
+            image.format = orig_format
+        else:
+            # Both width and height are set, scale to the given values and ignore aspect ratio
+            image = image.resize(
+                (width, height), resample=PIL.Image.Resampling.LANCZOS
+            )
+            image.format = orig_format
+
         # create byteobject
         buffer = BytesIO()
         # store image in byteobject
@@ -1342,7 +1385,6 @@ class Attachment:
         response.headers["Last-Modified"] = http_date(
             self.datetime.astimezone(UTC)
         )
-
         return response
 
 
@@ -1540,18 +1582,30 @@ class AutoRoute:
             )
             and storage.exists(self.storage_path)
         ):
-            # create page
+            # create page object to fetch the attachment / thumbnail from there
             p = Page(self.pagepath)
-            # is this a thumbnail?
+            # is there a thumbnail parameter?
             if 'thumbnail' in self.values:
+                thumbnail = int_or_None(self.values.get("thumbnail", 80))
                 # handle size parameter
-                try:
-                    size = int(self.values['thumbnail'])
-                except:
-                    size = None
                 return p.get_attachment_thumbnail(
-                    filename=self.filename, size=size, revision=None
+                    filename=self.filename, size=thumbnail, revision=None
                 )
+            # is there a resize parameter?
+            size = int_or_None(self.values.get("size", None))
+            width = int_or_None(self.values.get("width", None))
+            height = int_or_None(self.values.get("height", None))
+
+            if size is not None or width is not None or height is not None:
+                return p.get_attachment_thumbnail(
+                    filename=self.filename,
+                    size=size,
+                    revision=None,
+                    width=width,
+                    height=height,
+                )
+
+            # if any of these are set the image should be scaled via the get_attachment_thumbnail function
             # this is an attachment
             return p.get_attachment(self.filename)
         try:
