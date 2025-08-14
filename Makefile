@@ -171,5 +171,8 @@ helm-build:
 	cd helm/ && helm lint ./
 	cd helm/ && helm package ./
 
-helm-push: helm-build
-	helm push helm/otterwiki-$(HELM_VERSION).tgz oci://registry-1.docker.io/redimp
+helm-push:
+	set -e; \
+	CHARTS_POD=$$(kubectl get pods -n 'otterwiki' -l 'app.kubernetes.io/name=charts-otterwiki-com' -o jsonpath='{.items[0].metadata.name}'); \
+	kubectl cp -c chartexhibiton helm/otterwiki-$(HELM_VERSION).tgz otterwiki/$$CHARTS_POD:/data; \
+	kubectl rollout restart deployment -n otterwiki -l app.kubernetes.io/name=charts-otterwiki-com
