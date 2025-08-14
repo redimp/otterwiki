@@ -154,6 +154,26 @@ def empty(what):
     return False
 
 
+def int_or_None(in_val: any) -> int | None:
+    """
+    Accepts any parameter and attempts to cast it to an integer, rounding down.
+    If the cast is successful, it returns the integer.
+    If the cast fails, it returns None.
+
+    Args:
+        in_val: The parameter to be cast to an integer.
+
+    Returns:
+        The integer representation of the input, or None if the cast fails.
+    """
+    try:
+        return int(
+            float(in_val)
+        )  # Cast to float first, then to int, rounding down
+    except (ValueError, TypeError):
+        return None
+
+
 def guess_mimetype(path):
     mimetype, encoding = mimetypes.guess_type(path)
     if mimetype is None:
