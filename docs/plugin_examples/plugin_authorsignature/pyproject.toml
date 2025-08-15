@@ -4,10 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "otterwiki_authorsignature"
-description = "An example plugin for An Otter Wiki that modifies the page view."
-version  = "0.1.0"
+description = "An example plugin for An Otter Wiki that modifies the page view by adding a footer with the original author and last saved editor."
+version  = "0.2.0"
 authors = [
-    { name = "Ralph Thesen", email = "mail@redimp.de" }
+    { name = "Ralph Thesen", email = "mail@redimp.de" },
+    { name = "Ben Esquivel", email = "tarxf@esquibits.com"}
     ]
 
 [project.entry-points.otterwiki]
