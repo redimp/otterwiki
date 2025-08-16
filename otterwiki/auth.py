@@ -64,7 +64,7 @@ class SimpleAuth:
         return self.User.query.filter_by(id=int(id)).first()
 
     def get_all_user(self):
-        return self.User.query.all()
+        return self.User.query.order_by(self.User.email).all()
 
     def get_user(
         self, uid: str | None = None, email: str | None = None
@@ -370,14 +370,9 @@ class SimpleAuth:
         return redirect(url_for("login"))
 
     def settings_form(self):
-        if has_permission("ADMIN"):
-            user_list = self.User.query.all()
-        else:
-            user_list = None
         return render_template(
             "settings.html",
             title="Settings",
-            user_list=user_list,
         )
 
     def handle_settings(self, form):

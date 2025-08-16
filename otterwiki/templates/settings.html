@@ -60,7 +60,7 @@
   <label for="name" class="required">First and Lastname</label>
   <input name="name" type="text" class="form-control" id="name" value="{{current_user.name if current_user.name}}" {% if
     not auth_supported_features['editing'] %}disabled{% endif %}>
-    <div class="form-text">
+    <div class="form-text-plain">
       Please note that changing the Name doesn't not change anything in the edit history.
     </div>
   </div>
@@ -88,7 +88,7 @@
   <div class="form-group">
     <label for="password" class="required">New Password</label>
     <input name="password1" type="password" class="form-control" id="password" placeholder="Password">
-    <div class="form-text">
+    <div class="form-text-plain">
       Must be at least 8 characters long.
     </div>
   </div>
@@ -117,7 +117,7 @@
       </div>
     </div>
   </div>
-  <div class="form-text">
+  <div class="form-text-plain">
       {% if has_permission('READ') %}
       Your current permissions grant you pull {% if has_permission('UPLOAD') %} and push
       {%- endif %} access. Use your email address as username and your password as password

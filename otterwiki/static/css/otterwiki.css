@@ -360,6 +360,12 @@ pre.mermaid {
     right: 0.2rem !important;
 }
 
+.form-text-plain {
+    font-size: var(--form-text-font-size);
+    padding-top: var(--form-text-padding-top);
+    padding-bottom: var(--form-text-padding-bottom);
+}
+
 /* dark mode button tweaks */
 .dark-mode .btn.btn-danger {
     background-color: #B00020;
