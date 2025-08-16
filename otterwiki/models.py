@@ -44,6 +44,9 @@ class Drafts(db.Model):
     cursor_ch = db.Column(db.Integer)
     datetime = db.Column(TimeStamp())
 
+    def __str__(self):
+        return f"<Draft id={self.id} pagepath={self.pagepath} author={self.author_email} datetime={self.datetime}>"
+
 
 class User(db.Model):
     __tablename__ = "user"

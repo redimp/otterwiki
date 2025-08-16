@@ -9,6 +9,12 @@
     </span>
     Settings
 </a>
+<a href="{{ url_for("housekeeping") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+        <i class="fas fa-broom"></i>
+    </span>
+    Housekeeping
+</a>
 {% if has_permission("ADMIN") %}
 <a href="{{ url_for("admin") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon" style="min-width: 3rem;">

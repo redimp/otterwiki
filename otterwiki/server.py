@@ -232,6 +232,9 @@ def pluralize(count, plural='s', singular=''):
 
 @app.template_filter("format_datetime")
 def format_datetime(value: datetime.datetime, format="medium") -> str:
+    if type(value) is not datetime.datetime:
+        app.logger.warning(f"format_datetime: {value=} is not datetime.datime")
+        return str(value)
     if format == "medium":
         format = "%Y-%m-%d %H:%M"
     if format == "deltanow":
@@ -244,6 +247,7 @@ def format_datetime(value: datetime.datetime, format="medium") -> str:
         return otterwiki.util.strfdelta_round(td, "second")
     else:  # format == 'full':
         format = "%Y-%m-%d %H:%M:%S"
+
     return value.strftime(format)
 
 

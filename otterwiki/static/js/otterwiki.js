@@ -1234,6 +1234,12 @@ var otterwiki = {
             return;
         }
         navigator.clipboard.writeText(pre_element.innerText);
+    },
+    toggle_invert_by_name: function(checkbox_name) {
+        let checkboxes = document.querySelectorAll('input[name='+checkbox_name+']');
+        for (let i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].checked = !checkboxes[i].checked;
+        }
     }
 }
 

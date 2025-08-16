@@ -1,0 +1,62 @@
+<form hx-post="{{ url_for("housekeeping") }}" hx-target="this" hx-indicator="#emptypages_indicator">
+<input type="hidden" name="task" value="emptypages">
+{% if stats and pages %}
+<div class="mb-20">
+<p> To keep your wiki clean, please review the following {{pages|length}} potentially empty page{{pages|length|pluralize("s")}}.
+{{stats.pages}} page{{stats.pages|pluralize("s")}} were checked in {{stats.duration}}.
+</p>
+<input class="btn btn-primary" type="submit" name="refresh" value="Refresh"/>
+<input class="btn btn-danger" type="submit" name="clean" value="Delete selected pages"/>
+<span id="emptypages_indicator" class="htmx-indicator"><i class="fas fa-spinner fa-spin"></i></span>
+</div>
+<div class="table-responsive table-striped">
+<table class="table compact">
+    <thead>
+        <tr>
+            <td style="width:1px;">
+                <div class="custom-checkbox">
+                    <input type="checkbox" id="checkbox-b-all" value="">
+                  <label for="checkbox-b-all" onclick="otterwiki.toggle_invert_by_name('delete_empty_page');"></label>
+                </div>
+            </td>
+            <td style="width:1px;"><strong>Page</strong></td>
+            <td><strong>Analysis</strong></td>
+            <td style="width:1px;text-align:right;">&nbsp;</td>
+        </tr>
+    </thead>
+    <tbody>
+{% for filename, reason in pages.items() %}
+        <tr>
+            <td>
+              <div class="custom-checkbox">
+                  <input type="checkbox" id="checkbox-b-{{loop.index}}" name="delete_empty_page" value="{{filename}}">
+                <label for="checkbox-b-{{loop.index}}"></label>
+              </div>
+            </td>
+            <td>
+                <a href="{{ url_for('view', path=filename) }}">{{filename}}</a>&nbsp;
+            </td>
+            <td>
+                {{reason}}
+            </td>
+            <td style="width:1px;text-align:right;padding-right:.5rem;">
+                <a href="{{ url_for('delete', path=filename)}}" class="text-danger""><i class="far fa-trash-alt"></i></a>
+            </td>
+        </tr>
+{% endfor %}
+    </tboby>
+</table>
+
+</div>
+{% else %}
+{% if stats %}
+<p>No empty pages found. Checked {{stats.pages}} page{{stats.pages|pluralize("s")}} in {{stats.duration}}.</p>
+{% else %}
+<p>To find potentially empty pages, start an analysis.</p>
+{% endif %}
+<div>
+    <input class="btn btn-primary" type="submit" name="refresh" value="Analyse pages"/>
+    <span id="emptypages_indicator" class="htmx-indicator"><i class="fas fa-spinner fa-spin"></i></span>
+</div>
+{% endif %}
+</form>

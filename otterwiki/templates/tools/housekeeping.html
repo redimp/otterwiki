@@ -1,0 +1,86 @@
+{# vim: set et ts=8 sts=4 sw=4 ai ft=jinja.html: #}
+{% extends "settings.html" %}
+{% block content %}
+<h2 id="settings">Housekeeping</h2>
+<div class="card m-auto m-lg-20">
+<div class="mw-full">
+<h3 class="card-title">Drafts</h3>
+{% if drafts %}
+<form action="{{ url_for("housekeeping") }}" method="POST" autocomplete="off">
+<input type="hidden" name="task" value="drafts">
+<p>This is the list of your drafts in the wiki. You can review each one or delete any you no longer need.
+<div class="table-responsive table-striped">
+<table class="table compact">
+    <thead>
+        <tr>
+            <td style="width:1px;">
+                <div class="custom-checkbox">
+                    <input type="checkbox" id="checkbox-a-all" value="">
+                  <label for="checkbox-a-all" onclick="otterwiki.toggle_invert_by_name('delete_draft');"></label>
+                </div>
+            </td>
+            <td><strong>Page</strong></td>
+            <td><strong>Draft created</strong></td>
+            <td><strong>Revision</strong></td>
+            <td><strong>Page last changed</strong></td>
+        </tr>
+    </thead>
+    <tbody>
+{% for draft in drafts %}
+    <tr>
+        <td>
+          <div class="custom-checkbox">
+              <input type="checkbox" id="checkbox-a-{{draft.id}}" name="delete_draft" value="{{draft.id}}">
+            <label for="checkbox-a-{{draft.id}}"></label>
+          </div>
+        </td>
+        <td>
+            {{draft.pagepath}}
+            <a href="{{ url_for('edit', path=draft.pagepath) }}"><i class="fas fa-edit"></i></a>&nbsp;
+        </td>
+        <td>
+            {{draft.datetime|format_datetime}}
+        </td>
+        <td>
+            {% if draft.revision_text %}
+            {{draft.revision_text}}
+            {% else %}
+            -/-
+            {% endif %}
+        </td>
+        <td>
+            {% if draft.page_datetime %}
+            {{draft.page_datetime|format_datetime}}
+            {% else %}
+            -/-
+            {% endif %}
+        </td>
+    </tr>
+{% endfor %}
+    </tbody>
+</table>
+</div>
+<div class="mt-10">
+    <input class="btn btn-danger" type="submit" value="Delete selected drafts"/>
+</div>
+</form>
+{% else %}
+<p><em>No drafts found.</em></p>
+{% endif %}
+</div>
+</div>
+{#-#}
+{% if has_permission("WRITE") %}
+<div class="card m-auto m-lg-20">
+<div class="mw-full">
+<h3 class="card-title">Empty Pages</h3>
+{% include 'tools/housekeeping_emptypages.html' %}
+</div>
+</div>
+{% endif %}
+{#-#}
+{% endblock %}{# content #}
+{% block js %}
+{{ super() }}
+<script src="{{ url_for("static", filename="js/htmx.2.0.6.min.js") }}" type="text/javascript" charset="utf-8"></script>
+{% endblock js %}

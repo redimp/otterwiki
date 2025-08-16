@@ -22,6 +22,7 @@ from otterwiki.wiki import (
 from otterwiki.pageindex import PageIndex
 import otterwiki.auth
 import otterwiki.preferences
+import otterwiki.tools
 from otterwiki.renderer import render
 from otterwiki.helper import toast, health_check, get_pagename_prefixes
 from otterwiki.version import __version__
@@ -139,6 +140,15 @@ def settings():
         return otterwiki.auth.settings_form()
     else:
         return otterwiki.auth.handle_settings(request.form)
+
+
+@app.route("/-/housekeeping", methods=["POST", "GET"])
+@login_required
+def housekeeping():
+    if request.method == "GET":
+        return otterwiki.tools.housekeeping_form()
+    else:
+        return otterwiki.tools.handle_housekeeping(request.form)
 
 
 @app.route(
