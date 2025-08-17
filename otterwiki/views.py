@@ -15,11 +15,11 @@ from flask import (
 from otterwiki.server import app, githttpserver
 from otterwiki.wiki import (
     Page,
-    PageIndex,
     Changelog,
     Search,
     AutoRoute,
 )
+from otterwiki.pageindex import PageIndex
 import otterwiki.auth
 import otterwiki.preferences
 from otterwiki.renderer import render
