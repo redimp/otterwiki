@@ -20,17 +20,17 @@
 <div class="pageindex-columns" style="">
 {% for letter, pagelist in pages.items()|sort %}
 <div class="pageindex-letterblock"><h2 class="content-title font-weight-bolder pageindex-header">{{letter}}</h2>
-{% for depth, title, url, page_toc, has_children in pagelist %}
-<div class="pageindex-pageblock" style="padding-left:{{1.5 * depth}}rem;">
-<a href="{{ url }}" class="global-toc-link
+{% for page in pagelist %}
+<div class="pageindex-pageblock" style="padding-left:{{1.5 * page.depth}}rem;">
+<a href="{{ page.url }}" class="global-toc-link
 {%- if has_children %}
 pageindex-folder font-weight-bold
 {%- else %}
 pageindex-page
-{%- endif %}">{{title}}</a>
-{% if page_toc %}
+{%- endif %}">{{page.title}}</a>
+{% if page.toc %}
 <div class="pagetoc" style="display: none;">
-{% for tocdepth, header, url in page_toc %}
+{% for tocdepth, header, url in page.toc %}
 <div style="word-break: all; padding-left:{{1 * tocdepth}}rem;">
 <a href="{{ url }}" class="global-toc-link font-weight-light font-italic pageindex-heading">{{header}}</a><br/>
 </div>

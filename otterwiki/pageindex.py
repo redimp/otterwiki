@@ -12,7 +12,7 @@ from flask import (
 )
 
 import textwrap
-
+from typing import List, Tuple, Iterable
 
 from otterwiki.auth import has_permission
 
@@ -32,8 +32,22 @@ from otterwiki.util import (
 )
 
 
+from dataclasses import dataclass
+
+
+@dataclass
+class PageIndexEntry:
+    depth: int
+    title: str
+    url: str
+    toc: List[Tuple[int, str, str]] | None = None
+    has_children: bool = False
+
+
 class PageIndex:
-    def __init__(self, path=None):
+    toc: dict[str, List[PageIndexEntry]] = {}
+
+    def __init__(self, path: str | None = None):
         '''
         This will generate an index of pages/toc of pages from a given path.
         '''
@@ -92,22 +106,15 @@ class PageIndex:
                     continue
                 if subdir_path not in page_indices:
                     self.toc[firstletter].append(
-                        (
-                            subdir_depth,
-                            get_pagename(
-                                subdir_path,
-                                full=False,
-                            )
-                            + "/",  # title
-                            url_for(
+                        PageIndexEntry(
+                            depth=subdir_depth,
+                            title=get_pagename(subdir_path, full=False) + "/",
+                            url=url_for(
                                 "view",
-                                path=get_pagename(
-                                    subdir_path_full,
-                                    full=True,
-                                ),
-                            ),  # url
-                            [],
-                            True,
+                                path=get_pagename(subdir_path_full, full=True),
+                            ),
+                            toc=[],
+                            has_children=True,
                         )
                     )
                     page_indices.append(subdir_path)
@@ -157,19 +164,15 @@ class PageIndex:
                     has_children = True
                     break
             self.toc[firstletter].append(
-                (
-                    page_depth - self.index_depth,
-                    displayname,  # title
-                    url_for(
+                PageIndexEntry(
+                    depth=page_depth - self.index_depth,
+                    title=displayname,
+                    url=url_for(
                         "view",
-                        path=get_pagename(
-                            f,
-                            full=True,
-                            header=pagename,
-                        ),
-                    ),  # url
-                    pagetoc,
-                    has_children,
+                        path=get_pagename(f, full=True, header=pagename),
+                    ),
+                    toc=pagetoc,
+                    has_children=has_children,
                 )
             )
 
@@ -177,7 +180,7 @@ class PageIndex:
             f"PageIndex({self.path}) parsing files took {timer() - t_start:.3f} seconds."
         )
 
-    def meta_description(self):
+    def meta_description(self) -> str:
         """
         Generate a description used as <meta og:description> containing the Pages
         listed in the index.
@@ -222,8 +225,7 @@ class PageIndex:
             description=self.meta_description(),
         )
 
-    def pages(self):
+    def pages(self) -> Iterable[Tuple[str, str, str]]:
         for letter in self.toc:
-            for _, pagename, url, _, _ in self.toc[letter]:
-                pagepath = unquote(url)[1:]
-                yield pagename, pagepath, url
+            for entry in self.toc[letter]:
+                yield entry.title, unquote(entry.url)[1:], entry.url
