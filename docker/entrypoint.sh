@@ -94,12 +94,20 @@ echo "    location / {
 # close the server block
 echo "}" >> /etc/nginx/sites-enabled/default
 
-# install plugins found in /app-data/plugins and /plugins
-for PLUGIN in /app-data/plugins/*/ /plugins/*/; do
-    test -d "$PLUGIN" || continue
+function f_install_plugin()
+{
+    PLUGIN=$1
+    pushd $PLUGIN > /dev/null
     echo Installing: $PLUGIN
-    cd "$PLUGIN"
     pip install -U . || echo "Error: Installation of plugin in $PLUGIN failed." >&2
+    popd > /dev/null
+}
+export -f f_install_plugin
+# install plugins found in /app-data/plugins and /plugins
+for PLUGIN_DIR in /app-data/plugins /plugins; do
+    test -d "$PLUGIN_DIR" || continue
+    echo "discovered plugin dir: $PLUGIN_DIR"
+    find $PLUGIN_DIR -maxdepth 1 -mindepth 1 -type d -exec bash -c 'f_install_plugin "{}"' \;
 done
 
 # print nginx version
