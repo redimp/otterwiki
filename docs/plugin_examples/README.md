@@ -25,6 +25,9 @@ the volume that keeps the `app-data`, where also the `db.sqlite` and the
 `repostitory` lives. Or you organize the plugins in a separate directory
 which you mount in the container into `/plugins`.
 
+In environments with `SELINUX=enforcing` the bind mounts have to be adjusted,
+please check the [FAQ](https://otterwiki.com/FAQ#environments-with-selinux).
+
 *Note:* For plugins with complex dependencies the docker image might be missing
 packages. In this case adding these packages to the image is inevitable, a
 custom image (which packs the plugin, too) might be the best solution.
@@ -32,4 +35,3 @@ custom image (which packs the plugin, too) might be the best solution.
 ### Demo of the example plugins
 
 You can find a `docker-compose.yaml` in [docs/plugin_examples](https://github.com/redimp/otterwiki/tree/main/docs/plugin_examples).
-
