@@ -11,7 +11,7 @@ from otterwiki.plugins import hookimpl
 
 
 @hookimpl
-def page_view_htmlcontent_postprocess(html, page):
+def page_view_htmlcontent_postprocess(html, page, storage):
     if page.metadata is not None:
         html += f"""
         <div style="margin-top: 5rem; padding-top: .5rem; border-top: 1px dashed rgba(128,128,128,0.2); color: rgba(128,128,128,0.5);" class="text-small">

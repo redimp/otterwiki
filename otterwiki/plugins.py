@@ -36,7 +36,7 @@ class OtterWikiPluginSpec:
         """
 
     @hookspec
-    def page_view_htmlcontent_postprocess(self, html, page):
+    def page_view_htmlcontent_postprocess(self, html, page, storage):
         """
         This hooks receives a html string containing the page content.
         """
