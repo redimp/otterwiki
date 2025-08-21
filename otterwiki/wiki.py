@@ -687,7 +687,7 @@ class Page:
         menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
 
         htmlcontent = chain_hooks(
-            "page_view_htmlcontent_postprocess", htmlcontent, self
+            "page_view_htmlcontent_postprocess", htmlcontent, self, storage
         )
 
         # generate a description for the meta tag og:description
