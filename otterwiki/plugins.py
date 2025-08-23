@@ -19,7 +19,17 @@ class OtterWikiPluginSpec:
     """A hook specification namespace for OtterWiki."""
 
     @hookspec
-    def renderer_markdown_preprocess(self, md):
+    def setup(self, app, db, storage) -> None:
+        """
+        This hook receives the core objects and is to be used to
+        initialize the plugin with the app, database, and storage.
+        """
+        self.app = app
+        self.db = db
+        self.storage = storage
+
+    @hookspec
+    def renderer_markdown_preprocess(self, md: str) -> str | None:
         """
         This hook receives a markdown string, and can transform it any way it
         sees fit. It is called before the markdown is rendered into HTML.
@@ -29,14 +39,14 @@ class OtterWikiPluginSpec:
         """
 
     @hookspec
-    def renderer_html_postprocess(self, html):
+    def renderer_html_postprocess(self, html: str) -> str | None:
         """
         This hooks receive a html string. It is called after the pages
         markdown has been rendered into html.
         """
 
     @hookspec
-    def page_view_htmlcontent_postprocess(self, html, page, storage):
+    def page_view_htmlcontent_postprocess(self, html, page) -> str | None:
         """
         This hooks receives a html string containing the page content.
         """
