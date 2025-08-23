@@ -198,6 +198,10 @@ for plugin, dist in plugininfo:
     app.logger.info(
         f"server: Loaded plugin: {dist.project_name}-{dist.version}"
     )
+# setup plugins
+plugin_manager.hook.setup(
+    app=app, storage=storage, db=db
+)  # pyright: ignore never unbound
 
 
 #
