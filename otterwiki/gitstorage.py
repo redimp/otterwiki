@@ -58,6 +58,12 @@ class GitStorage(object):
             os.path.getmtime(os.path.join(self.path, filename))
         )
 
+    def size(self, filename: str) -> int:
+        """
+        Get the filesize in bytes
+        """
+        return os.path.getsize(os.path.join(self.path, filename))
+
     def isdir(self, dirname):
         return os.path.isdir(os.path.join(self.path, dirname))
 
