@@ -216,6 +216,20 @@ def template_debug_unixtime(s: int) -> str:
         return "{}?{}".format(s, os.getenv("GIT_TAG", None) or __version__)
 
 
+@app.template_filter('pluralize')
+def pluralize(count, plural='s', singular=''):
+    """
+    Example usage:
+
+    - Found {{pages|length}} page{{pages|length|pluralize("s")}} matching the pattern.
+    - We visited {{num_countries}} countr{{ num_countries|pluralize:("ies","y") }}.
+    """
+    if count == 1:
+        return singular
+    else:
+        return plural
+
+
 @app.template_filter("format_datetime")
 def format_datetime(value: datetime.datetime, format="medium") -> str:
     if format == "medium":
