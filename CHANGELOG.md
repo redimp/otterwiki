@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.14.0](https://github.com/redimp/otterwiki/releases/tag/v2.14.0) - 2025-08-31
+
+<small>[Compare with v2.13.0](https://github.com/redimp/otterwiki/compare/v2.13.0...v2.14.0)</small>
+
+### Features
+
+- Adding wikilinks voa the editor sidebar now handles selected text,
+  ([92489c7](https://github.com/redimp/otterwiki/pull/280/commits/92489c7f01cb7291ac5e0eaef15da2b291dcf731)), by @Harriotskelli, see [PR#280](https://github.com/redimp/otterwiki/pull/280)
+- housekeeping: Drafts and empty pages ([c8364d6](https://github.com/redimp/otterwiki/commit/c8364d637a370c5b1ddbe9cb195db6196cad0681)), see #271.
+- image attachments can now be resized using `?size=` `?width=` and `?height=` ([4fc77b5](https://github.com/redimp/otterwiki/commit/4fc77b592a2f117369df40c9f412c70b3ab60544)), see #278.
+- added Docker HEALTHCHECKs ([dfe314d](https://github.com/redimp/otterwiki/commit/dfe314d2c8dc14cd2e1dd042d7cc7790f05f5998)).
+
+### Plugins
+
+- OtterWikiPluginSpec got the setup() hook ([18cd6af](https://github.com/redimp/otterwiki/commit/18cd6afbb50ffaef12109806f55eb358470944e6)).
+- [docs/plugin_examples/plugin_authorsignature](https://github.com/redimp/otterwiki/tree/main/docs/plugin_examples/plugin_authorsignature)
+  was improved by Benjamin Esquivel @tarxf, see [PR#282](https://github.com/redimp/otterwiki/pull/282).
+
+### Code Refactoring
+
+- PageIndex uses PageIndexEntry dataclass ([b57a5b6](https://github.com/redimp/otterwiki/commit/b57a5b63b1591a47b82c66ed60b67f6e7948295e)).
+- PageIndex moved into pageindex.py ([94421e1](https://github.com/redimp/otterwiki/commit/94421e190c12d5c7e35e12bfa5c909b7860e59c0)).
+- PageIndex.render() extracted meta_description() ([d4f858a](https://github.com/redimp/otterwiki/commit/d4f858a24255ea2eebe7de56cf03b99b299cbf5a)).
+
 ## [v2.13.0](https://github.com/redimp/otterwiki/releases/tag/v2.13.0) - 2025-08-02
 
 <small>[Compare with v2.12.0](https://github.com/redimp/otterwiki/compare/v2.12.0...v2.13.0)</small>
