@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
-from uuid import uuid4
-import flask_login
-from otterwiki.util import is_valid_email, is_valid_name
-from werkzeug.security import generate_password_hash, check_password_hash
+import hmac
+from datetime import datetime
 from urllib.parse import urlsplit
+from uuid import uuid4
+
+import flask_login
 from flask import (
     redirect,
     request,
@@ -21,7 +22,8 @@ from flask_login import (
     logout_user,
     current_user,
 )
-from otterwiki.server import app, db
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from otterwiki.helper import (
     toast,
     send_mail,
@@ -29,11 +31,10 @@ from otterwiki.helper import (
     deserialize,
     SerializeError,
 )
-from otterwiki.util import random_password, empty
 from otterwiki.models import User as UserModel
-from datetime import datetime
-import hmac
-from uuid import uuid4
+from otterwiki.server import app, db
+from otterwiki.util import is_valid_email, is_valid_name
+from otterwiki.util import random_password, empty
 
 
 def check_password_hash_backport(pwhash, password):
@@ -554,7 +555,17 @@ class SimpleAuth:
 
 class ProxyHeaderAuth:
     # if logout_link is not provided, hide the logout button
-    def __init__(self, logout_link=None):
+    def __init__(
+        self,
+        logout_link=None,
+        *,
+        username_header: str = 'x-otterwiki-name',
+        email_header: str = 'x-otterwiki-email',
+        permissions_header: str = 'x-otterwiki-permissions',
+    ):
+        self._username_header = username_header
+        self._email_header = email_header
+        self._permissions_header = permissions_header
         self.logout_link = logout_link
 
     class User(UserMixin):
@@ -576,22 +587,21 @@ class ProxyHeaderAuth:
 
     # called on every page load
     def request_loader(self, req):
-        if 'x-otterwiki-name' not in req.headers:
+        if self._username_header not in req.headers:
             return None
-
-        if 'x-otterwiki-email' not in req.headers:
+        if self._email_header not in req.headers:
             return None
-
-        if 'x-otterwiki-permissions' in req.headers:
+        if self._permissions_header in req.headers:
             permissions = (
-                req.headers.get('x-otterwiki-permissions').upper().split(',')
+                req.headers[self._permissions_header].upper().split(',')
             )
         else:
             permissions = []
-
+        name = req.headers.get(self._username_header)
+        email = req.headers.get(self._email_header)
         return self.User(
-            name=req.headers.get('x-otterwiki-name'),
-            email=req.headers.get('x-otterwiki-email'),
+            name=name,
+            email=email,
             permissions=permissions,
         )
 
@@ -646,7 +656,11 @@ login_manager.anonymous_user = OtterWikiAnonymousUser
 if app.config.get("AUTH_METHOD") in ["", "SIMPLE"]:
     auth_manager = SimpleAuth()
 elif app.config.get("AUTH_METHOD") == "PROXY_HEADER":
-    auth_manager = ProxyHeaderAuth()
+    auth_manager = ProxyHeaderAuth(
+        username_header=app.config.get("AUTH_HEADERS_USERNAME"),
+        email_header=app.config.get("AUTH_HEADERS_EMAIL"),
+        permissions_header=app.config.get("AUTH_HEADERS_PERMISSIONS"),
+    )
 else:
     raise RuntimeError(
         "Unknown AUTH_METHOD '{}'".format(app.config.get("AUTH_METHOD"))
