@@ -10,6 +10,7 @@ services:
     environment:
       - SITE_NAME=Otter Header Auth
       - AUTH_METHOD=PROXY_HEADER
+      - AUTH_HEADERS_USERNAME=x-otterwiki-name # Optional: change the headers' names
       - READ_ACCESS=APPROVED
       - WRITE_ACCESS=APPROVED
       - ATTACHMENT_ACCESS=APPROVED
