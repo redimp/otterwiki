@@ -1,0 +1,26 @@
+version: '3'
+services:
+  otterwiki:
+    image: redimp/otterwiki:2
+    build: ../../..
+    restart: unless-stopped
+    ports:
+      # forward the http port to 8080
+      - "8080:80"
+    environment:
+      - SITE_NAME=Otter Header Auth
+      - AUTH_METHOD=PROXY_HEADER
+      - READ_ACCESS=APPROVED
+      - WRITE_ACCESS=APPROVED
+      - ATTACHMENT_ACCESS=APPROVED
+      - AUTH_HEADERS_USERNAME=Remote-User
+      - AUTH_HEADERS_EMAIL=Remote-Email
+      - AUTH_HEADERS_PERMISSIONS=custom-otterwiki-permissions
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
