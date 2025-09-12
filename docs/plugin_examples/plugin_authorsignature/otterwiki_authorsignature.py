@@ -24,12 +24,22 @@ class AuthorSignature:
     @hookimpl
     def page_view_htmlcontent_postprocess(self, html, page):
         if page.metadata is not None:
-            # Getting the first sha of the page file to request the metadata to be used
-            # for the page creation info.
-            first_sha = self.storage.repo.git.rev_list(
-                "--max-parents=0", "HEAD", page.filename
+            # fetch only log entries when the file was (A)dded
+            rawlog = self.storage.repo.git.log(
+                "--diff-filter=A", page.filename
             )
-            creation_metadata = self.storage.metadata(page.filename, first_sha)
+            # clean up
+            log = [
+                entry
+                for entry in rawlog.strip("\x00").split("\x00\x00")
+                if len(entry) > 0
+            ]
+            if log and len(log) > 1:
+                # pick the latest add as creation date
+                creation_metadata = self.storage._get_metadata_of_log(log[-1])
+            else:
+                # fallback in case the git log --diff-filter fails
+                creation_metadata = page.metadata
             html += f"""
             <div style="margin-top: 5rem; padding-top: .5rem; border-top: 1px dashed rgba(128,128,128,0.2); color: rgba(128,128,128,0.5);" class="text-small">
                 Last modified {page.metadata["datetime"].strftime("%Y-%m-%d %H:%M:%S")} by {page.metadata["author_name"]}.
