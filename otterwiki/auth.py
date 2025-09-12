@@ -558,7 +558,6 @@ class ProxyHeaderAuth:
     def __init__(
         self,
         logout_link=None,
-        *,
         username_header: str = 'x-otterwiki-name',
         email_header: str = 'x-otterwiki-email',
         permissions_header: str = 'x-otterwiki-permissions',
@@ -573,10 +572,10 @@ class ProxyHeaderAuth:
             self.name = name
             self.email = email
             self.is_approved = True
-            self.allow_read = 'READ' in permissions
-            self.allow_write = 'WRITE' in permissions
-            self.allow_upload = 'UPLOAD' in permissions
-            self.is_admin = 'ADMIN' in permissions
+            self.allow_read = permissions and 'READ' in permissions
+            self.allow_write = permissions and 'WRITE' in permissions
+            self.allow_upload = permissions and 'UPLOAD' in permissions
+            self.is_admin = permissions and 'ADMIN' in permissions
             self.permissions = permissions
 
         def __repr__(self):
@@ -588,17 +587,31 @@ class ProxyHeaderAuth:
     # called on every page load
     def request_loader(self, req):
         if self._username_header not in req.headers:
+            app.logger.error(f"Missing header: {self._username_header}")
             return None
         if self._email_header not in req.headers:
+            app.logger.error(f"Missing header: {self._email_header}")
             return None
         if self._permissions_header in req.headers:
             permissions = (
                 req.headers[self._permissions_header].upper().split(',')
             )
         else:
+            app.logger.warning(f"Missing header: {self._permissions_header}")
             permissions = []
-        name = req.headers.get(self._username_header)
-        email = req.headers.get(self._email_header)
+        name = req.headers.get(self._username_header, "")
+        email = req.headers.get(self._email_header, "")
+
+        if empty(email):
+            app.logger.error(f"email header '{self._email_header}' is empty")
+            return None
+        elif empty(name):
+            app.logger.warning(
+                f"name header '{self._username_header}' is emptyt"
+            )
+            # default to email as username if no username is set
+            name = email
+
         return self.User(
             name=name,
             email=email,
