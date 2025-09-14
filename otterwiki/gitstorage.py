@@ -254,7 +254,7 @@ class GitStorage(object):
         # clean up artifacts
         rawlog = [
             entry
-            for entry in rawlog.strip("\x00").split("\x00\x00")
+            for entry in re.split(r'\x00\x00|\n\x00', rawlog.strip("\x00"))
             if len(entry) > 0
         ]
         # raise Exception of no log entry has been found
