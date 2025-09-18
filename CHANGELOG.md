@@ -6,16 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.14.1](https://github.com/redimp/otterwiki/releases/tag/v2.14.1) - 2025-09-18
+
+<small>[Compare with v2.14.0](https://github.com/redimp/otterwiki/compare/v2.14.0...v2.14.1)</small>
+
+### Features
+
+- auth headers can now be customized when using `AUTH_METHOD='PROXY_HEADER'`, see [PR#287](https://github.com/redimp/otterwiki/pull/287) by Kamil Essekkat @ekamil ([fb20d65](https://github.com/redimp/otterwiki/commit/fb20d65d14e37c7a894f9447c5d0c80d1c3ba8aa)).
+
+### Bug Fixes
+
+- `plugin_authorsignature` fixed: use git log for finding the page creation metadata, see #288 ([7bca4aa](https://github.com/redimp/otterwiki/commit/7bca4aa678bed4e5015ca7440c3f7604c8d41d35)).
+- Changelog: log parsing for merge commits fixed ([28ea1f0](https://github.com/redimp/otterwiki/commit/28ea1f0f08fc6bad5f4b2448f5429aa26118beef)).
+
 ## [v2.14.0](https://github.com/redimp/otterwiki/releases/tag/v2.14.0) - 2025-08-31
 
 <small>[Compare with v2.13.0](https://github.com/redimp/otterwiki/compare/v2.13.0...v2.14.0)</small>
 
 ### Features
 
-- Adding wikilinks voa the editor sidebar now handles selected text,
+- Adding wikilinks so that the editor sidebar now handles selected text,
   ([92489c7](https://github.com/redimp/otterwiki/pull/280/commits/92489c7f01cb7291ac5e0eaef15da2b291dcf731)), by @Harriotskelli, see [PR#280](https://github.com/redimp/otterwiki/pull/280)
-- housekeeping: Drafts and empty pages ([c8364d6](https://github.com/redimp/otterwiki/commit/c8364d637a370c5b1ddbe9cb195db6196cad0681)), see #271.
-- image attachments can now be resized using `?size=` `?width=` and `?height=` ([4fc77b5](https://github.com/redimp/otterwiki/commit/4fc77b592a2f117369df40c9f412c70b3ab60544)), see #278.
+- housekeeping: Drafts and empty pages, see #271 ([c8364d6](https://github.com/redimp/otterwiki/commit/c8364d637a370c5b1ddbe9cb195db6196cad0681)).
+- image attachments can now be resized using `?size=` `?width=` and `?height=`, see #278 ([4fc77b5](https://github.com/redimp/otterwiki/commit/4fc77b592a2f117369df40c9f412c70b3ab60544)).
 - added Docker HEALTHCHECKs ([dfe314d](https://github.com/redimp/otterwiki/commit/dfe314d2c8dc14cd2e1dd042d7cc7790f05f5998)).
 
 ### Plugins
