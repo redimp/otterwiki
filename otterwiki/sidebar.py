@@ -12,6 +12,7 @@ from otterwiki.util import (
     split_path,
     join_path,
     empty,
+    sanitize_pagename,
 )
 from otterwiki.helper import (
     get_pagename,
@@ -193,11 +194,19 @@ class SidebarPageIndex:
             entries.append(filename)
         entries = sorted(list(set(entries)))
 
+        custom_slug = "customcss"
+
         for entry in entries:
             header = None
             if entry.endswith(".md"):
                 header = self.read_header(entry)
-                entry = entry[:-3]
+                base_entry = entry[:-3]
+                if (
+                    sanitize_pagename(base_entry, handle_md=True).lower()
+                    == custom_slug
+                ):
+                    continue
+                entry = base_entry
             self.filenames_and_header.append((entry, header))
             parts = split_path(entry)
             self.add_node(self.tree, [], parts, header)

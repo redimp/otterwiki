@@ -57,8 +57,8 @@
     <link href="{{ url_for("static", filename="css/pygments-print.css") | debug_unixtime }}" rel="stylesheet" media="print"/>
     <!-- Roboto font (Used when Apple system fonts are not available) -->
     <link href="{{ url_for("static", filename="css/roboto.css") | debug_unixtime }}" rel="stylesheet"/>
-    <!-- custom.css for tweaking the default themes -->
-    <link href="{{ url_for("static", filename="custom/custom.css") }}" rel="stylesheet" media="screen" />
+    <!-- custom.css for tweaking the default themes - loaded from Custom.css wiki page -->
+    <link href="{{ url_for("custom_css") }}" rel="stylesheet" media="screen" />
     <!-- Documentation styles -->
     {{config.HTML_EXTRA_HEAD|safe}}
 {%- block head %}

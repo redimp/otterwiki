@@ -55,6 +55,28 @@ def robotstxt():
     return response
 
 
+@app.route("/-/custom.css")
+def custom_css():
+    """Serve the Custom.css wiki page as a CSS file"""
+    try:
+        p = Page("Custom.css")
+        if p.exists and p.content:
+            css_content = p.content
+        else:
+            # Return empty CSS if page doesn't exist
+            css_content = "/* Custom CSS - edit the Custom.css page to add your styles */\n"
+    except Exception:
+        css_content = "/* Custom CSS - edit the Custom.css page to add your styles */\n"
+
+    response = make_response(css_content, 200)
+    response.mimetype = "text/css"
+    # No caching to ensure changes are immediately visible
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
 @app.route("/favicon.ico")
 def favicon():
     return send_from_directory(

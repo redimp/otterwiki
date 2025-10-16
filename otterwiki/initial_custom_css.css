@@ -1,0 +1,208 @@
+/*!
+ * Custom.css template for Otter Wiki
+ *
+ * Uncomment the sections you want to customize and adjust the values.
+ * Changes here are applied globally to every page of the wiki.
+ */
+
+/* ===========================================================
+   Color Variables
+   -----------------------------------------------------------
+   Define custom colors that are reused across the wiki.
+=========================================================== */
+/*
+:root {
+    --ow-primary-color: #1890ff;
+    --ow-accent-color: #f58231;
+}
+*/
+
+/* ===========================================================
+   Global Layout & Typography
+   -----------------------------------------------------------
+   Basics such as background, text color, and fonts.
+=========================================================== */
+/*
+body {
+    background-color: #f7f9fc;
+    color: #1f2933;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+a {
+    color: var(--ow-primary-color, #1890ff);
+}
+
+a:hover {
+    text-decoration: underline;
+}
+*/
+
+/* ===========================================================
+   Navigation Bar
+   -----------------------------------------------------------
+   Adjust the top navigation bar.
+=========================================================== */
+/*
+.navbar {
+    background-color: #0f172a;
+}
+
+.navbar .btn,
+.navbar .navbar-link {
+    color: #e2e8f0;
+}
+*/
+
+/* ===========================================================
+   Sidebar
+   -----------------------------------------------------------
+   Control sidebar background and link appearance.
+=========================================================== */
+/*
+.sidebar {
+    background-color: #111827;
+}
+
+.sidebar .sidebar-link {
+    color: #cbd5f5;
+}
+
+.sidebar .sidebar-link.sidebar-link-active {
+    background-color: rgba(30, 64, 175, 0.25);
+    color: #fff;
+}
+*/
+
+/* ===========================================================
+   Page Content
+   -----------------------------------------------------------
+   Tune headings, paragraphs, and spacing inside wiki pages.
+=========================================================== */
+/*
+.page h1,
+.page h2,
+.page h3 {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.page p {
+    line-height: 1.8;
+}
+
+.page blockquote {
+    border-left: 4px solid var(--ow-primary-color, #1890ff);
+    background-color: rgba(24, 144, 255, 0.05);
+    padding: 1rem 1.5rem;
+}
+*/
+
+/* ===========================================================
+   Cards & Panels
+   -----------------------------------------------------------
+   Used for forms, modals, preview panels, etc.
+=========================================================== */
+/*
+.card {
+    border-radius: 1rem;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+}
+
+.card-title {
+    letter-spacing: 0.015em;
+    text-transform: uppercase;
+}
+*/
+
+/* ===========================================================
+   Buttons
+   -----------------------------------------------------------
+   Customize button palette and hover/focus states.
+=========================================================== */
+/*
+.btn-primary {
+    background-color: var(--ow-primary-color, #1890ff);
+    border-color: var(--ow-primary-color, #1890ff);
+}
+
+.btn-primary:hover {
+    background-color: #0c65c0;
+    border-color: #0c65c0;
+}
+*/
+
+/* ===========================================================
+   Code Blocks & Syntax Highlighting
+   -----------------------------------------------------------
+   Change code block background and font.
+=========================================================== */
+/*
+.highlight pre {
+    background-color: #0f172a;
+    color: #e2e8f0;
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+.highlight .copy-to-clipboard {
+    color: inherit;
+}
+*/
+
+/* ===========================================================
+   Alerts & Messages
+   -----------------------------------------------------------
+   Toasts, callouts, and notification panels.
+=========================================================== */
+/*
+.alert.alert-success {
+    border-left: 4px solid #22c55e;
+}
+
+.alert.alert-danger {
+    border-left: 4px solid #ef4444;
+}
+*/
+
+/* ===========================================================
+   Tables
+   -----------------------------------------------------------
+   Table borders, zebra striping, and hover rows.
+=========================================================== */
+/*
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+table thead th {
+    background-color: #e2e8f0;
+    color: #1f2933;
+    font-weight: 600;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: rgba(15, 23, 42, 0.04);
+}
+*/
+
+/* ===========================================================
+   Dark Mode Overrides
+   -----------------------------------------------------------
+   Provide explicit tweaks for dark mode users.
+=========================================================== */
+/*
+.dark-mode {
+    background-color: #0b1120;
+    color: #e2e8f0;
+}
+
+.dark-mode .page a {
+    color: #60a5fa;
+}
+
+.dark-mode .card {
+    background-color: #111827;
+    border-color: rgba(148, 163, 184, 0.2);
+}
+*/

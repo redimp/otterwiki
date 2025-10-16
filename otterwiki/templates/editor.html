@@ -351,6 +351,7 @@
 
                     <p class="font-size-12 p-15 text-muted">Additional media can be added via the 'Attachments' of this page, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.</p>
 
+{% if not is_custom_css_page %}
                     <h5 class="sidebar-title">WikiLink <i class="fa fa-link"></i></h5>
                     <div class="sidebar-divider" ></div>
                     <form class="ml-10">
@@ -362,6 +363,7 @@
                         </select>
                         <button class="btn mt-5" type="button" onclick="otterwiki_editor.insert_wikilink()" title="Copy into the editor" ><i class="fas fa-paste"></i></button>
                     </form>
+{% endif %}
                     </div>
 {{ super() }}
 {%- endblock extra_nav %}
@@ -377,7 +379,9 @@
 <div id="editor_block" style="display: block;"></div>
 <div id="preview_block" style="display: none;"></div>
 <div id="editor-bottom-panel" class="editor-bottom-panel" style="display:none;">
+    {% if not is_custom_css_page %}
     <a href="#" onclick="otterwiki.toggleMarkdownHelp()" class="btn btn-xsm"><i class="fab fa-markdown"></i> Markdown Syntax</a>
+    {% endif %}
     <div id="editor-help-markdown" class="content card border rounded-top p-5" style="display: none;">
         <a href="{{ url_for("syntax") }}" class="btn btn-xsm" target="_blank">
             <i class="fas fa-expand-arrows-alt"></i>
@@ -423,12 +427,15 @@
 <script src="{{ url_for("static", filename="js/inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/codemirror-4.inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-modes.min.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
+{% if editor_mode == 'text/css' %}
+<script src="{{ url_for("static", filename="js/cm-mode-css.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
+{% endif %}
 <script src="{{ url_for("static", filename="js/cm-search.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-searchcursor.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-dialog.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
     const cm_editor = CodeMirror.fromTextArea(document.getElementById("content_editor"), {
-        mode: 'markdown',
+        mode: '{{ editor_mode or "markdown" }}',
         lineNumbers: true,
         theme: "otterwiki",
         lineWrapping: true,
