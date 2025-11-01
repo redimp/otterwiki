@@ -35,6 +35,7 @@ Math block:
 a^2+b^2=c^2
 ```
 
+---
 
 > This is a quote.
 > It can span multiple lines!

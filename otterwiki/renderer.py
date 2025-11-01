@@ -379,11 +379,16 @@ class OtterwikiRenderer:
                 line = min(len(text_arr) - 1, int(cursor) + 1)
             except ValueError:
                 line = 0
+            print(f"{line}:{text_arr[line]}")
             # find a line to place the cursor
-            while (
-                line > 0 and not len(self.lastword.findall(text_arr[line])) > 0
+            while line > 0 and (
+                not len(self.lastword.findall(text_arr[line])) > 0
+                or text_arr[line].startswith(
+                    "---"
+                )  # --- (hr) needs extra space
             ):
                 line -= 1
+            print(line)
             if line > 0:
                 # add empty span at the beginning of the edited line
                 text_arr[line] = self.lastword.sub(
