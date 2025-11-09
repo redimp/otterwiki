@@ -4,7 +4,7 @@ name: otterwiki
 description: An Otter Wiki is a minimalstic wiki powered by python, markdown and git.
 home: https://otterwiki.com
 type: application
-version: 0.1.1
+version: 0.1.2
 appVersion: "2"
 icon: "https://github.com/redimp/otterwiki/blob/c805922fe886f724eefdd118ac0c1d444d59c8aa/otterwiki/static/img/otterhead.png"
 maintainers:

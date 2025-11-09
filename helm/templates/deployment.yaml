@@ -36,7 +36,10 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if .Values.env }}
           env:
-{{ toYaml .Values.server.env | indent 12}}
+            {{- range $name, $value := .Values.env }}
+            - name: {{ $name }}
+              value: {{ $value }}
+            {{- end }}
           {{- end }}
           envFrom:
           - configMapRef:
