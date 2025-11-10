@@ -15,6 +15,7 @@ import otterwiki.util
 from otterwiki import __version__, fatal_error
 from otterwiki.plugins import plugin_manager
 from otterwiki.renderer import OtterwikiRenderer
+from otterwiki.util import sanitize_pagename
 
 app = Flask(__name__)
 # default configuration settings
@@ -138,6 +139,39 @@ if (len(storage.list()[0]) < 1) and (  # pyright: ignore never unbound
             message="Initial commit",
         )
         app.logger.info("server: Created initial /Home.")
+
+custom_pagepath = sanitize_pagename("Custom.css", handle_md=True)
+filename_base = (
+    custom_pagepath
+    if app.config["RETAIN_PAGE_NAME_CASE"]
+    else custom_pagepath.lower()
+)
+custom_filename = (
+    filename_base
+    if filename_base.endswith(".md")
+    else f"{filename_base}.md"
+)
+
+if not storage.exists(custom_filename):
+    try:
+        with open(
+            os.path.join(app.root_path, "initial_custom_css.css")
+        ) as f:
+            custom_content = f.read()
+    except OSError as exc:
+        app.logger.warning(
+            "server: Could not load initial_custom_css.css template (%s).",
+            exc,
+        )
+        custom_content = "/* Custom CSS template */\n"
+
+    storage.store(  # pyright: ignore
+        filename=custom_filename,
+        content=custom_content,
+        author=("Otterwiki Robot", "noreply@otterwiki"),
+        message="Seed Custom.css template",
+    )
+    app.logger.info("server: Created initial Custom.css.")
 
 
 #

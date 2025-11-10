@@ -109,6 +109,27 @@
 {% endif %}
 {#
 #}
+<div class="card">
+<div class="mw-full w-600">
+<h2 class="card-title">Appearance</h2>
+<p class="form-text-plain">
+    Customize the wiki by editing the <code>Custom.css</code> page. Changes here apply to every visitor.
+</p>
+{% set can_read_custom = has_permission('READ') %}
+<div class="btn-toolbar">
+{% if has_permission('WRITE') %}
+    <a class="btn btn-primary mr-5" href="{{ url_for('edit', path='Custom.css') }}">
+        <i class="fas fa-paint-brush"></i> Edit Custom.css
+    </a>
+{% endif %}
+    <a class="btn{% if not can_read_custom %} disabled{% endif %}" href="{{ url_for('view', path='Custom.css') if can_read_custom else '#' }}">
+        <i class="far fa-eye"></i> Preview Stylesheet
+    </a>
+</div>
+</div>
+</div>
+{#
+#}
 {% if config.GIT_WEB_SERVER %}
 <div class="card">
 <div class="mw-full w-600">
