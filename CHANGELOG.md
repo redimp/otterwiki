@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.14.2](https://github.com/redimp/otterwiki/releases/tag/v2.14.2) - 2025-11-09
+
+<small>[Compare with v2.14.1](https://github.com/redimp/otterwiki/compare/v2.14.1...v2.14.2)</small>
+
+### Features
+
+- use the page header as html `<title>` ([947443d](https://github.com/redimp/otterwiki/commit/947443d279baed04c475f84994e017d5e256be41)).
+- added button to editor to add a horizontal line to the document, see #299 ([b412d99](https://github.com/redimp/otterwiki/commit/b412d990765e2a8a5c619d6ada3376a4f41cbaa8)).
+
+### Bug Fixes
+
+- Make better use of the docker healthcheck, see #242 ([8bfb7a1](https://github.com/redimp/otterwiki/commit/8bfb7a17a39e1c148102aacf31d5c6ece8d65fac)).
+- Fixed documentation about attachment handling, see #296.
+
 ## [v2.14.1](https://github.com/redimp/otterwiki/releases/tag/v2.14.1) - 2025-09-18
 
 <small>[Compare with v2.14.0](https://github.com/redimp/otterwiki/compare/v2.14.0...v2.14.1)</small>

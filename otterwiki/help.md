@@ -100,10 +100,8 @@ In addition to uploading, each attachment can also be opened via the <span class
 #### Inline attached images
 
 To inline images in pages use the markdown syntax: `![](/Page/attachment.jpg)`.
-On large screens, the editor displays a list of the most recent attachments on the
-right hand side. There you can use <span class="help-button"><a href="#" class="btn btn-xsm"><i class="fas fa-copy"></i> Copy</a></span> to copy the markdown code to your clipboard
-and paste it in the editor. On the attachment page, markdown codes can be found by
- opening a pop-up using <span class="help-button"><a hre="#"><i class="fas fa-copy"></i></a></span> next to the <span class="help-button"><a href="#">filename.jpg</a></span>.
+
+On larger screens, a list of recently used attachments appears on the right. From this list, you can select an attachment and choose how to use it. Then, utilize the copy icon (<span class="help-button"><a href="#" class="btn btn-xsm"><i class="fas fa-copy"></i></a></span>) to insert the corresponding markdown code into the editor.
 
 ##### Thumbnails and Image Resizing
 

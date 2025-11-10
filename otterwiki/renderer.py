@@ -380,8 +380,11 @@ class OtterwikiRenderer:
             except ValueError:
                 line = 0
             # find a line to place the cursor
-            while (
-                line > 0 and not len(self.lastword.findall(text_arr[line])) > 0
+            while line > 0 and (
+                not len(self.lastword.findall(text_arr[line])) > 0
+                or text_arr[line].startswith(
+                    "---"
+                )  # --- (hr) needs extra space
             ):
                 line -= 1
             if line > 0:

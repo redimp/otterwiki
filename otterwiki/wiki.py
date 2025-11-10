@@ -510,6 +510,13 @@ class Page:
             # set title
             title = self.pagename
 
+        try:
+            # set title to the first headline
+            title = toc[0][3]
+        except IndexError:
+            # use pagename as fallback
+            title = self.pagename
+     
         if self.revision is not None:
             title = "{} ({})".format(self.pagename, self.revision)
 

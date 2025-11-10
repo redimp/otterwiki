@@ -513,13 +513,47 @@ var otterwiki_editor = {
     codeBlock: function() {
         otterwiki_editor._toggleMultilineBlock("```", /^```\w*/, null, "code");
     },
+    hr: function() {
+        let linenumbers = otterwiki_editor._getSelectedLines();
+        let changed = false;
+        let line = "";
+        let ln = 0;
+        for (ln of linenumbers) {
+            line = cm_editor.getLine(ln);
+            let updated_line = line.replace(/^---\w*/, "");
+            if (updated_line != line) {
+                changed = true;
+                otterwiki_editor._setLine(ln, updated_line);
+            }
+        }
+        if (!changed) {
+            let cursor = cm_editor.getCursor('start');
+            let line_insert = "---";
+            let hr_ln = ln;
+            // check if the current line is not empty
+            if (cm_editor.getLine(ln) != "") {
+                hr_ln += 2;
+                line_insert = line + "\n\n" + line_insert;
+            }
+            // check the next line
+            if (cm_editor.lastLine() < ln+1 || cm_editor.getLine(ln+1) != "") {
+                line_insert = line_insert + "\n"
+            }
+            otterwiki_editor._setLine(ln, line_insert);
+            // update cursor
+            cursor.line = Math.min(hr_ln,  cm_editor.lastLine());
+            cursor.ch = 3;
+            cm_editor.setCursor(cursor);
+        }
+        cm_editor.focus();
+    },
     // quote: increase the markdown quote level till five, remove afterwards
     quote: function (multilevel = true) {
         otterwiki_editor._toggleLinesMultiLevel(">", multilevel ? maxMultiLevels : 1);
     },
     ul: function() {
         otterwiki_editor._toggleLines("- ",[/\s*[-+*]\s+/], "ul");
-    },
+   },
     ol: function() {
         otterwiki_editor._toggleLines("\\d",[/\s*\d+\.\s+/], "ol");
     },
