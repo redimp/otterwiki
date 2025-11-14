@@ -473,7 +473,7 @@
 thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuecomment-227075500
 #}
     inlineAttachment.editors.codemirror4.attach(cm_editor, {
-        uploadUrl: '{{ url_for('inline_attachment', pagepath=pagepath) }}',
+        uploadUrl: "{{ url_for('inline_attachment', pagepath=pagepath) | urlencode }}",
         urlText: "![]({filename})",
         onFileUploadResponse: function(xhr) {
             var result = JSON.parse(xhr.responseText),
@@ -514,6 +514,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
     const preview_block = document.querySelector("#preview_block");
     var cm_last_change = 0;
     var cm_save_timer = null;
+    console.log("{{ url_for('draft', path=pagepath) | urlencode }}")
 
     save_draft = function() {
         cm_last_change = Date.now();
@@ -526,7 +527,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         formData.append("cursor_line", cm_editor.getCursor().line);
         formData.append("cursor_ch", cm_editor.getCursor().ch);
         formData.append("revision", "{{revision}}");
-        fetch("{{ url_for('draft', path=pagepath) }}", {
+        fetch("{{ url_for('draft', path=pagepath) | urlencode }}", {
             method: 'POST',
             body: formData,
         })
@@ -588,7 +589,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         formData.append("cursor_ch", cm_editor.getCursor().ch);
 
         /* FIXME: display loader */
-        fetch("{{ url_for('preview', path=pagepath) }}", {
+        fetch("{{ url_for('preview', path=pagepath) | urlencode }}", {
                 method: 'POST',
                 body: formData,
             })
