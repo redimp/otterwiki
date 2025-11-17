@@ -588,7 +588,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         formData.append("cursor_ch", cm_editor.getCursor().ch);
 
         /* FIXME: display loader */
-        fetch("{{ url_for('preview', path=pagepath) }}", {
+        fetch("{{ url_for('preview', path=pagepath) | safe }}", {
                 method: 'POST',
                 body: formData,
             })
