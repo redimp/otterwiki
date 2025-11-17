@@ -200,6 +200,80 @@ def test_view_source(test_client):
     assert content in html
 
 
+def test_initial_custom_css_template_seeded(test_client):
+    css = test_client.get("/-/custom.css").data.decode()
+    assert "Custom.css template for Otter Wiki" in css
+    assert "Global Layout & Typography" in css
+
+
+def test_custom_css_page_renders_as_css(admin_client):
+    css_content = "body { color: red; }\n"
+    save_shortcut(
+        admin_client,
+        "Custom.css",
+        css_content,
+        "Add custom css content",
+    )
+    html = admin_client.get("/Custom.css").data.decode()
+    soup = bs4.BeautifulSoup(html, "html.parser")
+    pre = soup.find("pre", {"class": "copy-to-clipboard code"})
+    assert pre is not None
+    assert "body" in pre.text
+    assert "color" in pre.text
+    assert 'span class=".highlight k' in html
+
+
+def test_custom_css_editor_uses_css_mode(admin_client):
+    css_content = "body { color: blue; }\n"
+    save_shortcut(
+        admin_client,
+        "Custom.css",
+        css_content,
+        "Update custom css content",
+    )
+    html = admin_client.get("/Custom.css/edit").data.decode()
+    assert "mode: 'text/css'" in html
+    assert "js/cm-mode-css.js" in html
+    assert "Markdown Syntax" not in html
+    soup = bs4.BeautifulSoup(html, "html.parser")
+    assert soup.select_one("select#wikilink") is None
+    assert "Select an page to link" not in html
+
+
+def test_custom_css_page_forbidden_for_regular_readers(test_client):
+    response = test_client.get("/Custom.css")
+    assert response.status_code == 403
+
+
+def test_markdown_editor_shows_helpers(test_client):
+    pagename = "Regular Page"
+    save_shortcut(
+        test_client,
+        pagename,
+        "# Heading\n\nSome content",
+        "seed regular page",
+    )
+    html = test_client.get(f"/{pagename}/edit").data.decode()
+    assert "Markdown Syntax" in html
+    soup = bs4.BeautifulSoup(html, "html.parser")
+    assert soup.select_one("select#wikilink") is not None
+    assert "js/cm-mode-css.js" not in html
+
+
+def test_settings_page_has_custom_css_button(admin_client):
+    html = admin_client.get("/-/settings").data.decode()
+    assert "Edit Custom.css" in html
+    assert "/Custom.css/edit" in html
+    assert "Preview Stylesheet" in html
+
+
+def test_sidebar_hides_custom_css(test_client):
+    html = test_client.get("/").data.decode()
+    soup = bs4.BeautifulSoup(html, "html.parser")
+    links = [a.get("href", "") for a in soup.select("ul.sidebarmenu a")] if soup else []
+    assert all("Custom.css" not in href and "Customcss" not in href for href in links)
+
+
 def test_view_revision(test_client, req_ctx):
     pagename = "ViewRevisionTest"
     content = ["aaa", "bbb"]

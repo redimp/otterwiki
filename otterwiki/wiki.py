@@ -373,6 +373,20 @@ class Page:
                 self.pagepath, full=True, header=header
             )
 
+    def is_custom_css_page(self) -> bool:
+        return self.filename.lower() == "customcss.md"
+
+    def _has_custom_css_access(self) -> bool:
+        user = current_user
+        return bool(
+            user.is_authenticated
+            and (getattr(user, "is_admin", False) or getattr(user, "allow_write", False))
+        )
+
+    def _enforce_custom_css_access(self) -> None:
+        if self.is_custom_css_page() and not self._has_custom_css_access():
+            abort(403)
+
     def breadcrumbs(self):
         return get_breadcrumbs(self.pagepath)
 
@@ -405,6 +419,7 @@ class Page:
         return True
 
     def source(self, raw=False):
+        self._enforce_custom_css_access()
         # handle permissions
         if not has_permission("READ"):
             abort(403)
@@ -427,7 +442,8 @@ class Page:
                 {'Content-Type': 'text/plain; charset=utf-8'},
             )
 
-        source = pygments_render(self.content, lang='markdown')
+        source_lang = 'css' if self.is_custom_css_page() else 'markdown'
+        source = pygments_render(self.content, lang=source_lang)
         menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
 
         return render_template(
@@ -443,6 +459,7 @@ class Page:
         )
 
     def view(self):
+        self._enforce_custom_css_access()
         # handle permissions
         if not has_permission("READ"):
             if current_user.is_authenticated and not current_user.is_approved:
@@ -470,19 +487,28 @@ class Page:
                 f"""This page was loaded from the repository but is not added under git version control. Make a commit on the <a href="/{self.pagepath}/edit" class="alert-link">Edit page</a> to add it.""",
             ]
 
-        # render markdown
-        htmlcontent, toc = app_renderer.markdown(
-            self.content, page_url=self.page_url
-        )
-        update_ftoc_cache(self.filename, ftoc=toc)
-
-        if len(toc) > 0:
-            # use first headline to overwrite pagename
-            self.pagename = get_pagename(
-                self.pagename,
-                full=False,
-                header=toc[0][3],
+        # Special handling for Custom.css page - render as syntax-highlighted CSS
+        if self.is_custom_css_page():
+            htmlcontent = pygments_render(self.content, lang='css')
+            toc = []
+            title = self.pagename
+        else:
+            # render markdown
+            htmlcontent, toc = app_renderer.markdown(
+                self.content, page_url=self.page_url
             )
+            update_ftoc_cache(self.filename, ftoc=toc)
+
+            if len(toc) > 0:
+                # use first headline to overwrite pagename
+                self.pagename = get_pagename(
+                    self.pagename,
+                    full=False,
+                    header=toc[0][3],
+                )
+
+            # set title
+            title = self.pagename
 
         try:
             # set title to the first headline
@@ -490,6 +516,7 @@ class Page:
         except IndexError:
             # use pagename as fallback
             title = self.pagename
+     
         if self.revision is not None:
             title = "{} ({})".format(self.pagename, self.revision)
 
@@ -535,24 +562,30 @@ class Page:
         )
 
     def preview(self, content=None, cursor_line=None):
+        self._enforce_custom_css_access()
         if content is None:
             # handle case that the page doesn't exists
             self.exists_or_404()
             # no content in form use loaded page
             content = self.content
 
-        # render preview html from markdown
-        content_html, toc = app_renderer.markdown(
-            content, cursor=cursor_line, page_url=self.page_url
-        )
-        # update pagename from toc
-        if len(toc) > 0:
-            # use first headline to overwrite pagename
-            self.pagename = get_pagename(
-                self.pagename,
-                full=False,
-                header=toc[0][3],
+        # Special handling for Custom.css - render as syntax-highlighted CSS
+        if self.is_custom_css_page():
+            content_html = pygments_render(content, lang='css')
+            toc = []
+        else:
+            # render preview html from markdown
+            content_html, toc = app_renderer.markdown(
+                content, cursor=cursor_line, page_url=self.page_url
             )
+            # update pagename from toc
+            if len(toc) > 0:
+                # use first headline to overwrite pagename
+                self.pagename = get_pagename(
+                    self.pagename,
+                    full=False,
+                    header=toc[0][3],
+                )
 
         # render toc into the html template
         toc_html = render_template(
@@ -574,6 +607,7 @@ class Page:
         }
 
     def editor(self, author, handle_draft=None):
+        self._enforce_custom_css_access()
         if not has_permission("WRITE"):
             abort(403)
         if self.exists:
@@ -641,6 +675,10 @@ class Page:
         # get page listing
         page_idx = PageIndex()
 
+        # Determine editor mode based on page name
+        is_custom_css = self.is_custom_css_page()
+        editor_mode = 'text/css' if is_custom_css else 'markdown'
+
         return render_template(
             "editor.html",
             pagename=self.pagename,
@@ -653,9 +691,12 @@ class Page:
             revision=(
                 self.metadata.get("revision", "") if self.metadata else ""
             ),
+            editor_mode=editor_mode,
+            is_custom_css_page=is_custom_css,
         )
 
     def save(self, content, commit, author):
+        self._enforce_custom_css_access()
         if not has_permission("WRITE"):
             abort(403)
 
@@ -676,6 +717,7 @@ class Page:
         return redirect(url_for("view", path=self.pagepath))
 
     def create(self):
+        self._enforce_custom_css_access()
         if not has_permission("WRITE"):
             abort(403)
 
@@ -685,6 +727,7 @@ class Page:
         return redirect(url_for("edit", path=self.pagepath))
 
     def blame(self):
+        self._enforce_custom_css_access()
         if not has_permission("READ"):
             abort(403)
         # handle case that the page doesn't exists
@@ -692,7 +735,10 @@ class Page:
 
         data = storage.blame(self.filename, self.revision)
 
-        markup_lines = pygments_render(self.content, lang="markdown")
+        markup_lines = pygments_render(
+            self.content,
+            lang="css" if self.is_custom_css_page() else "markdown",
+        )
         # fix markup_lines
         markup_lines = markup_lines.replace(
             '<div class="highlight"><pre><span></span>', ""
@@ -740,6 +786,7 @@ class Page:
         )
 
     def diff(self, rev_a=None, rev_b=None):
+        self._enforce_custom_css_access()
         if not has_permission("READ"):
             abort(403)
         # handle case that the page doesn't exists
@@ -769,6 +816,7 @@ class Page:
         )
 
     def history(self, rev_a: str | None = None, rev_b: str | None = None):
+        self._enforce_custom_css_access()
         if not has_permission("READ"):
             abort(403)
 
@@ -807,6 +855,7 @@ class Page:
         )
 
     def rename(self, new_pagename, message, author):
+        self._enforce_custom_css_access()
         if not has_permission("WRITE"):
             abort(403)
         # filename
@@ -902,6 +951,7 @@ class Page:
         )
 
     def delete(self, message, author, recursive=True):
+        self._enforce_custom_css_access()
         if not has_permission("WRITE"):
             abort(403)
         if empty(message):
@@ -923,6 +973,7 @@ class Page:
         return redirect(url_for("changelog"))
 
     def delete_form(self):
+        self._enforce_custom_css_access()
         if not has_permission("WRITE"):
             abort(403)
         # count attachments and subpages
