@@ -345,7 +345,7 @@ class Page:
             self.pagename = sanitize_pagename(pagename, handle_md=True)
             self.pagepath = get_pagepath(pagename)
 
-        self.page_url = url_for("view", path=self.pagepath)
+        self.page_view_url = url_for("view", path=self.pagepath)
 
         self.pagename_full = get_pagename(self.pagepath, full=True)
         self.revision = revision
@@ -472,7 +472,7 @@ class Page:
 
         # render markdown
         htmlcontent, toc = app_renderer.markdown(
-            self.content, page_url=self.page_url
+            self.content, page_url=self.page_view_url
         )
         update_ftoc_cache(self.filename, ftoc=toc)
 
@@ -543,7 +543,7 @@ class Page:
 
         # render preview html from markdown
         content_html, toc = app_renderer.markdown(
-            content, cursor=cursor_line, page_url=self.page_url
+            content, cursor=cursor_line, page_url=self.page_view_url
         )
         # update pagename from toc
         if len(toc) > 0:
