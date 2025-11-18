@@ -6,7 +6,12 @@ import re
 import mistune
 from bs4 import BeautifulSoup
 from markupsafe import Markup, escape
-from mistune.plugins import plugin_strikethrough, plugin_table, plugin_url
+from mistune.plugins import (
+    plugin_strikethrough,
+    plugin_table,
+    plugin_url,
+    plugin_abbr,
+)
 from pygments import highlight
 from pygments.formatters import html
 from pygments.lexers import get_lexer_by_name
@@ -353,6 +358,7 @@ class OtterwikiRenderer:
                 plugin_wikilink,
                 plugin_frontmatter,
                 plugin_frontmatter_title,
+                plugin_abbr,
             ],
             env=self.env,
         )
