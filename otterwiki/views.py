@@ -120,6 +120,7 @@ def help(topic=None):
                 'Code',
                 'Mathjax',
                 'Footnotes',
+                'Abbreviations',
                 'Blocks',
                 'Diagrams',
             ]
