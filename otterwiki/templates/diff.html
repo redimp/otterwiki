@@ -5,6 +5,12 @@
 {% extends "wiki.html" %}
 {% endif %}
 
+{%block head -%}
+{{- super() }}
+{%- if not revision %}
+    <meta name="robots" content="noindex, nofollow"/>
+{%- endif %}
+{% endblock head -%}
 
 {% block menu %}
 {{ super() }}
