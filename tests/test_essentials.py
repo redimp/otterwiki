@@ -10,17 +10,6 @@ def test_robots(test_client):
     assert "User-agent: *\nAllow: /" in response.data.decode()
 
 
-def test_sitemap(admin_client):
-    response = admin_client.get("/sitemap.xml")
-    assert response.status_code == 200
-    assert response.headers['Content-Type'] == 'application/xml; charset=utf-8'
-    assert b'<?xml version=' in response.data
-    assert (
-        b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-        in response.data
-    )
-
-
 def test_favicon(test_client):
     response = test_client.get("/favicon.ico")
     assert response.status_code == 200

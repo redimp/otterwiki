@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+# vim: set et ts=8 sts=4 sw=4 ai:
+
+from datetime import datetime
+from xml.etree.ElementTree import Element, SubElement, tostring
+from flask import url_for, make_response, abort
+from otterwiki.server import app, storage
+from otterwiki.auth import has_permission
+from otterwiki.helper import get_pagename
+
+
+def sitemap():
+    """Generate XML sitemap for the wiki."""
+    if not has_permission("READ"):
+        abort(403)
+
+    urlset = Element('urlset')
+    urlset.set('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9')
+
+    # Get all markdown files from storage
+    files, _ = storage.list()
+    md_files = [f for f in files if f.endswith('.md')]
+
+    # Add each wiki page to sitemap
+    for filename in md_files:
+        try:
+            metadata = storage.metadata(filename)
+            url_elem = SubElement(urlset, 'url')
+            pagepath = get_pagename(filename, full=True)
+
+            # Handle /Home as / in URL generation
+            if pagepath.lower() == 'home':
+                page_url = url_for('index', _external=True)
+            else:
+                page_url = url_for('view', path=pagepath, _external=True)
+
+            loc = SubElement(url_elem, 'loc')
+            loc.text = page_url
+
+            if metadata and 'datetime' in metadata:
+                lastmod = SubElement(url_elem, 'lastmod')
+                lastmod.text = metadata['datetime'].strftime('%Y-%m-%d')
+
+            # Calculate priority based on depth
+            # 1.0 for root, 0.9 for level 1, 0.8 for level 2, etc.
+            # Minimum is 0.5
+            priority = SubElement(url_elem, 'priority')
+            if pagepath.lower() == 'home' or pagepath == '':
+                depth = 0
+            else:
+                depth = pagepath.count('/')
+            calculated_priority = max(1.0 - (depth * 0.1), 0.5)
+            priority.text = f'{calculated_priority:.1f}'
+
+        except Exception as e:
+            app.logger.warning(f"Skipping {filename} in sitemap: {e}")
+            continue
+
+    # Use built-in indent function (Python 3.9+) with fallback
+    try:
+        from xml.etree.ElementTree import indent
+
+        indent(urlset, space="  ", level=0)
+    except ImportError:
+        pass
+
+    xml_string = tostring(urlset, encoding='utf-8', xml_declaration=True)
+    response = make_response(xml_string)
+    response.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    return response
