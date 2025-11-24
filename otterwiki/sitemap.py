@@ -2,7 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 from datetime import datetime
-from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.etree.ElementTree import Element, SubElement, tostring, indent
 from flask import url_for, make_response, abort
 from otterwiki.server import app, storage
 from otterwiki.auth import has_permission
@@ -56,14 +56,7 @@ def sitemap():
             app.logger.warning(f"Skipping {filename} in sitemap: {e}")
             continue
 
-    # Use built-in indent function (Python 3.9+) with fallback
-    try:
-        from xml.etree.ElementTree import indent
-
-        indent(urlset, space="  ", level=0)
-    except ImportError:
-        pass
-
+    indent(urlset, space="  ", level=0)
     xml_string = tostring(urlset, encoding='utf-8', xml_declaration=True)
     response = make_response(xml_string)
     response.headers['Content-Type'] = 'application/xml; charset=utf-8'
