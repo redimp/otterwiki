@@ -34,6 +34,10 @@ def sitemap():
             else:
                 page_url = url_for('view', path=pagepath, _external=True)
 
+            # post-processing to encode the quotes
+            page_url = page_url.replace("'", "%27")
+            page_url = page_url.replace('"', "%22")
+
             loc = SubElement(url_elem, 'loc')
             loc.text = page_url
 
@@ -43,13 +47,13 @@ def sitemap():
 
             # Calculate priority based on depth
             # 1.0 for root, 0.9 for level 1, 0.8 for level 2, etc.
-            # Minimum is 0.5
+            # Minimum is 0.1
             priority = SubElement(url_elem, 'priority')
             if pagepath.lower() == 'home' or pagepath == '':
                 depth = 0
             else:
                 depth = pagepath.count('/')
-            calculated_priority = max(1.0 - (depth * 0.1), 0.5)
+            calculated_priority = max(1.0 - (depth * 0.1), 0.1)
             priority.text = f'{calculated_priority:.1f}'
 
         except Exception as e:
@@ -57,7 +61,9 @@ def sitemap():
             continue
 
     indent(urlset, space="  ", level=0)
-    xml_string = tostring(urlset, encoding='utf-8', xml_declaration=True)
+    xml_string = tostring(
+        urlset, encoding='utf-8', method='xml', xml_declaration=True
+    )
     response = make_response(xml_string)
     response.headers['Content-Type'] = 'application/xml; charset=utf-8'
     return response
