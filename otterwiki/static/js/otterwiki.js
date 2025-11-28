@@ -1096,6 +1096,11 @@ var otterwiki_editor = {
             document.getElementById("attachment-image").disabled = false;
             document.getElementById("attachment-thumbnail").disabled = false;
         }
+
+        // Toggle thumbnail size field visibility based on current selection
+        if (typeof toggleThumbnailSizeField === 'function') {
+            toggleThumbnailSizeField();
+        }
     },
     insert_attachment: function() {
         var element = document.getElementById("attachment-filename");
