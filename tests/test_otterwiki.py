@@ -505,10 +505,22 @@ def test_move_page(test_client):
     )
     assert rv.status_code == 200
 
-    assert (
-        f'<a href="/{new_pagename}">{_new_file_name}</a>'.lower()
-        in rv.data.decode().lower()
-    )
+    response_text = rv.data.decode().lower()
+    if test_client.application.config.get(
+        "TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES", False
+    ):
+        # when underscore replacement is enabled, expect spaces in display text
+        expected_display_name = _new_file_name.replace("_", " ")
+        assert (
+            f'<a href="/{new_pagename}">{expected_display_name}</a>'.lower()
+            in response_text
+        )
+    else:
+        # when underscore replacement is disabled, expect original underscores
+        assert (
+            f'<a href="/{new_pagename}">{_new_file_name}</a>'.lower()
+            in response_text
+        )
 
 
 def test_nested_files(test_client):

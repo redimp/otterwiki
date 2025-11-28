@@ -21,6 +21,7 @@ from otterwiki.helper import (
     get_filename,
     get_ftoc,
     get_pagename,
+    get_pagename_for_title,
     upsert_pagecrumbs,
 )
 from otterwiki.server import app, storage
@@ -86,7 +87,7 @@ class PageIndex:
             else:
                 f = os.path.join(self.path, fn)
             page_depth = len(split_path(f)) - 1
-            firstletter = get_pagename(fn, full=True)[0].upper()
+            firstletter = get_pagename_for_title(fn, full=True)[0].upper()
             if firstletter not in self.toc.keys():
                 self.toc[firstletter] = []
             # add the subdirectories the page is in to the page index
@@ -108,7 +109,10 @@ class PageIndex:
                     self.toc[firstletter].append(
                         PageIndexEntry(
                             depth=subdir_depth,
-                            title=get_pagename(subdir_path, full=False) + "/",
+                            title=get_pagename_for_title(
+                                subdir_path, full=False
+                            )
+                            + "/",
                             url=url_for(
                                 "view",
                                 path=get_pagename(subdir_path_full, full=True),
@@ -152,12 +156,21 @@ class PageIndex:
                             ),
                         )
                     )
-            # strip self.path from displayname
-            displayname = pagename
-            if self.path is not None and displayname.lower().startswith(
-                self.path.lower()
-            ):
-                displayname = displayname[len(self.path) + 1 :]
+            # strip self.path from displayname and apply title formatting
+            displayname = get_pagename_for_title(
+                f,
+                full=False,
+                header=pagename,
+            )
+            if self.path is not None:
+                # for nested pages, we need to strip the path prefix from the display name
+                full_display_name = get_pagename_for_title(
+                    f,
+                    full=True,
+                    header=pagename,
+                )
+                if full_display_name.lower().startswith(self.path.lower()):
+                    displayname = full_display_name[len(self.path) + 1 :]
             has_children = False
             for other in md_files:
                 if other.startswith(f[:-3] + "/"):

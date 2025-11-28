@@ -36,6 +36,7 @@ from otterwiki.helper import (
     get_filename,
     get_ftoc,
     get_pagename,
+    get_pagename_for_title,
     get_pagename_prefixes,
     patchset2urlmap,
     toast,
@@ -366,10 +367,10 @@ class Page:
 
         if self.content is not None:
             header = get_header(self.content)
-            self.pagename = get_pagename(
+            self.pagename = get_pagename_for_title(
                 self.pagepath, full=False, header=header
             )
-            self.pagename_full = get_pagename(
+            self.pagename_full = get_pagename_for_title(
                 self.pagepath, full=True, header=header
             )
 
@@ -478,7 +479,7 @@ class Page:
 
         if len(toc) > 0:
             # use first headline to overwrite pagename
-            self.pagename = get_pagename(
+            self.pagename = get_pagename_for_title(
                 self.pagename,
                 full=False,
                 header=toc[0][3],
@@ -548,7 +549,7 @@ class Page:
         # update pagename from toc
         if len(toc) > 0:
             # use first headline to overwrite pagename
-            self.pagename = get_pagename(
+            self.pagename = get_pagename_for_title(
                 self.pagename,
                 full=False,
                 header=toc[0][3],

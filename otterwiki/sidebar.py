@@ -15,6 +15,7 @@ from otterwiki.util import (
 )
 from otterwiki.helper import (
     get_pagename,
+    get_pagename_for_title,
 )
 
 
@@ -158,7 +159,7 @@ class SidebarPageIndex:
                     full=True,
                     header=header if len(parts) == 1 else None,
                 ),
-                "header": get_pagename(
+                "header": get_pagename_for_title(
                     join_path(prefix + parts),
                     full=False,
                     header=header if len(parts) == 1 else None,

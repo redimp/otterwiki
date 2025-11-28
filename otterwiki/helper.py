@@ -206,6 +206,23 @@ def get_pagename(filepath, full=False, header=None):
     return "/".join(arr)
 
 
+def get_pagename_for_title(filepath, full=False, header=None):
+    '''this will derive the page name for display purposes (titles, breadcrumbs, etc.) with underscore replacement'''
+    pagename = get_pagename(filepath, full=full, header=header)
+
+    if app.config.get("TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES", False):
+        if full:
+            # replace underscores in each path component
+            parts = pagename.split("/")
+            parts = [part.replace("_", " ") for part in parts]
+            return "/".join(parts)
+        else:
+            # replace underscores in the single component
+            return pagename.replace("_", " ")
+
+    return pagename
+
+
 def get_pagename_prefixes(filter=[]):
     pagename_prefixes = []
 
@@ -234,7 +251,7 @@ def get_breadcrumbs(pagepath):
         parents.append(e)
         crumbs.append(
             (
-                get_pagename(e),
+                get_pagename_for_title(e),
                 join_path(parents),
             )
         )

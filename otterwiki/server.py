@@ -67,6 +67,7 @@ app.config.update(
     HTML_EXTRA_HEAD="",
     HTML_EXTRA_BODY="",
     LOG_LEVEL_WERKZEUG="INFO",
+    TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES=False,
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
@@ -164,6 +165,7 @@ def update_app_config():
                 "SIDEBAR_MENUTREE_IGNORE_CASE",
                 "GIT_WEB_SERVER",
                 "HIDE_LOGO",
+                "TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES",
             ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
                 item.value = item.value.lower() in ["true", "yes"]
             if item.name.upper() in ["MAIL_PORT"]:
