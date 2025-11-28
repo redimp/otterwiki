@@ -18,7 +18,12 @@ from flask_login import (
 )
 from otterwiki.server import app, db, update_app_config, Preferences
 from otterwiki.sidebar import SidebarPageIndex, SidebarMenu
-from otterwiki.helper import toast, send_mail, get_pagename
+from otterwiki.helper import (
+    toast,
+    send_mail,
+    get_pagename,
+    get_pagename_for_title,
+)
 from otterwiki.util import empty, is_valid_email
 from flask_login import current_user
 from otterwiki.auth import (
@@ -180,6 +185,7 @@ def handle_content_and_editing(form):
     for checkbox in [
         "retain_page_name_case",
         "git_web_server",
+        "treat_underscore_as_space_for_titles",
     ]:
         _update_preference(checkbox.upper(), form.get(checkbox, "False"))
     # commit changes to the database
@@ -369,7 +375,7 @@ def sidebar_preferences_form():
     # we reuse SidebarPageIndex to generate a list of all pages
     sn = SidebarPageIndex("", mode="*")
     pages = [
-        get_pagename(fh[0], full=True, header=fh[1])
+        get_pagename_for_title(fh[0], full=True, header=fh[1])
         for fh in sn.filenames_and_header
     ]
     # render form

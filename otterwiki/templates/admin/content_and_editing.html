@@ -29,6 +29,18 @@
 {##}
     <div class="form-group">
       <div class="custom-checkbox">
+        <input {%if config.TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES %}checked{% endif %} type="checkbox" id="treat_underscore_as_space_for_titles"
+          name="treat_underscore_as_space_for_titles"
+          value="True">
+        <label for="treat_underscore_as_space_for_titles">Treat underscore as space for titles.</label>
+        <div class="mt-5">
+            Enable this to replace underscores (_) with spaces in page titles, breadcrumbs, and page index. For example, "Page_With_Underscores" will be displayed as "Page With Underscores".
+        </div>
+      </div>
+    </div>
+{##}
+    <div class="form-group">
+      <div class="custom-checkbox">
         <input {%if config.GIT_WEB_SERVER %}checked=checked{% endif %} type="checkbox" id="git_web_server" name="git_web_server" value="True">
         <label for="git_web_server">Enable Git Web server <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
         <div class="mt-5">
