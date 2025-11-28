@@ -8,6 +8,9 @@
 .preview-background {
     background-image: url('{{ url_for("static", filename="img/preview.png") | debug_unixtime }}');
 }
+#thumbnail-size {
+    width: 120px;
+}
 </style>
 <link href="{{ url_for("static", filename="css/codemirror.css") | debug_unixtime }}" rel="stylesheet" />
 <link href="{{ url_for("static", filename="css/codemirror-theme.css") | debug_unixtime }}" rel="stylesheet" />
@@ -347,6 +350,9 @@
                           <input type="radio" name="attachment-type" id="attachment-thumbnail" value="thumbnail">
                           <label for="attachment-thumbnail">as link with thumbnail</label>
                         </div>
+                        <div class="mt-5 ml-10" id="thumbnail-size-container" style="display: none;">
+                          <input type="text" id="thumbnail-size" class="form-control" placeholder="max size in px">
+                        </div>
                         <div class="custom-checkbox mt-5 ml-5">
                           <input type="checkbox" id="attachment-absolute" value="checked">
                           <label for="attachment-absolute">use absolute path</label>
@@ -636,5 +642,30 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
 
         cm_editor.focus()
     }
+
+    // handle thumbnail size field visibility
+    function toggleThumbnailSizeField() {
+        var thumbnailRadio = document.getElementById("attachment-thumbnail");
+        var thumbnailSizeContainer = document.getElementById("thumbnail-size-container");
+
+        if (thumbnailRadio && thumbnailSizeContainer) {
+            if (thumbnailRadio.checked) {
+                thumbnailSizeContainer.style.display = 'block';
+            } else {
+                thumbnailSizeContainer.style.display = 'none';
+            }
+        }
+    }
+
+    // add event listeners to radio buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        var attachmentRadios = document.querySelectorAll('input[name="attachment-type"]');
+        attachmentRadios.forEach(function(radio) {
+            radio.addEventListener('change', toggleThumbnailSizeField);
+        });
+
+        // initialize visibility on page load
+        toggleThumbnailSizeField();
+    });
 </script>
 {% endblock %}

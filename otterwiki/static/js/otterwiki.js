@@ -1074,9 +1074,10 @@ var otterwiki_editor = {
         var filename = element.value.split("/--/")[0];
         var url = element.value.split("/--/")[1];
         var thumbnail_url = element.value.split("/--/")[2];
+        // empty preview box
+        document.getElementById("extranav-preview").innerHTML = "";
+
         if (thumbnail_url == '') {
-            // empty preview box
-            document.getElementById("extranav-preview").innerHTML = "";
             // update options
             if (document.getElementById("attachment-link").checked != true)
             {
@@ -1111,6 +1112,16 @@ var otterwiki_editor = {
         if (!attachment_absolute) {
             url = "./" + url.split("/").slice(-1)[0];
             thumbnail_url = "./" + thumbnail_url.split("/").slice(-1)[0];
+        }
+
+        // handle thumbnail size parameter
+        if (attachment_type == "thumbnail") {
+            var thumbnail_size_element = document.getElementById("thumbnail-size");
+            var thumbnail_size = thumbnail_size_element ? thumbnail_size_element.value.trim() : '';
+            if (thumbnail_size && thumbnail_size.match(/^\d+$/)) {
+                // Add size parameter to thumbnail URL
+                thumbnail_url += '=' + thumbnail_size;
+            }
         }
 
         if (attachment_type == "image") {
