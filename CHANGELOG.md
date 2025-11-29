@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.14.3](https://github.com/redimp/otterwiki/releases/tag/v2.14.3) - 2025-11-28
+
+<small>[Compare with v2.14.2](https://github.com/redimp/otterwiki/compare/v2.14.2...v2.14.3)</small>
+
+### Features
+
+- added `sitemap.xml` [PR#314](https://github.com/redimp/otterwiki/pull/314) by [Ivan Novokhatski](https://github.com/deseven).
+- add robots: `noindex, nofollow` to diff, source and commits, see #313 ([2ada269](https://github.com/redimp/otterwiki/commit/2ada269960cebac1489525a537a5219763715ecd)).
+- added markdown abbreviation support, see #310 ([6b0df15](https://github.com/redimp/otterwiki/commit/6b0df155ce8cecef835fe8631f834ebbe88a5b88)), with documentation by [Wdavery](https://github.com/Wdavery), see [PR#312](https://github.com/redimp/otterwiki/pull/312).
+- added support for using pagenames with _ instead of spaces, see [PR#316](https://github.com/redimp/otterwiki/pull/316) by  [Ivan Novokhatski](https://github.com/deseven).
+
+### Bug Fixes
+
+- single quotes in page names cause POSTs to fail, see #307 ([9e3d0de](https://github.com/redimp/otterwiki/commit/9e3d0dea04707452dd90d95bfe21f8238113a573)).
+
 ## [v2.14.2](https://github.com/redimp/otterwiki/releases/tag/v2.14.2) - 2025-11-09
 
 <small>[Compare with v2.14.1](https://github.com/redimp/otterwiki/compare/v2.14.1...v2.14.2)</small>
