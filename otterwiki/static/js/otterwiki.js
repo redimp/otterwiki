@@ -1071,9 +1071,9 @@ var otterwiki_editor = {
         var element = document.getElementById("attachment-filename");
         if (typeof(element) == 'undefined' || element == null) { return; }
         // split value in filename, url and thumbnail_url
-        var filename = element.value.split("/--/")[0];
-        var url = element.value.split("/--/")[1];
-        var thumbnail_url = element.value.split("/--/")[2];
+        let filename = element.value.split("/--/")[0];
+        let url = element.value.split("/--/")[1];
+        let thumbnail_url = element.value.split("/--/")[2];
         // empty preview box
         document.getElementById("extranav-preview").innerHTML = "";
 
@@ -1088,7 +1088,7 @@ var otterwiki_editor = {
         } else {
             // image with thumbnail_url
             // update preview box
-            var preview_img = document.createElement("img");
+            let preview_img = document.createElement("img");
             preview_img.setAttribute("src", thumbnail_url);
             preview_img.setAttribute("alt", filename);
             document.getElementById("extranav-preview").appendChild(preview_img);
@@ -1103,16 +1103,16 @@ var otterwiki_editor = {
         }
     },
     insert_attachment: function() {
-        var element = document.getElementById("attachment-filename");
+        let element = document.getElementById("attachment-filename");
         if (typeof(element) == 'undefined' || element == null) { return; }
         // split value in filename, url and thumbnail_url
-        var filename = element.value.split("/--/")[0];
-        var url = element.value.split("/--/")[1];
-        var thumbnail_url = element.value.split("/--/")[2];
-        var attachment_type = document.querySelector("input[type='radio'][name=attachment-type]:checked").value;
+        let filename = element.value.split("/--/")[0];
+        let url = element.value.split("/--/")[1];
+        let thumbnail_url = element.value.split("/--/")[2];
+        let attachment_type = document.querySelector("input[type='radio'][name=attachment-type]:checked").value;
         if (typeof(attachment_type) == 'undefined' || attachment_type == null || attachment_type == '') { attachment_type = "link"; }
         // handle relative and absolute paths
-        var attachment_absolute = document.getElementById("attachment-absolute").checked;
+        let attachment_absolute = document.getElementById("attachment-absolute").checked;
         if (typeof(attachment_absolute) == 'undefined' || attachment_absolute == null || attachment_absolute == '') { attachment_absolute = false; }
         if (!attachment_absolute) {
             url = "./" + url.split("/").slice(-1)[0];
@@ -1121,8 +1121,8 @@ var otterwiki_editor = {
 
         // handle thumbnail size parameter
         if (attachment_type == "thumbnail") {
-            var thumbnail_size_element = document.getElementById("thumbnail-size");
-            var thumbnail_size = thumbnail_size_element ? thumbnail_size_element.value.trim() : '';
+            let thumbnail_size_element = document.getElementById("thumbnail-size");
+            let thumbnail_size = thumbnail_size_element ? thumbnail_size_element.value.trim() : '';
             if (thumbnail_size && thumbnail_size.match(/^\d+$/)) {
                 // Add size parameter to thumbnail URL
                 thumbnail_url += '=' + thumbnail_size;
@@ -1136,7 +1136,6 @@ var otterwiki_editor = {
         } else { // link
             otterwiki_editor.img('['+filename+']('+url+')\n');
         }
-        // [![]({{f.thumbnail_url}})]({{f.url}})
     },
     insert_wikilink: function() {
         if (!cm_editor) { return; }
