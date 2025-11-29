@@ -351,7 +351,7 @@
                           <label for="attachment-thumbnail">as link with thumbnail</label>
                         </div>
                         <div class="mt-5 ml-10" id="thumbnail-size-container" style="display: none;">
-                          <input type="text" id="thumbnail-size" class="form-control" placeholder="max size in px">
+                          <input type="text" id="thumbnail-size" class="form-control" placeholder="max size in px" pattern="[0-9]*" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
                         <div class="custom-checkbox mt-5 ml-5">
                           <input type="checkbox" id="attachment-absolute" value="checked">

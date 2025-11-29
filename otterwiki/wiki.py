@@ -890,7 +890,7 @@ class Page:
             "rename.html",
             title="Rename {}".format(self.pagename),
             pagepath=self.pagepath,
-            pagename=self.pagename_full,
+            pagename=get_pagename(self.pagepath, full=True),
             new_pagename=new_pagename,
             message=message,
             menutree=menutree.query(),
