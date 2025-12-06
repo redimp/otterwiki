@@ -235,6 +235,17 @@ def pluralize(count, plural='s', singular=''):
         return plural
 
 
+@app.template_filter('urlquote')
+def urlquote(s):
+    """
+    Example usage:
+
+    {{ url_for('inline_attachment', pagepath=pagepath) | urlquote }}.
+    """
+    squote = s.replace("'", "%27").replace("\"", "%22")
+    return squote
+
+
 @app.template_filter("format_datetime")
 def format_datetime(value: datetime.datetime, format="medium") -> str:
     if type(value) is not datetime.datetime:
