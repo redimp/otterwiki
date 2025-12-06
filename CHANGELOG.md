@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.14.4](https://github.com/redimp/otterwiki/releases/tag/v2.14.4) - 2025-12-06
+
+<small>[Compare with v2.14.3](https://github.com/redimp/otterwiki/compare/v2.14.3...v2.14.4)</small>
+
+### Bug Fixes
+
+- custom jinja filter "urlquote" to handle quotes in page names ([954d02a](https://github.com/redimp/otterwiki/commit/954d02a010dd7a32cd08b22b3c7388ead39ac2e4) by Ralph Thesen).
+- don't apply underscore replacement when renaming, allow only positive numbers for thumbnail size field ([9c6e3e8](https://github.com/redimp/otterwiki/commit/9c6e3e8ea4015cb5987eb173d3e7eeda381c68e4) by deseven).
+
 ## [v2.14.3](https://github.com/redimp/otterwiki/releases/tag/v2.14.3) - 2025-11-28
 
 <small>[Compare with v2.14.2](https://github.com/redimp/otterwiki/compare/v2.14.2...v2.14.3)</small>
