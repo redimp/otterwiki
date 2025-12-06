@@ -2,7 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 # version_onfo managed by tbump
-version_info = (2, 14, 3, "")
+version_info = (2, 14, 4, "")
 
 # build version string from version_info
 __version__ = f"{version_info[0]}.{version_info[1]}.{version_info[2]}" + (
