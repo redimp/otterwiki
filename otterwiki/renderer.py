@@ -204,6 +204,11 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         self.toc_tree = []
         self.toc_anchors = {}
 
+    def reset_library_requirements(self):
+        if hasattr(self, 'renderer'):
+            self.renderer.requires_mermaid = False
+            self.renderer.requires_mathjax = False
+
     def image(self, src, alt="", title=None):
         if not empty(title):
             return (
@@ -215,6 +220,9 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
 
     def codespan(self, text):
         if text.startswith("$") and text.endswith("$"):
+            # mark that MathJax is required
+            if hasattr(self, 'renderer'):
+                self.renderer.requires_mathjax = True
             return "\\(" + mistune.escape(text[1:-1]) + "\\)"
         return "<code>" + mistune.escape(text) + "</code>"
 
@@ -236,10 +244,16 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             linenumbers = True
         cursorline, code = hidemagicword(code)
         if info == "math":
+            # mark that MathJax is required
+            if hasattr(self, 'renderer'):
+                self.renderer.requires_mathjax = True
             html = "".join(
                 ["\\[{}\\]".format(line) for line in code.strip().splitlines()]
             )
         elif info == "mermaid":
+            # mark that Mermaid is required
+            if hasattr(self, 'renderer'):
+                self.renderer.requires_mermaid = True
             html = "".join(
                 ["\\[{}\\]".format(line) for line in code.strip().splitlines()]
             )
@@ -333,7 +347,11 @@ class OtterwikiRenderer:
         self.env = {
             "config": config,
         }
+        self.requires_mermaid = False
+        self.requires_mathjax = False
         self.md_renderer = OtterwikiMdRenderer(env=self.env)
+        # set reference to renderer in md_renderer for library requirement tracking
+        self.md_renderer.renderer = self
         self.inline_parser = OtterwikiInlineParser(
             env=self.env, renderer=self.md_renderer, hard_wrap=False
         )
@@ -370,6 +388,8 @@ class OtterwikiRenderer:
 
     def markdown(self, text, cursor=None, **kwargs):
         self.md_renderer.reset_toc()
+        self.requires_mermaid = False
+        self.requires_mathjax = False
         # do the preparsing
         text = chain_hooks("renderer_markdown_preprocess", text)
         # to avoid that preparsing removes the trailing newline and to be
@@ -437,7 +457,14 @@ class OtterwikiRenderer:
         soup = BeautifulSoup(html, 'html.parser')
         html = str(soup)
 
-        return html, toc
+        return (
+            html,
+            toc,
+            {
+                'requires_mermaid': self.requires_mermaid,
+                'requires_mathjax': self.requires_mathjax,
+            },
+        )
 
 
 # unconfigured renderer for testing and rendering about()

@@ -472,7 +472,7 @@ class Page:
             ]
 
         # render markdown
-        htmlcontent, toc = app_renderer.markdown(
+        htmlcontent, toc, library_requirements = app_renderer.markdown(
             self.content, page_url=self.page_view_url
         )
         update_ftoc_cache(self.filename, ftoc=toc)
@@ -533,6 +533,7 @@ class Page:
             menutree=menutree.query(),
             custom_menu=SidebarMenu().query(),
             description=description,
+            library_requirements=library_requirements,
         )
 
     def preview(self, content=None, cursor_line=None):
@@ -543,7 +544,7 @@ class Page:
             content = self.content
 
         # render preview html from markdown
-        content_html, toc = app_renderer.markdown(
+        content_html, toc, library_requirements = app_renderer.markdown(
             content, cursor=cursor_line, page_url=self.page_view_url
         )
         # update pagename from toc
@@ -572,6 +573,7 @@ class Page:
         return {
             "preview_content": preview_html,
             "preview_toc": toc_html,
+            "library_requirements": library_requirements,
         }
 
     def editor(self, author, handle_draft=None):
