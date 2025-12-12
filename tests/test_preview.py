@@ -66,7 +66,7 @@ def test_preview(create_app, req_ctx):
 def test_preview_all(create_app, req_ctx):
     whitespace = re.compile(r"\s+")
     markdown_arr = markdown_example.splitlines()
-    html_example, _ = render.markdown(markdown_example)
+    html_example, _, _ = render.markdown(markdown_example)
     html_example_soup = bs4.BeautifulSoup(html_example, "html.parser")
     from otterwiki.wiki import Page
 
