@@ -8,6 +8,14 @@
 {% block sidebaroverlay %}
 {% endblock %}
 {% block page_wrapper_config -%}{%-endblock%}
+
+{% block js %}
+{{ super() }}
+{# force load libraries in syntax documentation #}
+{% set force_load_libraries = true %}
+{% include 'snippets/renderer_js.html' %}
+{% endblock %}
+
 {% block content %}
 <div class="content">
 <h2>An Otter Wiki - Markdown Guide</h2>

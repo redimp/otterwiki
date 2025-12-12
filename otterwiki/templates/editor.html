@@ -428,6 +428,9 @@
 #}
 {% block js %}
 {{ super() }}
+{# force load libraries in editor for preview functionality #}
+{% set force_load_libraries = true %}
+{% include 'snippets/renderer_js.html' %}
 {# load the codemirror stuff #}
 <script src="{{ url_for("static", filename="js/codemirror.min.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-continuelist.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
@@ -608,10 +611,14 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
             })
             .then(function () {
                 cursor = document.getElementById("otterwiki_cursor");
-                // update MathJax
-                MathJax.typeset();
-                // update Mermaid
-                otterwiki.update_mermaid();
+                // update MathJax if loaded
+                if (typeof MathJax !== 'undefined') {
+                    MathJax.typeset();
+                }
+                // update Mermaid if loaded
+                if (typeof mermaid !== 'undefined') {
+                    otterwiki.update_mermaid();
+                }
                 if (cursor) {
                     cursor.scrollIntoView({
                         behavior: 'instant',

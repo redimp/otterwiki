@@ -360,7 +360,7 @@ def get_ftoc(filename, mtime=None):
             pass
     content = storage.load(filename)
     # parse file contents
-    _, ftoc = app_renderer.markdown(content)
+    _, ftoc, _ = app_renderer.markdown(content)
     update_ftoc_cache(filename, ftoc, mtime)
 
     return ftoc
