@@ -11,7 +11,13 @@
             <!-- menu [[ -->
             <ul class="sidebarmenu parent-sidebar-menu">
             {%- for entry in custom_menu -%}
-            <li> <a href="{{entry.link}}">{{entry.title}}</a> </li>
+                {%- if entry.get('separator') -%}
+                <li><hr></li>
+                {%- else -%}
+                <li> <a href="{{entry.link}}">
+                    {%- if entry.get('icon') -%}{{entry.icon|safe}} {% endif -%}{{entry.title}}
+                </a> </li>
+                {%- endif -%}
             {%- endfor %}
             </ul>
             <!-- ]] menu -->
@@ -19,4 +25,3 @@
     </details>
 {% endif %}{# if custom_menu #}
 {% endif %}{# if has_permission('READ') #}
-

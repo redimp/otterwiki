@@ -67,7 +67,7 @@ def test_sidebar_shortcuts_empty(create_app, test_client):
 
 def get_sidebar_menu(test_client):
     """
-    Helper function to get all links in the custom menu
+    Helper function to get all elements in the custom menu including links and separators
     """
     rv = test_client.get("/")
     assert rv.status_code == 200
@@ -75,11 +75,32 @@ def get_sidebar_menu(test_client):
     sidebar_custom_menu = soup.find("div", id="custom-menu")
     if sidebar_custom_menu is None:
         return None
-    sidebar_custom_links = sidebar_custom_menu.find_all("a")  # pyright: ignore
+
+    menu_items = []
+    ul = sidebar_custom_menu.find("ul")
+    if ul:
+        for li in ul.find_all("li"):
+            if li.find("hr"):
+                menu_items.append({"type": "separator"})
+            elif li.find("a"):
+                a = li.find("a")
+                menu_items.append(
+                    {
+                        "type": "link",
+                        "text": a.text.strip(),
+                        "href": a["href"],
+                        "html": str(a),
+                    }
+                )
+
+    # for backward compatibility, also return just the links in the old format
     sidebar_custom_links = [
-        (x.text.strip(), x["href"]) for x in sidebar_custom_links
+        (item["text"], item["href"])
+        for item in menu_items
+        if item["type"] == "link"
     ]
-    return sidebar_custom_links
+
+    return {"items": menu_items, "links": sidebar_custom_links}
 
 
 def test_sidebar_custom_menu(create_app, test_client, req_ctx):
@@ -87,21 +108,21 @@ def test_sidebar_custom_menu(create_app, test_client, req_ctx):
 
     create_app.config["SIDEBAR_CUSTOM_MENU"] = ""
     assert SidebarMenu().config == []
-    links = get_sidebar_menu(test_client)
-    assert links is None
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data is None
 
     create_app.config["SIDEBAR_CUSTOM_MENU"] = "[]"
     assert [] == SidebarMenu().config
-    links = get_sidebar_menu(test_client)
-    assert links is None
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data is None
 
     create_app.config["SIDEBAR_CUSTOM_MENU"] = (
         """[{"link": "Home", "title": ""}]"""
     )
-    assert [{'link': 'Home', 'title': ''}] == SidebarMenu().config
-    links = get_sidebar_menu(test_client)
-    assert links
-    assert ('Home', '/Home') in links
+    assert [{'link': 'Home', 'title': '', 'icon': ''}] == SidebarMenu().config
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data
+    assert ('Home', '/Home') in menu_data["links"]
 
     create_app.config["SIDEBAR_CUSTOM_MENU"] = (
         """[{"link":"https://example.com", "title":"Example"}]"""
@@ -109,18 +130,21 @@ def test_sidebar_custom_menu(create_app, test_client, req_ctx):
     assert {
         "title": "Example",
         "link": "https://example.com",
+        "icon": "",
     } in SidebarMenu().config
-    links = get_sidebar_menu(test_client)
-    assert links
-    assert ('Example', 'https://example.com') in links
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data
+    assert ('Example', 'https://example.com') in menu_data["links"]
 
     create_app.config["SIDEBAR_CUSTOM_MENU"] = (
         """[{"link": "/Example", "title": ""}]"""
     )
-    assert [{'link': '/Example', 'title': ''}] == SidebarMenu().config
-    links = get_sidebar_menu(test_client)
-    assert links
-    assert ('/Example', '/Example') in links
+    assert [
+        {'link': '/Example', 'title': '', 'icon': ''}
+    ] == SidebarMenu().config
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data
+    assert ('/Example', '/Example') in menu_data["links"]
 
 
 def test_sidebar_custom_menu_error(create_app, test_client, req_ctx):
@@ -128,5 +152,61 @@ def test_sidebar_custom_menu_error(create_app, test_client, req_ctx):
 
     create_app.config["SIDEBAR_CUSTOM_MENU"] = "["
     assert SidebarMenu().config == []
-    links = get_sidebar_menu(test_client)
-    assert links is None
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data is None
+
+
+def test_sidebar_custom_menu_with_icons(create_app, test_client, req_ctx):
+    from otterwiki.sidebar import SidebarMenu
+
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = (
+        """[{"link": "Home", "title": "Home Page", "icon": "<i class=\\"fas fa-home\\"></i>"}]"""
+    )
+    config = SidebarMenu().config
+    assert len(config) == 1
+    assert config[0]["link"] == "Home"
+    assert config[0]["title"] == "Home Page"
+    assert config[0]["icon"] == '<i class="fas fa-home"></i>'
+
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data is not None
+    assert len(menu_data["items"]) == 1
+    assert menu_data["items"][0]["type"] == "link"
+    assert '<i class="fas fa-home"></i>' in menu_data["items"][0]["html"]
+    assert "Home Page" in menu_data["items"][0]["text"]
+
+
+def test_sidebar_custom_menu_with_separator(create_app, test_client, req_ctx):
+    from otterwiki.sidebar import SidebarMenu
+
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = (
+        """[{"link": "Home", "title": "Home Page", "icon": ""}, {"link": "---", "title": "", "icon": ""}, {"link": "About", "title": "About Page", "icon": ""}]"""
+    )
+    config = SidebarMenu().config
+    assert len(config) == 3
+
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data is not None
+    assert len(menu_data["items"]) == 3
+    assert menu_data["items"][0]["type"] == "link"
+    assert menu_data["items"][1]["type"] == "separator"
+    assert menu_data["items"][2]["type"] == "link"
+
+
+def test_sidebar_custom_menu_backward_compatibility(
+    create_app, test_client, req_ctx
+):
+    from otterwiki.sidebar import SidebarMenu
+
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = (
+        """[{"link": "Home", "title": "Home Page"}]"""
+    )
+    config = SidebarMenu().config
+    assert len(config) == 1
+    assert config[0]["link"] == "Home"
+    assert config[0]["title"] == "Home Page"
+    assert config[0]["icon"] == ""
+
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data is not None
+    assert ("Home Page", "/Home") in menu_data["links"]

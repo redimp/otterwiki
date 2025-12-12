@@ -109,9 +109,16 @@ def handle_sidebar_preferences(form):
             {
                 "link": x[0],
                 "title": x[1],
+                "icon": x[2] if len(x) > 2 else "",
             }
-            for x in list(zip(form.getlist("link"), form.getlist("title")))
-            if x[0].strip() or x[1].strip()
+            for x in list(
+                zip(
+                    form.getlist("link"),
+                    form.getlist("title"),
+                    form.getlist("icon"),
+                )
+            )
+            if x[0].strip() or x[1].strip() or (len(x) > 2 and x[2].strip())
         ]
     )
 
