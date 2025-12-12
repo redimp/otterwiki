@@ -542,6 +542,7 @@ class Page:
             description=description,
             canonical_url=canonical_url,
             library_requirements=library_requirements,
+            canonical_url=canonical_url,
         )
 
     def preview(self, content=None, cursor_line=None):
