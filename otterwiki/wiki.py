@@ -519,6 +519,13 @@ class Page:
             placeholder="…",
         )
 
+        # generate canonical URL (without trailing slash)
+        # special case: if this is the Home page, canonical should point to root "/"
+        if self.pagepath == "Home":
+            canonical_url = url_for("index", _external=True)
+        else:
+            canonical_url = url_for("view", path=self.pagepath, _external=True)
+
         # render template
         return render_template(
             "page.html",
@@ -534,6 +541,7 @@ class Page:
             custom_menu=SidebarMenu().query(),
             description=description,
             library_requirements=library_requirements,
+            canonical_url=canonical_url,
         )
 
     def preview(self, content=None, cursor_line=None):

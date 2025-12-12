@@ -19,6 +19,10 @@
   <meta property="og:url" content="{{ url_for("index", _external=True) }}" />
 {%- endif %}
   <meta property="og:description" content="{%if description%}{{description}}{%elif config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}A minimalistic wiki powered by python, markdown and git.{%endif%}" />
+  <meta name="description" content="{%if config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}A minimalistic wiki powered by python, markdown and git.{%endif%}" />
+{%- if canonical_url %}
+  <link rel="canonical" href="{{ canonical_url }}" />
+{%- endif %}
 {%- if pagelogo %}
   <meta property="og:image" content="{{ pagelogo }}" />
 {%- if pagelogo_properties and pagelogo_properties.height %}
