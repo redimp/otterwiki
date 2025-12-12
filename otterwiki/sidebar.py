@@ -38,25 +38,47 @@ class SidebarMenu:
             raw_config = []
         # generate both config and menu from raw_config
         for entry in raw_config:
-            if not entry.get("title", None) and not entry.get("link", None):
+            if (
+                not entry.get("title", None)
+                and not entry.get("link", None)
+                and not entry.get("icon", None)
+            ):
                 continue
-            link, title = entry.get("link", ""), entry.get("title", "")
-            self.config.append({"link": link, "title": title})
+            link, title, icon = (
+                entry.get("link", ""),
+                entry.get("title", ""),
+                entry.get("icon", ""),
+            )
+            self.config.append({"link": link, "title": title, "icon": icon})
+
+            # handle separator
+            if link == "---" and empty(title) and empty(icon):
+                self.menu.append({"separator": True})
+                continue
+
             if empty(link):
                 if empty(title):
                     continue
                 self.menu.append(
-                    {"link": url_for("view", path=title), "title": title}
+                    {
+                        "link": url_for("view", path=title),
+                        "title": title,
+                        "icon": icon,
+                    }
                 )
             elif self.URI_SIMPLE.match(link):
                 if empty(title):
                     title = link
-                self.menu.append({"link": link, "title": title})
+                self.menu.append({"link": link, "title": title, "icon": icon})
             else:
                 if empty(title):
                     title = link
                 self.menu.append(
-                    {"link": url_for("view", path=link), "title": title}
+                    {
+                        "link": url_for("view", path=link),
+                        "title": title,
+                        "icon": icon,
+                    }
                 )
 
     def query(self):

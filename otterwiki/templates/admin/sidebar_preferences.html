@@ -19,7 +19,7 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
   <div class="form-group">
     <div class="custom-checkbox">
         <input {%if name in config.SIDEBAR_SHORTCUTS.lower().split() %}checked=checked{% endif %} type="checkbox" id="shortcut_{{name|lower}}" name="sidebar_shortcut_{{name|lower}}" value="True">
-        <label for="shortcut_{{name|lower}}">{{description|safe}}</tt></label>
+        <label for="shortcut_{{name|lower}}">{{description|safe}}</label>
     </div>
   </div>
 {% endfor %}
@@ -28,23 +28,31 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
 {##}
 <h3 class="card-title">Custom Menu</h3>
 <div class="my-5">
-    The menu is used to display a menu of individual pages or external links within easy reach in the sidebar. To link a wiki page, the full path needs to be entered in the field <code>Page/Title</code>. For external links, pick a title and enter the url in the <code>Link</code> field.
+    The menu is used to display a menu of individual pages or external links within easy reach in the sidebar.
 </div>
+<ul class="mb-20">
+    <li>To link a wiki page, enter the full path in the <code>Page/Link</code> field.</li>
+    <li>For external links, enter the URL in the <code>Page/Link</code> field and provide a title in the <code>Title</code> field.</li>
+    <li>You can add FontAwesome icons by entering HTML like <code>&lt;i class="fas fa-question-circle"&gt;&lt;/i&gt;</code> in the <code>Icon</code> field.</li>
+    <li>To create a separator, set the <code>Page/Link</code> field to <code>---</code> and leave other fields empty.</li>
+</ul>
 <table>
     <thead>
         <th>&nbsp;</th>
         <th>Page/Link</th>
         <th>Title <em>(optional)</em></th>
+        <th>Icon <em>(optional)</em></th>
         <th>&nbsp;</th>
     </thead>
     <tbody id="custom-page-index">
-{% for entry in custom_menu + [{"link":"","title":""}] %}
+{% for entry in custom_menu + [{"link":"","title":"","icon":""}] %}
         <tr>
             <td class="pr-10">
                 <span class="btn btn-square btn-sm btn-handle"><i class="fas fa-arrows-alt"></i></span>
             </td>
             <td><input type="text" name="link" placeholder="..." class="w-200 form-control" value="{{entry.link}}"/></td>
-            <td><input type="text" name="title" placeholder="" class="w-200 form-control"/ value="{{entry.title}}"> </td>
+            <td><input type="text" name="title" placeholder="" class="w-200 form-control" value="{{entry.title}}"> </td>
+            <td><input type="text" name="icon" placeholder="" class="w-200 form-control" value="{{entry.icon or ''}}"> </td>
             <td class="pl-10">
                 <span class="btn btn-square btn-sm" onclick="cloneRow(this);"><i class="fas fa-clone"></i></span>
                 <span class="btn btn-square btn-sm btn-danger" onclick="deleteRow(this);"><i class="far fa-trash-alt"></i></span>
@@ -56,7 +64,7 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
 <div class="form-group">
         <label for="find-page-select" class="mt-5" style="display:block;">Select page to add</label>
         <select id="find-page-select" size="1" class="form-control w-400 mw-full" style="display:inline;">
-        {%- for page in [""] + pages %}
+        {%- for page in ["", "---"] + pages %}
             <option value="{{page}}">{{page if page else "..."}}</option>
         {%- endfor %}
         </select>
@@ -161,6 +169,7 @@ SUBTREE OFF
             row = cloneRow(null, true);
         row.querySelector("input[name='link']").value = pageSelect.value;
         row.querySelector("input[name='title']").value = '';
+        row.querySelector("input[name='icon']").value = '';
     }
 </script>
 {% endblock %}
