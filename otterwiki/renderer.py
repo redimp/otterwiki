@@ -204,11 +204,6 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         self.toc_tree = []
         self.toc_anchors = {}
 
-    def reset_library_requirements(self):
-        if hasattr(self, 'renderer'):
-            self.renderer.requires_mermaid = False
-            self.renderer.requires_mathjax = False
-
     def image(self, src, alt="", title=None):
         if not empty(title):
             return (
