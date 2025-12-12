@@ -18,6 +18,13 @@
     {% endfor %}
 {%- endblock %}
 
+{% block js %}
+{{ super() }}
+{# force load libraries in help/documentation pages #}
+{% set force_load_libraries = true %}
+{% include 'snippets/renderer_js.html' %}
+{% endblock %}
+
 {% block content %}
 <div class="page">
 {{content|safe}}

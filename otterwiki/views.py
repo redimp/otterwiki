@@ -91,11 +91,12 @@ def healthz():
 def about():
     with open(os.path.join(app.root_path, "about.md")) as f:
         content = f.read()
-    htmlcontent, _ = render.markdown(content)
+    htmlcontent, _, library_requirements = render.markdown(content)
     return render_template(
         "about.html",
         htmlcontent=htmlcontent,
         __version__=__version__,
+        library_requirements=library_requirements,
     )
 
 
@@ -115,7 +116,7 @@ def help(topic=None):
     if topic == "admin":
         with open(os.path.join(app.root_path, "help_admin.md")) as f:
             md = f.read()
-            content, toc = render.markdown(md)
+            content, toc, library_requirements = render.markdown(md)
     elif topic == "syntax":
         toc = [
             (None, '', 2, s, s.lower())
@@ -139,9 +140,14 @@ def help(topic=None):
     else:
         with open(os.path.join(app.root_path, "help.md")) as f:
             md = f.read()
-            content, toc = render.markdown(md)
+            content, toc, library_requirements = render.markdown(md)
     # default help
-    return render_template("help.html", content=content, toc=toc)
+    return render_template(
+        "help.html",
+        content=content,
+        toc=toc,
+        library_requirements=library_requirements,
+    )
 
 
 @app.route("/-/settings", methods=["POST", "GET"])
