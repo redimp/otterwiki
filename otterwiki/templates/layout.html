@@ -63,8 +63,10 @@
     <link href="{{ url_for("static", filename="css/roboto.css") | debug_unixtime }}" rel="stylesheet"/>
     <!-- custom.css for tweaking the default themes -->
     <link href="{{ url_for("static", filename="custom/custom.css") }}" rel="stylesheet" media="screen" />
-    <!-- Documentation styles -->
+    <!-- Custom HTML head content from env -->
     {{config.HTML_EXTRA_HEAD|safe}}
+    <!-- Custom HTML head content from file -->
+    {{load_custom_html('customHead.html')|safe}}
 {%- block head %}
 {% endblock -%}
 {%- if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}
@@ -267,7 +269,9 @@
 </script>
   <!-- custom js for tweaking an otter wiki -->
   <script src="{{ url_for("static", filename="custom/custom.js") }}"></script>
-  <!-- custom HTML -->
+  <!-- Custom HTML body content from env -->
   {{config.HTML_EXTRA_BODY|safe}}
+  <!-- Custom HTML body content from file -->
+  {{load_custom_html('customBody.html')|safe}}
 </body>
 </html>

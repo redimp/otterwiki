@@ -364,3 +364,16 @@ def get_ftoc(filename, mtime=None):
     update_ftoc_cache(filename, ftoc, mtime)
 
     return ftoc
+
+
+def load_custom_html(filename):
+    try:
+        custom_file_path = os.path.join(
+            app.root_path, 'static', 'custom', filename
+        )
+        if os.path.exists(custom_file_path):
+            with open(custom_file_path, 'r', encoding='utf-8') as f:
+                return f.read()
+    except Exception as e:
+        app.logger.warning(f"Failed to load custom HTML file {filename}: {e}")
+    return ""

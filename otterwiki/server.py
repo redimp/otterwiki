@@ -269,6 +269,10 @@ def format_datetime(value: datetime.datetime, format="medium") -> str:
 
 app.jinja_env.globals.update(os_getenv=os.getenv)
 
+from otterwiki.helper import load_custom_html
+
+app.jinja_env.globals.update(load_custom_html=load_custom_html)
+
 # initialize git via http
 import otterwiki.remote
 
