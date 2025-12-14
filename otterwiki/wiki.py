@@ -799,9 +799,32 @@ class Page:
             elif len(orig_log) > 1 and i == 1 and rev_a is None:
                 rev_a = str(orig_entry['revision'])
             entry = dict(orig_entry)
-            entry["url"] = url_for(
-                "view", path=self.pagepath, revision=entry["revision"]
-            )
+
+            # try to get the filename that was used at this specific revision
+            try:
+                filename_at_revision = storage.get_filename_at_revision(
+                    self.filename, entry["revision"]
+                )
+                from otterwiki.helper import get_pagename
+
+                pagepath_at_revision = get_pagename(
+                    filename_at_revision, full=True
+                )
+
+                entry["url"] = url_for(
+                    "view",
+                    path=pagepath_at_revision,
+                    revision=entry["revision"],
+                )
+            except Exception as e:
+                # fallback to current pagepath if there's any error
+                app.logger.warning(
+                    f"Could not determine filename at revision {entry['revision']}: {e}"
+                )
+                entry["url"] = url_for(
+                    "view", path=self.pagepath, revision=entry["revision"]
+                )
+
             log.append(entry)
         menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
         return render_template(

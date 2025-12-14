@@ -460,5 +460,46 @@ class GitStorage(object):
                     raise StorageNotFound
         raise StorageNotFound
 
+    def get_filename_at_revision(self, current_filename, revision):
+        """
+        Get the filename that was used at a specific revision.
+        """
+        try:
+            # get the full log with --follow to understand the rename chain
+            full_log = self.repo.git.log(
+                "--follow",
+                "--name-only",
+                "-z",
+                "--format=format:%H",
+                "--",
+                current_filename,
+            )
+
+            if not full_log.strip():
+                return current_filename
+
+            entries = [
+                entry
+                for entry in full_log.strip('\x00').split('\x00\x00')
+                if entry
+            ]
+
+            for entry in entries:
+                # format: "commit_hash\nfilename"
+                lines = entry.strip('\x00').split('\n')
+                if len(lines) >= 2:
+                    entry_revision = lines[0]
+                    entry_filename = lines[1]
+
+                    if entry_revision.startswith(
+                        revision
+                    ) or revision.startswith(entry_revision[:6]):
+                        return entry_filename
+
+            return current_filename
+
+        except git.exc.GitCommandError as e:
+            return current_filename
+
 
 storage = None
