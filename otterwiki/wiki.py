@@ -380,14 +380,39 @@ class Page:
     def load(self, revision: str | None):
         metadata = None
         content = None
-        try:
-            content = storage.load(self.filename, revision=revision)
-            metadata = storage.metadata(self.filename, revision=revision)
-        except StorageNotFound as e:
-            if all([not metadata, not content]):
-                # If both are None, raise the exception. Otherwise, a warning will show on the page that
-                # the file is not under version control.
-                raise e
+
+        # if a revision is specified, we need to handle potential previous file renames
+        if revision is not None:
+            try:
+                # first try with the current filename
+                content = storage.load(self.filename, revision=revision)
+                metadata = storage.metadata(self.filename, revision=revision)
+            except StorageNotFound as original_error:
+                # if that fails, try to get the filename that was used at this revision
+                try:
+                    filename_at_revision = storage.get_filename_at_revision(
+                        self.filename, revision
+                    )
+                    if filename_at_revision != self.filename:
+                        content = storage.load(
+                            filename_at_revision, revision=revision
+                        )
+                        metadata = storage.metadata(
+                            filename_at_revision, revision=revision
+                        )
+                    else:
+                        raise original_error
+                except StorageNotFound:
+                    raise original_error
+        else:
+            try:
+                content = storage.load(self.filename, revision=revision)
+                metadata = storage.metadata(self.filename, revision=revision)
+            except StorageNotFound as e:
+                if all([not metadata, not content]):
+                    # If both are None, raise the exception. Otherwise, a warning will show on the page that
+                    # the file is not under version control.
+                    raise e
 
         return content, metadata
 
@@ -800,30 +825,9 @@ class Page:
                 rev_a = str(orig_entry['revision'])
             entry = dict(orig_entry)
 
-            # try to get the filename that was used at this specific revision
-            try:
-                filename_at_revision = storage.get_filename_at_revision(
-                    self.filename, entry["revision"]
-                )
-                from otterwiki.helper import get_pagename
-
-                pagepath_at_revision = get_pagename(
-                    filename_at_revision, full=True
-                )
-
-                entry["url"] = url_for(
-                    "view",
-                    path=pagepath_at_revision,
-                    revision=entry["revision"],
-                )
-            except Exception as e:
-                # fallback to current pagepath if there's any error
-                app.logger.warning(
-                    f"Could not determine filename at revision {entry['revision']}: {e}"
-                )
-                entry["url"] = url_for(
-                    "view", path=self.pagepath, revision=entry["revision"]
-                )
+            entry["url"] = url_for(
+                "view", path=self.pagepath, revision=entry["revision"]
+            )
 
             log.append(entry)
         menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
