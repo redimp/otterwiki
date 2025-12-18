@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.15.0](https://github.com/redimp/otterwiki/releases/tag/v2.15.0) - 2025-12-18
+
+<small>[Compare with v2.14.4](https://github.com/redimp/otterwiki/compare/v2.14.4...v2.15.0)</small>
+
+### Features
+
+- Better Customization: custom head and body html from files ([e7b4aef](https://github.com/redimp/otterwiki/commit/e7b4aef0336befafba6975b0ba334ca953c6c53b) by deseven).
+- The sidebar menu can now display icons and separators  ([128af8f](https://github.com/redimp/otterwiki/commit/128af8fcb2babd9e934cfc31c0cb58ca759c9b7c) by deseven).
+- Improved head and meta data: canonical urls, meta description ([0754fe2](https://github.com/redimp/otterwiki/commit/0754fe2246d660834d166c87b66a0d4221fc80f7) by deseven).
+- Improved Page loading: load mermaid and mathjax only when needed ([fa93a42](https://github.com/redimp/otterwiki/commit/fa93a421e3a0ae38cb91a88287a8491a892eae26) by deseven).
+
+### Bug Fixes
+
+- Renamed pages can now handle history and revisions, no more broken links after page rename ([1a8d890](https://github.com/redimp/otterwiki/commit/1a8d890f94e6226d5395e854f5afc3b7de988eb2) by deseven).
+
 ## [v2.14.4](https://github.com/redimp/otterwiki/releases/tag/v2.14.4) - 2025-12-06
 
 <small>[Compare with v2.14.3](https://github.com/redimp/otterwiki/compare/v2.14.3...v2.14.4)</small>
