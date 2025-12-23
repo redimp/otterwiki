@@ -20,7 +20,13 @@ from flask import flash, url_for, session
 from threading import Thread
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from otterwiki.util import split_path, join_path, clean_slashes, titleSs
+from otterwiki.util import (
+    split_path,
+    join_path,
+    clean_slashes,
+    titleSs,
+    ttl_lru_cache,
+)
 from otterwiki.models import Cache
 
 
@@ -366,14 +372,27 @@ def get_ftoc(filename, mtime=None):
     return ftoc
 
 
-def load_custom_html(filename):
+@ttl_lru_cache(ttl=300, maxsize=2)
+def load_custom_html(filename: str):
+    custom_files = os.path.join(
+        # respect the environment variable USE_STATIC_PATH if set, e.g. in a docker environment
+        os.getenv(
+            "USE_STATIC_PATH",
+            os.path.join(
+                app.root_path,
+                'static',
+            ),
+        ),
+        'custom',
+    )
+    custom_file_path = os.path.join(custom_files, filename)
     try:
-        custom_file_path = os.path.join(
-            app.root_path, 'static', 'custom', filename
-        )
         if os.path.exists(custom_file_path):
             with open(custom_file_path, 'r', encoding='utf-8') as f:
                 return f.read()
+
     except Exception as e:
-        app.logger.warning(f"Failed to load custom HTML file {filename}: {e}")
+        app.logger.warning(
+            f"Failed to load custom HTML file {filename} from {custom_file_path}: {e}"
+        )
     return ""
