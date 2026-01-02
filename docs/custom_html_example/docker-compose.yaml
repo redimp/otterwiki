@@ -1,0 +1,15 @@
+---
+#
+# Run the latest otterwiki version
+#
+services:
+  web:
+    image: otterwiki:2  # works with the -slim image, too.
+    restart: unless-stopped
+    ports:
+      # forward the http port to 8080
+      - "8080:8080"
+    volumes:
+      # mount the local custom.css
+      - ./custom:/app/otterwiki/static/custom:ro
+      # For this example we do not persist any data
