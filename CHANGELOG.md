@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.15.1](https://github.com/redimp/otterwiki/releases/tag/v2.15.1) - 2026-01-02
+
+<small>[Compare with v2.15.0](https://github.com/redimp/otterwiki/compare/v2.15.0...v2.15.1)</small>
+
+### Bug Fixes
+
+- `load_custom_html` respects `USE_STATIC_PATH`, see #329 ([9da7cb4](https://github.com/redimp/otterwiki/pull/331/commits/9da7cb459c40a341ef86d9a82bac5b0120b0e21d))
+
 ## [v2.15.0](https://github.com/redimp/otterwiki/releases/tag/v2.15.0) - 2025-12-18
 
 <small>[Compare with v2.14.4](https://github.com/redimp/otterwiki/compare/v2.14.4...v2.15.0)</small>
