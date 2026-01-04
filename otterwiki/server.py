@@ -271,7 +271,24 @@ app.jinja_env.globals.update(os_getenv=os.getenv)
 
 from otterwiki.helper import load_custom_html
 
-app.jinja_env.globals.update(load_custom_html=load_custom_html)
+
+def plugin_html_head_inject(page=None):
+    """Template function to inject HTML into the head section via plugins."""
+    results = plugin_manager.hook.template_html_head_inject(page=page)
+    return ''.join(result for result in results if result)
+
+
+def plugin_html_body_inject(page=None):
+    """Template function to inject HTML into the body section via plugins."""
+    results = plugin_manager.hook.template_html_body_inject(page=page)
+    return ''.join(result for result in results if result)
+
+
+app.jinja_env.globals.update(
+    load_custom_html=load_custom_html,
+    plugin_html_head_inject=plugin_html_head_inject,
+    plugin_html_body_inject=plugin_html_body_inject,
+)
 
 # initialize git via http
 import otterwiki.remote

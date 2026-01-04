@@ -206,12 +206,46 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
 
     def image(self, src, alt="", title=None):
         if not empty(title):
-            return (
+            image_html = (
                 '<img src="{}" class="img-fluid" title="{}" alt="{}">'.format(
                     src, title, alt
                 )
             )
-        return '<img src="{}" class="img-fluid" alt="{}">'.format(src, alt)
+        else:
+            image_html = '<img src="{}" class="img-fluid" alt="{}">'.format(
+                src, alt
+            )
+
+        processed_html = chain_hooks(
+            "renderer_process_image",
+            image_html,
+            src,
+            alt,
+            title,
+            self.env.get('page'),
+        )
+        return processed_html
+
+    def link(self, link, text=None, title=None):
+        if text is None:
+            text = link
+
+        if title:
+            link_html = '<a href="{}" title="{}">{}</a>'.format(
+                link, title, text
+            )
+        else:
+            link_html = '<a href="{}">{}</a>'.format(link, text)
+
+        processed_html = chain_hooks(
+            "renderer_process_link",
+            link_html,
+            link,
+            text,
+            title,
+            self.env.get('page'),
+        )
+        return processed_html
 
     def codespan(self, text):
         if text.startswith("$") and text.endswith("$"):
@@ -278,9 +312,19 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             text=text,
             anchor=anchor,
         )
+
+        processed_html = chain_hooks(
+            "renderer_process_heading",
+            rv,
+            text,
+            level,
+            anchor,
+            self.env.get('page'),
+        )
+
         self.toc_tree.append((self.toc_count, text, level, raw, anchor))
         self.toc_count += 1
-        return rv
+        return processed_html
 
 
 class OtterwikiBlockParser(mistune.BlockParser):
