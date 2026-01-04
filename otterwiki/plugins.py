@@ -51,6 +51,52 @@ class OtterWikiPluginSpec:
         This hooks receives a html string containing the page content.
         """
 
+    @hookspec
+    def template_html_head_inject(self, page=None) -> str | None:
+        """
+        This hook allows plugins to inject HTML content into the <head> section
+        of the page template. The content will be added after the default CSS/JS.
+        """
+
+    @hookspec
+    def template_html_body_inject(self, page=None) -> str | None:
+        """
+        This hook allows plugins to inject HTML content at the end of the <body>
+        section of the page template, before the closing </body> tag.
+        """
+
+    @hookspec
+    def renderer_process_link(
+        self, link_html, link_url, link_text, link_title, page=None
+    ) -> str | None:
+        """
+        This hook allows plugins to process and modify individual links during rendering.
+        It's called for each link as it's being rendered from markdown.
+        """
+
+    @hookspec
+    def renderer_process_image(
+        self, image_html, image_src, image_alt, image_title, page=None
+    ) -> str | None:
+        """
+        This hook allows plugins to process and modify individual images during rendering.
+        It's called for each image as it's being rendered from markdown.
+        """
+
+    @hookspec
+    def renderer_process_heading(
+        self,
+        heading_html,
+        heading_text,
+        heading_level,
+        heading_anchor,
+        page=None,
+    ) -> str | None:
+        """
+        This hook allows plugins to process and modify individual headings during rendering.
+        It's called for each heading as it's being rendered from markdown.
+        """
+
 
 # pluggy doesn't by default handle chaining the output of one plugin into
 # another, so this is a small utility function to do this.

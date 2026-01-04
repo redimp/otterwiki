@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "otterwiki_htmlinjection"
+description = "Example plugin demonstrating HTML injection and renderer processing hooks."
+version = "0.1.0"
+authors = [
+    { name = "deseven", email = "git@d7.wtf" }
+]
+dependencies = [
+    "beautifulsoup4"
+]
+
+[project.entry-points.otterwiki]
+htmlinjection = "otterwiki_htmlinjection"
