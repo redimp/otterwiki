@@ -97,3 +97,10 @@ height:calc(100vh - 8rem);
   text-decoration: underline;
   color: white !important;
 }
+
+/* fix fore resizing the window while editing/previewing */
+div.CodeMirror.cm-s-otterwiki.CodeMirror-wrap,
+div.CodeMirror.cm-s-otterwiki.CodeMirror-wrap.CodeMirror.focused {
+  height: calc(100vh - 8rem);
+  min-height: calc(100vh - 8rem);
+}
