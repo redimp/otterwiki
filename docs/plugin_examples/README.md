@@ -38,7 +38,8 @@ please check the [FAQ](https://otterwiki.com/FAQ#environments-with-selinux).
 
 When running An Otter Wiki from a virtual environment run `pip uninstall
 <plugin-name>`. When running from a docker image it is recommended to recreate
-the container for a clean environment.
+the container for a clean environment, after removing the plugin from the
+directory.
 
 ### Demo of the example plugins
 
