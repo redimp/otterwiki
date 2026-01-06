@@ -22,15 +22,23 @@ The `entrypoint.sh` checks before running the app the paths
 
 for plugins to install. So you can either add the plugins as a directory to
 the volume that keeps the `app-data`, where also the `db.sqlite` and the
-`repostitory` lives. Or you organize the plugins in a separate directory
+`repository` lives. Or you organize the plugins in a separate directory
 which you mount in the container into `/plugins`.
-
-In environments with `SELINUX=enforcing` the bind mounts have to be adjusted,
-please check the [FAQ](https://otterwiki.com/FAQ#environments-with-selinux).
 
 *Note:* For plugins with complex dependencies the docker image might be missing
 packages. In this case adding these packages to the image is inevitable, a
 custom image (which packs the plugin, too) might be the best solution.
+
+#### Plugins with SELinux
+
+In environments with `SELINUX=enforcing` the bind mounts have to be adjusted,
+please check the [FAQ](https://otterwiki.com/FAQ#environments-with-selinux).
+
+## Uninstalling plugins
+
+When running An Otter Wiki from a virtual environment run `pip uninstall
+<plugin-name>`. When running from a docker image it is recommended to recreate
+the container for a clean environment.
 
 ### Demo of the example plugins
 
