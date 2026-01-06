@@ -94,13 +94,43 @@ echo "    location / {
 # close the server block
 echo "}" >> /etc/nginx/sites-enabled/default
 
+INSTALLED_PLUGINS=$(pip list --format=freeze | grep -E '^otterwiki[_-]' | cut -d'=' -f1 || echo "")
+EXPECTED_PLUGINS=""
+
 # install plugins found in /app-data/plugins and /plugins
 for PLUGIN in /app-data/plugins/*/ /plugins/*/; do
     test -d "$PLUGIN" || continue
     echo Installing: $PLUGIN
     cd "$PLUGIN"
+
+    PLUGIN_NAME=""
+    if [ -f "pyproject.toml" ]; then
+        PLUGIN_NAME=$(grep '^name = ' pyproject.toml | sed 's/name = "\(.*\)"/\1/' | tr -d '"')
+    fi
+
+    # fallback to directory name just in case
+    if [ -z "$PLUGIN_NAME" ]; then
+        PLUGIN_NAME=$(basename "$PLUGIN")
+    fi
+
+    if [ -n "$PLUGIN_NAME" ]; then
+        EXPECTED_PLUGINS="$EXPECTED_PLUGINS $PLUGIN_NAME"
+    fi
+
     pip install -U . || echo "Error: Installation of plugin in $PLUGIN failed." >&2
 done
+
+# uninstall plugins no longer found in /app-data/plugins and /plugins
+if [ -n "$INSTALLED_PLUGINS" ]; then
+    echo "$INSTALLED_PLUGINS" | while IFS= read -r INSTALLED_PLUGIN; do
+        if [ -n "$INSTALLED_PLUGIN" ]; then
+            if ! echo "$EXPECTED_PLUGINS" | grep -q "\b$INSTALLED_PLUGIN\b"; then
+                echo "Uninstalling removed plugin: $INSTALLED_PLUGIN"
+                pip uninstall -y "$INSTALLED_PLUGIN" || echo "Warning: Failed to uninstall $INSTALLED_PLUGIN" >&2
+            fi
+        fi
+    done
+fi
 
 # print nginx version
 nginx -v
