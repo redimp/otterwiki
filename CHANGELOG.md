@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.15.2](https://github.com/redimp/otterwiki/releases/tag/v2.15.2) - 2026-01-07
+
+<small>[Compare with v2.15.1](https://github.com/redimp/otterwiki/compare/v2.15.1...v2.15.2)</small>
+
+### Bug Fixes
+
+- edit/preview switching while resizing the window works ([508b8fa](https://github.com/redimp/otterwiki/commit/508b8fa6150e650b7769dc2055098fb3ffa40f31)).
+- slim-image: Configure uWSGI with environment variables ([3e3f6f2](https://github.com/redimp/otterwiki/commit/3e3f6f274a7b5424f7df3745e9d4364561b920af)).
+
 ## [v2.15.1](https://github.com/redimp/otterwiki/releases/tag/v2.15.1) - 2026-01-02
 
 <small>[Compare with v2.15.0](https://github.com/redimp/otterwiki/compare/v2.15.0...v2.15.1)</small>
