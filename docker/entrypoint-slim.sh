@@ -36,7 +36,7 @@ done
 
 # Get the absolute path of the static files from the environment variable
 export USE_STATIC_PATH=${STATIC_PATH:-'/app/otterwiki/static'}
-# Update the uwsgi.ini with the new STATIC_PATH
-sed -i 's#static-map = /static=/app/otterwiki/static/#static-map = /static='$USE_STATIC_PATH'#' /app/uwsgi.ini
+# Configure UWSGI via ENV
+export UWSGI_STATIC_MAP="/static=$USE_STATIC_PATH"
 
 exec "$@"
