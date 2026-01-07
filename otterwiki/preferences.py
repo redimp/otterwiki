@@ -191,7 +191,6 @@ def handle_content_and_editing(form):
         _update_preference(name.upper(), form.get(name, ""))
     for checkbox in [
         "retain_page_name_case",
-        "git_web_server",
         "treat_underscore_as_space_for_titles",
     ]:
         _update_preference(checkbox.upper(), form.get(checkbox, "False"))
@@ -200,6 +199,44 @@ def handle_content_and_editing(form):
     update_app_config()
     toast("Content and Editing Preferences updated.")
     return redirect(url_for("admin_content_and_editing"))
+
+
+def handle_repository_management(form):
+    _update_preference("GIT_WEB_SERVER", form.get("git_web_server", "False"))
+
+    git_remote_push_enabled = form.get("git_remote_push_enabled") == "True"
+
+    if git_remote_push_enabled:
+        remote_url = form.get("git_remote_url", "").strip()
+
+        if not remote_url:
+            # remote url is missing - disable the feature and show error
+            _update_preference("GIT_REMOTE_PUSH_ENABLED", "False")
+            _update_preference("GIT_REMOTE_PRIVATE_KEY", "")
+            _update_preference("GIT_REMOTE_URL", "")
+            toast(
+                "SSH Remote URL is required when enabling automatic pushing.",
+                "error",
+            )
+        else:
+            _update_preference("GIT_REMOTE_PUSH_ENABLED", "True")
+            _update_preference("GIT_REMOTE_URL", remote_url)
+
+            private_key = form.get("git_remote_private_key", "").strip()
+            if private_key and private_key != "**********":
+                # only update if it's not the placeholder (user wants to change it)
+                _update_preference("GIT_REMOTE_PRIVATE_KEY", private_key)
+    else:
+        # clear the feature and associated settings
+        _update_preference("GIT_REMOTE_PUSH_ENABLED", "False")
+        _update_preference("GIT_REMOTE_PRIVATE_KEY", "")
+        _update_preference("GIT_REMOTE_URL", "")
+
+    # commit changes to the database
+    db.session.commit()
+    update_app_config()
+    toast("Repository Management Preferences updated.")
+    return redirect(url_for("admin_repository_management"))
 
 
 def handle_test_mail_preferences(form):
@@ -363,6 +400,15 @@ def content_and_editing_form():
     return render_template(
         "admin/content_and_editing.html",
         title="Content and Editing preferences",
+    )
+
+
+def repository_management_form():
+    if not has_permission("ADMIN"):
+        abort(403)
+    return render_template(
+        "admin/repository_management.html",
+        title="Repository Management",
     )
 
 
