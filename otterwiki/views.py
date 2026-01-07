@@ -215,6 +215,17 @@ def admin_content_and_editing():
 
 
 @app.route(
+    "/-/admin/repository_management", methods=["POST", "GET"]
+)  # pyright: ignore -- false positive
+@login_required
+def admin_repository_management():
+    if request.method == "GET":
+        return otterwiki.preferences.repository_management_form()
+    else:
+        return otterwiki.preferences.handle_repository_management(request.form)
+
+
+@app.route(
     "/-/admin/mail_preferences", methods=["POST", "GET"]
 )  # pyright: ignore -- false positive
 @login_required
