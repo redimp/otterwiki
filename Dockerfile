@@ -62,7 +62,7 @@ RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
     apt-get -y update && \
     apt-get upgrade -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    nginx supervisor git \
+    nginx supervisor git openssh-client \
     python3.11 python3-wheel python3-venv libpython3.11 \
     uwsgi uwsgi-plugin-python3 curl \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
