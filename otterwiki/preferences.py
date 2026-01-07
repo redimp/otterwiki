@@ -223,7 +223,7 @@ def handle_repository_management(form):
             _update_preference("GIT_REMOTE_URL", remote_url)
 
             private_key = form.get("git_remote_private_key", "").strip()
-            if private_key and private_key != "**********":
+            if private_key != "**********":
                 # only update if it's not the placeholder (user wants to change it)
                 _update_preference("GIT_REMOTE_PRIVATE_KEY", private_key)
     else:
