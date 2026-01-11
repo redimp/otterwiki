@@ -488,6 +488,13 @@ _unspecified alert_
     assert '<h4 class="alert-heading">Head of the block</h4>' in html
     assert '<em>unspecified alert</em>' in html
 
+    md = """::: myblock
+# Head of my block
+With _formatted_ content.
+"""
+    html, _, _ = render.markdown(md)
+    assert 'class="alert alert-myblock' in html
+
 
 def test_spoiler():
     md = """>! Spoiler blocks reveal their
