@@ -41,7 +41,7 @@ RUN delgroup www-data && \
     addgroup -S -g 33 www-data && \
     adduser -S -D -u 33 -s /sbin/nologin -h /app -G www-data www-data
 # install python and git
-RUN apk add python3 git uwsgi uwsgi-python3 \
+RUN apk add python3 git openssh-client uwsgi uwsgi-python3 \
             zlib jpeg curl
 # copy virtual environment
 COPY --chown=www-data:www-data --from=compile-stage /opt/venv /opt/venv

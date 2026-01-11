@@ -89,7 +89,17 @@ class GitHttpServer:
     def git_receive_pack(self, stream):
         self.check_if_enabled()
         self.check_permission("UPLOAD")
-        return self.git_pack("receive", stream)
+        result = self.git_pack("receive", stream)
+
+        try:
+            from otterwiki.gitstorage import storage
+
+            if storage:
+                storage.auto_push_if_enabled()
+        except Exception as e:
+            app.logger.error(f"Auto-push after git receive failed: {e}")
+
+        return result
 
     def git_pack(self, service, stream):
         command = [f"git-{service}-pack", "--stateless-rpc", self.path]

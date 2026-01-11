@@ -1,0 +1,82 @@
+{# vim: set et ts=8 sts=4 sw=4 ai ft=jinja.html: #}
+{% extends "settings.html" %}
+{% block content %}
+{##}
+<div class="card m-auto m-lg-20">
+<div class="mw-full">
+    <form action="{{ url_for("admin_repository_management") }}" method="POST">
+<h2 class="card-title">Repository Management</h2>
+{##}
+    <div class="form-group">
+      <div class="custom-checkbox">
+        <input {%if config.GIT_WEB_SERVER %}checked=checked{% endif %} type="checkbox" id="git_web_server" name="git_web_server" value="True">
+        <label for="git_web_server">Enable Git Web server <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
+        <div class="mt-5">
+            Enable this to allow users with the permission to READ to clone and pull the wiki content via git and users with UPLOAD/Attachment management permissions to push content. When enabled the URL <code>{{url_for("dotgit", _external=True)}}</code> will be displayed in the users settings.
+        </div>
+      </div>
+    </div>
+{##}
+    <div class="form-group">
+      <div class="custom-checkbox">
+        <input {%if config.GIT_REMOTE_PUSH_ENABLED %}checked=checked{% endif %} type="checkbox" id="git_remote_push_enabled" name="git_remote_push_enabled" value="True">
+        <label for="git_remote_push_enabled">Enable automatic pushing to SSH remote <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
+        <div class="mt-5">
+            Enable this to automatically push all changes to a remote git repository via SSH.
+        </div>
+      </div>
+    </div>
+{##}
+    <div class="form-group" id="git_remote_url_group" style="display: none;">
+        <label for="git_remote_url" class="required">SSH Remote URL</label>
+        <input name="git_remote_url" type="text" placeholder="git@github.com:username/repo.git" class="form-control" id="git_remote_url" value="{{ config.GIT_REMOTE_URL or "" }}">
+        <div class="form-text">
+            The SSH remote URL to push to. Supported formats:
+            <ul>
+                <li><code>ssh://[user@]host.xz[:port]/path/to/repo.git</code></li>
+                <li><code>git://host.xz[:port]/path/to/repo.git</code></li>
+                <li><code>git@github.com:username/repo.git</code> (for GitHub)</li>
+            </ul>
+        </div>
+    </div>
+{##}
+    <div class="form-group" id="git_remote_key_group" style="display: none;">
+        <label for="git_remote_private_key">SSH Private Key (Optional)</label>
+        <textarea name="git_remote_private_key" class="form-control" id="git_remote_private_key" rows="10" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----
+...
+-----END OPENSSH PRIVATE KEY-----">{% if config.GIT_REMOTE_PRIVATE_KEY %}**********{% endif %}</textarea>
+        <div class="form-text">
+            Optional SSH private key for authentication. Leave empty if the server doesn't require authentication or it's being handled externally.
+            The key will be stored internally and never displayed after saving.
+            However, for security purposes <strong>it's highly recommended to create a key specifically to access the defined remote</strong> and nothing else.
+        </div>
+    </div>
+{##}
+  <div class="mt-10">
+    <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
+  </div>
+</form>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('git_remote_push_enabled');
+    const urlGroup = document.getElementById('git_remote_url_group');
+    const keyGroup = document.getElementById('git_remote_key_group');
+
+    function toggleRemoteFields() {
+        if (checkbox.checked) {
+            urlGroup.style.display = 'block';
+            keyGroup.style.display = 'block';
+        } else {
+            urlGroup.style.display = 'none';
+            keyGroup.style.display = 'none';
+        }
+    }
+
+    toggleRemoteFields();
+    checkbox.addEventListener('change', toggleRemoteFields);
+});
+</script>
+{% endblock %}

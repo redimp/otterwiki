@@ -164,6 +164,7 @@ def update_app_config():
                 "RETAIN_PAGE_NAME_CASE",
                 "SIDEBAR_MENUTREE_IGNORE_CASE",
                 "GIT_WEB_SERVER",
+                "GIT_REMOTE_PUSH_ENABLED",
                 "HIDE_LOGO",
                 "TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES",
             ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
