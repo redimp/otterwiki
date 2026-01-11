@@ -104,6 +104,12 @@ def test_sanitize_pagename():
     assert sanitize_pagename("😊") == "😊"
     assert sanitize_pagename("\\\\abc") == "abc"
     assert sanitize_pagename("abc", allow_unicode=False) == "abc"
+    assert sanitize_pagename("IT/SystemD") == "IT/SystemD"
+    assert sanitize_pagename("IT/SystemD.md") == "IT/SystemDmd"
+    # test handle_md (issue #344)
+    assert sanitize_pagename("IT/SystemD", handle_md=True) == "IT/SystemD"
+    assert sanitize_pagename("IT/Systemd", handle_md=True) == "IT/Systemd"
+    assert sanitize_pagename("IT/Systemd.md", handle_md=True) == "IT/Systemd"
 
 
 def test_random_password():
