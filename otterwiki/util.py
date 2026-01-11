@@ -76,7 +76,7 @@ def sanitize_pagename(value, allow_unicode=True, handle_md=False):
             .decode("ascii")
         )
     if handle_md:
-        value = re.sub(r".md$", "", value)
+        value = re.sub(r"\.md$", "", value)
     # remove slashes, question marks ...
     value = re.sub(r"[?|$|.|!|#|\\]", r"", value)
 
