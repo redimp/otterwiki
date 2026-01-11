@@ -342,6 +342,8 @@ class mistunePluginFancyBlocks:
             cls = "alert alert-success"
         elif family in ["none", "empty"]:
             cls = "alert"
+        elif family is not None:
+            cls = f"alert alert-{family}"
         else:
             cls = "alert"
         if header is not None:
