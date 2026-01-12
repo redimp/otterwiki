@@ -637,7 +637,7 @@ def git_receive_pack():
 def pull_webhook(webhook_hash):
     """
     Webhook endpoint for triggering git pulls from remote repositories.
-    The webhook_hash should match the hash generated from remote_url + 'otterwiki'.
+    The webhook_hash should match the SHA-256 hash generated from remote_url + 'otterwiki'.
     """
     from otterwiki.repomgmt import get_repo_manager
 
@@ -648,7 +648,7 @@ def pull_webhook(webhook_hash):
     if not remote_url:
         abort(404)
 
-    expected_hash = hashlib.md5(
+    expected_hash = hashlib.sha256(
         (remote_url + 'otterwiki').encode()
     ).hexdigest()
 

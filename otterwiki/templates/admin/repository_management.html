@@ -145,26 +145,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const webhookUrlInput = document.getElementById('git_remote_pull_webhook_url');
     const copyButton = document.getElementById('copy_webhook_url');
 
-    function generateWebhookHash(url) {
+    async function generateWebhookHash(url) {
         if (!url) return '';
-        // Note: This generates a placeholder hash for display purposes only
-        // The actual security relies on the server-side MD5 hash validation
-        let hash = 0;
+        // generate SHA-256 hash to match backend expectation
         const str = url + 'otterwiki';
-        for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // convert to 32bit integer
-        }
-        // convert to hex - use full hash for better security display
-        const fullHash = Math.abs(hash).toString(16);
-        return fullHash.padStart(8, '0');
+        const encoder = new TextEncoder();
+        const data = encoder.encode(str);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
     }
 
-    function updateWebhookUrl() {
+    async function updateWebhookUrl() {
         const remoteUrl = pullUrlInput.value.trim();
         if (remoteUrl) {
-            const hash = generateWebhookHash(remoteUrl);
+            const hash = await generateWebhookHash(remoteUrl);
             const webhookUrl = window.location.origin + '/-/api/v1/pull/' + hash;
             webhookUrlInput.value = webhookUrl;
         } else {
