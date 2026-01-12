@@ -8,6 +8,7 @@ import tempfile
 import stat
 from datetime import datetime
 from typing import List, cast
+from threading import Thread
 
 import git
 import git.exc
@@ -623,10 +624,34 @@ class GitStorage(object):
             if original_ssh_auth_sock is not None:
                 os.environ['SSH_AUTH_SOCK'] = original_ssh_auth_sock
 
+    def push_to_remote_async(self, remote_url, private_key=None):
+        """
+        Asynchronously push to remote repository.
+        """
+        try:
+            from otterwiki.server import app
+
+            with app.app_context():
+                app.logger.debug("[GitStorage] push_to_remote_async() started")
+                self.push_to_remote(remote_url, private_key)
+                app.logger.warning(
+                    "[GitStorage] push_to_remote_async() completed"
+                )
+        except Exception as e:
+            try:
+                from otterwiki.server import app
+
+                app.logger.error(
+                    f"[GitStorage] push_to_remote_async() failed: {e}"
+                )
+            except ImportError:
+                pass
+
     def auto_push_if_enabled(self):
         """
         Automatically push to remote if the feature is enabled.
         This method should be called after any git operation that changes the repository.
+        Push happens asynchronously to avoid blocking user interaction.
         """
         try:
             from otterwiki.server import app
@@ -640,7 +665,11 @@ class GitStorage(object):
 
             private_key = app.config.get('GIT_REMOTE_PRIVATE_KEY')
 
-            self.push_to_remote(remote_url, private_key)
+            thr = Thread(
+                target=self.push_to_remote_async,
+                args=[remote_url, private_key],
+            )
+            thr.start()
 
         except Exception as e:
             app.logger.error(f"[GitStorage] Auto-push failed: {e}")
