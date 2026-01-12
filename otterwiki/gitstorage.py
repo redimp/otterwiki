@@ -4,16 +4,14 @@
 import os
 import pathlib
 import re
-import tempfile
-import stat
 from datetime import datetime
 from typing import List, cast
-from threading import Thread
 
 import git
 import git.exc
 
 from otterwiki.util import split_path, ttl_lru_cache
+from otterwiki.repomgmt import get_repo_manager
 
 
 class StorageError(Exception):
@@ -310,7 +308,10 @@ class GitStorage(object):
         actor = git.Actor(author[0], author[1])
         index.commit(message, author=actor)
 
-        self.auto_push_if_enabled()
+        # auto-push after storing file
+        repo_manager = get_repo_manager()
+        if repo_manager:
+            repo_manager.auto_push_if_enabled()
 
         return True
 
@@ -327,7 +328,10 @@ class GitStorage(object):
         actor = git.Actor(author[0], author[1])
         index.commit(message, author=actor)
 
-        self.auto_push_if_enabled()
+        # auto-push after commit
+        repo_manager = get_repo_manager()
+        if repo_manager:
+            repo_manager.auto_push_if_enabled()
 
     def revert(self, revision, message="", author=("", "")):
         actor = git.Actor(author[0], author[1])
@@ -343,7 +347,10 @@ class GitStorage(object):
         actor = git.Actor(author[0], author[1])
         self.repo.index.commit(message, author=actor)
 
-        self.auto_push_if_enabled()
+        # auto-push after revert
+        repo_manager = get_repo_manager()
+        if repo_manager:
+            repo_manager.auto_push_if_enabled()
 
     def diff(self, rev_a, rev_b):
         # https://docs.python.org/2/library/difflib.html
@@ -377,7 +384,10 @@ class GitStorage(object):
             message = "Deleted {}.".format(filename_remove)
         self.repo.index.commit(message, author=actor)
 
-        self.auto_push_if_enabled()
+        # auto-push after delete
+        repo_manager = get_repo_manager()
+        if repo_manager:
+            repo_manager.auto_push_if_enabled()
 
     def rename(
         self,
@@ -512,167 +522,6 @@ class GitStorage(object):
 
         except git.exc.GitCommandError as e:
             return current_filename
-
-    def _create_ssh_key_file(self, private_key):
-        """
-        Create a temporary SSH key file with proper permissions.
-        Returns the path to the temporary file.
-        """
-        if not private_key:
-            return None
-
-        fd, key_path = tempfile.mkstemp(prefix='otterwiki_ssh_', suffix='.key')
-        try:
-            with os.fdopen(fd, 'w') as f:
-                # SSH key must use unix line endings only
-                key_content = private_key.replace('\r\n', '\n').replace(
-                    '\r', '\n'
-                )
-                # and a newline at the end
-                key_content = key_content.rstrip() + '\n'
-                f.write(key_content)
-
-            # the key should be readable only by the owner
-            os.chmod(key_path, stat.S_IRUSR | stat.S_IWUSR)
-            return key_path
-        except Exception:
-            self._cleanup_ssh_key_file(key_path)
-            raise
-
-    def _cleanup_ssh_key_file(self, key_path):
-        if key_path and os.path.exists(key_path):
-            try:
-                os.unlink(key_path)
-            except OSError:
-                pass
-
-    def push_to_remote(self, remote_url, private_key=None):
-        """
-        Push the current branch to a remote repository.
-        """
-        if not remote_url:
-            return False
-
-        key_path = None
-        original_ssh_command = os.environ.get('GIT_SSH_COMMAND')
-        original_ssh_auth_sock = os.environ.get('SSH_AUTH_SOCK')
-
-        try:
-            from otterwiki.server import app
-
-            if private_key:
-                key_path = self._create_ssh_key_file(private_key)
-
-                # completely isolate SSH:
-                # - disable SSH agent
-                # - clear all default key locations
-                # - force only our identity
-                ssh_command = (
-                    f'ssh '
-                    f'-F /dev/null '
-                    f'-o StrictHostKeyChecking=no '
-                    f'-o UserKnownHostsFile=/dev/null '
-                    f'-o IdentitiesOnly=yes '
-                    f'-o PasswordAuthentication=no '
-                    f'-o PubkeyAuthentication=yes '
-                    f'-o PreferredAuthentications=publickey '
-                    f'-o IdentityFile={key_path} '
-                    f'-o IdentityFile2=none '
-                )
-                os.environ['GIT_SSH_COMMAND'] = ssh_command
-
-                if 'SSH_AUTH_SOCK' in os.environ:
-                    del os.environ['SSH_AUTH_SOCK']
-            else:
-                # if no private key is provided, we assume that
-                # there is no auth or it's handled externally
-                os.environ['GIT_SSH_COMMAND'] = (
-                    'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-                )
-
-            try:
-                current_branch = self.repo.active_branch.name
-            except TypeError:
-                # if there is no current branch we should probably just stop
-                if key_path:
-                    self._cleanup_ssh_key_file(key_path)
-                return False
-
-            app.logger.info(f"[GitStorage] Pushing to remote: {remote_url}")
-            result = self.repo.git.push(remote_url, current_branch)
-            if result:
-                app.logger.info(f"[GitStorage] Push result: {result}")
-            return True
-
-        except Exception as e:
-            try:
-                from otterwiki.server import app
-
-                app.logger.error(f"[GitStorage] Push to remote failed: {e}")
-            except ImportError:
-                pass
-            return False
-        finally:
-            if key_path:
-                self._cleanup_ssh_key_file(key_path)
-
-            # restore original SSH command and SSH agent
-            if original_ssh_command is not None:
-                os.environ['GIT_SSH_COMMAND'] = original_ssh_command
-            elif 'GIT_SSH_COMMAND' in os.environ:
-                del os.environ['GIT_SSH_COMMAND']
-            if original_ssh_auth_sock is not None:
-                os.environ['SSH_AUTH_SOCK'] = original_ssh_auth_sock
-
-    def push_to_remote_async(self, remote_url, private_key=None):
-        """
-        Asynchronously push to remote repository.
-        """
-        try:
-            from otterwiki.server import app
-
-            with app.app_context():
-                app.logger.debug("[GitStorage] push_to_remote_async() started")
-                self.push_to_remote(remote_url, private_key)
-                app.logger.warning(
-                    "[GitStorage] push_to_remote_async() completed"
-                )
-        except Exception as e:
-            try:
-                from otterwiki.server import app
-
-                app.logger.error(
-                    f"[GitStorage] push_to_remote_async() failed: {e}"
-                )
-            except ImportError:
-                pass
-
-    def auto_push_if_enabled(self):
-        """
-        Automatically push to remote if the feature is enabled.
-        This method should be called after any git operation that changes the repository.
-        Push happens asynchronously to avoid blocking user interaction.
-        """
-        try:
-            from otterwiki.server import app
-
-            if not app.config.get('GIT_REMOTE_PUSH_ENABLED'):
-                return
-
-            remote_url = app.config.get('GIT_REMOTE_URL')
-            if not remote_url:
-                return
-
-            private_key = app.config.get('GIT_REMOTE_PRIVATE_KEY')
-
-            thr = Thread(
-                target=self.push_to_remote_async,
-                args=[remote_url, private_key],
-            )
-            thr.start()
-
-        except Exception as e:
-            app.logger.error(f"[GitStorage] Auto-push failed: {e}")
 
 
 storage = None

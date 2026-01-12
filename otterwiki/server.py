@@ -165,6 +165,7 @@ def update_app_config():
                 "SIDEBAR_MENUTREE_IGNORE_CASE",
                 "GIT_WEB_SERVER",
                 "GIT_REMOTE_PUSH_ENABLED",
+                "GIT_REMOTE_PULL_ENABLED",
                 "HIDE_LOGO",
                 "TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES",
             ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
@@ -278,6 +279,12 @@ app.jinja_env.globals.update(load_custom_html=load_custom_html)
 import otterwiki.remote
 
 githttpserver = otterwiki.remote.GitHttpServer(path=app.config["REPOSITORY"])
+
+# initialize repository management stuff
+import otterwiki.repomgmt
+
+otterwiki.repomgmt.initialize_repo_management(storage)
+otterwiki.repomgmt.start_pull_scheduler()
 
 # contains application routes,
 # using side-effect of import executing the file to get
