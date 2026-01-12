@@ -2,6 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
+import hashlib
 
 from flask import (
     request,
@@ -11,6 +12,7 @@ from flask import (
     make_response,
     redirect,
     url_for,
+    jsonify,
 )
 from otterwiki.server import app, githttpserver
 from otterwiki.wiki import (
@@ -629,3 +631,39 @@ def git_upload_pack():
 @app.route("/.git/git-receive-pack", methods=["POST"])
 def git_receive_pack():
     return githttpserver.git_receive_pack(request.stream)
+
+
+@app.route("/-/api/v1/pull/<string:webhook_hash>", methods=["POST", "GET"])
+def pull_webhook(webhook_hash):
+    """
+    Webhook endpoint for triggering git pulls from remote repositories.
+    The webhook_hash should match the hash generated from remote_url + 'otterwiki'.
+    """
+    from otterwiki.repomgmt import get_repo_manager
+
+    if not app.config.get('GIT_REMOTE_PULL_ENABLED'):
+        abort(404)
+
+    remote_url = app.config.get('GIT_REMOTE_PULL_URL')
+    if not remote_url:
+        abort(404)
+
+    expected_hash = hashlib.md5(
+        (remote_url + 'otterwiki').encode()
+    ).hexdigest()
+
+    if webhook_hash != expected_hash:
+        abort(404)
+
+    repo_manager = get_repo_manager()
+    success = repo_manager.auto_pull_webhook() if repo_manager else False
+
+    if success:
+        return jsonify(
+            {"status": "success", "message": "Pull triggered successfully"}
+        )
+    else:
+        return (
+            jsonify({"status": "error", "message": "Failed to trigger pull"}),
+            500,
+        )

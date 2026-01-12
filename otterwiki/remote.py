@@ -92,10 +92,11 @@ class GitHttpServer:
         result = self.git_pack("receive", stream)
 
         try:
-            from otterwiki.gitstorage import storage
+            from otterwiki.repomgmt import get_repo_manager
 
-            if storage:
-                storage.auto_push_if_enabled()
+            repo_manager = get_repo_manager()
+            if repo_manager:
+                repo_manager.auto_push_if_enabled()
         except Exception as e:
             app.logger.error(f"Auto-push after git receive failed: {e}")
 

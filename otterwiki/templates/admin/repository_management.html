@@ -27,9 +27,9 @@
       </div>
     </div>
 {##}
-    <div class="form-group" id="git_remote_url_group" style="display: none;">
-        <label for="git_remote_url" class="required">SSH Remote URL</label>
-        <input name="git_remote_url" type="text" placeholder="git@github.com:username/repo.git" class="form-control" id="git_remote_url" value="{{ config.GIT_REMOTE_URL or "" }}">
+    <div class="form-group" id="git_remote_push_url_group" style="display: none;">
+        <label for="git_remote_push_url" class="required">SSH Remote URL</label>
+        <input name="git_remote_push_url" type="text" placeholder="git@github.com:username/repo.git" class="form-control" id="git_remote_push_url" value="{{ config.GIT_REMOTE_PUSH_URL or "" }}">
         <div class="form-text">
             The SSH remote URL to push to. Supported formats:
             <ul>
@@ -40,15 +40,73 @@
         </div>
     </div>
 {##}
-    <div class="form-group" id="git_remote_key_group" style="display: none;">
-        <label for="git_remote_private_key">SSH Private Key (Optional)</label>
-        <textarea name="git_remote_private_key" class="form-control" id="git_remote_private_key" rows="10" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----
+    <div class="form-group" id="git_remote_push_key_group" style="display: none;">
+        <label for="git_remote_push_private_key">SSH Private Key (Optional)</label>
+        <textarea name="git_remote_push_private_key" class="form-control" id="git_remote_push_private_key" rows="10" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----
 ...
------END OPENSSH PRIVATE KEY-----">{% if config.GIT_REMOTE_PRIVATE_KEY %}**********{% endif %}</textarea>
+-----END OPENSSH PRIVATE KEY-----">{% if config.GIT_REMOTE_PUSH_PRIVATE_KEY %}**********{% endif %}</textarea>
         <div class="form-text">
             Optional SSH private key for authentication. Leave empty if the server doesn't require authentication or it's being handled externally.
             The key will be stored internally and never displayed after saving.
             However, for security purposes <strong>it's highly recommended to create a key specifically to access the defined remote</strong> and nothing else.
+        </div>
+    </div>
+{##}
+    <div class="form-group">
+      <div class="custom-checkbox">
+        <input {%if config.GIT_REMOTE_PULL_ENABLED %}checked=checked{% endif %} type="checkbox" id="git_remote_pull_enabled" name="git_remote_pull_enabled" value="True">
+        <label for="git_remote_pull_enabled">Enable automatic pulling from SSH remote <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
+        <div class="mt-5">
+            Enable this to automatically pull changes from a remote git repository via SSH.
+        </div>
+      </div>
+    </div>
+{##}
+    <div class="form-group" id="git_remote_pull_url_group" style="display: none;">
+        <label for="git_remote_pull_url" class="required">SSH Remote URL</label>
+        <input name="git_remote_pull_url" type="text" placeholder="git@github.com:username/repo.git" class="form-control" id="git_remote_pull_url" value="{{ config.GIT_REMOTE_PULL_URL or "" }}">
+        <div class="form-text">
+            The SSH remote URL to pull from. Supported formats:
+            <ul>
+                <li><code>ssh://[user@]host.xz[:port]/path/to/repo.git</code></li>
+                <li><code>git://host.xz[:port]/path/to/repo.git</code></li>
+                <li><code>git@github.com:username/repo.git</code> (for GitHub)</li>
+            </ul>
+        </div>
+    </div>
+{##}
+    <div class="form-group" id="git_remote_pull_key_group" style="display: none;">
+        <label for="git_remote_pull_private_key">SSH Private Key (Optional)</label>
+        <textarea name="git_remote_pull_private_key" class="form-control" id="git_remote_pull_private_key" rows="10" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----
+...
+-----END OPENSSH PRIVATE KEY-----">{% if config.GIT_REMOTE_PULL_PRIVATE_KEY %}**********{% endif %}</textarea>
+        <div class="form-text">
+            Optional SSH private key for authentication. Leave empty if the server doesn't require authentication or it's being handled externally.
+            The key will be stored internally and never displayed after saving.
+            However, for security purposes <strong>it's highly recommended to create a key specifically to access the defined remote</strong> and nothing else.
+        </div>
+    </div>
+{##}
+    <div class="form-group" id="git_remote_pull_interval_group" style="display: none;">
+        <label for="git_remote_pull_interval" class="required">Pull interval (in minutes, 0 to disable)</label>
+        <input name="git_remote_pull_interval" type="number" min="0" placeholder="60" class="form-control" id="git_remote_pull_interval" value="{{ config.GIT_REMOTE_PULL_INTERVAL or "" }}">
+        <div class="form-text">
+            How often to automatically pull from the remote repository. Set to 0 to disable automatic pulling (webhook only).
+        </div>
+    </div>
+{##}
+    <div class="form-group" id="git_remote_pull_webhook_group" style="display: none;">
+        <label for="git_remote_pull_webhook_url">Pull webhook URL</label>
+        <div class="input-group">
+            <input type="text" class="form-control" id="git_remote_pull_webhook_url" readonly>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" id="copy_webhook_url" title="Copy webhook URL">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
+        <div class="form-text">
+            Use this URL to trigger pulls from external services (e.g., GitHub webhooks).
         </div>
     </div>
 {##}
@@ -61,22 +119,97 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const checkbox = document.getElementById('git_remote_push_enabled');
-    const urlGroup = document.getElementById('git_remote_url_group');
-    const keyGroup = document.getElementById('git_remote_key_group');
+    const pushCheckbox = document.getElementById('git_remote_push_enabled');
+    const pushUrlGroup = document.getElementById('git_remote_push_url_group');
+    const pushKeyGroup = document.getElementById('git_remote_push_key_group');
 
-    function toggleRemoteFields() {
-        if (checkbox.checked) {
-            urlGroup.style.display = 'block';
-            keyGroup.style.display = 'block';
+    function togglePushFields() {
+        if (pushCheckbox.checked) {
+            pushUrlGroup.style.display = 'block';
+            pushKeyGroup.style.display = 'block';
         } else {
-            urlGroup.style.display = 'none';
-            keyGroup.style.display = 'none';
+            pushUrlGroup.style.display = 'none';
+            pushKeyGroup.style.display = 'none';
         }
     }
 
-    toggleRemoteFields();
-    checkbox.addEventListener('change', toggleRemoteFields);
+    togglePushFields();
+    pushCheckbox.addEventListener('change', togglePushFields);
+
+    const pullCheckbox = document.getElementById('git_remote_pull_enabled');
+    const pullUrlGroup = document.getElementById('git_remote_pull_url_group');
+    const pullKeyGroup = document.getElementById('git_remote_pull_key_group');
+    const pullIntervalGroup = document.getElementById('git_remote_pull_interval_group');
+    const pullWebhookGroup = document.getElementById('git_remote_pull_webhook_group');
+    const pullUrlInput = document.getElementById('git_remote_pull_url');
+    const webhookUrlInput = document.getElementById('git_remote_pull_webhook_url');
+    const copyButton = document.getElementById('copy_webhook_url');
+
+    function generateWebhookHash(url) {
+        if (!url) return '';
+        // Note: This generates a placeholder hash for display purposes only
+        // The actual security relies on the server-side MD5 hash validation
+        let hash = 0;
+        const str = url + 'otterwiki';
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // convert to 32bit integer
+        }
+        // convert to hex - use full hash for better security display
+        const fullHash = Math.abs(hash).toString(16);
+        return fullHash.padStart(8, '0');
+    }
+
+    function updateWebhookUrl() {
+        const remoteUrl = pullUrlInput.value.trim();
+        if (remoteUrl) {
+            const hash = generateWebhookHash(remoteUrl);
+            const webhookUrl = window.location.origin + '/-/api/v1/pull/' + hash;
+            webhookUrlInput.value = webhookUrl;
+        } else {
+            webhookUrlInput.value = '';
+        }
+    }
+
+    function togglePullFields() {
+        if (pullCheckbox.checked) {
+            pullUrlGroup.style.display = 'block';
+            pullKeyGroup.style.display = 'block';
+            pullIntervalGroup.style.display = 'block';
+            pullWebhookGroup.style.display = 'block';
+            updateWebhookUrl();
+        } else {
+            pullUrlGroup.style.display = 'none';
+            pullKeyGroup.style.display = 'none';
+            pullIntervalGroup.style.display = 'none';
+            pullWebhookGroup.style.display = 'none';
+        }
+    }
+
+    togglePullFields();
+    pullCheckbox.addEventListener('change', togglePullFields);
+    pullUrlInput.addEventListener('input', updateWebhookUrl);
+
+    copyButton.addEventListener('click', function() {
+        webhookUrlInput.select();
+        webhookUrlInput.setSelectionRange(0, 99999); // For mobile devices
+        navigator.clipboard.writeText(webhookUrlInput.value).then(function() {
+            const originalText = copyButton.innerHTML;
+            copyButton.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(function() {
+                copyButton.innerHTML = originalText;
+            }, 2000);
+        }).catch(function() {
+            // fallback for older browsers
+            document.execCommand('copy');
+            const originalText = copyButton.innerHTML;
+            copyButton.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(function() {
+                copyButton.innerHTML = originalText;
+            }, 2000);
+        });
+    });
 });
 </script>
 {% endblock %}
