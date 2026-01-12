@@ -356,7 +356,7 @@ def test_auto_pull_webhook_functionality_mock(
     # Test webhook endpoint (need to calculate the hash)
     import hashlib
 
-    webhook_hash = hashlib.md5(
+    webhook_hash = hashlib.sha256(
         (test_remote_url + 'otterwiki').encode()
     ).hexdigest()
 
@@ -395,7 +395,7 @@ def test_webhook_incorrect_hash_returns_404(app_with_user, admin_client):
     # Test with correct hash but feature disabled
     import hashlib
 
-    correct_hash = hashlib.md5(
+    correct_hash = hashlib.sha256(
         (test_remote_url + 'otterwiki').encode()
     ).hexdigest()
 
