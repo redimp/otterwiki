@@ -110,12 +110,13 @@ class RepositoryManager:
         if original_ssh_auth_sock is not None:
             os.environ['SSH_AUTH_SOCK'] = original_ssh_auth_sock
 
-    def push_to_remote(self, remote_url, private_key=None):
+    def push_to_remote(self, remote_url, private_key=None, force=False):
         """
         Push the current branch to a remote repository.
+        Returns (success, output) tuple.
         """
         if not remote_url:
-            return False
+            return False, "No remote URL provided"
 
         key_path, original_ssh_command, original_ssh_auth_sock = (
             self._setup_ssh_environment(private_key)
@@ -128,15 +129,24 @@ class RepositoryManager:
                 current_branch = self.storage.repo.active_branch.name
             except TypeError:
                 # if there is no current branch we should probably just stop
-                return False
+                return False, "No active branch found"
+
+            action_type = "Force push" if force else "Push"
+            app.logger.info(
+                f"[RepositoryManager] {action_type} to remote: {remote_url}"
+            )
+
+            if force:
+                result = self.storage.repo.git.push(
+                    remote_url, current_branch, force=True
+                )
+            else:
+                result = self.storage.repo.git.push(remote_url, current_branch)
 
             app.logger.info(
-                f"[RepositoryManager] Pushing to remote: {remote_url}"
+                f"[RepositoryManager] {action_type} result: {result}"
             )
-            result = self.storage.repo.git.push(remote_url, current_branch)
-            if result:
-                app.logger.info(f"[RepositoryManager] Push result: {result}")
-            return True
+            return True, result or f"{action_type} completed successfully"
 
         except Exception as e:
             try:
@@ -147,7 +157,7 @@ class RepositoryManager:
                 )
             except ImportError:
                 pass
-            return False
+            return False, str(e)
         finally:
             self._restore_ssh_environment(
                 key_path, original_ssh_command, original_ssh_auth_sock
@@ -156,9 +166,10 @@ class RepositoryManager:
     def pull_from_remote(self, remote_url, private_key=None):
         """
         Pull from a remote repository.
+        Returns (success, output) tuple.
         """
         if not remote_url:
-            return False
+            return False, "No remote URL provided"
 
         key_path, original_ssh_command, original_ssh_auth_sock = (
             self._setup_ssh_environment(private_key)
@@ -171,15 +182,14 @@ class RepositoryManager:
                 current_branch = self.storage.repo.active_branch.name
             except TypeError:
                 # if there is no current branch we should probably just stop
-                return False
+                return False, "No active branch found"
 
             app.logger.info(
                 f"[RepositoryManager] Pulling from remote: {remote_url}"
             )
             result = self.storage.repo.git.pull(remote_url, current_branch)
-            if result:
-                app.logger.info(f"[RepositoryManager] Pull result: {result}")
-            return True
+            app.logger.info(f"[RepositoryManager] Pull result: {result}")
+            return True, result or "Pull completed successfully"
 
         except Exception as e:
             try:
@@ -190,7 +200,7 @@ class RepositoryManager:
                 )
             except ImportError:
                 pass
-            return False
+            return False, str(e)
         finally:
             self._restore_ssh_environment(
                 key_path, original_ssh_command, original_ssh_auth_sock

@@ -593,3 +593,434 @@ def test_pull_scheduler_background_pull(mock_pull_async, app_with_user):
         # Test with None key
         key_path = repo_manager._create_ssh_key_file(None)
         assert key_path is None
+
+
+def test_git_action_buttons_visibility(app_with_user, admin_client):
+    """Test that git action buttons appear only when corresponding features are enabled."""
+    # First, explicitly disable all features to ensure clean state
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # Now check that no buttons should be visible
+    rv = admin_client.get("/-/admin/repository_management")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    soup = BeautifulSoup(html, 'html.parser')
+
+    # No action buttons should be present initially
+    push_button = soup.find('input', {'name': 'git_push'})
+    force_push_button = soup.find('input', {'name': 'git_force_push'})
+    pull_button = soup.find('input', {'name': 'git_pull'})
+
+    assert push_button is None
+    assert force_push_button is None
+    assert pull_button is None
+
+    # Enable push functionality
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_remote_push_enabled": "True",
+            "git_remote_push_url": "git@github.com:test/repo.git",
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # Now push buttons should be visible
+    rv = admin_client.get("/-/admin/repository_management")
+    html = rv.data.decode()
+    soup = BeautifulSoup(html, 'html.parser')
+
+    push_button = soup.find('input', {'name': 'git_push'})
+    force_push_button = soup.find('input', {'name': 'git_force_push'})
+    pull_button = soup.find('input', {'name': 'git_pull'})
+
+    assert push_button is not None
+    assert force_push_button is not None
+    assert pull_button is None  # Pull still disabled
+
+    # Enable pull functionality
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_remote_push_enabled": "True",
+            "git_remote_push_url": "git@github.com:test/repo.git",
+            "git_remote_pull_enabled": "True",
+            "git_remote_pull_url": "git@github.com:test/repo.git",
+            "git_remote_pull_interval": "60",
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # Now all buttons should be visible
+    rv = admin_client.get("/-/admin/repository_management")
+    html = rv.data.decode()
+    soup = BeautifulSoup(html, 'html.parser')
+
+    push_button = soup.find('input', {'name': 'git_push'})
+    force_push_button = soup.find('input', {'name': 'git_force_push'})
+    pull_button = soup.find('input', {'name': 'git_pull'})
+
+    assert push_button is not None
+    assert force_push_button is not None
+    assert pull_button is not None
+
+
+@patch('otterwiki.repomgmt.RepositoryManager.push_to_remote')
+def test_git_push_button_functionality(mock_push, app_with_user, admin_client):
+    """Test that the git push button works correctly."""
+    test_remote_url = "git@github.com:test/repo.git"
+    test_private_key = "-----BEGIN OPENSSH PRIVATE KEY-----\ntest_key\n-----END OPENSSH PRIVATE KEY-----"
+
+    # Configure mock to return success
+    mock_push.return_value = (True, "Everything up-to-date")
+
+    # Enable push functionality
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_remote_push_enabled": "True",
+            "git_remote_push_url": test_remote_url,
+            "git_remote_push_private_key": test_private_key,
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # Test push button
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_push": "Push",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    html = rv.data.decode()
+
+    # Check that push was called with correct parameters
+    mock_push.assert_called_with(
+        test_remote_url, test_private_key, force=False
+    )
+
+    # Check that results are displayed
+    assert "Push Results" in html
+    assert "Everything up-to-date" in html
+    soup = BeautifulSoup(html, 'html.parser')
+    results_div = soup.find('div', class_='card')
+    assert results_div is not None
+
+
+@patch('otterwiki.repomgmt.RepositoryManager.push_to_remote')
+def test_git_force_push_button_functionality(
+    mock_push, app_with_user, admin_client
+):
+    """Test that the git force push button works correctly."""
+    test_remote_url = "git@github.com:test/repo.git"
+    test_private_key = "-----BEGIN OPENSSH PRIVATE KEY-----\ntest_key\n-----END OPENSSH PRIVATE KEY-----"
+
+    # Configure mock to return success
+    mock_push.return_value = (True, "Force push completed")
+
+    # Enable push functionality
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_remote_push_enabled": "True",
+            "git_remote_push_url": test_remote_url,
+            "git_remote_push_private_key": test_private_key,
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # Test force push button
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_force_push": "Force Push",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    html = rv.data.decode()
+
+    # Check that push was called with force=True
+    mock_push.assert_called_with(test_remote_url, test_private_key, force=True)
+
+    # Check that results are displayed
+    assert "Force Push Results" in html
+    assert "Force push completed" in html
+
+
+@patch('otterwiki.repomgmt.RepositoryManager.pull_from_remote')
+def test_git_pull_button_functionality(mock_pull, app_with_user, admin_client):
+    """Test that the git pull button works correctly."""
+    test_remote_url = "git@github.com:test/repo.git"
+    test_private_key = "-----BEGIN OPENSSH PRIVATE KEY-----\ntest_key\n-----END OPENSSH PRIVATE KEY-----"
+
+    # Configure mock to return success
+    mock_pull.return_value = (True, "Already up to date.")
+
+    # Enable pull functionality
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_remote_pull_enabled": "True",
+            "git_remote_pull_url": test_remote_url,
+            "git_remote_pull_private_key": test_private_key,
+            "git_remote_pull_interval": "60",
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # Test pull button
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_pull": "Pull",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    html = rv.data.decode()
+
+    # Check that pull was called with correct parameters
+    mock_pull.assert_called_with(test_remote_url, test_private_key)
+
+    # Check that results are displayed
+    assert "Pull Results" in html
+    assert "Already up to date." in html
+
+
+@patch('otterwiki.repomgmt.RepositoryManager.push_to_remote')
+def test_git_push_button_error_handling(
+    mock_push, app_with_user, admin_client
+):
+    """Test that git push button handles errors correctly."""
+    test_remote_url = "git@github.com:test/repo.git"
+
+    # Configure mock to return error
+    mock_push.return_value = (False, "Permission denied (publickey).")
+
+    # Enable push functionality
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_remote_push_enabled": "True",
+            "git_remote_push_url": test_remote_url,
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # Test push button with error
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_push": "Push",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    html = rv.data.decode()
+
+    # Check that error is displayed with proper styling
+    assert "Push Results" in html
+    assert "Permission denied (publickey)." in html
+    soup = BeautifulSoup(html, 'html.parser')
+    error_pre = soup.find('pre', class_='bg-danger')
+    assert error_pre is not None
+
+
+@patch('otterwiki.repomgmt.RepositoryManager.push_to_remote')
+@patch('otterwiki.repomgmt.RepositoryManager.pull_from_remote')
+def test_git_action_buttons_when_feature_disabled(
+    mock_pull, mock_push, app_with_user, admin_client
+):
+    """Test that git action buttons return error when feature is disabled."""
+    # Ensure features are disabled first
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # Try to use push button when push is disabled
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_push": "Push",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    html = rv.data.decode()
+
+    # Should show error message
+    assert "Push Results" in html
+    assert "Push functionality is not enabled" in html
+
+    # Try to use pull button when pull is disabled
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_pull": "Pull",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    html = rv.data.decode()
+
+    # Should show error message
+    assert "Pull Results" in html
+    assert "Pull functionality is not enabled" in html
+
+    # Verify that the actual git methods were never called
+    mock_push.assert_not_called()
+    mock_pull.assert_not_called()
+
+
+@patch('otterwiki.repomgmt.get_repo_manager')
+def test_git_action_buttons_when_repo_manager_unavailable(
+    mock_get_repo_manager, app_with_user, admin_client
+):
+    """Test that git action buttons handle missing repository manager."""
+    # Configure mock to return None (repo manager unavailable)
+    mock_get_repo_manager.return_value = None
+
+    # Enable push functionality
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_remote_push_enabled": "True",
+            "git_remote_push_url": "git@github.com:test/repo.git",
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # Test push button when repo manager is unavailable
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_push": "Push",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    html = rv.data.decode()
+
+    # Should show error message
+    assert "Push Results" in html
+    assert "Repository manager not available" in html
+
+
+def test_force_push_confirmation_dialog_in_template(
+    app_with_user, admin_client
+):
+    """Test that force push button has confirmation dialog in the template."""
+    # Enable push functionality
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_remote_push_enabled": "True",
+            "git_remote_push_url": "git@github.com:test/repo.git",
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # Get the form and check for confirmation dialog
+    rv = admin_client.get("/-/admin/repository_management")
+    html = rv.data.decode()
+    soup = BeautifulSoup(html, 'html.parser')
+
+    force_push_button = soup.find('input', {'name': 'git_force_push'})
+    assert force_push_button is not None
+
+    # Check that onclick attribute contains confirmation dialog
+    onclick_attr = force_push_button.get('onclick')
+    assert onclick_attr is not None
+    assert "confirm(" in onclick_attr
+
+
+def test_git_action_results_styling(app_with_user, admin_client):
+    """Test that git action results have proper styling for success and error cases."""
+    from unittest.mock import patch
+
+    # Enable push functionality
+    rv = admin_client.post(
+        "/-/admin/repository_management",
+        data={
+            "git_remote_push_enabled": "True",
+            "git_remote_push_url": "git@github.com:test/repo.git",
+            "update_preferences": "true",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # Test success case
+    with patch(
+        'otterwiki.repomgmt.RepositoryManager.push_to_remote'
+    ) as mock_push:
+        mock_push.return_value = (True, "Push successful")
+
+        rv = admin_client.post(
+            "/-/admin/repository_management",
+            data={
+                "git_push": "Push",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        soup = BeautifulSoup(html, 'html.parser')
+
+        # Should have success styling
+        success_pre = soup.find('pre', class_='bg-success')
+        assert success_pre is not None
+        assert "Push successful" in success_pre.get_text()
+
+    # Test error case
+    with patch(
+        'otterwiki.repomgmt.RepositoryManager.push_to_remote'
+    ) as mock_push:
+        mock_push.return_value = (False, "Push failed")
+
+        rv = admin_client.post(
+            "/-/admin/repository_management",
+            data={
+                "git_push": "Push",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        soup = BeautifulSoup(html, 'html.parser')
+
+        # Should have error styling
+        error_pre = soup.find('pre', class_='bg-danger')
+        assert error_pre is not None
+        assert "Push failed" in error_pre.get_text()
