@@ -10,7 +10,7 @@
                     <div class="dropdown-divider mt-5 mb-5"></div>
 {{ super() }}
 {% endblock %}
-{% block body_attrs %}data-index-path="{{ pagepath }}"{% endblock %}
+{% block body_attrs %}data-index-path="{{ pagepath.lower() }}"{% endblock %}
 {% block content %}
 <h2 class="pr-20 d-inline-block">Page Index</h2>
 <div class="d-inline-block custom-switch font-size-12 mb-10">
