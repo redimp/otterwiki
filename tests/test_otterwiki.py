@@ -664,7 +664,7 @@ def test_data_pagepath_attribute(test_client, pagename):
     body = soup.find("body")
     assert body
     data_page_path = body.get("data-page-path", "")
-    assert data_page_path == pagename
+    assert data_page_path == pagename.lower()
 
 
 def test_data_indexpath_attribute(test_client):
