@@ -7,6 +7,11 @@ import re
 from io import BytesIO
 from flask import url_for
 import bs4
+import pytest
+
+
+def _link_by_text(soup, text):
+    return soup.find("a", string=text)
 
 
 def test_html(test_client):
@@ -161,15 +166,24 @@ def test_pageindex(test_client):
         "added nested page",
     )
     html = test_client.get("/-/index").data.decode()
+    soup = bs4.BeautifulSoup(html, "html.parser")
     # check capitalizing (from # Random page)
-    assert 'Random page' in html
-    assert 'href="/Random%20page"' in html
+    a = _link_by_text(soup, "Random page")
+    assert a is not None
+    assert a.get("href") == "/Random page"
     # Test nested page
-    assert '>Nested page<' in html
-    assert 'href="/Sub%20Directory/Nested%20page"' in html
+    a = _link_by_text(soup, "Nested page")
+    assert a is not None
+    assert a.get("href") == "/Sub Directory/Nested page"
     # and nested header
-    assert '>Nested header<' in html
-    assert 'href="/Sub%20Directory/Nested%20page#nested-header"' in html
+    a = _link_by_text(soup, "Nested header")
+    assert a is not None
+    assert a.get("href") == "/Sub%20Directory/Nested%20page#nested-header"
+    # check data-index-path attribute
+    body = soup.find("body")
+    assert body
+    data_index_path = body.get("data-index-path", "")
+    assert data_index_path == "/"
 
 
 def test_page_save(test_client):
@@ -631,3 +645,37 @@ def test_meta_og(test_client):
     description = description.get("content", None)
     assert title == pagename
     assert description == "strong text with a link."
+
+
+@pytest.mark.parametrize(
+    "pagename",
+    [
+        "MyPage",
+        "Sub/My Other Page",
+    ],
+)
+def test_data_pagepath_attribute(test_client, pagename):
+    content = "# Data Page Path Test\n\nTesting data-page-path attribute."
+    commit_message = "Data page path test commit message"
+    save_shortcut(test_client, pagename, content, commit_message)
+    html = test_client.get("/{}".format(pagename)).data.decode()
+    soup = bs4.BeautifulSoup(html, "html.parser")
+    assert soup
+    body = soup.find("body")
+    assert body
+    data_page_path = body.get("data-page-path", "")
+    assert data_page_path == pagename
+
+
+def test_data_indexpath_attribute(test_client):
+    pagename = "IndexPathTest/Page"
+    content = "# Data Index Path Test\n\nTesting data-index-path attribute."
+    commit_message = "Data index path test commit message"
+    save_shortcut(test_client, pagename, content, commit_message)
+    html = test_client.get("/IndexPathTest").data.decode()
+    soup = bs4.BeautifulSoup(html, "html.parser")
+    assert soup
+    body = soup.find("body")
+    assert body
+    data_index_path = body.get("data-index-path", "")
+    assert data_index_path == "indexpathtest"

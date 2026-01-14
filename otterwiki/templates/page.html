@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex, nofollow"/>
 {%-endif%}
 {% endblock %}
+{% block body_attrs %}data-page-path="{{ pagepath }}"{% endblock %}
 {% block js %}
 {{ super() }}
 {% include 'snippets/renderer_js.html' %}
