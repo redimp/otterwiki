@@ -652,6 +652,7 @@ def test_meta_og(test_client):
     [
         "MyPage",
         "Sub/My Other Page",
+        "'Lots' & \"Lots\" \U0001f525 of <Special Chars>",
     ],
 )
 def test_data_pagepath_attribute(test_client, pagename):
