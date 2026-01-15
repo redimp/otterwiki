@@ -141,9 +141,10 @@ class RepositoryManager:
             else:
                 result = self.storage.repo.git.push(remote_url, current_branch)
 
-            app.logger.info(
-                f"[RepositoryManager] {action_type} result: {result}"
-            )
+            if result:
+                app.logger.info(
+                    f"[RepositoryManager] {action_type} result: {result}"
+                )
             return True, result or f"{action_type} completed successfully"
 
         except Exception as e:
@@ -186,7 +187,8 @@ class RepositoryManager:
                 f"[RepositoryManager] Pulling from remote: {remote_url}"
             )
             result = self.storage.repo.git.pull(remote_url, current_branch)
-            app.logger.info(f"[RepositoryManager] Pull result: {result}")
+            if result:
+                app.logger.info(f"[RepositoryManager] Pull result: {result}")
             return True, result or "Pull completed successfully"
 
         except Exception as e:

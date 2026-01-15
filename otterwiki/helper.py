@@ -442,10 +442,7 @@ def send_repository_error_notification(
             f"Remote URL: {remote_url}",
             f"Error: {error_message}",
             f"",
-            f"Please check your repository configuration and network connectivity.",
-            f"",
-            f"This notification was sent because automatic repository operations are enabled.",
-            f"Manual operations from the Repository Management page do not trigger notifications.",
+            f"Please check your repository configuration and git output.",
         ]
 
         text_body = "\n".join(body_lines)
