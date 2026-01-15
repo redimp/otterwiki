@@ -267,6 +267,17 @@ def format_datetime(value: datetime.datetime, format="medium") -> str:
     return value.strftime(format)
 
 
+@app.template_filter('slugify')
+def slugify(s, keep_slashes=True):
+    """
+    Example usage:
+
+    {{ pagepath | slugify(keep_slashes=True) }}.
+    """
+
+    return otterwiki.util.slugify(s, keep_slashes=keep_slashes)
+
+
 app.jinja_env.globals.update(os_getenv=os.getenv)
 
 from otterwiki.helper import load_custom_html

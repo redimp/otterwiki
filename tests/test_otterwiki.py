@@ -648,14 +648,17 @@ def test_meta_og(test_client):
 
 
 @pytest.mark.parametrize(
-    "pagename",
+    "pagename, slug",
     [
-        "MyPage",
-        "Sub/My Other Page",
-        "'Lots' & \"Lots\" \U0001f525 of <Special Chars>",
+        ("MyPage", "mypage"),
+        ("Sub/My Other Page", "sub/my-other-page"),
+        (
+            "'Lots' & \"Lots\" \U0001f525 of <Special Chars>",
+            "lots-lots-of-special-chars",
+        ),
     ],
 )
-def test_data_pagepath_attribute(test_client, pagename):
+def test_data_pagepath_attribute(test_client, pagename, slug):
     content = "# Data Page Path Test\n\nTesting data-page-path attribute."
     commit_message = "Data page path test commit message"
     save_shortcut(test_client, pagename, content, commit_message)
@@ -665,7 +668,7 @@ def test_data_pagepath_attribute(test_client, pagename):
     body = soup.find("body")
     assert body
     data_page_path = body.get("data-page-path", "")
-    assert data_page_path == pagename.lower()
+    assert data_page_path == slug
 
 
 def test_data_indexpath_attribute(test_client):
