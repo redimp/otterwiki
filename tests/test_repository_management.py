@@ -14,7 +14,7 @@ def test_repository_management_form_access(admin_client):
     html = rv.data.decode()
     assert "Repository Management" in html
     assert "Enable Git Web server" in html
-    assert "Enable automatic pushing to SSH remote" in html
+    assert "Enable pushing to SSH remote" in html
 
 
 def test_repository_management_form_403(app_with_user, other_client):
@@ -346,7 +346,6 @@ def test_auto_pull_webhook_functionality_mock(
             "git_remote_pull_enabled": "True",
             "git_remote_pull_url": test_remote_url,
             "git_remote_pull_private_key": test_private_key,
-            "git_remote_pull_interval": "60",
             "update_preferences": "true",
         },
         follow_redirects=True,
@@ -380,7 +379,6 @@ def test_webhook_incorrect_hash_returns_404(app_with_user, admin_client):
             "git_remote_pull_enabled": "True",
             "git_remote_pull_url": test_remote_url,
             "git_remote_pull_private_key": test_private_key,
-            "git_remote_pull_interval": "60",
             "update_preferences": "true",
         },
         follow_redirects=True,
@@ -444,7 +442,6 @@ def test_git_remote_pull_validation_missing_url(app_with_user, admin_client):
             "git_remote_pull_enabled": "True",
             "git_remote_pull_url": "",  # Empty URL
             "git_remote_pull_private_key": "",
-            "git_remote_pull_interval": "60",
             "update_preferences": "true",
         },
         follow_redirects=True,
@@ -457,32 +454,6 @@ def test_git_remote_pull_validation_missing_url(app_with_user, admin_client):
     assert app_with_user.config['GIT_REMOTE_PULL_ENABLED'] == False
     assert app_with_user.config['GIT_REMOTE_PULL_URL'] == ""
     assert app_with_user.config['GIT_REMOTE_PULL_PRIVATE_KEY'] == ""
-
-
-def test_git_remote_pull_validation_invalid_interval(
-    app_with_user, admin_client
-):
-    """Test that enabling remote pull with invalid interval shows error and disables feature."""
-    test_remote_url = "git@github.com:test/repo.git"
-
-    # Try to enable feature with invalid interval
-    rv = admin_client.post(
-        "/-/admin/repository_management",
-        data={
-            "git_remote_pull_enabled": "True",
-            "git_remote_pull_url": test_remote_url,
-            "git_remote_pull_private_key": "",
-            "git_remote_pull_interval": "invalid",  # Invalid interval
-            "update_preferences": "true",
-        },
-        follow_redirects=True,
-    )
-    assert rv.status_code == 200
-    html = rv.data.decode()
-    assert "Pull interval must be a valid number" in html
-
-    # Feature should remain disabled
-    assert app_with_user.config['GIT_REMOTE_PULL_ENABLED'] == False
 
 
 def test_enable_git_remote_pull_basic(app_with_user, admin_client):
@@ -502,7 +473,6 @@ def test_enable_git_remote_pull_basic(app_with_user, admin_client):
             "git_remote_pull_enabled": "True",
             "git_remote_pull_url": test_remote_url,
             "git_remote_pull_private_key": test_private_key,
-            "git_remote_pull_interval": "60",
             "update_preferences": "true",
         },
         follow_redirects=True,
@@ -517,82 +487,6 @@ def test_enable_git_remote_pull_basic(app_with_user, admin_client):
     assert (
         app_with_user.config['GIT_REMOTE_PULL_PRIVATE_KEY'] == test_private_key
     )
-    assert app_with_user.config['GIT_REMOTE_PULL_INTERVAL'] == "60"
-
-
-def test_pull_scheduler_functionality():
-    """Test the PullScheduler class functionality."""
-    from otterwiki.repomgmt import PullScheduler, RepositoryManager
-    from otterwiki.gitstorage import GitStorage
-    import tempfile
-    import time
-    from unittest.mock import patch
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        storage = GitStorage(tmpdir, initialize=True)
-        repo_manager = RepositoryManager(storage)
-        scheduler = PullScheduler(repo_manager)
-
-        # Test that scheduler doesn't start when pull is disabled
-        with patch('otterwiki.server.app') as mock_app:
-            mock_app.config.get.return_value = (
-                False  # GIT_REMOTE_PULL_ENABLED = False
-            )
-            scheduler.start()
-            assert scheduler.thread is None
-
-        # Test scheduler start/stop
-        with patch('otterwiki.server.app') as mock_app:
-            mock_app.config.get.side_effect = (
-                lambda key: key == 'GIT_REMOTE_PULL_ENABLED'
-            )
-            scheduler.start()
-            assert scheduler.thread is not None
-            assert scheduler.thread.is_alive()
-
-            scheduler.stop()
-            assert not scheduler.thread.is_alive()
-
-
-@patch('otterwiki.repomgmt.RepositoryManager.pull_from_remote_async')
-def test_pull_scheduler_background_pull(mock_pull_async, app_with_user):
-    """Test that the pull scheduler calls pull_from_remote_async at the right intervals."""
-    from otterwiki.repomgmt import PullScheduler, RepositoryManager
-    from otterwiki.gitstorage import GitStorage
-    import tempfile
-    import threading
-    import time
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        storage = GitStorage(tmpdir, initialize=True)
-        repo_manager = RepositoryManager(storage)
-        scheduler = PullScheduler(repo_manager)
-
-        # Mock app config for testing
-        with app_with_user.app_context():
-            app_with_user.config['GIT_REMOTE_PULL_ENABLED'] = True
-            app_with_user.config['GIT_REMOTE_PULL_URL'] = (
-                "git@github.com:test/repo.git"
-            )
-            app_with_user.config['GIT_REMOTE_PULL_INTERVAL'] = (
-                "1"  # 1 minute for testing
-            )
-            app_with_user.config['GIT_REMOTE_PULL_PRIVATE_KEY'] = "test_key"
-
-            # Start scheduler
-            scheduler.start()
-
-            # Wait a bit and check that it's running
-            time.sleep(0.1)
-            assert scheduler.thread.is_alive()
-
-            # Stop scheduler
-            scheduler.stop()
-            assert not scheduler.thread.is_alive()
-
-        # Test with None key
-        key_path = repo_manager._create_ssh_key_file(None)
-        assert key_path is None
 
 
 def test_git_action_buttons_visibility(app_with_user, admin_client):
@@ -655,7 +549,6 @@ def test_git_action_buttons_visibility(app_with_user, admin_client):
             "git_remote_push_url": "git@github.com:test/repo.git",
             "git_remote_pull_enabled": "True",
             "git_remote_pull_url": "git@github.com:test/repo.git",
-            "git_remote_pull_interval": "60",
             "update_preferences": "true",
         },
         follow_redirects=True,
@@ -781,7 +674,6 @@ def test_git_pull_button_functionality(mock_pull, app_with_user, admin_client):
             "git_remote_pull_enabled": "True",
             "git_remote_pull_url": test_remote_url,
             "git_remote_pull_private_key": test_private_key,
-            "git_remote_pull_interval": "60",
             "update_preferences": "true",
         },
         follow_redirects=True,

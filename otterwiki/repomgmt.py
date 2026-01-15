@@ -4,8 +4,6 @@
 import os
 import tempfile
 import stat
-import threading
-import time
 from threading import Thread
 
 
@@ -318,116 +316,7 @@ class RepositoryManager:
             return False
 
 
-class PullScheduler:
-    """
-    Background scheduler for periodic pull operations from remote repository.
-    """
-
-    def __init__(self, repo_manager):
-        """Initialize with a RepositoryManager instance."""
-        self.repo_manager = repo_manager
-        self.thread = None
-        self.stop_event = threading.Event()
-        self.cycles = 0
-
-    def _background_pull_scheduler(self):
-        """Background thread that periodically pulls from remote repository."""
-        try:
-            from otterwiki.server import app
-
-            app.logger.info(
-                "[PullScheduler] Background pull scheduler started"
-            )
-        except ImportError:
-            pass
-
-        while not self.stop_event.is_set():
-            try:
-                from otterwiki.server import app
-
-                with app.app_context():
-                    if not app.config.get('GIT_REMOTE_PULL_ENABLED'):
-                        app.logger.info(
-                            "[PullScheduler] Pull functionality disabled, stopping scheduler"
-                        )
-                        break
-
-                    remote_url = app.config.get('GIT_REMOTE_PULL_URL')
-                    if remote_url:
-                        interval_minutes = int(
-                            app.config.get('GIT_REMOTE_PULL_INTERVAL', 0)
-                        )
-                        if interval_minutes > 0:
-                            # check if enough cycles have passed (each cycle is 60 seconds)
-                            if self.cycles >= interval_minutes:
-                                private_key = app.config.get(
-                                    'GIT_REMOTE_PULL_PRIVATE_KEY'
-                                )
-                                app.logger.info(
-                                    f"[PullScheduler] Pulling from remote: {remote_url}"
-                                )
-                                self.repo_manager.pull_from_remote(
-                                    remote_url, private_key
-                                )
-                                self.cycles = 0
-                            else:
-                                self.cycles += 1
-
-                    if self.stop_event.wait(60):
-                        break
-
-            except Exception as e:
-                try:
-                    from otterwiki.server import app
-
-                    app.logger.error(
-                        f"[PullScheduler] Background pull failed: {e}"
-                    )
-                except ImportError:
-                    pass
-                if self.stop_event.wait(60):
-                    break
-
-    def start(self):
-        """Start the background pull scheduler if pull is enabled."""
-        try:
-            from otterwiki.server import app
-
-            if not app.config.get('GIT_REMOTE_PULL_ENABLED'):
-                return
-        except ImportError:
-            return
-
-        if self.thread is None or not self.thread.is_alive():
-            self.stop_event.clear()
-            self.cycles = 0
-            self.thread = threading.Thread(
-                target=self._background_pull_scheduler, daemon=True
-            )
-            self.thread.start()
-
-    def stop(self):
-        """Stop the background pull scheduler."""
-        if self.thread and self.thread.is_alive():
-            self.stop_event.set()
-            self.thread.join(timeout=5)
-            try:
-                from otterwiki.server import app
-
-                app.logger.info(
-                    "[PullScheduler] Background pull scheduler stopped"
-                )
-            except ImportError:
-                pass
-
-    def restart(self):
-        """Restart the pull scheduler (used when configuration changes)."""
-        self.stop()
-        self.start()
-
-
 repo_manager = None
-pull_scheduler = None
 
 
 def initialize_repo_management(storage):
@@ -435,34 +324,10 @@ def initialize_repo_management(storage):
     Initialize the global repository management instances.
     This should be called from server.py after storage is created.
     """
-    global repo_manager, pull_scheduler
+    global repo_manager
     repo_manager = RepositoryManager(storage)
-    pull_scheduler = PullScheduler(repo_manager)
 
 
 def get_repo_manager():
     """Get the global repository manager instance."""
     return repo_manager
-
-
-def get_pull_scheduler():
-    """Get the global pull scheduler instance."""
-    return pull_scheduler
-
-
-def start_pull_scheduler():
-    """Start the background pull scheduler if pull is enabled."""
-    if pull_scheduler:
-        pull_scheduler.start()
-
-
-def stop_pull_scheduler():
-    """Stop the background pull scheduler."""
-    if pull_scheduler:
-        pull_scheduler.stop()
-
-
-def restart_pull_scheduler():
-    """Restart the pull scheduler (used when configuration changes)."""
-    if pull_scheduler:
-        pull_scheduler.restart()

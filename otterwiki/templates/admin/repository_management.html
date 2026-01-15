@@ -20,9 +20,9 @@
     <div class="form-group">
       <div class="custom-checkbox">
         <input {%if config.GIT_REMOTE_PUSH_ENABLED %}checked=checked{% endif %} type="checkbox" id="git_remote_push_enabled" name="git_remote_push_enabled" value="True">
-        <label for="git_remote_push_enabled">Enable automatic pushing to SSH remote <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
+        <label for="git_remote_push_enabled">Enable pushing to SSH remote <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
         <div class="mt-5">
-            Enable this to automatically push all changes to a remote git repository via SSH.
+            Enable this to automatically push all changes to a remote git repository via SSH on every wiki content change.
         </div>
       </div>
 
@@ -58,9 +58,9 @@
     <div class="form-group">
       <div class="custom-checkbox">
         <input {%if config.GIT_REMOTE_PULL_ENABLED %}checked=checked{% endif %} type="checkbox" id="git_remote_pull_enabled" name="git_remote_pull_enabled" value="True">
-        <label for="git_remote_pull_enabled">Enable automatic pulling from SSH remote <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
+        <label for="git_remote_pull_enabled">Enable pulling from SSH remote <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
         <div class="mt-5">
-            Enable this to automatically pull changes from a remote git repository via SSH.
+            Enable this to automatically pull changes from a remote git repository via SSH by triggering a webhook URL.
         </div>
       </div>
 
@@ -88,14 +88,6 @@
                   Optional SSH private key for authentication. Leave empty if the server doesn't require authentication or it's being handled externally.
                   The key will be stored internally and never displayed after saving.
                   However, for security purposes <strong>it's highly recommended to create a key specifically to access the defined remote</strong> and nothing else.
-              </div>
-          </div>
-
-          <div class="form-group">
-              <label for="git_remote_pull_interval" class="required">Pull interval (in minutes, 0 to disable)</label>
-              <input name="git_remote_pull_interval" type="number" min="0" placeholder="60" class="form-control" id="git_remote_pull_interval" value="{{ config.GIT_REMOTE_PULL_INTERVAL or "" }}">
-              <div class="form-text">
-                  How often to automatically pull from the remote repository. Set to 0 to disable automatic pulling (webhook only).
               </div>
           </div>
 

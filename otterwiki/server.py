@@ -312,7 +312,6 @@ githttpserver = otterwiki.remote.GitHttpServer(path=app.config["REPOSITORY"])
 import otterwiki.repomgmt
 
 otterwiki.repomgmt.initialize_repo_management(storage)
-otterwiki.repomgmt.start_pull_scheduler()
 
 # contains application routes,
 # using side-effect of import executing the file to get
