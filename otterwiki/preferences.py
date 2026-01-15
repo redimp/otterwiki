@@ -251,62 +251,37 @@ def handle_repository_management(form):
 
     if git_remote_pull_enabled:
         pull_remote_url = form.get("git_remote_pull_url", "").strip()
-        pull_interval = form.get("git_remote_pull_interval", "").strip()
 
         if not pull_remote_url:
             # remote url is missing - disable the feature and show error
             _update_preference("GIT_REMOTE_PULL_ENABLED", "False")
             _update_preference("GIT_REMOTE_PULL_PRIVATE_KEY", "")
             _update_preference("GIT_REMOTE_PULL_URL", "")
-            _update_preference("GIT_REMOTE_PULL_INTERVAL", "")
             toast(
                 "SSH Remote URL is required when enabling automatic pulling.",
                 "error",
             )
         else:
-            try:
-                interval_minutes = int(pull_interval) if pull_interval else 0
-                if interval_minutes < 0:
-                    raise ValueError
-            except (ValueError, TypeError):
-                _update_preference("GIT_REMOTE_PULL_ENABLED", "False")
-                _update_preference("GIT_REMOTE_PULL_PRIVATE_KEY", "")
-                _update_preference("GIT_REMOTE_PULL_URL", "")
-                _update_preference("GIT_REMOTE_PULL_INTERVAL", "")
-                toast(
-                    "Pull interval must be a valid number (0 or greater).",
-                    "error",
-                )
-            else:
-                _update_preference("GIT_REMOTE_PULL_ENABLED", "True")
-                _update_preference("GIT_REMOTE_PULL_URL", pull_remote_url)
-                _update_preference(
-                    "GIT_REMOTE_PULL_INTERVAL", str(interval_minutes)
-                )
+            _update_preference("GIT_REMOTE_PULL_ENABLED", "True")
+            _update_preference("GIT_REMOTE_PULL_URL", pull_remote_url)
 
-                pull_private_key = form.get(
-                    "git_remote_pull_private_key", ""
-                ).strip()
-                if pull_private_key != "**********":
-                    # only update if it's not the placeholder (user wants to change it)
-                    _update_preference(
-                        "GIT_REMOTE_PULL_PRIVATE_KEY", pull_private_key
-                    )
+            pull_private_key = form.get(
+                "git_remote_pull_private_key", ""
+            ).strip()
+            if pull_private_key != "**********":
+                # only update if it's not the placeholder (user wants to change it)
+                _update_preference(
+                    "GIT_REMOTE_PULL_PRIVATE_KEY", pull_private_key
+                )
     else:
         # clear the feature and associated settings
         _update_preference("GIT_REMOTE_PULL_ENABLED", "False")
         _update_preference("GIT_REMOTE_PULL_PRIVATE_KEY", "")
         _update_preference("GIT_REMOTE_PULL_URL", "")
-        _update_preference("GIT_REMOTE_PULL_INTERVAL", "")
 
     # commit changes to the database
     db.session.commit()
     update_app_config()
-
-    # restart pull scheduler if configuration changed
-    from otterwiki.repomgmt import restart_pull_scheduler
-
-    restart_pull_scheduler()
 
     toast("Repository Management Preferences updated.")
     return redirect(url_for("admin_repository_management"))
