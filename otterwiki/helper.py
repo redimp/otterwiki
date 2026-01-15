@@ -396,3 +396,70 @@ def load_custom_html(filename: str):
             f"Failed to load custom HTML file {filename} from {custom_file_path}: {e}"
         )
     return ""
+
+
+def get_admin_emails():
+    """Get email addresses of all admin users."""
+    from otterwiki.auth import get_all_user
+
+    admin_emails = []
+    try:
+        all_users = get_all_user()
+        admin_emails = [
+            user.email for user in all_users if user.is_admin and user.email
+        ]
+    except Exception as e:
+        app.logger.error(f"Failed to get admin emails: {e}")
+
+    return admin_emails
+
+
+def send_repository_error_notification(
+    operation_type, error_message, remote_url
+):
+    """
+    Send email notification to all admins about repository operation errors.
+
+    :param operation_type: Type of operation (e.g., "Auto Push", "Auto Pull", "Webhook Pull")
+    :param error_message: The error message to include
+    :param remote_url: The remote URL that failed
+    """
+    try:
+        admin_emails = get_admin_emails()
+        if not admin_emails:
+            app.logger.warning(
+                "No admin emails found for repository error notification"
+            )
+            return
+
+        subject = f"OtterWiki Repository Error - {operation_type} Failed"
+
+        # Create email body
+        body_lines = [
+            f"A repository operation has failed in your OtterWiki instance.",
+            f"",
+            f"Operation: {operation_type}",
+            f"Remote URL: {remote_url}",
+            f"Error: {error_message}",
+            f"",
+            f"Please check your repository configuration and network connectivity.",
+            f"",
+            f"This notification was sent because automatic repository operations are enabled.",
+            f"Manual operations from the Repository Management page do not trigger notifications.",
+        ]
+
+        text_body = "\n".join(body_lines)
+
+        send_mail(
+            subject=subject,
+            recipients=admin_emails,
+            text_body=text_body,
+            _async=True,
+        )
+
+        app.logger.info(
+            f"Repository error notification sent to {len(admin_emails)} admin(s) for {operation_type}"
+        )
+
+    except Exception as e:
+        app.logger.error(f"Failed to send repository error notification: {e}")
