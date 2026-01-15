@@ -7,10 +7,13 @@ This directory contains a complete Rust/Axum rewrite of the Python/Flask-based O
 ## 🗂️ Documentation Files
 
 ### Getting Started
+- **[QUICKSTART.md](QUICKSTART.md)** - ⚡ Get running in 5 minutes!
+- **[DATABASE_SETUP.md](DATABASE_SETUP.md)** - 📊 Database creation guide
 - **[BUILD_RUST.md](BUILD_RUST.md)** - Quick start guide and build instructions
 - **[README_RUST.md](README_RUST.md)** - Main documentation for the Rust version
 - **[settings.toml.example](settings.toml.example)** - Configuration file example
 - **[.env.example](.env.example)** - Environment variables example
+- **[setup.sh](setup.sh)** - 🚀 Automated setup script
 
 ### Technical Documentation
 - **[RUST_REWRITE_SUMMARY.md](RUST_REWRITE_SUMMARY.md)** - Complete technical overview
