@@ -1,22 +1,19 @@
 use axum::{
-    extract::State,
-    response::{IntoResponse, Response},
+    response::IntoResponse,
 };
 
-use crate::state::AppState;
-
-pub async fn admin_panel(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn admin_panel() -> impl IntoResponse {
     "Admin panel"
 }
 
-pub async fn handle_admin(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn handle_admin() -> impl IntoResponse {
     "Handle admin"
 }
 
-pub async fn user_management(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn user_management() -> impl IntoResponse {
     "User management"
 }
 
-pub async fn handle_user_management(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn handle_user_management() -> impl IntoResponse {
     "Handle user management"
 }

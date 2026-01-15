@@ -1,16 +1,11 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, State},
     response::{Html, IntoResponse, Redirect, Response},
     Form,
 };
 use serde::Deserialize;
 
 use crate::{error::AppError, markdown::MarkdownRenderer, state::AppState, utils::sanitize_pagename};
-
-#[derive(Deserialize)]
-pub struct SearchQuery {
-    q: Option<String>,
-}
 
 #[derive(Deserialize)]
 pub struct PageForm {
@@ -88,7 +83,7 @@ pub async fn save_page(
     state.storage.store(
         &filename,
         &form.content,
-        "Anonymous", // TODO: Get from session
+        "Anonymous",
         "",
         &message,
     )?;
@@ -99,7 +94,7 @@ pub async fn save_page(
 pub async fn page_history(
     State(state): State<AppState>,
     Path(page): Path<String>,
-) -> Result<Response, AppError> {
+) -> Result<Html<String>, AppError> {
     let pagename = sanitize_pagename(&page, state.config.retain_page_name_case);
     let filename = format!("{}.md", pagename);
     
@@ -117,7 +112,7 @@ pub async fn page_history(
     }
     html.push_str("</ul>");
     
-    Ok(Html(html).into_response())
+    Ok(Html(html))
 }
 
 pub async fn page_index(State(state): State<AppState>) -> Result<Response, AppError> {
@@ -150,10 +145,7 @@ pub async fn changelog(State(state): State<AppState>) -> Result<Response, AppErr
     Ok(Html(html).into_response())
 }
 
-pub async fn search(
-    State(state): State<AppState>,
-    Query(query): Query<SearchQuery>,
-) -> impl IntoResponse {
+pub async fn search() -> impl IntoResponse {
     Html("<h1>Search</h1><p>Search functionality not yet implemented</p>")
 }
 
@@ -161,10 +153,7 @@ pub async fn create_page() -> impl IntoResponse {
     Html("<h1>Create Page</h1><p>Create page functionality not yet implemented</p>")
 }
 
-pub async fn attachments(
-    State(state): State<AppState>,
-    Path(page): Path<String>,
-) -> impl IntoResponse {
+pub async fn attachments() -> impl IntoResponse {
     Html("<h1>Attachments</h1><p>Attachments not yet implemented</p>")
 }
 

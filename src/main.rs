@@ -11,7 +11,7 @@ mod templates;
 mod utils;
 
 use axum::{
-    routing::{get, post},
+    routing::get,
     Router,
 };
 use std::net::SocketAddr;

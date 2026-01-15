@@ -1,16 +1,15 @@
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
 };
 use axum::{
     extract::State,
-    http::StatusCode,
     response::{IntoResponse, Redirect, Response},
     Form,
 };
 use chrono::Utc;
+use rand_core::OsRng;
 use serde::Deserialize;
-use sqlx::SqlitePool;
 
 use crate::{error::AppError, models::User, state::AppState};
 
@@ -80,7 +79,7 @@ pub async fn register(
     
     let password_hash = hash_password(&form.password)?;
     
-    let result = sqlx::query(
+    let _result = sqlx::query(
         "INSERT INTO user (name, email, password_hash, first_seen, last_seen, is_approved, is_admin, email_confirmed, allow_read, allow_write, allow_upload) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     )

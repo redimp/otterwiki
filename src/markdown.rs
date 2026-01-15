@@ -1,6 +1,5 @@
 use pulldown_cmark::{html, Options, Parser};
 use syntect::highlighting::ThemeSet;
-use syntect::html::highlighted_html_for_string;
 use syntect::parsing::SyntaxSet;
 
 pub struct MarkdownRenderer {
@@ -28,17 +27,6 @@ impl MarkdownRenderer {
         html::push_html(&mut html_output, parser);
         
         html_output
-    }
-    
-    pub fn render_code(&self, code: &str, language: &str) -> String {
-        let syntax = self.syntax_set
-            .find_syntax_by_extension(language)
-            .unwrap_or_else(|| self.syntax_set.find_syntax_plain_text());
-        
-        let theme = &self.theme_set.themes["base16-ocean.dark"];
-        
-        highlighted_html_for_string(code, &self.syntax_set, syntax, theme)
-            .unwrap_or_else(|_| format!("<pre><code>{}</code></pre>", html_escape::encode_text(code)))
     }
 }
 

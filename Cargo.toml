@@ -24,6 +24,7 @@ sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono"
 
 # Authentication
 argon2 = "0.5"
+rand_core = { version = "0.6", features = ["getrandom"] }
 jsonwebtoken = "9"
 uuid = { version = "1", features = ["v4", "serde"] }
 
@@ -40,7 +41,7 @@ serde_json = "1"
 toml = "0.8"
 
 # Email
-lettre = { version = "0.11", features = ["tokio1", "tokio1-rustls-tls"] }
+lettre = { version = "0.11", default-features = false, features = ["tokio1", "tokio1-rustls-tls", "smtp-transport", "builder"] }
 
 # Utilities
 chrono = { version = "0.4", features = ["serde"] }

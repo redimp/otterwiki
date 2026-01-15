@@ -1,12 +1,13 @@
 use anyhow::{anyhow, Result};
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{TimeZone, Utc};
 use git2::{Commit, ObjectType, Oid, Repository, Signature};
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 
 use crate::models::{ChangelogEntry, PageHistory};
 
 pub struct GitStorage {
-    repo: Repository,
+    repo: Mutex<Repository>,
     path: PathBuf,
 }
 
@@ -20,7 +21,10 @@ impl GitStorage {
             Repository::init(&path)?
         };
         
-        Ok(Self { repo, path })
+        Ok(Self { 
+            repo: Mutex::new(repo),
+            path 
+        })
     }
     
     pub fn exists(&self, filename: &str) -> bool {
@@ -42,11 +46,12 @@ impl GitStorage {
     }
     
     fn load_from_revision(&self, filename: &str, revision: &str) -> Result<String> {
+        let repo = self.repo.lock().unwrap();
         let oid = Oid::from_str(revision)?;
-        let commit = self.repo.find_commit(oid)?;
+        let commit = repo.find_commit(oid)?;
         let tree = commit.tree()?;
         let entry = tree.get_path(Path::new(filename))?;
-        let object = entry.to_object(&self.repo)?;
+        let object = entry.to_object(&repo)?;
         
         if object.kind() != Some(ObjectType::Blob) {
             return Err(anyhow!("Not a file: {}", filename));
@@ -76,23 +81,24 @@ impl GitStorage {
         std::fs::write(&file_path, content)?;
         
         // Git operations
-        let mut index = self.repo.index()?;
+        let repo = self.repo.lock().unwrap();
+        let mut index = repo.index()?;
         index.add_path(Path::new(filename))?;
         index.write()?;
         
         let tree_id = index.write_tree()?;
-        let tree = self.repo.find_tree(tree_id)?;
+        let tree = repo.find_tree(tree_id)?;
         
         let signature = Signature::now(author_name, author_email)?;
         
-        let parent_commit = self.get_head_commit();
+        let parent_commit = repo.head().ok().and_then(|h| h.peel_to_commit().ok());
         let parents = if let Some(ref commit) = parent_commit {
             vec![commit]
         } else {
             vec![]
         };
         
-        let oid = self.repo.commit(
+        let oid = repo.commit(
             Some("HEAD"),
             &signature,
             &signature,
@@ -117,23 +123,24 @@ impl GitStorage {
             std::fs::remove_file(&file_path)?;
         }
         
-        let mut index = self.repo.index()?;
+        let repo = self.repo.lock().unwrap();
+        let mut index = repo.index()?;
         index.remove_path(Path::new(filename))?;
         index.write()?;
         
         let tree_id = index.write_tree()?;
-        let tree = self.repo.find_tree(tree_id)?;
+        let tree = repo.find_tree(tree_id)?;
         
         let signature = Signature::now(author_name, author_email)?;
         
-        let parent_commit = self.get_head_commit();
+        let parent_commit = repo.head().ok().and_then(|h| h.peel_to_commit().ok());
         let parents = if let Some(ref commit) = parent_commit {
             vec![commit]
         } else {
             vec![]
         };
         
-        let oid = self.repo.commit(
+        let oid = repo.commit(
             Some("HEAD"),
             &signature,
             &signature,
@@ -146,7 +153,8 @@ impl GitStorage {
     }
     
     pub fn list_pages(&self) -> Result<Vec<String>> {
-        let head = self.repo.head()?;
+        let repo = self.repo.lock().unwrap();
+        let head = repo.head()?;
         let tree = head.peel_to_tree()?;
         
         let mut pages = Vec::new();
@@ -156,6 +164,7 @@ impl GitStorage {
     }
     
     fn collect_md_files(&self, tree: &git2::Tree, prefix: &str, pages: &mut Vec<String>) -> Result<()> {
+        let repo = self.repo.lock().unwrap();
         for entry in tree.iter() {
             let name = entry.name().unwrap_or("");
             let path = if prefix.is_empty() {
@@ -164,7 +173,7 @@ impl GitStorage {
                 format!("{}/{}", prefix, name)
             };
             
-            if let Some(obj) = entry.to_object(&self.repo).ok() {
+            if let Some(obj) = entry.to_object(&repo).ok() {
                 match obj.kind() {
                     Some(ObjectType::Tree) => {
                         if let Some(subtree) = obj.as_tree() {
@@ -185,14 +194,15 @@ impl GitStorage {
     }
     
     pub fn get_page_history(&self, filename: &str, limit: usize) -> Result<Vec<PageHistory>> {
-        let mut revwalk = self.repo.revwalk()?;
+        let repo = self.repo.lock().unwrap();
+        let mut revwalk = repo.revwalk()?;
         revwalk.push_head()?;
         
         let mut history = Vec::new();
         
         for oid in revwalk {
             let oid = oid?;
-            let commit = self.repo.find_commit(oid)?;
+            let commit = repo.find_commit(oid)?;
             
             if self.commit_affects_file(&commit, filename)? {
                 history.push(PageHistory {
@@ -213,14 +223,15 @@ impl GitStorage {
     }
     
     pub fn get_changelog(&self, limit: usize) -> Result<Vec<ChangelogEntry>> {
-        let mut revwalk = self.repo.revwalk()?;
+        let repo = self.repo.lock().unwrap();
+        let mut revwalk = repo.revwalk()?;
         revwalk.push_head()?;
         
         let mut changelog = Vec::new();
         
         for oid in revwalk.take(limit) {
             let oid = oid?;
-            let commit = self.repo.find_commit(oid)?;
+            let commit = repo.find_commit(oid)?;
             
             changelog.push(ChangelogEntry {
                 revision: oid.to_string(),
@@ -250,6 +261,7 @@ impl GitStorage {
     }
     
     fn collect_all_files(&self, tree: &git2::Tree, prefix: &str, files: &mut Vec<String>) -> Result<()> {
+        let repo = self.repo.lock().unwrap();
         for entry in tree.iter() {
             let name = entry.name().unwrap_or("");
             let path = if prefix.is_empty() {
@@ -258,7 +270,7 @@ impl GitStorage {
                 format!("{}/{}", prefix, name)
             };
             
-            if let Some(obj) = entry.to_object(&self.repo).ok() {
+            if let Some(obj) = entry.to_object(&repo).ok() {
                 match obj.kind() {
                     Some(ObjectType::Tree) => {
                         if let Some(subtree) = obj.as_tree() {
@@ -274,11 +286,5 @@ impl GitStorage {
         }
         
         Ok(())
-    }
-    
-    fn get_head_commit(&self) -> Option<Commit> {
-        self.repo.head()
-            .ok()
-            .and_then(|head| head.peel_to_commit().ok())
     }
 }
