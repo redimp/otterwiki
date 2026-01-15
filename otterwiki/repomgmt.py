@@ -215,13 +215,28 @@ class RepositoryManager:
                 app.logger.debug(
                     "[RepositoryManager] push_to_remote_async() started"
                 )
-                self.push_to_remote(remote_url, private_key)
+                success, output = self.push_to_remote(remote_url, private_key)
+                if not success:
+                    # Send error notification for failed automatic push
+                    from otterwiki.helper import (
+                        send_repository_error_notification,
+                    )
+
+                    send_repository_error_notification(
+                        "Auto Push", output, remote_url
+                    )
         except Exception as e:
             try:
                 from otterwiki.server import app
 
                 app.logger.error(
                     f"[RepositoryManager] push_to_remote_async() failed: {e}"
+                )
+                # Send error notification for exception in automatic push
+                from otterwiki.helper import send_repository_error_notification
+
+                send_repository_error_notification(
+                    "Auto Push", str(e), remote_url
                 )
             except ImportError:
                 pass
@@ -237,13 +252,30 @@ class RepositoryManager:
                 app.logger.debug(
                     "[RepositoryManager] pull_from_remote_async() started"
                 )
-                self.pull_from_remote(remote_url, private_key)
+                success, output = self.pull_from_remote(
+                    remote_url, private_key
+                )
+                if not success:
+                    # Send error notification for failed automatic pull
+                    from otterwiki.helper import (
+                        send_repository_error_notification,
+                    )
+
+                    send_repository_error_notification(
+                        "Auto Pull", output, remote_url
+                    )
         except Exception as e:
             try:
                 from otterwiki.server import app
 
                 app.logger.error(
                     f"[RepositoryManager] pull_from_remote_async() failed: {e}"
+                )
+                # Send error notification for exception in automatic pull
+                from otterwiki.helper import send_repository_error_notification
+
+                send_repository_error_notification(
+                    "Auto Pull", str(e), remote_url
                 )
             except ImportError:
                 pass
