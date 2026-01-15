@@ -39,6 +39,19 @@ def test_slugigy():
     assert slugify("a b c") == "a-b-c"
     assert slugify("a    b") == "a-b"
     assert slugify("äüöÄÜÖß") == "auoauo"
+    # test keep_slashes=True for use with pagepath
+    assert slugify("abc", keep_slashes=True) == "abc"
+    assert (
+        slugify("Some Random Sub/with/A page", keep_slashes=True)
+        == "some-random-sub/with/a-page"
+    )
+    assert (
+        slugify("Multiple    Spaces", keep_slashes=True) == "multiple-spaces"
+    )
+    assert (
+        slugify("With Trailing Slash", keep_slashes=True)
+        == "with-trailing-slash"
+    )
 
 
 def test_split_path():

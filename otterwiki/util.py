@@ -45,10 +45,19 @@ def sizeof_fmt(num, suffix="B"):
 
 
 # from https://github.com/Python-Markdown/markdown/blob/master/markdown/extensions/toc.py
-def slugify(value, separator="-"):
+def slugify(value, separator="-", keep_slashes=False):
     """Slugify a string, to make it URL friendly."""
-    value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore")
-    value = re.sub(r"[^\w\s-]", "", value.decode("ascii")).strip().lower()
+    value = (
+        unicodedata.normalize("NFKD", value)
+        .encode("ascii", "ignore")
+        .decode("ascii")
+        .strip()
+        .lower()
+    )
+    if keep_slashes:
+        value = re.sub(r"[^\w\s\-/]", "", value)
+    else:
+        value = re.sub(r"[^\w\s\-]", "", value)
     return re.sub(r"[%s\s]+" % separator, separator, value)
 
 
