@@ -1,0 +1,50 @@
+# Example configuration file for Otterwiki (Rust)
+
+# Server configuration
+port = 8080
+debug = false
+
+# Repository path (required)
+repository = "/app-data/repository"
+
+# Secret key for session management (required, change this!)
+secret_key = "CHANGE_ME_TO_A_RANDOM_STRING_AT_LEAST_16_CHARS"
+
+# Site configuration
+site_name = "An Otter Wiki"
+site_description = "A collaborative wiki powered by git"
+site_lang = "en"
+hide_logo = false
+
+# Access control
+read_access = "ANONYMOUS"      # ANONYMOUS, REGISTERED, or APPROVED
+write_access = "ANONYMOUS"     # ANONYMOUS, REGISTERED, or APPROVED
+attachment_access = "ANONYMOUS" # ANONYMOUS, REGISTERED, or APPROVED
+
+# Registration settings
+disable_registration = false
+auto_approval = true
+email_needs_confirmation = true
+
+# Page settings
+retain_page_name_case = false
+commit_message = "REQUIRED"  # REQUIRED, OPTIONAL, or DISABLED
+
+# Database
+database_url = "sqlite://otterwiki.db"
+
+# Git web server (experimental)
+git_web_server = false
+
+# Robots.txt
+robots_txt = "allow"  # allow or disallow
+
+# Mail configuration (optional)
+[mail_config]
+server = ""
+port = 587
+username = ""
+password = ""
+use_tls = true
+use_ssl = false
+default_sender = "otterwiki@example.com"

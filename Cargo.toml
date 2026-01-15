@@ -1,0 +1,64 @@
+[package]
+name = "otterwiki-rust"
+version = "2.0.0"
+edition = "2021"
+authors = ["Ralph Thesen <mail@redimp.de>"]
+description = "An Otter Wiki - Rust/Axum rewrite of the Python-based collaborative wiki"
+license = "MIT"
+repository = "https://github.com/redimp/otterwiki"
+
+[dependencies]
+# Web framework
+axum = { version = "0.7", features = ["macros", "multipart"] }
+tokio = { version = "1", features = ["full"] }
+tower = { version = "0.4", features = ["util"] }
+tower-http = { version = "0.5", features = ["fs", "trace", "compression-full", "cors"] }
+hyper = { version = "1.0", features = ["full"] }
+
+# Templating
+askama = { version = "0.12", features = ["with-axum"] }
+askama_axum = "0.4"
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono", "migrate"] }
+
+# Authentication
+argon2 = "0.5"
+jsonwebtoken = "9"
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# Git
+git2 = "0.18"
+
+# Markdown rendering
+pulldown-cmark = { version = "0.9", default-features = false }
+syntect = "5"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# Email
+lettre = { version = "0.11", features = ["tokio1", "tokio1-rustls-tls"] }
+
+# Utilities
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+regex = "1"
+url = "2"
+mime = "0.3"
+mime_guess = "2"
+bytes = "1"
+image = "0.24"
+
+# Config
+config = "0.14"
+dotenv = "0.15"
+
+[dev-dependencies]
+reqwest = { version = "0.11", features = ["json"] }
+tempfile = "3"

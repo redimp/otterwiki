@@ -1,0 +1,111 @@
+# Makefile for Otterwiki Rust
+
+.PHONY: help build run test clean dev docker-build docker-run install check format lint
+
+help: ## Show this help message
+	@echo "Otterwiki Rust - Available targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+build: ## Build release binary
+	cargo build --release
+
+run: ## Run in release mode
+	cargo run --release
+
+dev: ## Run in development mode with auto-reload (requires cargo-watch)
+	cargo watch -x run
+
+test: ## Run tests
+	cargo test
+
+check: ## Check code without building
+	cargo check
+
+format: ## Format code
+	cargo fmt
+
+lint: ## Run clippy linter
+	cargo clippy -- -D warnings
+
+clean: ## Clean build artifacts
+	cargo clean
+	rm -rf target/
+
+install: ## Install binary to ~/.cargo/bin
+	cargo install --path .
+
+docker-build: ## Build Docker image
+	docker build -f Dockerfile.rust -t otterwiki-rust:latest .
+
+docker-run: ## Run Docker container
+	docker run -p 8080:8080 -v $(PWD)/app-data:/app-data otterwiki-rust:latest
+
+docker-compose-up: ## Start with docker-compose
+	docker-compose -f docker-compose.rust.yml up -d
+
+docker-compose-down: ## Stop docker-compose
+	docker-compose -f docker-compose.rust.yml down
+
+setup-dev: ## Setup development environment
+	rustup component add clippy rustfmt
+	cargo install cargo-watch
+
+init-repo: ## Initialize git repository for testing
+	mkdir -p app-data/repository
+	cd app-data/repository && git init
+
+setup-config: ## Create settings.toml from example
+	cp settings.toml.example settings.toml
+	@echo "⚠️  Remember to edit settings.toml and set your secret_key!"
+
+bench: ## Run benchmarks (requires nightly)
+	cargo +nightly bench
+
+coverage: ## Generate code coverage (requires tarpaulin)
+	cargo tarpaulin --out Html
+
+bloat: ## Analyze binary size (requires cargo-bloat)
+	cargo bloat --release -n 20
+
+audit: ## Check dependencies for security vulnerabilities
+	cargo audit
+
+update: ## Update dependencies
+	cargo update
+
+outdated: ## Check for outdated dependencies
+	cargo outdated
+
+tree: ## Show dependency tree
+	cargo tree
+
+all: format lint test build ## Run format, lint, test, and build
+
+release: ## Build optimized release with all checks
+	cargo fmt --check
+	cargo clippy -- -D warnings
+	cargo test
+	cargo build --release
+	@echo "✅ Release build complete: target/release/otterwiki"
+
+# Deployment targets
+deploy-binary: release ## Build and strip binary for deployment
+	strip target/release/otterwiki
+	ls -lh target/release/otterwiki
+
+cross-compile-musl: ## Cross-compile for musl (static binary)
+	rustup target add x86_64-unknown-linux-musl
+	cargo build --release --target x86_64-unknown-linux-musl
+
+# Database migrations
+migrate: ## Run database migrations
+	sqlx migrate run
+
+migrate-revert: ## Revert last migration
+	sqlx migrate revert
+
+# Quick start
+quickstart: setup-config init-repo ## Quick setup for first-time users
+	@echo "✅ Quick setup complete!"
+	@echo "📝 Edit settings.toml and set your secret_key"
+	@echo "🚀 Run 'make run' to start the server"

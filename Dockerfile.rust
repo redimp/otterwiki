@@ -1,0 +1,48 @@
+# Multi-stage build for smaller final image
+FROM rust:1.75-alpine as builder
+
+# Install build dependencies
+RUN apk add --no-cache musl-dev openssl-dev
+
+WORKDIR /app
+
+# Copy manifests
+COPY Cargo.toml Cargo.lock ./
+
+# Build dependencies (cached layer)
+RUN mkdir src && \
+    echo "fn main() {}" > src/main.rs && \
+    cargo build --release && \
+    rm -rf src
+
+# Copy source code
+COPY src ./src
+COPY migrations ./migrations
+COPY templates ./templates
+
+# Build the application
+RUN cargo build --release
+
+# Runtime stage
+FROM alpine:latest
+
+RUN apk add --no-cache libgcc
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/target/release/otterwiki-rust /usr/local/bin/otterwiki
+
+# Create data directory
+RUN mkdir -p /app-data/repository
+
+# Environment variables
+ENV OTTERWIKI_REPOSITORY=/app-data/repository
+ENV OTTERWIKI_DATABASE_URL=sqlite:///app-data/otterwiki.db
+ENV OTTERWIKI_PORT=8080
+
+EXPOSE 8080
+
+VOLUME ["/app-data"]
+
+CMD ["otterwiki"]

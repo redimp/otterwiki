@@ -1,0 +1,15 @@
+services:
+  otterwiki-rust:
+    build:
+      context: .
+      dockerfile: Dockerfile.rust
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./app-data:/app-data
+    environment:
+      - OTTERWIKI_SECRET_KEY=${SECRET_KEY:-CHANGE_ME_PLEASE}
+      - OTTERWIKI_SITE_NAME=An Otter Wiki (Rust)
+      - OTTERWIKI_READ_ACCESS=ANONYMOUS
+      - OTTERWIKI_WRITE_ACCESS=ANONYMOUS
