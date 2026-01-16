@@ -49,8 +49,8 @@ def test_slugigy():
         slugify("Multiple    Spaces", keep_slashes=True) == "multiple-spaces"
     )
     assert (
-        slugify("With Trailing Slash", keep_slashes=True)
-        == "with-trailing-slash"
+        slugify("With Trailing Slash/", keep_slashes=True)
+        == "with-trailing-slash/"
     )
 
 
