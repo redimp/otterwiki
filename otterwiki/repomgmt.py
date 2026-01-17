@@ -306,6 +306,10 @@ class RepositoryManager:
             )
             thr.start()
 
+            # while testing wait for the thread to finish
+            if app.config['TESTING']:
+                thr.join()
+
         except Exception as e:
             try:
                 from otterwiki.server import app
