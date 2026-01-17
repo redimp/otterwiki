@@ -88,8 +88,9 @@ envlist = py3{11,12,13}
 isolated_build = True
 [testenv]
 deps = pytest
+changedir = tests
 commands =
-    pytest tests
+    pytest {posargs}
 """
 
 [tool.pytest.ini_options]
