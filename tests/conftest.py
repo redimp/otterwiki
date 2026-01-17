@@ -41,6 +41,9 @@ def create_app(tmpdir):
     app.config["TESTING"] = True
     app.config["DEBUG"] = True
     yield app
+    # make sure GIT_REMOTE_*_ENABLED is false to avoid weird side effects
+    app.config["GIT_REMOTE_PULL_ENABLED"] = False
+    app.config["GIT_REMOTE_PUSH_ENABLED"] = False
 
 
 @pytest.fixture
