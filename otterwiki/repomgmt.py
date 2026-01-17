@@ -4,7 +4,7 @@
 import os
 import tempfile
 import stat
-from threading import Thread
+from threading import Thread, Lock
 
 
 class RepositoryManager:
@@ -12,6 +12,8 @@ class RepositoryManager:
     Repository management functionality for Git operations including
     push/pull operations, SSH key management, and periodic pull scheduling.
     """
+
+    git_push_pull_Lock = Lock()
 
     def __init__(self, storage):
         """Initialize with a GitStorage instance."""
@@ -116,51 +118,54 @@ class RepositoryManager:
         if not remote_url:
             return False, "No remote URL provided"
 
-        key_path, original_ssh_command, original_ssh_auth_sock = (
-            self._setup_ssh_environment(private_key)
-        )
-
-        try:
-            from otterwiki.server import app
-
-            try:
-                current_branch = self.storage.repo.active_branch.name
-            except TypeError:
-                # if there is no current branch we should probably just stop
-                return False, "No active branch found"
-
-            action_type = "Force push" if force else "Push"
-            app.logger.info(
-                f"[RepositoryManager] {action_type} to remote: {remote_url}"
+        with self.git_push_pull_Lock:
+            key_path, original_ssh_command, original_ssh_auth_sock = (
+                self._setup_ssh_environment(private_key)
             )
 
-            if force:
-                result = self.storage.repo.git.push(
-                    remote_url, current_branch, force=True
-                )
-            else:
-                result = self.storage.repo.git.push(remote_url, current_branch)
-
-            if result:
-                app.logger.info(
-                    f"[RepositoryManager] {action_type} result: {result}"
-                )
-            return True, result or f"{action_type} completed successfully"
-
-        except Exception as e:
             try:
                 from otterwiki.server import app
 
-                app.logger.error(
-                    f"[RepositoryManager] Push to remote failed: {e}"
+                try:
+                    current_branch = self.storage.repo.active_branch.name
+                except TypeError:
+                    # if there is no current branch we should probably just stop
+                    return False, "No active branch found"
+
+                action_type = "Force push" if force else "Push"
+                app.logger.info(
+                    f"[RepositoryManager] {action_type} to remote: {remote_url}"
                 )
-            except ImportError:
-                pass
-            return False, str(e)
-        finally:
-            self._restore_ssh_environment(
-                key_path, original_ssh_command, original_ssh_auth_sock
-            )
+
+                if force:
+                    result = self.storage.repo.git.push(
+                        remote_url, current_branch, force=True
+                    )
+                else:
+                    result = self.storage.repo.git.push(
+                        remote_url, current_branch
+                    )
+
+                if result:
+                    app.logger.info(
+                        f"[RepositoryManager] {action_type} result: {result}"
+                    )
+                return True, result or f"{action_type} completed successfully"
+
+            except Exception as e:
+                try:
+                    from otterwiki.server import app
+
+                    app.logger.error(
+                        f"[RepositoryManager] Push to remote failed: {e}"
+                    )
+                except ImportError:
+                    pass
+                return False, str(e)
+            finally:
+                self._restore_ssh_environment(
+                    key_path, original_ssh_command, original_ssh_auth_sock
+                )
 
     def pull_from_remote(self, remote_url, private_key=None):
         """
@@ -170,41 +175,44 @@ class RepositoryManager:
         if not remote_url:
             return False, "No remote URL provided"
 
-        key_path, original_ssh_command, original_ssh_auth_sock = (
-            self._setup_ssh_environment(private_key)
-        )
-
-        try:
-            from otterwiki.server import app
-
-            try:
-                current_branch = self.storage.repo.active_branch.name
-            except TypeError:
-                # if there is no current branch we should probably just stop
-                return False, "No active branch found"
-
-            app.logger.info(
-                f"[RepositoryManager] Pulling from remote: {remote_url}"
+        with self.git_push_pull_Lock:
+            key_path, original_ssh_command, original_ssh_auth_sock = (
+                self._setup_ssh_environment(private_key)
             )
-            result = self.storage.repo.git.pull(remote_url, current_branch)
-            if result:
-                app.logger.info(f"[RepositoryManager] Pull result: {result}")
-            return True, result or "Pull completed successfully"
 
-        except Exception as e:
             try:
                 from otterwiki.server import app
 
-                app.logger.error(
-                    f"[RepositoryManager] Pull from remote failed: {e}"
+                try:
+                    current_branch = self.storage.repo.active_branch.name
+                except TypeError:
+                    # if there is no current branch we should probably just stop
+                    return False, "No active branch found"
+
+                app.logger.info(
+                    f"[RepositoryManager] Pulling from remote: {remote_url}"
                 )
-            except ImportError:
-                pass
-            return False, str(e)
-        finally:
-            self._restore_ssh_environment(
-                key_path, original_ssh_command, original_ssh_auth_sock
-            )
+                result = self.storage.repo.git.pull(remote_url, current_branch)
+                if result:
+                    app.logger.info(
+                        f"[RepositoryManager] Pull result: {result}"
+                    )
+                return True, result or "Pull completed successfully"
+
+            except Exception as e:
+                try:
+                    from otterwiki.server import app
+
+                    app.logger.error(
+                        f"[RepositoryManager] Pull from remote failed: {e}"
+                    )
+                except ImportError:
+                    pass
+                return False, str(e)
+            finally:
+                self._restore_ssh_environment(
+                    key_path, original_ssh_command, original_ssh_auth_sock
+                )
 
     def push_to_remote_async(self, remote_url, private_key=None):
         """
