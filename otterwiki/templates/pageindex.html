@@ -22,18 +22,17 @@
 {% for letter, pagelist in pages.items()|sort %}
 <div class="pageindex-letterblock"><h2 class="content-title font-weight-bolder pageindex-header">{{letter}}</h2>
 {% for page in pagelist %}
-<div class="pageindex-pageblock" style="padding-left:{{1.5 * page.depth}}rem;">
-<a href="{{ page.url }}" class="global-toc-link
-{%- if has_children %}
+<div class="pageindex-pageblock pageindex-depth-{{page.depth}}" style="padding-left:{{1.5 * page.depth}}rem;">
+<a href="{{ page.url }}" class="global-toc-link {% if has_children -%}
 pageindex-folder font-weight-bold
-{%- else %}
+{%- else -%}
 pageindex-page
-{%- endif %}">{{page.title}}</a>
+{%- endif %} pageindex-depth-{{page.depth}}">{{page.title}}</a>
 {% if page.toc %}
 <div class="pagetoc" style="display: none;">
 {% for tocdepth, header, url in page.toc %}
-<div style="word-break: all; padding-left:{{1 * tocdepth}}rem;">
-<a href="{{ url }}" class="global-toc-link font-weight-light font-italic pageindex-heading">{{header}}</a><br/>
+<div style="word-break: all; padding-left:{{1 * tocdepth}}rem;" class="pageindex-heading-{{tocdepth}}">
+<a href="{{ url }}" class="global-toc-link font-weight-light font-italic pageindex-heading pageindex-heading-{{tocdepth}}">{{header}}</a><br/>
 </div>
 {% endfor %}
 </div>
