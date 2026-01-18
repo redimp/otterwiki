@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.16.0](https://github.com/redimp/otterwiki/releases/tag/v2.16.0) - 2026-01-18
+
+<small>[Compare with v2.15.2](https://github.com/redimp/otterwiki/compare/v2.15.2...v2.16.0)</small>
+
+### Features
+
+- Syncing with remote repositories, see `Settings > Repository Management`.
+  - automatic pulling from from the defined git remote ([111c5c1](https://github.com/redimp/otterwiki/commit/111c5c1043c12b7dfd11de31954583e3cf8193a6) by @deseven).
+  - automatic pushing to the defined git remote ([8d10cc6](https://github.com/redimp/otterwiki/commit/8d10cc6d299c6d64a71f31d64a9b0acba54aefe9) by @deseven).
+  - repository management manual actions ([6c89261](https://github.com/redimp/otterwiki/commit/6c892612ac8442bf4231ec213afcacd26fc9563a) by @deseven).
+- More options to customize the wiki using custom css
+  - added classes with levels to the pageindex items ([91d797e](https://github.com/redimp/otterwiki/commit/91d797eebc5f25621f138f323608eddd8d82fb5b)).
+  - support custom fancy block styles, see #345 and #343 ([fde2bf6](https://github.com/redimp/otterwiki/pull/345/commits/fde2bf68bf05011d35a9fa4e4967db79ca636f30) by @freddyheppel).
+  - make pages customizable via css based on their pathname ([PR#349](https://github.com/redimp/otterwiki/pull/349) by @freddyheppel).
+- Improving the plugin environment
+  - added more plugin hooks for html injection & processing ([7f0fcbc](https://github.com/redimp/otterwiki/pull/336/commits/7f0fcbc7feb2260f4800df382309804d1f5120ff) by @deseven).
+
+### Bug Fixes
+
+- better preview cursor placement, see #330 ([0797796](https://github.com/redimp/otterwiki/commit/079779671934e53c294875c2f4ac45d257f3f457)).
+- scrollbar styling for `width<=768px`, see #332 ([562edac](https://github.com/redimp/otterwiki/commit/562edac8d25d7baadea5c001f155765588a73ea7)).
+- `sanitize_pagename(.., handle_md=True)` regexp fixed, see #344 ([bed5cc5](https://github.com/redimp/otterwiki/commit/bed5cc551920cf8eef14dc82c10704eb5cc80863)).
+
 ## [v2.15.2](https://github.com/redimp/otterwiki/releases/tag/v2.15.2) - 2026-01-07
 
 <small>[Compare with v2.15.1](https://github.com/redimp/otterwiki/compare/v2.15.1...v2.15.2)</small>
