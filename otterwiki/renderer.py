@@ -472,7 +472,35 @@ class OtterwikiRenderer:
         toc = self.md_renderer.toc_tree.copy()
         if cursor is not None and line > 0:
             # replace the magic word with the cursor span
-            html = html.replace(cursormagicword, self.htmlcursor)
+
+            # we have to make sure that the cursormagicword is not placed inside an element
+            # which might break the html after replacing it with self.htmlcursor
+
+            # find the line with the magic word
+            lines = html.splitlines(True)
+            for i, line in enumerate(lines):
+                if cursormagicword in line:
+                    # parse with bs4
+                    soup = BeautifulSoup(line, 'html.parser')
+                    prepend_cursor = False
+                    for element in soup.find_all():
+                        for attr_key, attr_value in element.attrs.items():
+                            if cursormagicword in attr_value:
+                                prepend_cursor = True
+                                # remove cursormagicword from attr
+                                element.attrs[attr_key] = attr_value.replace(
+                                    cursormagicword, ""
+                                )
+                        if prepend_cursor:
+                            element.insert_before(cursormagicword)
+                    # only use the bs4 string if it has been used
+                    if prepend_cursor:
+                        line = str(soup)
+                    lines[i] = line.replace(cursormagicword, self.htmlcursor)
+                    # dont check other lines, there is only one cursor.
+                    break
+
+            html = "".join(lines)
         elif cursor is not None:
             html = self.htmlcursor + html
 

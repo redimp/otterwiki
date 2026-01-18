@@ -144,10 +144,31 @@ def test_preview_cursor_in_codeblock(create_app, req_ctx):
     code in block
     ```
     """
-    data = p.preview(content=content, cursor_line=1)
-    soup = bs4.BeautifulSoup(data['preview_content'], "html.parser").find(
+    data = p.preview(content=content, cursor_line=2)
+    soup = bs4.BeautifulSoup(str(data['preview_content']), "html.parser").find(
         "pre"
     )
     assert soup
     text = soup.text.strip("`\n")
-    assert "code in block" == text
+    # the "  " are an artifact from the html cursor and expected
+    assert "code in block  " == text
+
+
+def test_preview_cursor_in_abbr(create_app, req_ctx):
+    from otterwiki.wiki import Page
+
+    p = Page("test")
+    content = """*[HTML]: Hypertext Markup Language
+*[CSS]: Cascading Style Sheets
+
+HTML and CSS are essential web technologies.
+"""
+
+    data = p.preview(content=content, cursor_line=0)
+    assert data and data['preview_content']
+    soup = bs4.BeautifulSoup(str(data['preview_content']), "html.parser").find(
+        "div", class_="page"
+    )
+    assert soup and soup.text
+    # the "   " are an artifact from the html cursor and expected
+    assert "HTML and   CSS are essential web technologies." in soup.text
