@@ -468,3 +468,66 @@ mark {
     height: 2.2rem;
     width: 2.2rem;
 }
+
+/* fix mobile scrollbars */
+@media (max-width: 768px) {
+    .with-custom-webkit-scrollbars *::-webkit-scrollbar {
+        width: 1.4rem !important;
+        height: 1.4rem !important;
+    }
+
+    .with-custom-webkit-scrollbars *::-webkit-scrollbar-track:vertical {
+        border-left: 1px solid rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .with-custom-webkit-scrollbars *::-webkit-scrollbar-track:horizontal {
+        border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .with-custom-webkit-scrollbars *::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.25) !important;
+        border-radius: 0.7rem !important;
+        border: 2px solid transparent !important;
+        background-clip: content-box !important;
+        min-height: 3rem !important;
+        min-width: 3rem !important;
+    }
+
+    .with-custom-webkit-scrollbars *::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(0, 0, 0, 0.4) !important;
+    }
+
+    .with-custom-webkit-scrollbars *::-webkit-scrollbar-corner {
+        background-color: transparent !important;
+    }
+
+    .dark-mode.with-custom-webkit-scrollbars *::-webkit-scrollbar-track {
+        border-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .dark-mode.with-custom-webkit-scrollbars *::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.25) !important;
+    }
+
+    .dark-mode.with-custom-webkit-scrollbars *::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    .dark-mode.with-custom-webkit-scrollbars .sidebar::-webkit-scrollbar,
+    .dark-mode.with-custom-webkit-scrollbars .modal-dialog::-webkit-scrollbar,
+    .dark-mode.with-custom-webkit-scrollbars .modal-full .modal-dialog::-webkit-scrollbar,
+    .dark-mode.with-custom-webkit-scrollbars .card::-webkit-scrollbar,
+    .dark-mode.with-custom-webkit-scrollbars .content-wrapper::-webkit-scrollbar,
+    .dark-mode.with-custom-webkit-scrollbars body::-webkit-scrollbar {
+        background-color: transparent !important;
+    }
+
+    /* ff */
+    .with-custom-css-scrollbars * {
+        scrollbar-width: thin !important;
+    }
+
+    .dark-mode.with-custom-css-scrollbars * {
+        scrollbar-color: rgba(255, 255, 255, 0.25) transparent !important;
+    }
+}
