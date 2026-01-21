@@ -1137,7 +1137,7 @@ var otterwiki_editor = {
             otterwiki_editor.img('['+filename+']('+url+')\n');
         }
     },
-    insert_wikilink: function() {
+    insert_wikilink: function(absolute = true) {
         if (!cm_editor) { return; }
         let state = otterwiki_editor._getState();
         // we don't mess with existing tokens of these kinds
@@ -1157,7 +1157,13 @@ var otterwiki_editor = {
             cm_editor.setSelection(word.anchor, word.head);
         }
         if (cm_editor.getSelection().trim().length == 0) {
-            cm_editor.replaceSelection('[['+page+']]\n');
+            if(!absolute) {
+                // from issue #357 allow for link insert with [[ title | page ]] format
+                let title = page.split('/').at(-1);
+                cm_editor.replaceSelection('[[' + title + '|' + page + ']]\n');
+            } else {
+                cm_editor.replaceSelection('[[' + page + ']]\n');
+            }
         } else {
             let text = cm_editor.getSelection();
             cm_editor.replaceSelection('[['+text+'|'+page+']]\n');
