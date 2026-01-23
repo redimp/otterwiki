@@ -524,7 +524,8 @@ class mistunePluginAlerts:
     }
     TYPES_WITH_PIPES = "|".join(TYPE_ICONS.keys())
     ALERT_LEADING = re.compile(
-        r'^ *\>(\s*\[!(' + TYPES_WITH_PIPES + r')\])?', flags=re.MULTILINE
+        r'^ *\>(\s*\[!(' + TYPES_WITH_PIPES + r')\])?',
+        flags=re.MULTILINE + re.I,
     )
     ALERT_BLOCK = re.compile(
         r'(?: {0,3}>\s*\[!('
