@@ -524,11 +524,17 @@ def test_fold():
 def test_all_alert_types():
     from otterwiki.renderer_plugins import mistunePluginAlerts
 
-    for type, icon in mistunePluginAlerts.TYPE_ICONS.items():
+    def alert_tests():
+        for type, icon in mistunePluginAlerts.TYPE_ICONS.items():
+            yield type, icon
+            yield type.lower(), icon
+
+    for type, icon in alert_tests():
         md = f"> [!{type}]\n>text\n>text\n"
         html, _, _ = render.markdown(md)
         assert 'text\ntext' in html
         assert icon in html
+        assert f"[!{type}]" not in html
 
 
 def test_alerts():
