@@ -164,7 +164,6 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     width: 1.3rem;
     display: inline-block;
     content: '▹ ';
-    vertical-align: text-top;
 }
 
 .sidebarmenu details[open] > summary::before {
@@ -179,6 +178,8 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     content: '□ ';
     font-size: 0.5rem;
     vertical-align: middle;
+    position: relative;
+    bottom: 0.1rem;
 }
 
 .sidebar-menu li {
