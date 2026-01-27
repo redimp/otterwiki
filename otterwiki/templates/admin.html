@@ -55,6 +55,54 @@
     </div>
 {##}
   <div class="form-group">
+    <label for="home_page_mode">Home Page</label>
+    <select class="form-control w-md-400" id="home_page_mode" name="home_page_mode" onchange="toggleCustomPageField()">
+{% set home_page_value = config.HOME_PAGE or "default" %}
+{% if home_page_value == "default" %}
+      <option value="default" selected="selected">Default (Home)</option>
+      <option value="root_index">Root index</option>
+      <option value="custom">Custom page</option>
+{% elif home_page_value == "root_index" %}
+      <option value="default">Default (Home)</option>
+      <option value="root_index" selected="selected">Root index</option>
+      <option value="custom">Custom page</option>
+{% else %}
+      <option value="default">Default (Home)</option>
+      <option value="root_index">Root index</option>
+      <option value="custom" selected="selected">Custom page</option>
+{% endif %}
+    </select>
+    <div class="form-text">
+      Configure which page is displayed when visiting the root URL (<code>/</code>).
+      <ul>
+        <li><strong>Default (Home)</strong>: Display the Home page</li>
+        <li><strong>Root index</strong>: Display an index of all pages at the root level</li>
+        <li><strong>Custom page</strong>: Display a specific page of your choice</li>
+      </ul>
+    </div>
+  </div>
+{##}
+  <div class="form-group" id="custom_page_field" style="{% if home_page_value not in ['default', 'root_index'] %}display: block;{% else %}display: none;{% endif %}">
+    <label for="home_page_custom" class="required">Custom Home Page Path</label>
+    <input name="home_page_custom" type="text" placeholder="e.g., Welcome or Docs/Index" class="form-control" id="home_page_custom" value="{% if home_page_value not in ['default', 'root_index'] %}{{ home_page_value }}{% endif %}">
+    <div class="form-text">
+      Enter the path to the page you want to display as the home page (without the <code>.md</code> extension).
+    </div>
+  </div>
+{##}
+  <script>
+    function toggleCustomPageField() {
+      var select = document.getElementById('home_page_mode');
+      var customField = document.getElementById('custom_page_field');
+      if (select.value === 'custom') {
+        customField.style.display = 'block';
+      } else {
+        customField.style.display = 'none';
+      }
+    }
+  </script>
+{##}
+  <div class="form-group">
     <label for="site_icon">Site Icon (favicon)</label>
     <input name="site_icon" type="text" placeholder="/static/img/otter-favicon2.png" class="form-control" id="site_icon" value="{{ config.SITE_ICON or "" }}">
     <div class="form-text">

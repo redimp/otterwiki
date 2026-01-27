@@ -71,6 +71,7 @@ def test_create_page_in(test_client):
 
 
 def test_create_page(test_client, req_ctx):
+    test_client.application.config["RETAIN_PAGE_NAME_CASE"] = False
     pagename = "createtest"
     html = test_client.post(
         "/-/create",
@@ -153,6 +154,7 @@ def save_shortcut(test_client, pagename, content, commit_message):
 
 
 def test_pageindex(test_client):
+    test_client.application.config["RETAIN_PAGE_NAME_CASE"] = False
     save_shortcut(
         test_client,
         "Random page",
@@ -538,6 +540,7 @@ def test_move_page(test_client):
 
 
 def test_nested_files(test_client):
+    test_client.application.config["RETAIN_PAGE_NAME_CASE"] = False
     p = test_client.application._otterwiki_tempdir
     _inner_folder = "a_folder/another_folder/"
     _file_name = "examplepage"
