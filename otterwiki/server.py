@@ -68,6 +68,7 @@ app.config.update(
     HTML_EXTRA_BODY="",
     LOG_LEVEL_WERKZEUG="INFO",
     TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES=False,
+    HOME_PAGE="default",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 

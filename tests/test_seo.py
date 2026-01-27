@@ -4,7 +4,7 @@
 import bs4
 
 
-def test_canonical_links(test_client):
+def test_canonical_links(app_with_user, test_client):
     # root URL "/" should have canonical pointing to itself (/)
     response = test_client.get("/")
     assert response.status_code == 200
@@ -65,6 +65,33 @@ def test_canonical_links(test_client):
     assert (
         canonical_url == canonical_url_slash
     ), "Canonical should be same with/without trailing slash"
+
+    # test canonical URL with custom home page
+    app_with_user.config["READ_ACCESS"] = "ANONYMOUS"
+
+    test_client.post(
+        "/Start/save",
+        data={
+            "content": "# Start\n\nStart page.",
+            "commit": "Create start",
+        },
+    )
+
+    app_with_user.config["HOME_PAGE"] = "Start"
+
+    # check root URL points to /
+    response = test_client.get("/")
+    soup = bs4.BeautifulSoup(response.data.decode(), "html.parser")
+    canonical = soup.find("link", rel="canonical")
+    assert canonical is not None
+    assert canonical.get("href").endswith("/")
+
+    # check /Start URL also points to /
+    response = test_client.get("/Start")
+    soup = bs4.BeautifulSoup(response.data.decode(), "html.parser")
+    canonical = soup.find("link", rel="canonical")
+    assert canonical is not None
+    assert canonical.get("href").endswith("/")
 
 
 def test_meta_description_uses_site_description(test_client, create_app):

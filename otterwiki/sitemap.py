@@ -6,7 +6,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring, indent
 from flask import url_for, make_response, abort
 from otterwiki.server import app, storage
 from otterwiki.auth import has_permission
-from otterwiki.helper import get_pagename
+from otterwiki.helper import get_pagename, get_filename
 
 
 def sitemap():
@@ -28,8 +28,31 @@ def sitemap():
             url_elem = SubElement(urlset, 'url')
             pagepath = get_pagename(filename, full=True)
 
-            # Handle /Home as / in URL generation
-            if pagepath.lower() == 'home':
+            # handle configured home page as / in URL generation
+            home_page = app.config.get("HOME_PAGE", "default")
+            is_home_page = False
+
+            if (
+                not home_page or home_page == "default"
+            ) and pagepath.lower() == 'home':
+                is_home_page = True
+            elif home_page and home_page not in ["default", "root_index"]:
+                # custom page - normalize both paths for comparison
+                custom_page_normalized = get_filename(home_page).replace(
+                    ".md", ""
+                )
+                current_page_normalized = filename.replace(".md", "")
+                if app.config.get("RETAIN_PAGE_NAME_CASE"):
+                    is_home_page = (
+                        custom_page_normalized == current_page_normalized
+                    )
+                else:
+                    is_home_page = (
+                        custom_page_normalized.lower()
+                        == current_page_normalized.lower()
+                    )
+
+            if is_home_page:
                 page_url = url_for('index', _external=True)
             else:
                 page_url = url_for('view', path=pagepath, _external=True)

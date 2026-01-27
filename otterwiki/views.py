@@ -43,7 +43,17 @@ from flask_login import login_required
 #
 @app.route("/")
 def index():
-    return view()
+    home_page = app.config.get("HOME_PAGE", "default")
+
+    if not home_page or home_page == "default":
+        return view()
+    elif home_page == "root_index":
+        from otterwiki.pageindex import PageIndex
+
+        idx = PageIndex(None)
+        return idx.render()
+    else:
+        return view(path=home_page)
 
 
 @app.route("/robots.txt")
