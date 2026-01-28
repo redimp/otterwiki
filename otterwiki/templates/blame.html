@@ -12,9 +12,20 @@
 <table class="blame">
 {% for line in blame %}
 <tr class="{{line[5]}}">
-    <td class="min">{% if line[0] %}<a href="{{ url_for("show_commit", revision=line[0]) }}" class="btn revision-small">{{line[0]}}</a>{% endif %}</td>
-    <td class="min" style="white-space:nowrap">{{line[1]}}</td>
-    <td class="min" style="white-space:nowrap">{% if line[2] %}<a href="{{ url_for("view", path=pagepath, revision=line[0]) }}">{{line[2]|format_datetime}}</a>{% endif %}</td>
+    {% if line[0] %}
+    <td class="min" rowspan="{{ line[8] }}">
+        <table>
+            <tr>
+                <td class="min" style="white-space:nowrap"> {% if line[0] %}<a href="{{ url_for("show_commit", revision=line[0]) }}" class="btn revision-small" title="Show commit">{{line[0]}}</a>{% endif %}</td>
+                <td class="min" style="white-space:nowrap"">{{line[1]}}</td>
+                <td class="min" style="white-space:nowrap"">{% if line[2] %}<a href="{{ url_for("view", path=pagepath, revision=line[0]) }}">{{line[2]|format_datetime}}</a>{% endif %}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="min pl-5 font-italic" style="font-size:90%;">{{line[7]}}</td>
+            </tr>
+        </table>
+    </td>
+    {% endif %}
     <td class="tt min linenumber" style="border-left: 2px solid #{{line[6]}};">{{line[3]}}</td>
     <td class="tt" style="border-right: 2px solid #{{line[6]}}; border-left: 2px solid #{{line[6]}};"><div class="highlight">{{line[4]|safe}}</div></td>
 </tr>

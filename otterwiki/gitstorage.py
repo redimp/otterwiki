@@ -167,6 +167,7 @@ class GitStorage(object):
                         metadata["datetime"],
                         n,
                         line,
+                        metadata["message"],
                     )
                 )
                 # increase linenumber

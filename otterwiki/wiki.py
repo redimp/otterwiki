@@ -760,6 +760,7 @@ class Page:
         fdata = []
         # helper
         last = None
+        last_index = 0
         oddeven = "odd"
         # use highlighted lines
         for row in data:
@@ -771,7 +772,7 @@ class Page:
             if row[0] != last:
                 oddeven = "odd" if oddeven == "even" else "even"
                 fdata.append(
-                    (
+                    [
                         row[0],  # revision
                         row[1],  # author
                         row[2],  # datetime
@@ -779,11 +780,17 @@ class Page:
                         line,  # the actual line
                         f"chunk-start chunk-start-{oddeven}",  # alternating css class
                         row[0],  # revision used as border-color
-                    )
+                        row[5],  # commit message
+                        1,  # lines covered by the meta
+                    ]
                 )
                 last = row[0]
+                last_index = len(fdata) - 1
             else:
-                fdata.append(("", "", "", int(row[3]), line, oddeven, row[0]))
+                fdata.append(
+                    ("", "", "", int(row[3]), line, oddeven, row[0], "", 0)
+                )
+                fdata[last_index][8] += 1
         menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
         return render_template(
             "blame.html",
