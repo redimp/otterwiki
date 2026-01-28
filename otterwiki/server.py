@@ -127,19 +127,35 @@ else:
 if (len(storage.list()[0]) < 1) and (  # pyright: ignore never unbound
     len(storage.log()) < 1  # pyright: ignore
 ):
-    # we have a brand new repository here
-    with open(os.path.join(app.root_path, "initial_home.md")) as f:
-        content = f.read()
-        filename = (
-            "Home.md" if app.config["RETAIN_PAGE_NAME_CASE"] else "home.md"
-        )
-        storage.store(  # pyright: ignore
-            filename=filename,
-            content=content,
-            author=("Otterwiki Robot", "noreply@otterwiki"),
-            message="Initial commit",
-        )
-        app.logger.info("server: Created initial /Home.")
+    home_page_config = app.config.get("HOME_PAGE", "default")
+
+    # for root_index mode, we don't need to create any initial page
+    if home_page_config != "root_index":
+        with open(os.path.join(app.root_path, "initial_home.md")) as f:
+            content = f.read()
+
+            if home_page_config == "default":
+                # use the default Home page
+                filename = (
+                    "Home.md"
+                    if app.config["RETAIN_PAGE_NAME_CASE"]
+                    else "home.md"
+                )
+            else:
+                # use the custom page path from HOME_PAGE
+                custom_path = home_page_config
+                if app.config["RETAIN_PAGE_NAME_CASE"]:
+                    filename = f"{custom_path}.md"
+                else:
+                    filename = f"{custom_path.lower()}.md"
+
+            storage.store(  # pyright: ignore
+                filename=filename,
+                content=content,
+                author=("Otterwiki Robot", "noreply@otterwiki"),
+                message="Initial commit",
+            )
+            app.logger.info(f"server: Created initial page /{filename[:-3]}.")
 
 
 #
