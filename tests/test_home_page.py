@@ -6,8 +6,8 @@ Tests for configurable home page functionality.
 
 Tests cover:
 1. Default behavior (Home page)
-2. Root index mode
-3. Custom page mode
+2. Custom page mode
+3. Special page redirect mode
 4. Compatibility with RETAIN_PAGE_NAME_CASE
 5. Initialization with HOME_PAGE environment variable
 """
@@ -22,7 +22,7 @@ def test_home_page_default(app_with_user, test_client):
     original_home_page = app_with_user.config.get("HOME_PAGE")
 
     try:
-        app_with_user.config["HOME_PAGE"] = "default"
+        app_with_user.config["HOME_PAGE"] = ""
         app_with_user.config["READ_ACCESS"] = "ANONYMOUS"
 
         test_client.post(
@@ -46,11 +46,11 @@ def test_home_page_default(app_with_user, test_client):
             del app_with_user.config["HOME_PAGE"]
 
 
-def test_home_page_root_index(app_with_user, test_client):
+def test_home_page_special_page_index(app_with_user, test_client):
     original_home_page = app_with_user.config.get("HOME_PAGE")
 
     try:
-        app_with_user.config["HOME_PAGE"] = "root_index"
+        app_with_user.config["HOME_PAGE"] = "/-/index"
         app_with_user.config["READ_ACCESS"] = "ANONYMOUS"
 
         test_client.post(
@@ -67,20 +67,10 @@ def test_home_page_root_index(app_with_user, test_client):
                 "commit": "Create about",
             },
         )
-        test_client.post(
-            "/Contact/save",
-            data={
-                "content": "# Contact\n\nContact page content.",
-                "commit": "Create contact",
-            },
-        )
 
         response = test_client.get("/")
-        assert response.status_code == 200
-        html = response.data.decode()
-        assert "Home page content" not in html
-        assert "Page Index" in html
-        assert "About" in html or "Contact" in html or "Home" in html
+        assert response.status_code == 302
+        assert "/-/index" in response.location
     finally:
         if original_home_page is not None:
             app_with_user.config["HOME_PAGE"] = original_home_page
@@ -135,6 +125,33 @@ def test_home_page_custom_nested(app_with_user, test_client):
         html = response.data.decode()
         assert "Documentation Index" in html
         assert "Welcome to the docs" in html
+    finally:
+        if original_home_page is not None:
+            app_with_user.config["HOME_PAGE"] = original_home_page
+        elif "HOME_PAGE" in app_with_user.config:
+            del app_with_user.config["HOME_PAGE"]
+
+
+def test_home_page_custom_with_trailing_slash(app_with_user, test_client):
+    original_home_page = app_with_user.config.get("HOME_PAGE")
+
+    try:
+        test_client.post(
+            "/Welcome/save",
+            data={
+                "content": "# Welcome Page\n\nTrailing slash test.",
+                "commit": "Create welcome",
+            },
+        )
+
+        app_with_user.config["HOME_PAGE"] = "Welcome/"
+        app_with_user.config["READ_ACCESS"] = "ANONYMOUS"
+
+        response = test_client.get("/")
+        assert response.status_code == 200
+        html = response.data.decode()
+        assert "Welcome Page" in html
+        assert "Trailing slash test" in html
     finally:
         if original_home_page is not None:
             app_with_user.config["HOME_PAGE"] = original_home_page
@@ -241,8 +258,7 @@ def create_app_with_home_page_env(tmpdir):
 
 
 def test_initialization_with_default_home_page(create_app_with_home_page_env):
-    """Test that initialization creates home.md when HOME_PAGE is default."""
-    app, storage = create_app_with_home_page_env("default")
+    app, storage = create_app_with_home_page_env("")
 
     files, _ = storage.list()
     assert 'home.md' in files or 'Home.md' in files
@@ -254,18 +270,16 @@ def test_initialization_with_default_home_page(create_app_with_home_page_env):
     assert 'Welcome to your wiki!' in content
 
 
-def test_initialization_with_root_index_home_page(
+def test_initialization_with_special_page_home(
     create_app_with_home_page_env,
 ):
-    """Test that initialization does NOT create home.md when HOME_PAGE is root_index."""
-    app, storage = create_app_with_home_page_env("root_index")
+    app, storage = create_app_with_home_page_env("/-/index")
 
     files, _ = storage.list()
     assert len(files) == 0
 
 
 def test_initialization_with_custom_home_page(create_app_with_home_page_env):
-    """Test that initialization creates custom page when HOME_PAGE is set to custom path."""
     app, storage = create_app_with_home_page_env("Welcome")
 
     files, _ = storage.list()
@@ -278,7 +292,6 @@ def test_initialization_with_custom_home_page(create_app_with_home_page_env):
 def test_initialization_with_custom_nested_home_page(
     create_app_with_home_page_env,
 ):
-    """Test that initialization creates nested custom page when HOME_PAGE is set to nested path."""
     app, storage = create_app_with_home_page_env("Docs/Index")
 
     files, _ = storage.list()

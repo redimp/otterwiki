@@ -16,7 +16,7 @@ def test_sitemap(admin_client):
 
 def test_home_page_sitemap_default(app_with_user, test_client):
     """Test sitemap generation with default home page."""
-    app_with_user.config["HOME_PAGE"] = "default"
+    app_with_user.config["HOME_PAGE"] = ""
     app_with_user.config["READ_ACCESS"] = "ANONYMOUS"
 
     # Create pages
