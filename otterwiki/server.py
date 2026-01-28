@@ -68,7 +68,7 @@ app.config.update(
     HTML_EXTRA_BODY="",
     LOG_LEVEL_WERKZEUG="INFO",
     TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES=False,
-    HOME_PAGE="default",
+    HOME_PAGE="",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
@@ -127,14 +127,14 @@ else:
 if (len(storage.list()[0]) < 1) and (  # pyright: ignore never unbound
     len(storage.log()) < 1  # pyright: ignore
 ):
-    home_page_config = app.config.get("HOME_PAGE", "default")
+    home_page_config = app.config.get("HOME_PAGE", "")
 
-    # for root_index mode, we don't need to create any initial page
-    if home_page_config != "root_index":
+    # only create initial page if HOME_PAGE is empty or doesn't start with /-/
+    if not home_page_config or not home_page_config.startswith("/-/"):
         with open(os.path.join(app.root_path, "initial_home.md")) as f:
             content = f.read()
 
-            if home_page_config == "default":
+            if not home_page_config:
                 # use the default Home page
                 filename = (
                     "Home.md"
@@ -143,7 +143,7 @@ if (len(storage.list()[0]) < 1) and (  # pyright: ignore never unbound
                 )
             else:
                 # use the custom page path from HOME_PAGE
-                custom_path = home_page_config
+                custom_path = home_page_config.strip("/")
                 if app.config["RETAIN_PAGE_NAME_CASE"]:
                     filename = f"{custom_path}.md"
                 else:

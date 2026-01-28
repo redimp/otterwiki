@@ -177,26 +177,15 @@ def handle_app_preferences(form):
     ]:
         _update_preference(checkbox.upper(), form.get(checkbox, "False"))
 
-    home_page_mode = form.get("home_page_mode", "default")
-    if home_page_mode == "custom":
-        custom_page = form.get("home_page_custom", "").strip()
-        if not custom_page:
-            toast(
-                "Custom home page path is required when 'Custom page' is selected.",
-                "error",
-            )
-            return redirect(url_for("admin"))
-        if custom_page.endswith(".md"):
-            toast(
-                "Custom page path should not include the .md extension.",
-                "error",
-            )
-            return redirect(url_for("admin"))
-        _update_preference("HOME_PAGE", custom_page)
-    elif home_page_mode == "root_index":
-        _update_preference("HOME_PAGE", "root_index")
-    else:
-        _update_preference("HOME_PAGE", "default")
+    home_page = form.get("home_page", "").strip()
+    if home_page and home_page.endswith(".md"):
+        toast(
+            "Custom home page path should not include the .md extension.",
+            "error",
+        )
+        return redirect(url_for("admin"))
+
+    _update_preference("HOME_PAGE", home_page)
 
     # commit changes to the database
     db.session.commit()

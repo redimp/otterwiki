@@ -546,15 +546,16 @@ class Page:
 
         # generate canonical URL (without trailing slash)
         # special case: if this is the configured home page, canonical should point to root "/"
-        home_page = app.config.get("HOME_PAGE", "default")
+        home_page = app.config.get("HOME_PAGE", "")
 
         is_home_page = False
-        if (
-            not home_page or home_page == "default"
-        ) and self.pagepath == "Home":
+        if not home_page and self.pagepath.lower() == "home":
             is_home_page = True
-        elif home_page and home_page not in ["default", "root_index"]:
-            custom_page_normalized = get_filename(home_page).replace(".md", "")
+        elif home_page and not home_page.startswith("/-/"):
+            # custom page - normalize both paths for comparison
+            custom_page_normalized = get_filename(
+                home_page.strip("/")
+            ).replace(".md", "")
             current_page_normalized = self.filename.replace(".md", "")
             if app.config.get("RETAIN_PAGE_NAME_CASE"):
                 is_home_page = (
