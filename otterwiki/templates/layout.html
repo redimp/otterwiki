@@ -106,7 +106,7 @@
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
-            <a href="{{ url_for("index") }}" class="navbar-brand ml-10 ml-sm-20" title="{%if description%}{{description}}{%elif config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}A minimalistic wiki powered by python, markdown and git.{%endif%}">
+            <a href="{{ url_for("index") }}" class="navbar-brand ml-10 ml-sm-20" title="{%if config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}A minimalistic wiki powered by python, markdown and git.{%endif%}">
 {%- if config.SITE_LOGO %}
                 <img src="{{ config.SITE_LOGO }}" alt="" id="site_logo"/>
 {%- else %}
