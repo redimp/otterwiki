@@ -97,6 +97,16 @@ class OtterWikiPluginSpec:
         It's called for each heading as it's being rendered from markdown.
         """
 
+    @hookspec
+    def renderer_process_wikilink(
+        self, wikilink_html, wikilink_url, wikilink_text, page=None
+    ) -> str | None:
+        """
+        This hook allows plugins to process and modify individual wikilinks during rendering.
+        It's called for each wikilink as it's being rendered from markdown.
+        WikiLinks are defined in the format [[Page Name]] or [[Page Name|Display Text]].
+        """
+
 
 # pluggy doesn't by default handle chaining the output of one plugin into
 # another, so this is a small utility function to do this.

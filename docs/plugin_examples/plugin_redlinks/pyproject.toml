@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "otterwiki_redlinks"
+description = "An example plugin for An Otter Wiki that marks WikiLinks to non-existent pages in red, similar to MediaWiki's redlinks feature."
+version = "0.1.0"
+authors = [
+    { name = "deseven", email = "git@d7.wtf" }
+]
+
+[project.entry-points.otterwiki]
+redlinks = "otterwiki_redlinks"
