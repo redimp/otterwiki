@@ -165,7 +165,7 @@ endif
 pypi: test
 	./venv/bin/python3 -m pip install --upgrade build twine
 	./venv/bin/python3 -m build
-	./venv/bin/python3 -m twine upload dist/*
+	./venv/bin/python3 -m twine upload -r pypi dist/*
 
 helm-build:
 	cd helm/ && helm lint ./
