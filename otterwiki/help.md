@@ -15,6 +15,7 @@ You can preview your changes using <span class="btn btn-primary btn-sm btn-hlp">
 | Create page    | <kbd>c</kbd>        |
 | Edit page      | <kbd>e</kbd>        |
 | Toggle sidebar | <kbd>[</kbd>        |
+| Toggle sidebar (right) | <kbd>]</kbd>        |
 | Search         | <kbd>/</kbd>        |
 
 #### Editor Shortcuts

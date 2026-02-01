@@ -1450,6 +1450,18 @@ window.addEventListener("keydown", function(event) {
         return;
     }
 
+    if (noModifiers && key === ']') {
+        let colExtra = document.getElementById("column-extra");
+        let colMain = document.getElementById("column-main");
+        if (colExtra != null && colMain != null) {
+            colMain.classList.toggle("col-xl-9");
+            colMain.classList.toggle("col");
+            colExtra.classList.toggle("col-xl-3");
+            event.preventDefault();
+        }
+        return;
+    }
+
     let createPageBtn = document.getElementById("create-page-btn");
     if (noModifiers && key === 'c' && createPageBtn != null) {
         event.preventDefault();

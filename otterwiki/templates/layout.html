@@ -215,9 +215,9 @@
             <div class="container-fluid">
                 <div class="row">
 {% if ( self.extra_nav() | trim | length ) > 0 %}{# limit content when extra_nav is not empty #}
-                <div class="col-xl-9">
+                <div class="col-xl-9" id="column-main">
 {% else %}
-                <div class="col">
+                <div class="col" id="column-main">
 {% endif %}
 {% block content_wrapper %}
                 <div class="content">
@@ -231,7 +231,7 @@
             </div> <!-- col-xl-9 -->
 {# extra_nav #}
 {% if ( self.extra_nav() | trim | length ) > 0 %}{# display only if block not empty #}
-            <div class="col-xl-3 d-none d-xl-block extra-nav-container">
+            <div class="col-xl-3 d-none d-xl-block extra-nav-container" id="column-extra">
                     <div class="extra-nav" id="extra-nav">
 {% block extra_nav -%}
 {%- endblock extra_nav %}
