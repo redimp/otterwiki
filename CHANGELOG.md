@@ -18,8 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - repository management manual actions ([6c89261](https://github.com/redimp/otterwiki/commit/6c892612ac8442bf4231ec213afcacd26fc9563a) by @deseven).
 - More options to customize the wiki using custom css
   - added classes with levels to the pageindex items ([91d797e](https://github.com/redimp/otterwiki/commit/91d797eebc5f25621f138f323608eddd8d82fb5b)).
-  - support custom fancy block styles, see #345 and #343 ([fde2bf6](https://github.com/redimp/otterwiki/pull/345/commits/fde2bf68bf05011d35a9fa4e4967db79ca636f30) by @freddyheppel).
-  - make pages customizable via css based on their pathname ([PR#349](https://github.com/redimp/otterwiki/pull/349) by @freddyheppel).
+  - support custom fancy block styles, see #345 and #343 ([fde2bf6](https://github.com/redimp/otterwiki/pull/345/commits/fde2bf68bf05011d35a9fa4e4967db79ca636f30) by @freddyheppell).
+  - make pages customizable via css based on their pathname ([PR#349](https://github.com/redimp/otterwiki/pull/349) by @freddyheppell).
 - Improving the plugin environment
   - added more plugin hooks for html injection & processing ([7f0fcbc](https://github.com/redimp/otterwiki/pull/336/commits/7f0fcbc7feb2260f4800df382309804d1f5120ff) by @deseven).
 
