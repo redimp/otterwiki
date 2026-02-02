@@ -96,6 +96,8 @@ class Changelog:
 
     def render(self):
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
         log = self.get()
         pages = []
@@ -219,6 +221,8 @@ class Changelog:
 
     def show_commit(self, revision):
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
         try:
             metadata, diff = storage.show_commit(revision)
@@ -433,6 +437,8 @@ class Page:
     def source(self, raw=False):
         # handle permissions
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
         # handle case that the page doesn't exists
         self.exists_or_404()
@@ -743,6 +749,8 @@ class Page:
 
     def blame(self):
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
         # handle case that the page doesn't exists
         self.exists_or_404(in_git=True)
@@ -805,6 +813,8 @@ class Page:
 
     def diff(self, rev_a=None, rev_b=None):
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
         # handle case that the page doesn't exists
         self.exists_or_404()
@@ -834,6 +844,8 @@ class Page:
 
     def history(self, rev_a: str | None = None, rev_b: str | None = None):
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
 
         self.exists_or_404(in_git=True)
@@ -1017,6 +1029,8 @@ class Page:
 
     def render_attachments(self):
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
         # handle case that the page doesn't exists
         self.exists_or_404()
@@ -1100,6 +1114,8 @@ class Page:
         self, filename, author, new_filename=None, message=None, delete=None
     ):
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
         a = Attachment(self.pagepath, filename)
         if not a.exists():
@@ -1319,6 +1335,8 @@ class Attachment:
 
     def edit(self):
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
         if not self.exists():
             return abort(404)
@@ -1342,6 +1360,8 @@ class Attachment:
 
     def get(self):
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
         if self.revision is None:
             if not storage.exists(self.filepath):
@@ -1598,6 +1618,8 @@ class Search:
 
     def render(self):
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
         self.compile()
         result = self.search()

@@ -7,6 +7,7 @@ from urllib.parse import unquote
 
 from flask import (
     abort,
+    redirect,
     render_template,
     url_for,
 )
@@ -14,7 +15,7 @@ from flask import (
 import textwrap
 from typing import List, Tuple, Iterable
 
-from otterwiki.auth import has_permission
+from otterwiki.auth import has_permission, current_user
 
 from otterwiki.helper import (
     get_breadcrumbs,
@@ -217,6 +218,8 @@ class PageIndex:
 
     def render(self):
         if not has_permission("READ"):
+            if not current_user.is_authenticated:
+                return redirect(url_for("login"))
             abort(403)
         menutree = SidebarPageIndex(get_page_directoryname(self.path or "/"))
 

@@ -236,8 +236,8 @@ def test_page_blame_permissions(app_with_permissions, test_client):
     assert "There is no place like Home." in rv.data.decode()
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
     rv = test_client.get(url_for(fun, path="Home"))
-    assert rv.status_code == 403
-    assert "There is no place like Home." not in rv.data.decode()
+    assert rv.status_code == 302
+    assert "/-/login" in rv.location
     login(test_client)
     rv = test_client.get(url_for(fun, path="Home"))
     assert "There is no place like Home." in rv.data.decode()
@@ -251,8 +251,8 @@ def test_page_history_permissions(app_with_permissions, test_client):
     assert "initial test commit" in rv.data.decode()
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
     rv = test_client.get(url_for(fun, path="Home"))
-    assert rv.status_code == 403
-    assert "initial test commit" not in rv.data.decode()
+    assert rv.status_code == 302
+    assert "/-/login" in rv.location
     login(test_client)
     rv = test_client.get(url_for(fun, path="Home"))
     assert rv.status_code == 200
@@ -267,8 +267,8 @@ def test_page_index_permissions(app_with_permissions, test_client):
     assert "Page Index" in rv.data.decode()
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
     rv = test_client.get(url_for(fun))
-    assert rv.status_code == 403
-    assert "Page Index" not in rv.data.decode()
+    assert rv.status_code == 302
+    assert "/-/login" in rv.location
     login(test_client)
     rv = test_client.get(url_for(fun))
     assert rv.status_code == 200
@@ -283,8 +283,8 @@ def test_page_changelog_permissions(app_with_permissions, test_client):
     assert "initial test commit" in rv.data.decode()
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
     rv = test_client.get(url_for(fun, path="Home"))
-    assert rv.status_code == 403
-    assert "initial test commit" not in rv.data.decode()
+    assert rv.status_code == 302
+    assert "/-/login" in rv.location
     login(test_client)
     rv = test_client.get(url_for(fun, path="Home"))
     assert rv.status_code == 200
