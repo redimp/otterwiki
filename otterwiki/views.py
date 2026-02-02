@@ -116,6 +116,7 @@ def syntax():
     return render_template(
         "syntax.html",
         in_help=True,
+        pagepath="",
     )
 
 
