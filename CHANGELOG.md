@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.17.1](https://github.com/redimp/otterwiki/releases/tag/v2.17.1) - 2026-02-02
+
+### Bug Fixes
+
+- fixed broken syntax page ([bc2da8b](https://github.com/redimp/otterwiki/commit/bc2da8bd03d4b03da04298f0982a201396f0ddbf) by @deseven)
+- redirect not logged in users to the login page where applicable ([8b9289d](https://github.com/redimp/otterwiki/commit/8b9289d8939b6f0ae206ec2e6ea76d58f9e23bf6) by @deseven)
+
+<small>[Compare with v2.17.0](https://github.com/redimp/otterwiki/compare/v2.17.0...v2.17.1)</small>
+
 ## [v2.17.0](https://github.com/redimp/otterwiki/releases/tag/v2.17.0) - 2026-02-01
 
 <small>[Compare with v2.16.0](https://github.com/redimp/otterwiki/compare/v2.16.0...v2.17.0)</small>
