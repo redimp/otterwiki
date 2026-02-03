@@ -19,6 +19,7 @@ class RedLinks:
     @hookimpl
     def setup(self, app, db, storage) -> None:
         """Initialize the plugin with access to core objects."""
+        self.app = app
         self.storage = storage
 
     @hookimpl
@@ -43,6 +44,13 @@ class RedLinks:
         page_path = page_path.strip('/')
         if not page_path:
             return wikilink_html
+
+        # Unless case is retained, convert to lowercase for storage check
+        page_path = (
+            page_path
+            if self.app.config["RETAIN_PAGE_NAME_CASE"]
+            else page_path.lower()
+        )
 
         # Check both with and without .md extension for directories
         page_file = (
