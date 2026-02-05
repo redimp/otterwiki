@@ -239,9 +239,63 @@
       }
     }
 
-    var remoteFilename = "image-" + Date.now() + "." + extension;
+    // Fallback to MIME type if no extension found from filename
+    if (extension === (settings.defaultExtension || settings.defualtExtension) && file.type) {
+      var mimeToExt = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/gif': 'gif',
+        'image/webp': 'webp',
+        'image/svg+xml': 'svg',
+        'image/bmp': 'bmp',
+        'image/tiff': 'tiff'
+      };
+      if (mimeToExt[file.type]) {
+        extension = mimeToExt[file.type];
+      }
+    }
+
+    var remoteFilename;
+
+    // Determine if file is an image based on MIME type
+    var isImage = file.type && file.type.startsWith('image/');
+    var prefix = isImage ? "image-" : "file-";
+
+    // Use original filename if available
+    if (file.name && file.name.trim() !== '') {
+      // Check if it's a generic browser-generated name
+      var isGenericName = /^(image|blob|screenshot)\.(png|jpg|jpeg|gif)$/i.test(file.name);
+
+      if (!isGenericName) {
+        remoteFilename = file.name;
+      } else {
+        remoteFilename = prefix + Date.now() + "." + extension;
+      }
+    } else {
+      remoteFilename = prefix + Date.now() + "." + extension;
+    }
+
+    // Allow custom remoteFilename function to override
     if (typeof settings.remoteFilename === 'function') {
       remoteFilename = settings.remoteFilename(file);
+    }
+
+    // Prompt user to confirm or change the filename
+    if (typeof settings.onFilenamePrompt === 'function') {
+      var promptedFilename = settings.onFilenamePrompt(remoteFilename, file);
+      if (promptedFilename === null) {
+        console.log('Inline upload cancelled: user cancelled filename prompt');
+        return null;
+      }
+      if (promptedFilename !== undefined && promptedFilename.trim() !== '') {
+        remoteFilename = promptedFilename.trim();
+      }
+    }
+
+    // Ensure we always have a valid filename
+    if (!remoteFilename || remoteFilename.trim() === '') {
+      console.log('Inline upload cancelled: no valid filename available');
+      return null;
     }
 
     formData.append(settings.uploadFieldName, file, remoteFilename);
@@ -365,7 +419,12 @@
         if (this.isFileAllowed(item)) {
           result = true;
           this.onFileInserted(item.getAsFile());
-          this.uploadFile(item.getAsFile());
+          var uploadResult = this.uploadFile(item.getAsFile());
+          // If upload was cancelled, remove the progress text
+          if (uploadResult === null) {
+            var text = this.editor.getValue().replace(this.lastValue, '');
+            this.editor.setValue(text);
+          }
         }
       }
     }
@@ -387,7 +446,12 @@
       if (this.isFileAllowed(file)) {
         result = true;
         this.onFileInserted(file);
-        this.uploadFile(file);
+        var uploadResult = this.uploadFile(file);
+        // If upload was cancelled, remove the progress text
+        if (uploadResult === null) {
+          var text = this.editor.getValue().replace(this.lastValue, '');
+          this.editor.setValue(text);
+        }
       }
     }
 
