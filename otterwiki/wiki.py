@@ -1027,6 +1027,14 @@ class Page:
         # currently only attached files are handled
         return [Attachment(self.pagepath, f) for f in files]
 
+    def _attachments_list(self):
+        files = [
+            f.data
+            for f in self._attachments(exclude_extensions=".md")
+            if f.metadata is not None
+        ]
+        return files
+
     def render_attachments(self):
         if not has_permission("READ"):
             if not current_user.is_authenticated:
@@ -1035,11 +1043,7 @@ class Page:
         # handle case that the page doesn't exists
         self.exists_or_404()
         # get all attachments with metadata
-        files = [
-            f.data
-            for f in self._attachments(exclude_extensions=".md")
-            if f.metadata is not None
-        ]
+        files = self._attachments_list()
         return render_template(
             "attachments.html",
             title="{} - Attachments".format(self.pagename),
@@ -1091,7 +1095,11 @@ class Page:
         if inline:
             if last_uploaded_filename is None:
                 abort(500)
-            return jsonify(filename=f"./{last_uploaded_filename}")
+            # return both the filename and the current attachment list
+            files = self._attachments_list()
+            return jsonify(
+                filename=f"./{last_uploaded_filename}", attachments=files
+            )
         return redirect(url_for("attachments", pagepath=self.pagepath))
 
     def get_attachment(self, filename, revision=None):

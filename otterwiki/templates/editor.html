@@ -479,12 +479,67 @@
     bottom_panel.style.display = 'block';
     cm_editor.addPanel(bottom_panel, {position: "bottom", stable: true});
 
+    function refreshAttachmentsDropdown(attachments, selectFilename) {
+        var attachmentSelect = document.getElementById('attachment-filename');
+        if (!attachmentSelect) return;
+
+        // Clear existing options except the first (placeholder)
+        while (attachmentSelect.options.length > 1) {
+            attachmentSelect.remove(1);
+        }
+
+        // Add all attachments
+        if (attachments && attachments.length > 0) {
+            attachments.forEach(function(file) {
+                var optionValue = file.filename + "/--/" + file.url + "/--/" + (file.thumbnail_url || '');
+                var option = document.createElement('option');
+                option.value = optionValue;
+                option.textContent = file.filename;
+                attachmentSelect.appendChild(option);
+
+                // Make last inserted attachment selected
+                if (selectFilename && file.filename === selectFilename) {
+                    attachmentSelect.value = optionValue;
+                }
+            });
+
+            // If an attachment was selected, update the preview and enable/disable controls
+            if (selectFilename) {
+                otterwiki_editor.update_attachment_preview();
+            }
+        }
+    }
+
 {#
 thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuecomment-227075500
 #}
     inlineAttachment.editors.codemirror4.attach(cm_editor, {
-        uploadUrl: "{{ url_for('inline_attachment', pagepath=pagepath) | urlquote }}",
-        urlText: "![]({filename})",
+        uploadUrl: {{ url_for('inline_attachment', pagepath=pagepath) | tojson }},
+        allowedTypes: ['*'],
+        urlText: function(filename, result) {
+            var imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff'];
+            var isImage = false;
+
+            for (var i = 0; i < imageExtensions.length; i++) {
+                if (filename.toLowerCase().endsWith(imageExtensions[i])) {
+                    isImage = true;
+                    break;
+                }
+            }
+
+            var displayName = filename.replace(/^\.\//, '');
+
+            if (isImage) {
+                return "![" + displayName + "](" + filename + ")";
+            } else {
+                return "[" + displayName + "](" + filename + ")";
+            }
+        },
+        onFilenamePrompt: function(suggestedFilename, file) {
+            // Prompt user to confirm or change the filename
+            var userFilename = prompt("Enter filename for the attachment:", suggestedFilename);
+            return userFilename;
+        },
         onFileUploadResponse: function(xhr) {
             var result = JSON.parse(xhr.responseText),
             filename = result[this.settings.jsonFieldName];
@@ -499,6 +554,12 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
                 var text = this.editor.getValue().replace(this.lastValue, newValue);
                 this.editor.setValue(text);
                 this.settings.onFileUploaded.call(this, filename);
+
+                // Refresh dropdown with attachments from response and select the uploaded file
+                var uploadedFilename = filename.replace(/^\.\//, '');
+                if (result.attachments) {
+                    refreshAttachmentsDropdown(result.attachments, uploadedFilename);
+                }
             }
             return false;
         }
@@ -536,7 +597,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         formData.append("cursor_line", cm_editor.getCursor().line);
         formData.append("cursor_ch", cm_editor.getCursor().ch);
         formData.append("revision", "{{revision}}");
-        fetch("{{ url_for('draft', path=pagepath) | urlquote }}", {
+        fetch({{ url_for('draft', path=pagepath) | tojson }}, {
             method: 'POST',
             body: formData,
         })
@@ -598,7 +659,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         formData.append("cursor_ch", cm_editor.getCursor().ch);
 
         /* FIXME: display loader */
-        fetch("{{ url_for('preview', path=pagepath) | urlquote }}", {
+        fetch({{ url_for('preview', path=pagepath) | tojson }}, {
                 method: 'POST',
                 body: formData,
             })
