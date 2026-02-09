@@ -1182,6 +1182,9 @@ var otterwiki_editor = {
         // if an url is pasted on a selected text, check if it should be
         // replaced with a markdown link []()
         if (cm_editor.getSelection().length > 0) {
+            // don't activate link behavior if selected text contains line breaks
+            if (selected_text.includes('\n')) { return false; }
+
             state = otterwiki_editor._getState();
             // we don't mess with existing tokens of these kinds
             if (state.image || state.link || state.code || state.url) { return false; }
@@ -1199,9 +1202,14 @@ var otterwiki_editor = {
             result = false;
         if (typeof clipboardData === "object") {
             let pastedText = clipboardData.getData("text/plain");
-            let matched = /^https?:\/\//.test(pastedText);
+            let trimmedText = pastedText.trimEnd();
+
+            // Only activate URL-pasting behavior if:
+            // 1. The text starts with http:// or https://
+            // 2. The trimmed text is a single URL with no additional text
+            let matched = /^https?:\/\/\S+$/.test(trimmedText);
             if (matched) {
-                result = otterwiki_editor.paste_url(pastedText);
+                result = otterwiki_editor.paste_url(trimmedText);
             }
         }
         if (result) { e.preventDefault(); }
