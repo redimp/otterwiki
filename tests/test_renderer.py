@@ -54,7 +54,14 @@ text
     assert "<h1 id=\"head-2-1\"" in html
 
 
-def test_code():
+def test_codespan():
+    html, _, _ = render.markdown("`One Space`")
+    assert "One Space" in html
+    html, _, _ = render.markdown("`Two  Spaces`")
+    assert "Two  Spaces" in html
+
+
+def test_codeblock():
     html, _, _ = render.markdown(
         """```
 abc

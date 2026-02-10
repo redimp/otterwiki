@@ -116,6 +116,7 @@ div.page > div.highlight {
 .page code,
 .page .code {
     min-height: 2.6rem;
+    white-space: pre;
 }
 
 code,

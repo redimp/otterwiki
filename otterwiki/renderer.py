@@ -351,6 +351,14 @@ class OtterwikiInlineParser(mistune.InlineParser):
         super().__init__(*args, **kwargs)
         self.env = env
 
+    def parse_codespan(self, m, state):
+        # mistune replaces multiple spaces and newlines with " "
+        # and removes leading and trailing whitespace
+        #    re.sub(r'[ \n]+', ' ', m.group(2).strip())
+
+        code = re.sub(r'\n+', ' ', m.group(2))
+        return 'codespan', code
+
     def parse_std_link(self, m, state):
         line = m.group(0)
         text = m.group(1)
