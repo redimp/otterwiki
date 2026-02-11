@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.17.2](https://github.com/redimp/otterwiki/releases/tag/v2.17.2) - 2026-02-11
+
+<small>[Compare with v2.17.1](https://github.com/redimp/otterwiki/compare/v2.17.1...v2.17.2)</small>
+
+### Bug Fixes
+
+- Enable `/` hotkey for keyboard layouts needing shift to type '/', see #383 ([6ee5592](https://github.com/redimp/otterwiki/commit/6ee55922ca68f8c9d47e5d8fba31f57bad23a8b8) by @redimp).
+- preserve (and display) multiple spaces in codespans, see #382 ([0f669d8](https://github.com/redimp/otterwiki/commit/0f669d8f6033b74b4d0e6d60e73815a99ca4998d) by @redimp).
+- confusing editor behaviour on URL pasting, see #380 ([2f73bdf](https://github.com/redimp/otterwiki/commit/2f73bdfa45df4b18d72dac59c241f6332f90f499) by @deseven).
+
+### Plugins
+
+- `plugin_redlinks`: fixed page lowercase logic, see #376 ([0d4b80c](https://github.com/redimp/otterwiki/commit/0d4b80cf46a004307b53eb926fc65f7e12b36f89) by @freddyheppell)
+
 ## [v2.17.1](https://github.com/redimp/otterwiki/releases/tag/v2.17.1) - 2026-02-02
 
 ### Bug Fixes
