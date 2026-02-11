@@ -20,7 +20,7 @@ dependencies = [
     "cython==3.0.11",
     "mistune==2.0.5",
     "pygments==2.18.0",
-    "Pillow==10.4.0",
+    "Pillow==12.1.1",
     "PyYAML==6.0.2",
     "unidiff==0.7.5",
     "beautifulsoup4==4.12.3",
