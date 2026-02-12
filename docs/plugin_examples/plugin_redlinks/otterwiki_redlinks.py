@@ -24,19 +24,10 @@ class RedLinks:
 
     @hookimpl
     def renderer_process_wikilink(
-        self, wikilink_html, wikilink_url, wikilink_text, page=None
+        self, wikilink_html, wikilink_url, wikilink_text, page
     ):
         """
         Process WikiLinks and mark non-existent pages with red color.
-
-        Args:
-            wikilink_html: The generated HTML for the wikilink
-            wikilink_url: The URL the wikilink points to (e.g., "/Page%20Name")
-            wikilink_text: The display text of the wikilink
-            page: The current page object (optional)
-
-        Returns:
-            Modified HTML with red styling for non-existent pages
         """
         # Parse the URL to get the page path
         parsed_url = urllib.parse.urlparse(wikilink_url)

@@ -36,7 +36,7 @@ class HtmlInjectionExample:
         self.storage = storage
 
     @hookimpl
-    def template_html_head_inject(self, page=None):
+    def template_html_head_inject(self, page):
         """
         Inject HTML content into the head section.
         In this example let's add some styling for example classes.
@@ -60,7 +60,7 @@ class HtmlInjectionExample:
 '''
 
     @hookimpl
-    def template_html_body_inject(self, page=None):
+    def template_html_body_inject(self, page):
         """
         Inject HTML content into the body section.
         """
@@ -68,7 +68,7 @@ class HtmlInjectionExample:
 
     @hookimpl
     def renderer_process_link(
-        self, link_html, link_url, link_text, link_title, page=None
+        self, link_html, link_url, link_text, link_title, page
     ):
         """
         Adds `exampleClass` to classes for links during markdown rendering.
@@ -90,7 +90,7 @@ class HtmlInjectionExample:
 
     @hookimpl
     def renderer_process_image(
-        self, image_html, image_src, image_alt, image_title, page=None
+        self, image_html, image_src, image_alt, image_title, page
     ):
         """
         Sets fixed `alt` for images during markdown rendering.
@@ -111,7 +111,7 @@ class HtmlInjectionExample:
         heading_text,
         heading_level,
         heading_anchor,
-        page=None,
+        page,
     ):
         """
         Process headings during markdown rendering.
