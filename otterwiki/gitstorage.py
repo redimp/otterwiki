@@ -12,6 +12,7 @@ import git.exc
 
 from otterwiki.util import split_path, ttl_lru_cache
 from otterwiki.repomgmt import get_repo_manager
+from otterwiki.plugins import plugin_manager
 
 
 class StorageError(Exception):
@@ -50,6 +51,29 @@ class GitStorage(object):
         if os.path.exists(os.path.join(self.path, ".git/RELOAD_GIT")):
             os.remove(os.path.join(self.path, ".git/RELOAD_GIT"))
             self.repo = self._read_repo()
+
+    def notify_repository_changed_from_external(self):
+        """
+        Notify plugins about repository changes from external sources
+        (git web server, automatic pulls, etc.).
+        This method detects what files changed in the last commit.
+        """
+        try:
+            last_commit = self.repo.head.commit
+            changed_files = list(last_commit.stats.files.keys())
+            if changed_files:
+                plugin_manager.hook.repository_changed(
+                    changed_files=changed_files
+                )
+        except Exception as e:
+            try:
+                from otterwiki.server import app
+
+                app.logger.error(
+                    f"Failed to notify plugins of repository change: {e}"
+                )
+            except ImportError:
+                pass
 
     def exists(self, filename):
         return os.path.exists(os.path.join(self.path, filename))
@@ -309,6 +333,8 @@ class GitStorage(object):
         actor = git.Actor(author[0], author[1])
         index.commit(message, author=actor)
 
+        plugin_manager.hook.repository_changed(changed_files=[filename])
+
         # auto-push after storing file
         repo_manager = get_repo_manager()
         if repo_manager:
@@ -329,6 +355,11 @@ class GitStorage(object):
         actor = git.Actor(author[0], author[1])
         index.commit(message, author=actor)
 
+        changed_list = (
+            filenames if isinstance(filenames, list) else [filenames]
+        )
+        plugin_manager.hook.repository_changed(changed_files=changed_list)
+
         # auto-push after commit
         repo_manager = get_repo_manager()
         if repo_manager:
@@ -346,7 +377,10 @@ class GitStorage(object):
             raise StorageError("Revert failed.")
 
         actor = git.Actor(author[0], author[1])
-        self.repo.index.commit(message, author=actor)
+        commit = self.repo.index.commit(message, author=actor)
+
+        changed_files = list(commit.stats.files.keys())
+        plugin_manager.hook.repository_changed(changed_files=changed_files)
 
         # auto-push after revert
         repo_manager = get_repo_manager()
@@ -384,6 +418,8 @@ class GitStorage(object):
         if message is None:
             message = "Deleted {}.".format(filename_remove)
         self.repo.index.commit(message, author=actor)
+
+        plugin_manager.hook.repository_changed(changed_files=filename_remove)
 
         # auto-push after delete
         repo_manager = get_repo_manager()

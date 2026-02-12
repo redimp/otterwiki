@@ -314,10 +314,24 @@ def plugin_html_body_inject(page=None):
     return ''.join(result for result in results if result)
 
 
+def plugin_sidebar_left_inject(page=None):
+    """Template function to inject HTML into the left sidebar via plugins."""
+    results = plugin_manager.hook.template_html_sidebar_left_inject(page=page)
+    return ''.join(result for result in results if result)
+
+
+def plugin_sidebar_right_inject(page=None):
+    """Template function to inject HTML into the right sidebar via plugins."""
+    results = plugin_manager.hook.template_html_sidebar_right_inject(page=page)
+    return ''.join(result for result in results if result)
+
+
 app.jinja_env.globals.update(
     load_custom_html=load_custom_html,
     plugin_html_head_inject=plugin_html_head_inject,
     plugin_html_body_inject=plugin_html_body_inject,
+    plugin_sidebar_left_inject=plugin_sidebar_left_inject,
+    plugin_sidebar_right_inject=plugin_sidebar_right_inject,
 )
 
 # initialize git via http

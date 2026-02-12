@@ -213,8 +213,10 @@
         <div class="content-wrapper" id="content-wrapper">
 
             <div class="container-fluid">
+{# Capture extra_nav content once to avoid re-rendering the block multiple times #}
+{% set extra_nav_content = self.extra_nav() | trim %}
                 <div class="row">
-{% if ( self.extra_nav() | trim | length ) > 0 %}{# limit content when extra_nav is not empty #}
+{% if extra_nav_content | length > 0 %}{# limit content when extra_nav is not empty #}
                 <div class="col-xl-9" id="column-main">
 {% else %}
                 <div class="col" id="column-main">
@@ -230,11 +232,10 @@
 {% endblock content_wrapper %}
             </div> <!-- col-xl-9 -->
 {# extra_nav #}
-{% if ( self.extra_nav() | trim | length ) > 0 %}{# display only if block not empty #}
+{% if extra_nav_content | length > 0 %}{# display only if block not empty #}
             <div class="col-xl-3 d-none d-xl-block extra-nav-container" id="column-extra">
                     <div class="extra-nav" id="extra-nav">
-{% block extra_nav -%}
-{%- endblock extra_nav %}
+{{ extra_nav_content }}
 {# Nasty little hack to blow up the width of the extra-nav to a maximum
  - of you find a solution in css: please tell me #}
 <div style="visibility:hidden;">0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9</div>

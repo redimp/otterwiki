@@ -93,6 +93,9 @@ class GitHttpServer:
 
         try:
             from otterwiki.repomgmt import get_repo_manager
+            from otterwiki.server import storage
+
+            storage.notify_repository_changed_from_external()
 
             repo_manager = get_repo_manager()
             if repo_manager:
