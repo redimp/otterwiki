@@ -3,6 +3,7 @@
 #
 FROM alpine:3.20.1 AS compile-stage
 LABEL maintainer="Ralph Thesen <mail@redimp.de>"
+LABEL org.opencontainers.image.source="https://github.com/redimp/otterwiki"
 # install build environment (mostly necessary to build Pillow on armv6/7)
 RUN apk add python3 python3-dev py3-virtualenv \
             zlib-dev jpeg-dev gcc musl-dev libxml2-dev libxslt-dev
