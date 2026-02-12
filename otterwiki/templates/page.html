@@ -15,6 +15,7 @@
 {{ super() }}
 {% include 'snippets/menu.html' %}
 {% include 'snippets/menutree.html' %}
+{{plugin_sidebar_left_inject(pagepath)|safe}}
 {% endblock %}
 {#
 #}
@@ -58,6 +59,12 @@
 <a href="{{ url_for('login') }}" class="btn" role="button"><i class="fas fa-sign-in-alt" title="Login"></i></a>
 {% endif %}
 {% endblock %}
+{#
+#}
+{% block extra_nav -%}
+{{ super() }}
+{{plugin_sidebar_right_inject(pagepath)|safe}}
+{%- endblock %}
 {#
 #}
 {% block content %}

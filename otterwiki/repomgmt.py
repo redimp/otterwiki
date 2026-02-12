@@ -197,6 +197,9 @@ class RepositoryManager:
                     app.logger.info(
                         f"[RepositoryManager] Pull result: {result}"
                     )
+
+                self.storage.notify_repository_changed_from_external()
+
                 return True, result or "Pull completed successfully"
 
             except Exception as e:
