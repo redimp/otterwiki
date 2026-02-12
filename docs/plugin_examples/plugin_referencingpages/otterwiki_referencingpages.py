@@ -174,8 +174,10 @@ class ReferencingPages:
     @hookimpl
     def template_html_sidebar_right_inject(self, page):
         """
-        Inject the "This page is referenced by" block into the right sidebar.
+        Inject the "Referencing pages" block into the right sidebar.
         """
+        from otterwiki.helper import get_pagename
+
         try:
 
             # Only show on page views where we have a page path
@@ -195,28 +197,31 @@ class ReferencingPages:
             if not referencing_pages:
                 return None
 
-            # Sort the referencing pages alphabetically
-            referencing_pages = sorted(referencing_pages)
-
+            # Puzzle into a dictionary, makes the references uniq and better printable.
+            referencing_pages = dict(
+                (k, [get_pagename(k), get_pagename(k, full=True)])
+                for k in referencing_pages
+            )
             # Build the HTML for the sidebar block
             # Using the same structure as the "On this page" block
             html = '''
     <details class="collapse-panel" open>
-        <summary class="collapse-header">
-            This page is referenced by
-        </summary>
+        <summary class="collapse-header">Referencing pages</summary>
 
         <div class="collapse-content">
 '''
 
-            # Add links to each referencing page
-            for ref_page in referencing_pages:
+            # Add links to each referencing page, sorted by the displayed pagename
+            for pagepath in sorted(
+                referencing_pages, key=lambda x: referencing_pages[x][0]
+            ):
                 # Create a display name (use the last part of the path)
-                display_name = ref_page.split('/')[-1]
+                pagename = referencing_pages[pagepath][0]
+                pagename_full = referencing_pages[pagepath][1]
                 # URL encode the page path
-                url_path = urllib.parse.quote(ref_page)
+                url_path = urllib.parse.quote(pagename_full)
 
-                html += f'            <a href="/{url_path}" class="sidebar-link">{display_name}</a>\n'
+                html += f'            <a href="/{url_path}" class="sidebar-link" title="{pagename_full}">{pagename}</a>\n'
 
             html += '''        </div>
     </details>
