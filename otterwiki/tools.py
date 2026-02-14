@@ -156,11 +156,99 @@ def handle_housekeeping_emptypages(form):
     )
 
 
+def handle_housekeeping_brokenwikilinks(form):
+    """Analyze pages for broken WikiLinks."""
+    if not has_permission("WRITE"):
+        abort(403)
+
+    # WikiLink pattern: [[Page Name]] or [[Page Name|Display Text]]
+    WIKI_LINK_PATTERN = re.compile(
+        r"\[\[(([^|\]]+)(?:#[^\]]*)?(?:(\|)([^\]]+))?)\]\]"
+    )
+    WIKILINK_STYLE = app.config.get("WIKILINK_STYLE", "")
+
+    t_start = timer()
+    files, directories = storage.list()
+    files_md = [f for f in files if f.endswith(".md")]
+
+    pages_with_broken_links = {}
+
+    for filename in files_md:
+        content = storage.load(filename)
+
+        wikilinks = WIKI_LINK_PATTERN.findall(content)
+
+        if not wikilinks:
+            continue
+
+        broken_links = []
+
+        for match in wikilinks:
+            # match[1] contains the first part (before | if present)
+            # match[3] contains the second part (after | if present)
+            left = match[1].strip()
+            right = match[3].strip() if match[3] else left
+
+            # default behavior: [[Title|Link]] or [[Title]]
+            # LINK_TITLE or PAGE_NAME_TITLE: [[Link|Title]] or [[Link]]
+            if WIKILINK_STYLE.upper().replace("_", "").strip() in [
+                "LINKTITLE",
+                "PAGENAMETITLE",
+            ]:
+                link_text = left
+            else:
+                link_text = right
+
+            if link_text.startswith("#"):
+                continue
+
+            page_path = link_text.lstrip("/")
+
+            if "#" in page_path:
+                page_path = page_path.split("#")[0]
+
+            if not page_path:
+                continue
+
+            if not app.config["RETAIN_PAGE_NAME_CASE"]:
+                page_path = page_path.lower()
+
+            page_file = (
+                page_path if page_path.endswith('.md') else f"{page_path}.md"
+            )
+            page_exists = storage.exists(page_file) or storage.isdir(page_path)
+
+            if not page_exists:
+                broken_links.append(link_text)
+
+        if broken_links:
+            pagename = get_pagename(filename, full=True)
+            pages_with_broken_links[pagename] = broken_links
+
+    duration = timer() - t_start
+    app.logger.debug(
+        f"housekeeping_brokenwikilinks scanning files took {duration:.3f} seconds."
+    )
+
+    stats = {
+        "pages": len(files_md),
+        "duration": f"{duration:.3f}s",
+    }
+
+    return render_template(
+        "tools/housekeeping_brokenwikilinks.html",
+        pages=pages_with_broken_links,
+        stats=stats,
+    )
+
+
 def handle_housekeeping(form):
     if form.get("task", None) == "drafts":
         return handle_housekeeping_drafts(form)
     if form.get("task", None) == "emptypages":
         return handle_housekeeping_emptypages(form)
+    if form.get("task", None) == "brokenwikilinks":
+        return handle_housekeeping_brokenwikilinks(form)
     # unkown task: display the form
     toast("Unkown task", "error")
     return redirect(url_for("housekeeping"))
