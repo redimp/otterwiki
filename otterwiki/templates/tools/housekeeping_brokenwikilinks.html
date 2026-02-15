@@ -28,7 +28,7 @@
             </td>
             <td style="white-space: normal; word-wrap: break-word;">
                 {% for link in broken_links %}
-                    <span>[[{{link}}]]</span>{% if not loop.last %}, {% endif %}
+                    <a href="{{ url_for('view', path=link) }}" target="_blank">{{link}}</a>{% if not loop.last %}, {% endif %}
                 {% endfor %}
             </td>
             <td style="width:1px;text-align:right;padding-right:.5rem;">

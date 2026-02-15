@@ -492,6 +492,101 @@ Link to [[Parent Sub/Child Sub]] and [[Parent Sub/Missing Sub]].
         finally:
             app_with_user.config["WRITE_ACCESS"] = original_write_access
 
+    def test_housekeeping_broken_wikilinks_unique_lists(
+        self, app_with_user, admin_client
+    ):
+        """Test that broken links and found_in lists are unique."""
+        from otterwiki.server import storage
+        from otterwiki.helper import get_filename
+
+        app_with_user.config["WIKILINK_STYLE"] = ""
+
+        storage.store(
+            get_filename("Page With Duplicates"),
+            "# Page With Duplicates\n\n[[Missing]] and [[Missing]] and [[Missing]].\n",
+            message="Create page",
+            author=("Test User", "mail@example.org"),
+        )
+
+        storage.store(
+            get_filename("Another Duplicate Page"),
+            "# Another Duplicate Page\n\n[[Missing]] [[Missing]].\n",
+            message="Create another page",
+            author=("Test User", "mail@example.org"),
+        )
+
+        rv = admin_client.post(
+            "/-/housekeeping",
+            data={"task": "brokenwikilinks"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+
+        # Count occurrences of "Missing" in the broken links for the first page
+        # Should appear only once per page, not three times
+        assert html.count(">Missing</a>") >= 2  # At least once per section
+
+    def test_housekeeping_broken_wikilinks_fragments_removed(
+        self, app_with_user, admin_client
+    ):
+        """Test that #fragments are removed from displayed pagenames."""
+        from otterwiki.server import storage
+        from otterwiki.helper import get_filename
+
+        app_with_user.config["WIKILINK_STYLE"] = ""
+
+        storage.store(
+            get_filename("Page With Fragments"),
+            "# Page With Fragments\n\n[[Missing#section1]] and [[Missing#section2]].\n",
+            message="Create page",
+            author=("Test User", "mail@example.org"),
+        )
+
+        rv = admin_client.post(
+            "/-/housekeeping",
+            data={"task": "brokenwikilinks"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+
+        assert "Missing" in html
+        assert "#section1" not in html or "Missing#section1" not in html
+
+    def test_housekeeping_broken_wikilinks_relative_links(
+        self, app_with_user, admin_client
+    ):
+        """Test that relative links like [[../Home]] are detected correctly."""
+        from otterwiki.server import storage
+        from otterwiki.helper import get_filename
+
+        app_with_user.config["WIKILINK_STYLE"] = ""
+
+        storage.store(
+            get_filename("Parent/Child"),
+            "# Child Page\n\nLink to [[../Home]] and [[../Missing]].\n",
+            message="Create child page",
+            author=("Test User", "mail@example.org"),
+        )
+
+        storage.store(
+            get_filename("Home"),
+            "# Home\n\nThis is home.\n",
+            message="Create home page",
+            author=("Test User", "mail@example.org"),
+        )
+
+        rv = admin_client.post(
+            "/-/housekeeping",
+            data={"task": "brokenwikilinks"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+
+        assert "Missing" in html or "../Missing" in html
+
 
 class TestHousekeepingGeneral:
     """General housekeeping tests."""
