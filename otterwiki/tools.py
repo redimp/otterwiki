@@ -176,6 +176,7 @@ def handle_housekeeping_brokenwikilinks(form):
 
     for filename in files_md:
         content = storage.load(filename)
+        current_pagename = get_pagename(filename, full=True)
 
         wikilinks = WIKI_LINK_PATTERN.findall(content)
 
@@ -203,32 +204,48 @@ def handle_housekeeping_brokenwikilinks(form):
             if link_text.startswith("#"):
                 continue
 
-            page_path = link_text.lstrip("/")
+            # remove fragment for display
+            display_link = (
+                link_text.split("#")[0] if "#" in link_text else link_text
+            )
 
-            if "#" in page_path:
-                page_path = page_path.split("#")[0]
+            # resolve relative paths
+            page_path = (
+                link_text.split("#")[0] if "#" in link_text else link_text
+            )
+            page_path = page_path.lstrip("/")
 
             if not page_path:
                 continue
 
-            if not app.config["RETAIN_PAGE_NAME_CASE"]:
-                page_path = page_path.lower()
+            if "../" in page_path:
+                current_dir = os.path.dirname(
+                    filename[:-3] if filename.endswith(".md") else filename
+                )
+                resolved_path = os.path.normpath(
+                    os.path.join(current_dir, page_path)
+                )
+                page_path = resolved_path.replace(os.sep, "/").lstrip("./")
 
-            page_file = (
-                page_path if page_path.endswith('.md') else f"{page_path}.md"
-            )
+            page_file = get_filename(page_path)
+
+            # check if page exists as file or directory
             page_exists = storage.exists(page_file) or storage.isdir(page_path)
 
             if not page_exists:
-                broken_links.append(link_text)
-                if link_text not in broken_links_occurrences:
-                    broken_links_occurrences[link_text] = []
-                pagename = get_pagename(filename, full=True)
-                broken_links_occurrences[link_text].append(pagename)
+                broken_links.append(display_link)
+                if display_link not in broken_links_occurrences:
+                    broken_links_occurrences[display_link] = []
+                broken_links_occurrences[display_link].append(current_pagename)
 
         if broken_links:
-            pagename = get_pagename(filename, full=True)
-            pages_with_broken_links[pagename] = broken_links
+            seen = set()
+            unique_broken_links = []
+            for link in broken_links:
+                if link not in seen:
+                    seen.add(link)
+                    unique_broken_links.append(link)
+            pages_with_broken_links[current_pagename] = unique_broken_links
 
     pages_with_broken_links = dict(
         sorted(
@@ -240,11 +257,12 @@ def handle_housekeeping_brokenwikilinks(form):
 
     most_wanted_pages = []
     for link_text, found_in_pages in broken_links_occurrences.items():
+        unique_found_in = list(dict.fromkeys(found_in_pages))
         most_wanted_pages.append(
             {
                 "page": link_text,
-                "found_in": found_in_pages,
-                "occurrences": len(found_in_pages),
+                "found_in": unique_found_in,
+                "occurrences": len(unique_found_in),
             }
         )
     most_wanted_pages.sort(key=lambda x: x["occurrences"], reverse=True)
