@@ -172,6 +172,7 @@ def handle_housekeeping_brokenwikilinks(form):
     files_md = [f for f in files if f.endswith(".md")]
 
     pages_with_broken_links = {}
+    broken_links_occurrences = {}
 
     for filename in files_md:
         content = storage.load(filename)
@@ -220,10 +221,33 @@ def handle_housekeeping_brokenwikilinks(form):
 
             if not page_exists:
                 broken_links.append(link_text)
+                if link_text not in broken_links_occurrences:
+                    broken_links_occurrences[link_text] = []
+                pagename = get_pagename(filename, full=True)
+                broken_links_occurrences[link_text].append(pagename)
 
         if broken_links:
             pagename = get_pagename(filename, full=True)
             pages_with_broken_links[pagename] = broken_links
+
+    pages_with_broken_links = dict(
+        sorted(
+            pages_with_broken_links.items(),
+            key=lambda item: len(item[1]),
+            reverse=True,
+        )
+    )
+
+    most_wanted_pages = []
+    for link_text, found_in_pages in broken_links_occurrences.items():
+        most_wanted_pages.append(
+            {
+                "page": link_text,
+                "found_in": found_in_pages,
+                "occurrences": len(found_in_pages),
+            }
+        )
+    most_wanted_pages.sort(key=lambda x: x["occurrences"], reverse=True)
 
     duration = timer() - t_start
     app.logger.debug(
@@ -238,6 +262,7 @@ def handle_housekeeping_brokenwikilinks(form):
     return render_template(
         "tools/housekeeping_brokenwikilinks.html",
         pages=pages_with_broken_links,
+        most_wanted=most_wanted_pages,
         stats=stats,
     )
 

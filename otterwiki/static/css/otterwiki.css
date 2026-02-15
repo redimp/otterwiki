@@ -532,3 +532,7 @@ mark {
         scrollbar-color: rgba(255, 255, 255, 0.25) transparent !important;
     }
 }
+
+.subsection-table {
+    padding-left: 1rem;
+}

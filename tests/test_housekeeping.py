@@ -166,6 +166,45 @@ class TestHousekeepingBrokenWikilinks:
 
         assert "no broken" in html.lower()
 
+    def test_housekeeping_broken_wikilinks_tables_structure(
+        self, app_with_user, admin_client
+    ):
+        """Test that both tables are displayed with correct structure."""
+        from otterwiki.server import storage
+        from otterwiki.helper import get_filename
+
+        app_with_user.config["WIKILINK_STYLE"] = ""
+
+        storage.store(
+            get_filename("Page With Broken Links"),
+            "# Page With Broken Links\n\nLinks: [[Missing Page 1]] and [[Missing Page 2]].\n",
+            message="Create page",
+            author=("Test User", "mail@example.org"),
+        )
+        storage.store(
+            get_filename("Another Page"),
+            "# Another Page\n\nAlso links to [[Missing Page 1]].\n",
+            message="Create another page",
+            author=("Test User", "mail@example.org"),
+        )
+
+        rv = admin_client.post(
+            "/-/housekeeping",
+            data={"task": "brokenwikilinks"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+
+        assert "Pages with broken links" in html
+        assert "Most wanted pages" in html
+
+        assert "Broken links" in html
+        assert "Quantity" in html
+
+        assert "Found in" in html
+        assert "Occurrences" in html
+
     def test_housekeeping_broken_wikilinks_default_style(
         self, app_with_user, admin_client
     ):
