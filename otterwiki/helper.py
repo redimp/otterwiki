@@ -11,7 +11,6 @@ lightweight as utils.
 
 import os
 import re
-from hashlib import sha256
 import json
 from collections import namedtuple
 from otterwiki.server import app, mail, storage, Preferences, db, app_renderer
@@ -26,6 +25,7 @@ from otterwiki.util import (
     clean_slashes,
     titleSs,
     ttl_lru_cache,
+    sha256sum,
 )
 from otterwiki.models import Cache
 
@@ -314,12 +314,6 @@ def patchset2urlmap(patchset, rev_b, rev_a=None):
         }
         url_map[file.path] = namedtuple('UrlData', d.keys())(*d.values())
     return url_map
-
-
-def sha256sum(s: str) -> str:
-    hash = sha256()
-    hash.update(s.encode())
-    return hash.hexdigest()
 
 
 def update_ftoc_cache(filename, ftoc, mtime=None):

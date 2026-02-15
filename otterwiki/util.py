@@ -11,6 +11,7 @@ import regex
 import string
 import time
 import unicodedata
+from hashlib import sha256
 from functools import lru_cache
 from typing import List, Tuple
 from unidiff import PatchSet
@@ -429,3 +430,9 @@ def get_PatchSet(s: str) -> PatchSet:
         m = RE_DIFF_HEAD_WITH_QUOTED_FILENAMES.search(s)
 
     return PatchSet(s)
+
+
+def sha256sum(s: str) -> str:
+    hash = sha256()
+    hash.update(s.encode())
+    return hash.hexdigest()
