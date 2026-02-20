@@ -15,7 +15,11 @@
             <li>
                 <details {% if pagepath and pagepath.lower().startswith(value.path.lower()) %}open{% endif %}>
                     <summary class="sidebarmenu">
+                        {% if pagepath and pagepath.lower() == value.path.lower() %}
+                        <span>{{value["header"]}}</span>
+                        {% else %}
                         <a href="/{{value["path"]}}">{{value["header"]}}</a>
+                        {% endif %}
                     </summary>
                     <ul class="sidebarmenu sidebarmenu-loop-{{ loop.depth % 4 }}">{{ loop(value["children"].items())}}
                     </ul>
@@ -24,7 +28,11 @@
             {%- else %}
                 <li>
                     <div class="summary-details">
+                        {% if pagepath and pagepath.lower() == value.path.lower() %}
+                        <span>{{value["header"]}}</span>
+                        {% else %}
                         <a href="/{{value["path"]}}">{{value["header"]}}</a>
+                        {% endif %}
                     </div>
                 </li>
             {%endif%}
