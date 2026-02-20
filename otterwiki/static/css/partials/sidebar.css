@@ -210,6 +210,10 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     color: rgba(255, 255, 255, 1);
 }
 
+.dark-mode .sidebarmenu span {
+    color: var(--dm-link-text-color);
+}
+
 .sidebar-link {
     padding-left: 1rem;
 }
