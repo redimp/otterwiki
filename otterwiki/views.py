@@ -3,6 +3,7 @@
 
 import os
 import hashlib
+import subprocess
 
 from flask import (
     request,
@@ -246,6 +247,57 @@ def admin_mail_preferences():
         return otterwiki.preferences.mail_preferences_form()
     else:
         return otterwiki.preferences.handle_mail_preferences(request.form)
+
+
+@app.route("/-/admin/dashboard")
+def admin_dashboard():
+    repo_path = os.path.join("app-data", "repository")
+
+    def mermaid_commit_block(title: str, git_args: list) -> str:
+        """Run git log, count commits per author, return a Mermaid pie chart as markdown."""
+        result = subprocess.run(
+            ["git", "log"] + git_args,
+            capture_output=True,
+            text=True,
+            cwd=repo_path,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"Git command failed ({title})")
+
+        authors = result.stdout.splitlines()
+        stats = {}
+        for author in authors:
+            stats[author] = stats.get(author, 0) + 1
+        sorted_stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)
+
+        lines = ["```mermaid", "pie showData", f"    title {title}"]
+        for author, count in sorted_stats:
+            lines.append(f'    "{author}" : {count}')
+        lines.append("```")
+        return "\n".join(lines)
+
+    try:
+        # Build both blocks
+        all_commits_block = mermaid_commit_block(
+            "All Commits", ["--format=%an"]
+        )
+        last_3_months_block = mermaid_commit_block(
+            "Last Month", ["--format=%an", "--since=1.months"]
+        )
+    except RuntimeError as e:
+        return str(e), 500
+
+    # Merge both blocks
+    markdown_content = "\n\n".join([all_commits_block, last_3_months_block])
+
+    # Render Markdown
+    htmlcontent, _, library_requirements = render.markdown(markdown_content)
+
+    return render_template(
+        "admin/dashboard.html",
+        htmlcontent=htmlcontent,
+        library_requirements=library_requirements,
+    )
 
 
 @app.route(

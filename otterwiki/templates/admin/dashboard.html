@@ -1,0 +1,18 @@
+{% extends "settings.html" %}
+
+{% block title %}
+  <title>Contribution Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    mermaid.initialize({ startOnLoad: true });
+});
+</script>
+
+{% endblock %}
+
+{% block content %}
+<div class="page">
+{{htmlcontent|safe}}
+</div>
+{% endblock %}
