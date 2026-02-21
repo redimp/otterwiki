@@ -1,6 +1,6 @@
 ![](screenshot.png)
 
-# An Otter Wiki
+# An Otter Wiki test
 
 An Otter Wiki is Python-based software for collaborative content
 management, called a [wiki](https://en.wikipedia.org/wiki/Wiki). The
