@@ -233,9 +233,8 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
     def link(self, link, text=None, title=None):
         if empty(text):
             text = link
-        # escape link, title and text
+        # escape link, title
         link = mistune.escape_url(self._safe_url(link))
-        text = mistune.escape(text)
 
         if title:
             link_html = '<a href="{}" title="{}">{}</a>'.format(
