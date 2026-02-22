@@ -165,7 +165,6 @@ def handle_sidebar_preferences(form):
 def handle_app_preferences(form):
     for name in [
         "site_name",
-        "server_name",
         "site_logo",
         "site_description",
         "site_icon",
@@ -186,7 +185,12 @@ def handle_app_preferences(form):
         )
         return redirect(url_for("admin"))
 
-    _update_preference("HOME_PAGE", home_page)
+    # handle server_name
+    server_name = form.get("server_name", "").strip()
+    if empty(server_name):
+        server_name = None
+
+    _update_preference("SERVER_NAME", server_name)
 
     # commit changes to the database
     db.session.commit()
