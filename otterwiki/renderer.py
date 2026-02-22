@@ -2,7 +2,6 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import re
-
 import mistune
 from bs4 import BeautifulSoup
 from markupsafe import Markup, escape
@@ -12,8 +11,8 @@ from mistune.plugins import (
     plugin_url,
     plugin_abbr,
 )
+from pygments.formatters import HtmlFormatter
 from pygments import highlight
-from pygments.formatters import html
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
 
@@ -51,8 +50,7 @@ def _pre_copy_to_clipboard_tag():
     return f"""<div class="copy-to-clipboard-outer"><div class="copy-to-clipboard-inner"><button class="btn alt-dm btn-xsm copy-to-clipboard" type="button"  onclick="otterwiki.copy_to_clipboard(this);"><i class="fa fa-copy" aria-hidden="true" alt="Copy to clipboard""></i></button></div><pre class="copy-to-clipboard code">"""
 
 
-class CodeHtmlFormatter(html.HtmlFormatter):
-
+class CodeHtmlFormatter(HtmlFormatter):
     def wrap(self, source):
         yield 0, _pre_copy_to_clipboard_tag()
         for i, t in source:
@@ -205,6 +203,12 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         self.toc_anchors = {}
 
     def image(self, src, alt="", title=None):
+        # escape src, title and alt
+        if title:
+            title = mistune.escape(title)
+        alt = mistune.escape(alt)
+        src = mistune.escape_url(self._safe_url(src))
+
         if not empty(title):
             image_html = (
                 '<img src="{}" class="img-fluid" title="{}" alt="{}">'.format(
@@ -227,12 +231,15 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         return processed_html
 
     def link(self, link, text=None, title=None):
-        if text is None:
+        if empty(text):
             text = link
+        # escape link, title and text
+        link = mistune.escape_url(self._safe_url(link))
+        text = mistune.escape(text)
 
         if title:
             link_html = '<a href="{}" title="{}">{}</a>'.format(
-                link, title, text
+                link, mistune.escape(title), text
             )
         else:
             link_html = '<a href="{}">{}</a>'.format(link, text)
