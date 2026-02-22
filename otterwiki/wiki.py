@@ -5,6 +5,7 @@ import os
 import re
 from datetime import UTC, datetime, timedelta
 from io import BytesIO
+from time import strftime
 from timeit import default_timer as timer
 from typing import List, cast
 from urllib.parse import unquote
@@ -709,6 +710,11 @@ class Page:
             pagename=self.pagename,
             pagepath=self.pagepath,
             content_editor=content,
+            default_commit_message=strftime(
+                app.config["DEFAULT_COMMIT_MESSAGE"].replace(
+                    "%P", self.pagename
+                )
+            ),
             files=files,
             pages=list(page_idx.pages()),
             cursor_line=cursor_line,
@@ -721,6 +727,13 @@ class Page:
     def save(self, content, commit, author):
         if not has_permission("WRITE"):
             abort(403)
+
+        if app.config["COMMIT_MESSAGE"].upper() == "DISABLED":
+            commit = strftime(
+                app.config["DEFAULT_COMMIT_MESSAGE"].replace(
+                    "%P", self.pagename
+                )
+            )
 
         # store page
         changed = storage.store(

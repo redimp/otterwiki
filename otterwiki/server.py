@@ -60,6 +60,7 @@ app.config.update(
     SIDEBAR_MENUTREE_FOCUS="SUBTREE",  # OFF
     SIDEBAR_CUSTOM_MENU="",
     COMMIT_MESSAGE="REQUIRED",  # OPTIONAL DISABLED
+    DEFAULT_COMMIT_MESSAGE="",
     GIT_WEB_SERVER=False,
     SIDEBAR_SHORTCUTS="home pageindex createpage",
     ROBOTS_TXT="allow",

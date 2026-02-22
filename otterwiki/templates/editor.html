@@ -304,10 +304,10 @@
         <div class="form-group">
 {%if config["COMMIT_MESSAGE"] == "REQUIRED"%}
             <label for="commit-message" class="required">Commit Message</label>
-            <input name="commit" id="commit-message" type="text" class="form-control" placeholder="Your commit message here" required="required">
+            <input name="commit" id="commit-message" type="text"  class="form-control" placeholder="Your commit message here" required="required">
 {% else %}
             <label for="commit-message">Commit Message</label>
-            <input name="commit" id="commit-message" type="text" class="form-control" placeholder="Your (optional) commit message here">
+            <input name="commit" id="commit-message" type="text" class="form-control" value="{{ default_commit_message }}" placeholder="Your (optional) commit message here">
 {% endif %}
         </div>
         <input class="btn btn-primary btn-block" type="submit" value="Save">

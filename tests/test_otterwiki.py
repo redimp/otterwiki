@@ -287,6 +287,31 @@ def test_view_commit(test_client, req_ctx):
     assert content[1] in html
 
 
+def test_default_commit_message(test_client, create_app):
+    from time import strftime
+
+    pagename = "DefaultCommitTest"
+    content = ["aaa", "bbb"]
+    create_app.config["COMMIT_MESSAGE"] = "DISABLED"
+    create_app.config["DEFAULT_COMMIT_MESSAGE"] = ""
+    save_shortcut(test_client, pagename, content[0], commit_message="")
+    # check history
+    html = test_client.get("/{}/history".format(pagename)).data.decode()
+    assert "-/-" in html
+
+    # There is a slight race condition that could make this test fail
+    # if run at new years eve. If this had happend: Happy New Year!
+    create_app.config["DEFAULT_COMMIT_MESSAGE"] = "Updated %P in %Y"
+    save_shortcut(test_client, pagename, content[1], commit_message="")
+    # check history
+    html = test_client.get("/{}/history".format(pagename)).data.decode()
+    assert f"Updated {pagename} in {strftime('%Y')}" in html
+
+    # back to default
+    create_app.config["DEFAULT_COMMIT_MESSAGE"] = ""
+    create_app.config["COMMIT_MESSAGE"] = "OPTIONAL"
+
+
 def test_blame_and_history_and_diff(test_client):
     pagename = "Blame Test"
     content = "Blame Test\naaa_aaa_aaa"
