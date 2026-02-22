@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.17.3](https://github.com/redimp/otterwiki/releases/tag/v2.17.3) - 2026-02-22
+
+<small>[Compare with v2.17.2](https://github.com/redimp/otterwiki/compare/v2.17.2...v2.18.0)</small>
+
+### Features
+
+- Docker images now got the labels added required for `renovate` to deploy the changelog, see #387 ([73a24a2](https://github.com/redimp/otterwiki/commit/73a24a2b79edae35298a00fa5de80bf19e34eb0d) by @m-wrzesien).
+- Housekeeping now provides a checker for broken WikiLinks, see #388 ([35576bd](https://github.com/redimp/otterwiki/commit/35576bd38124d78c48ff3f0fc30384120d94d800) by @deseven).
+- current page is highlighted in the sidebar, see #393 ([9c8b35a](https://github.com/redimp/otterwiki/pull/393/changes/9c8b35ac7a41503400b3f5a538ffc5238049f919) by @ryanwhowe)
+- Plugin system got new hooks, fixed default values for hooks, see #386 by @deseven.
+
+### Bug Fixes
+
+- links and images rendered from markdown were not escaped, this bug was introduced in 2.16.0
+  ([1722ab9](https://github.com/redimp/otterwiki/commit/1722ab93ab2aa0d60026f05ce4cd0a6471677a30) by @redimp).
+
 ## [v2.17.2](https://github.com/redimp/otterwiki/releases/tag/v2.17.2) - 2026-02-11
 
 <small>[Compare with v2.17.1](https://github.com/redimp/otterwiki/compare/v2.17.1...v2.17.2)</small>
