@@ -17,6 +17,14 @@
   </div>
 {##}
   <div class="form-group">
+    <label for="site_name">Server Name</label>
+    <input name="server_name" type="text" placeholder="{{ url_for("index", _external=True).rpartition("//")[-1].partition(":")[0].partition("/")[0] }}" class="form-control" id="site_name" value="{{ config.SERVER_NAME or "" }}">
+    <div class="form-text">
+      The name of the domain running the site. This is <em>optional</em> when running behind a well configured reverse proxy. Used for external URLs.
+    </div>
+  </div>
+{##}
+  <div class="form-group">
     <label for="site_description">Site Description</label>
     <input name="site_description" type="text" placeholder="A minimalistic wiki powered by python, markdown and git." class="form-control" id="site_description" value="{{ config.SITE_DESCRIPTION or "" }}">
     <div class="form-text">

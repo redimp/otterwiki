@@ -26,6 +26,7 @@ app.config.update(
     SECRET_KEY="CHANGE ME",
     SITE_NAME="An Otter Wiki",
     SITE_DESCRIPTION=None,
+    SERVER_NAME=None,
     SITE_LOGO=None,
     SITE_ICON=None,
     SITE_LANG="en",

@@ -165,6 +165,7 @@ def handle_sidebar_preferences(form):
 def handle_app_preferences(form):
     for name in [
         "site_name",
+        "server_name",
         "site_logo",
         "site_description",
         "site_icon",
