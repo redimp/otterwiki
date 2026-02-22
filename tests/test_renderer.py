@@ -867,3 +867,12 @@ def test_link_escape():
     a_html = BeautifulSoup(html, "html.parser").find('a')
     assert a_html
     assert a_html.attrs.get("href", None) == "#harmful-link"
+
+    md = "[`fixed width code`](http://example.com)"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert a_html.attrs.get("href", None) == "http://example.com"
+    assert a_html.text == "fixed width code"
+    code_html = a_html.findChild("code")
+    assert str(code_html) == "<code>fixed width code</code>"
