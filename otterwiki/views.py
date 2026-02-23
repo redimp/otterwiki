@@ -250,8 +250,8 @@ def admin_mail_preferences():
         return otterwiki.preferences.handle_mail_preferences(request.form)
 
 
-@app.route("/-/admin/dashboard")
-def admin_dashboard():
+@app.route("/-/admin/statistics")
+def admin_statistics():
 
     def mermaid_commit_block(title: str, since_days: int | None = None) -> str:
         storage = otterwiki.gitstorage.GitStorage(app.config["REPOSITORY"])
@@ -298,7 +298,7 @@ def admin_dashboard():
     htmlcontent, _, library_requirements = render.markdown(markdown_content)
 
     return render_template(
-        "admin/dashboard.html",
+        "admin/statistics.html",
         htmlcontent=htmlcontent,
         library_requirements=library_requirements,
     )
