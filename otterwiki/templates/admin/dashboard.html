@@ -2,14 +2,14 @@
 
 {% block title %}
   <title>Contribution Dashboard</title>
-<script src="{{ url_for('static', filename='js/mermaid@11.6.0.min.js') }}"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    mermaid.initialize({ startOnLoad: true });
-});
-</script>
-
 {% endblock %}
+
+{% block js %}
+{{ super() }}
+{% set force_load_libraries = true %}
+{% include 'snippets/renderer_js.html' %}
+{% endblock %}
+
 
 {% block content %}
 <div class="page">
