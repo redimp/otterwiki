@@ -2,7 +2,7 @@
 
 {% block title %}
   <title>Contribution Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script src="{{ url_for('static', filename='js/mermaid@11.6.0.min.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     mermaid.initialize({ startOnLoad: true });
