@@ -3,7 +3,7 @@
 
 import os
 import hashlib
-import subprocess
+from datetime import datetime, timedelta
 
 from flask import (
     request,
@@ -27,6 +27,7 @@ from otterwiki.pageindex import PageIndex
 import otterwiki.auth
 import otterwiki.preferences
 import otterwiki.tools
+import otterwiki.gitstorage
 from otterwiki.renderer import render
 from otterwiki.helper import (
     toast,
@@ -251,46 +252,49 @@ def admin_mail_preferences():
 
 @app.route("/-/admin/dashboard")
 def admin_dashboard():
-    repo_path = os.path.join("app-data", "repository")
 
-    def mermaid_commit_block(title: str, git_args: list) -> str:
-        """Run git log, count commits per author, return a Mermaid pie chart as markdown."""
-        result = subprocess.run(
-            ["git", "log"] + git_args,
-            capture_output=True,
-            text=True,
-            cwd=repo_path,
-        )
-        if result.returncode != 0:
-            raise RuntimeError(f"Git command failed ({title})")
+    def mermaid_commit_block(title: str, since_days: int | None = None) -> str:
+        storage = otterwiki.gitstorage.GitStorage(app.config["REPOSITORY"])
+        try:
+            log_entries = storage.log()
+        except Exception as e:
+            raise RuntimeError(f"Git log failed ({title}): {e}")
 
-        authors = result.stdout.splitlines()
         stats = {}
-        for author in authors:
+
+        now = datetime.now().astimezone()
+
+        for entry in log_entries:
+            if since_days is not None:
+                if entry["datetime"] < now - timedelta(days=since_days):
+                    continue
+
+            author = entry["author_name"]
             stats[author] = stats.get(author, 0) + 1
+
         sorted_stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)
 
-        lines = ["```mermaid", "pie showData", f"    title {title}"]
+        lines = [
+            "```mermaid",
+            "pie showData",
+            f"    title {title}",
+        ]
+
         for author, count in sorted_stats:
             lines.append(f'    "{author}" : {count}')
+
         lines.append("```")
+
         return "\n".join(lines)
 
     try:
-        # Build both blocks
-        all_commits_block = mermaid_commit_block(
-            "All Commits", ["--format=%an"]
-        )
-        last_3_months_block = mermaid_commit_block(
-            "Last Month", ["--format=%an", "--since=1.months"]
-        )
+        all_commits_block = mermaid_commit_block("All Commits")
+        last_month_block = mermaid_commit_block("Last 30 Days", since_days=30)
     except RuntimeError as e:
         return str(e), 500
 
-    # Merge both blocks
-    markdown_content = "\n\n".join([all_commits_block, last_3_months_block])
+    markdown_content = "\n\n".join([all_commits_block, last_month_block])
 
-    # Render Markdown
     htmlcontent, _, library_requirements = render.markdown(markdown_content)
 
     return render_template(
