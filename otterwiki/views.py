@@ -3,7 +3,6 @@
 
 import os
 import hashlib
-from datetime import datetime, timedelta
 
 from flask import (
     request,
@@ -27,7 +26,7 @@ from otterwiki.pageindex import PageIndex
 import otterwiki.auth
 import otterwiki.preferences
 import otterwiki.tools
-import otterwiki.gitstorage
+from otterwiki.statistics import StatisticsService
 from otterwiki.renderer import render
 from otterwiki.helper import (
     toast,
@@ -38,6 +37,7 @@ from otterwiki.version import __version__
 from otterwiki.util import sanitize_pagename
 
 from flask_login import login_required
+from flask import current_app
 
 
 #
@@ -251,56 +251,21 @@ def admin_mail_preferences():
 
 
 @app.route("/-/admin/statistics")
+@login_required
 def admin_statistics():
 
-    def mermaid_commit_block(title: str, since_days: int | None = None) -> str:
-        storage = otterwiki.gitstorage.GitStorage(app.config["REPOSITORY"])
-        try:
-            log_entries = storage.log()
-        except Exception as e:
-            raise RuntimeError(f"Git log failed ({title}): {e}")
-
-        stats = {}
-
-        now = datetime.now().astimezone()
-
-        for entry in log_entries:
-            if since_days is not None:
-                if entry["datetime"] < now - timedelta(days=since_days):
-                    continue
-
-            author = entry["author_name"]
-            stats[author] = stats.get(author, 0) + 1
-
-        sorted_stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)
-
-        lines = [
-            "```mermaid",
-            "pie showData",
-            f"    title {title}",
-        ]
-
-        for author, count in sorted_stats:
-            lines.append(f'    "{author}" : {count}')
-
-        lines.append("```")
-
-        return "\n".join(lines)
+    service = StatisticsService(current_app.config["REPOSITORY"])
 
     try:
-        all_commits_block = mermaid_commit_block("All Commits")
-        last_month_block = mermaid_commit_block("Last 30 Days", since_days=30)
-    except RuntimeError as e:
-        return str(e), 500
-
-    markdown_content = "\n\n".join([all_commits_block, last_month_block])
-
-    htmlcontent, _, library_requirements = render.markdown(markdown_content)
+        all_commits = service.commit_statistics()
+        last_30_days = service.commit_statistics(since_days=30)
+    except Exception as e:
+        return f"Git log failed: {e}", 500
 
     return render_template(
         "admin/statistics.html",
-        htmlcontent=htmlcontent,
-        library_requirements=library_requirements,
+        all_commits=all_commits,
+        last_30_days=last_30_days,
     )
 
 

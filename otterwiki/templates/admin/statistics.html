@@ -13,6 +13,22 @@
 
 {% block content %}
 <div class="page">
-{{htmlcontent|safe}}
+
+<div class="mermaid">
+pie showData
+    title All Commits test
+{% for author, count in all_commits %}
+    "{{ author }}" : {{ count }}
+{% endfor %}
+</div>
+
+<div class="mermaid">
+pie showData
+    title Last 30 Days
+{% for author, count in last_30_days %}
+    "{{ author }}" : {{ count }}
+{% endfor %}
+</div>
+
 </div>
 {% endblock %}
