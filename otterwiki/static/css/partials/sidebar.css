@@ -203,6 +203,10 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     border-color: transparent;
 }
 
+.sidebarmenu span {
+    color: var(--lm-link-text-color);
+}
+
 .dark-mode .sidebarmenu a {
     color: var(--dm-sidebar-link-text-color-hover);
 }
