@@ -100,83 +100,148 @@ def showmagicword(line, html):
     return "".join(arr)
 
 
-def clean_html(html: str) -> str:
-    # use BeautifulSoup to identify tags we want to remove / escape
-    # since we get incomplete tags via inline html we have to work
-    # with the html string and can not use what bs makes out of it
-    REMOVE_ATTRIBUTES = [
-        'onclick',
-        'onload',
-        'onerror',
-        'onfocus',
-        'onbeforeprint',
-        'beforeunload',
-        'onblur',
-        'onchange',
-        'oncopy',
-        'oncut',
-        'ondblclick',
-        'ondrag',
-        'draggable',
-        'ondragend',
-        'ondragenter',
-        'ondragleave',
-        'ondragover',
-        'ondragstart',
-        'ondrop',
-        'onfocus',
-        'onfocusin',
-        'onfocusout',
-        'onhashchange',
-        'oninput',
-        'oninvalid',
-        'onkeydown',
-        'onkeypress',
-        'onkeyup',
-        'onload',
-        'onmousedown',
-        'onmouseenter',
-        'onmouseleave',
-        'onmousemove',
-        'onmouseover',
-        'onmouseout',
-        'onmouseup',
-        'onoffline',
-        'ononline',
-        'onpagehide',
-        'onpageshow',
-        'onpaste',
-        'onresize',
-        'onreset',
-        'onscroll',
-        'onsearch',
-        'onselect',
-        'ontoggle',
-        'ontouchcancel',
-        'ontouchend',
-        'ontouchmove',
-        'ontouchstart',
-        'onunload',
-    ]
-    REMOVE_TAGS = ['style', 'script', 'blink', 'marque']
+def parse_custom_whitelist(custom_whitelist: str = None) -> tuple:
+    """
+    Parse custom whitelist string into tags and attributes dictionaries.
+    """
+    custom_tags = []
+    custom_attributes = {}
 
-    _escape = False
+    if custom_whitelist and custom_whitelist.strip():
+        for item in custom_whitelist.split(','):
+            item = item.strip()
+            if not item:
+                continue
+
+            # to separate tag from attributes
+            parts = item.split('[', 1)
+            tag_name = parts[0].strip().lower()
+
+            if tag_name:
+                custom_tags.append(tag_name)
+
+            if len(parts) > 1:
+                attrs_str = parts[1].rstrip(']').strip()
+                if attrs_str:
+                    attrs = [
+                        attr.strip().lower()
+                        for attr in attrs_str.split()
+                        if attr.strip()
+                    ]
+                    if attrs:
+                        custom_attributes[tag_name] = attrs
+
+    return custom_tags, custom_attributes
+
+
+def clean_html(
+    html: str, custom_tags: list = None, custom_attributes: dict = None
+) -> str:
+    """
+    Clean HTML using a whitelist approach - only allow safe tags and attributes.
+    This prevents XSS attacks via various vectors like:
+    - <script> tags
+    - Event handlers (onclick, onload, onbegin, etc.)
+    - Dangerous protocols (javascript:, data:)
+    - Dangerous tags (object, embed, iframe, svg with events, etc.)
+    """
+
+    # tags and attrs are logically groupped by types
+    # fmt: off
+    ALLOWED_TAGS = [
+        'p', 'br', 'hr', 'span', 'div',
+        'strong', 'em', 'b', 'i', 'u', 's', 'strike', 'del', 'ins', 'sub', 'sup', 'mark', 'small',
+        'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'code', 'pre', 'kbd', 'samp', 'var',
+        'blockquote', 'q', 'cite',
+        'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th', 'caption', 'col', 'colgroup',
+        'a', 'img',
+        'abbr', 'address', 'time', 'details', 'summary',
+        'video', 'audio', 'source',
+    ]
+
+    ALLOWED_ATTRIBUTES = {
+        'a': ['href', 'title', 'name', 'id', 'class'],
+        'img': ['src', 'alt', 'title', 'width', 'height', 'class'],
+        'abbr': ['title'],
+        'time': ['datetime'],
+        'td': ['colspan', 'rowspan', 'align', 'valign'],
+        'th': ['colspan', 'rowspan', 'align', 'valign', 'scope'],
+        'col': ['span', 'width'],
+        'colgroup': ['span', 'width'],
+        'table': ['border', 'cellpadding', 'cellspacing', 'width'],
+        'video': ['controls', 'width', 'height', 'poster'],
+        'source': ['src', 'type'],
+        'audio': ['controls', 'src'],
+        # generic attributes allowed on most tags
+        '*': ['id', 'class', 'title', 'style'],
+    }
+    # fmt: on
+
+    DANGEROUS_PROTOCOLS = [
+        'javascript:',
+        'data:',
+        'vbscript:',
+        'file:',
+        'about:',
+    ]
+
+    # extend with custom user-defined tags and attributes
+    if custom_tags:
+        for tag_name in custom_tags:
+            if tag_name and tag_name not in ALLOWED_TAGS:
+                ALLOWED_TAGS.append(tag_name)
+
+    if custom_attributes:
+        for tag_name, attrs in custom_attributes.items():
+            if tag_name in ALLOWED_ATTRIBUTES:
+                ALLOWED_ATTRIBUTES[tag_name] = (
+                    ALLOWED_ATTRIBUTES[tag_name] + attrs
+                )
+            else:
+                ALLOWED_ATTRIBUTES[tag_name] = attrs
+
     soup = BeautifulSoup(html, 'html.parser')
+    _escape = False
+
     for element in soup:
-        if element.name in REMOVE_TAGS:  # pyright: ignore
+        if not hasattr(element, 'name') or element.name is None:
+            continue
+
+        if element.name.lower() not in ALLOWED_TAGS:
             _escape = True
             break
-        try:
-            if any(
-                x in element.attrs.keys()  # pyright: ignore
-                for x in REMOVE_ATTRIBUTES
-            ):
-                _escape = True
-                break
-        except AttributeError:
-            continue
+
+        if hasattr(element, 'attrs'):
+            tag_name_lower = element.name.lower()
+            allowed_attrs = ALLOWED_ATTRIBUTES.get(
+                tag_name_lower, []
+            ) + ALLOWED_ATTRIBUTES.get('*', [])
+
+            for attr_name, attr_value in list(element.attrs.items()):
+                attr_name_lower = attr_name.lower()
+
+                if attr_name_lower not in allowed_attrs:
+                    _escape = True
+                    break
+
+                if attr_name_lower in ['href', 'src', 'poster']:
+                    if isinstance(attr_value, str):
+                        attr_lower = attr_value.lower().strip()
+                        for protocol in DANGEROUS_PROTOCOLS:
+                            if attr_lower.startswith(protocol):
+                                _escape = True
+                                break
+
+                if _escape:
+                    break
+
+        if _escape:
+            break
+
     if _escape:
-        # take nom prisoners
+        # take no prisoners
         html = escape(html)
 
     return html
@@ -187,15 +252,26 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
     toc_tree = []
     toc_anchors = {}
 
-    def __init__(self, env, *args, **kwargs):
+    def __init__(self, env, custom_whitelist=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.env = env
+        self.custom_tags, self.custom_attributes = parse_custom_whitelist(
+            custom_whitelist
+        )
 
     def inline_html(self, html):
-        return clean_html(html)
+        return clean_html(
+            html,
+            custom_tags=self.custom_tags,
+            custom_attributes=self.custom_attributes,
+        )
 
     def block_html(self, html):
-        return clean_html(html)
+        return clean_html(
+            html,
+            custom_tags=self.custom_tags,
+            custom_attributes=self.custom_attributes,
+        )
 
     def reset_toc(self):
         self.toc_count = 0
@@ -402,7 +478,14 @@ class OtterwikiRenderer:
         }
         self.requires_mermaid = False
         self.requires_mathjax = False
-        self.md_renderer = OtterwikiMdRenderer(env=self.env)
+
+        custom_whitelist = (
+            config.get('RENDERER_HTML_WHITELIST', '').strip() or None
+        )
+        self.md_renderer = OtterwikiMdRenderer(
+            env=self.env, custom_whitelist=custom_whitelist
+        )
+
         # set reference to renderer in md_renderer for library requirement tracking
         self.md_renderer.renderer = self
         self.inline_parser = OtterwikiInlineParser(
