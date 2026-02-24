@@ -261,6 +261,184 @@ def test_clean_html_script():
     )
 
 
+def test_clean_html_xss_vectors():
+    """Test that various XSS attack vectors are properly blocked"""
+    # Test object tag with data: protocol
+    assert (
+        clean_html('<object data="data:text/html,<script>alert(1)</script>">')
+        == '&lt;object data=&#34;data:text/html,&lt;script&gt;alert(1)&lt;/script&gt;&#34;&gt;'
+    )
+
+    # Test iframe with javascript: protocol
+    assert (
+        clean_html('<iframe src="javascript:alert(2)"></iframe>')
+        == '&lt;iframe src=&#34;javascript:alert(2)&#34;&gt;&lt;/iframe&gt;'
+    )
+
+    # Test iframe with data: protocol
+    assert (
+        clean_html(
+            '<iframe src="data:text/html,<script>alert(3)</script>"></iframe>'
+        )
+        == '&lt;iframe src=&#34;data:text/html,&lt;script&gt;alert(3)&lt;/script&gt;&#34;&gt;&lt;/iframe&gt;'
+    )
+
+    # Test SVG with animate and onbegin event
+    assert (
+        clean_html('<svg><animate onbegin=alert(4) attributeName=x dur=1s>')
+        == '&lt;svg&gt;&lt;animate onbegin=alert(4) attributeName=x dur=1s&gt;'
+    )
+
+    # Test embed tag (not in allowed list)
+    assert (
+        clean_html('<embed src="test.swf">')
+        == '&lt;embed src=&#34;test.swf&#34;&gt;'
+    )
+
+    # Test various event handlers
+    assert (
+        clean_html('<div onload="alert(5)">test</div>')
+        == '&lt;div onload=&#34;alert(5)&#34;&gt;test&lt;/div&gt;'
+    )
+    assert (
+        clean_html('<img src="x" onerror="alert(6)">')
+        == '&lt;img src=&#34;x&#34; onerror=&#34;alert(6)&#34;&gt;'
+    )
+    assert (
+        clean_html('<body onbeforeprint="alert(7)">')
+        == '&lt;body onbeforeprint=&#34;alert(7)&#34;&gt;'
+    )
+
+    # Test formaction attribute
+    assert (
+        clean_html('<button formaction="javascript:alert(8)">Click</button>')
+        == '&lt;button formaction=&#34;javascript:alert(8)&#34;&gt;Click&lt;/button&gt;'
+    )
+
+    # Test srcdoc attribute
+    assert (
+        clean_html('<iframe srcdoc="<script>alert(9)</script>"></iframe>')
+        == '&lt;iframe srcdoc=&#34;&lt;script&gt;alert(9)&lt;/script&gt;&#34;&gt;&lt;/iframe&gt;'
+    )
+
+
+def test_clean_html_allowed_tags():
+    """Test that allowed tags pass through correctly"""
+    # Test basic formatting tags
+    assert clean_html('<p>test</p>') == '<p>test</p>'
+    assert clean_html('<strong>bold</strong>') == '<strong>bold</strong>'
+    assert clean_html('<em>italic</em>') == '<em>italic</em>'
+
+    # Test links with safe protocols
+    result = clean_html('<a href="https://example.com">link</a>')
+    assert (
+        '<a' in result
+        and 'href="https://example.com"' in result
+        and '>link</a>' in result
+    )
+
+    result = clean_html('<a href="/page">link</a>')
+    assert (
+        '<a' in result and 'href="/page"' in result and '>link</a>' in result
+    )
+
+    # Test images with safe src
+    result = clean_html('<img src="/image.png" alt="test">')
+    assert (
+        '<img' in result
+        and 'src="/image.png"' in result
+        and 'alt="test"' in result
+    )
+
+
+def test_clean_html_custom_tags():
+    """Test that custom allowed tags work"""
+    from otterwiki.renderer import parse_custom_whitelist
+
+    # Without custom tags, svg should be escaped (not in default list)
+    result = clean_html('<svg><circle cx="50" cy="50" r="40"/></svg>')
+    assert '&lt;svg' in result  # Should be escaped
+
+    # With custom tags, svg should be allowed
+    custom_whitelist = 'svg,circle'
+    custom_tags, custom_attributes = parse_custom_whitelist(custom_whitelist)
+    result = clean_html(
+        '<svg><circle cx="50" cy="50" r="40"/></svg>',
+        custom_tags=custom_tags,
+        custom_attributes=custom_attributes,
+    )
+    # SVG tag should be present
+    assert (
+        '<svg' in result and '&lt;svg' not in result
+    )  # Should NOT be escaped
+    assert '<circle' in result
+
+
+def test_clean_html_custom_attributes():
+    """Test that custom attributes can be specified for tags"""
+    from otterwiki.renderer import parse_custom_whitelist
+
+    # iframe is not in default list, so it should be escaped
+    result = clean_html(
+        '<iframe src="https://example.com" width="800" height="600"></iframe>'
+    )
+    assert '&lt;iframe' in result
+
+    # Allow iframe with specific attributes (space-separated)
+    custom_whitelist = 'iframe[src width height]'
+    custom_tags, custom_attributes = parse_custom_whitelist(custom_whitelist)
+    result = clean_html(
+        '<iframe src="https://example.com" width="800" height="600"></iframe>',
+        custom_tags=custom_tags,
+        custom_attributes=custom_attributes,
+    )
+    assert '<iframe' in result and '&lt;iframe' not in result
+    assert 'src="https://example.com"' in result
+    assert 'width="800"' in result
+
+    # But dangerous protocols should still be blocked
+    result = clean_html(
+        '<iframe src="javascript:alert(1)"></iframe>',
+        custom_tags=custom_tags,
+        custom_attributes=custom_attributes,
+    )
+    assert (
+        '&lt;iframe' in result
+    )  # Should be escaped due to dangerous protocol
+
+    # Test multiple tags with mixed attribute specifications
+    custom_whitelist = 'iframe[src width height],svg,button'
+    custom_tags, custom_attributes = parse_custom_whitelist(custom_whitelist)
+    result = clean_html(
+        '<svg><rect/></svg><button>Click</button>',
+        custom_tags=custom_tags,
+        custom_attributes=custom_attributes,
+    )
+    assert '<svg' in result and '<button' in result
+
+    # Test that if user explicitly whitelists onclick, it's allowed (pure whitelist approach)
+    custom_tags, custom_attributes = parse_custom_whitelist('button[onclick]')
+    result = clean_html(
+        '<button onclick="alert(1)">Click</button>',
+        custom_tags=custom_tags,
+        custom_attributes=custom_attributes,
+    )
+    assert (
+        '<button' in result and 'onclick="alert(1)"' in result
+    )  # onclick is explicitly whitelisted
+
+    # But onclick is NOT allowed without explicit whitelisting
+    custom_tags, custom_attributes = parse_custom_whitelist('button')
+    result = clean_html(
+        '<button onclick="alert(1)">Click</button>',
+        custom_tags=custom_tags,
+        custom_attributes=custom_attributes,
+    )
+    assert (
+        '&lt;button' in result
+    )  # Should be escaped because onclick is not in default attributes
+
+
 def test_clean_html_render():
     text = """Preformatted script:
 
