@@ -536,3 +536,8 @@ mark {
 .subsection-table {
     padding-left: 1rem;
 }
+
+.form-control {
+    /* override halfmoon's form control font size to prevent mobile zoom */
+    font-size: 16px;
+}
