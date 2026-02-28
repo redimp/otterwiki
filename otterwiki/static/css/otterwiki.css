@@ -470,6 +470,10 @@ mark {
     width: 2.2rem;
 }
 
+.table-draft .copy-to-clipboard {
+    white-space: pre-wrap;
+}
+
 /* fix mobile scrollbars */
 @media (max-width: 768px) {
     .with-custom-webkit-scrollbars *::-webkit-scrollbar {
