@@ -22,23 +22,61 @@ class DatatableEmbedding:
         )
 
     @hookimpl
+    def help_category_prelude(self, category):
+        if category != self.info()[2]:
+            return None
+        return "Embeddings are additions to the standard markdown syntax in An Otter Wiki. They provide capabilities beyond basic markdown, such as special layout elements, enhanced features, and entirely new functionality. <br/><span class=\"text-secondary-dm bg-secondary-lm\">Embeddings are an experimental feature and subject to change.</span>"
+
+    @hookimpl
     def help(self, plugin):
         if plugin.lower() != "datatable":
             return None
 
         return """
 <div class="row mb-10">
+The DataTable Embedding is for turning markdown tables into datatables that can be paginated, search and sorted.
 <div class="col-md-8 col-sm-12">
 
 ```
-{{DataTable}
-|caption=Months
-...
+{{datatable
+|paging=false
+|perPage=42
+|searchable=false
+|fixedHeight=True
+|caption=Python Stable
+| Version | Released   |
+| -------:| ---------- |
+|    3.13 | 2024-10-07 |
+|    3.12 | 2023-10-02 |
+|    3.11 | 2022-10-24 |
+|    3.10 | 2021-10-04 |
+|     3.9 | 2020-10-05 |
+|     3.8 | 2019-10-14 |
+|     3.7 | 2018-06-27 |
+|     3.0 | 2008-12-03 |
 }}
 ```
 
-</div><div class="col-md-4 col-sm-12">
-...
+</div><div class="col-md-4 col-sm-12 pl-20" style="padding-top:10px;">
+
+{{datatable
+|paging=true
+|perPage=5
+|searchable=false
+|fixedHeight=True
+|caption=Python Stable
+| Version | Released   |
+| -------:| ---------- |
+|    3.13 | 2024-10-07 |
+|    3.12 | 2023-10-02 |
+|    3.11 | 2022-10-24 |
+|    3.10 | 2021-10-04 |
+|     3.9 | 2020-10-05 |
+|     3.8 | 2019-10-14 |
+|     3.7 | 2018-06-27 |
+|     3.0 | 2008-12-03 |
+}}
+
 </div></div>
 """
 
@@ -108,9 +146,12 @@ class DatatableEmbedding:
                 pass
             # glue perPageSelect into jsoptions
             jsoptions = [
-                f"perPageSelect: [{
-                ",".join(f"[\"{perPageSelect[k]}\", {k}]" for k in sorted(perPageSelect.keys()))
-            }]"
+                f"perPageSelect: ["
+                + ",".join(
+                    f"[\"{perPageSelect[k]}\", {k}]"
+                    for k in sorted(perPageSelect.keys())
+                )
+                + "]"
             ]
             for bool_option in self.bool_options:
                 if options.get(bool_option.lower(), None):
@@ -159,6 +200,7 @@ class ImageFrameEmbedding:
 
         return """
 <div class="row mb-10">
+Display images in frames on the wiki page.
 <div class="col-md-8 col-sm-12">
 
 ```
@@ -170,7 +212,7 @@ class ImageFrameEmbedding:
 }}
 ```
 
-</div><div class="col-md-4 col-sm-12">
+</div><div class="col-md-4 col-sm-12" style="padding-top:5px;">
 
 {{ImageFrame
 |caption=An Otter Wiki Logo
@@ -208,7 +250,7 @@ class ImageFrameEmbedding:
         styles = [
             "border-width: 1px",
             "border-style: solid",
-            "border-color: rgba(255, 255, 255, 0.5)",
+            "border-color: rgba(128, 128, 128, 0.3)",
             "padding: .5rem",
             "margin: .5rem 0 .5rem .5rem",
         ]
@@ -247,17 +289,30 @@ class VideoEmbedding:
             return None
 
         return """<div class="row mb-10">
+Embed a video player that supports video and audio playback in your document.
+<div class="col-md-8 col-sm-12">
 
 ```
 {{Video
-|muted=0
+|width=80%
+|muted=true
 |controls=true
-|autoplay=off
-https://otterwiki.com/examples/Video%20Attachment/example.mp4
-/Example/video.ogg
+|autoplay=on
+/static/img/otter.mp4
 }}
 ```
-</div>
+
+</div><div class="col-md-4 col-sm-12" style="text-align:right; padding-top:10px;">
+
+{{Video
+|width=80%
+|muted=true
+|controls=true
+|autoplay=on
+/static/img/otter.mp4
+}}
+
+</div></div>
 """
 
     @hookimpl
@@ -276,6 +331,8 @@ https://otterwiki.com/examples/Video%20Attachment/example.mp4
             flags.append("autoplay")
         if args.get_flag("muted", True):
             flags.append("muted")
+        if args.get_flag("loop", True):
+            flags.append("loop")
         src = args.options_raw.get("src", [])
         if type(src) is str:
             src = [src] + args.args_raw
@@ -312,6 +369,7 @@ class InfoBoxEmbedding:
 
         return """
 <div class="row mb-10">
+An element for displaying structured data in a document.
 <div class="col-md-8 col-sm-12">
 
 ````
@@ -321,11 +379,16 @@ class InfoBoxEmbedding:
 |Answer=42
 |text-align=justify
 |Homepage=[otterwiki.com](https://otterwiki.com)
-Lorem _ipsum_ dolor sit **amet**, consectetur adipiscing elit.
+Lorem _ipsum_ dolor sit **amet**, consectetur
+adipiscing elit.
+```python
+#!/usr/bin/env python
+markdown=True
+```
 }}
 ````
 
-</div><div class="col-md-4 col-sm-12">
+</div><div class="col-md-4 col-sm-12" style="padding-top:5px;">
 
 {{InfoBox
 |caption=Some Caption
@@ -334,7 +397,12 @@ Lorem _ipsum_ dolor sit **amet**, consectetur adipiscing elit.
 |width=80%
 |text-align=justify
 |Homepage=[otterwiki.com](https://otterwiki.com)
-Lorem _ipsum_ dolor sit **amet**, consectetur adipiscing elit.
+Lorem _ipsum_ dolor sit **amet**, consectetur
+adipiscing elit.
+```python
+#!/usr/bin/env python
+markdown=True
+```
 }}
 </div></div>
 """

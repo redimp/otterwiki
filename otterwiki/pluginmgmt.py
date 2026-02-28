@@ -27,6 +27,7 @@ def generate_help():
     # glue together all documentation
     for plugin, description, category in plugins_info:
         if category != last_category:
+
             last_category = category
             last_category_printed = False
 
@@ -36,6 +37,11 @@ def generate_help():
         else:
             if last_category_printed is False:
                 content += f"\n## {category}\n\n"
+                category_prelude = "\n".join(
+                    collect_hook("help_category_prelude", category)
+                )
+                if not empty(category_prelude):
+                    content += category_prelude
                 last_category_printed = True
             content += f"\n### {plugin}\n\n{help}\n<div style=\"clear:both;\"></div>\n"
 
