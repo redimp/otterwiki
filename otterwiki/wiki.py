@@ -45,7 +45,7 @@ from otterwiki.helper import (
     upsert_pagecrumbs,
 )
 from otterwiki.models import Drafts
-from otterwiki.plugins import chain_hooks, plugin_manager
+from otterwiki.plugins import chain_hooks, collect_hook, plugin_manager
 from otterwiki.renderer import pygments_render
 from otterwiki.server import app, app_renderer, db, storage
 from otterwiki.sidebar import SidebarMenu, SidebarPageIndex
@@ -579,6 +579,8 @@ class Page:
         else:
             canonical_url = url_for("view", path=self.pagepath, _external=True)
 
+        extra_js = "".join(collect_hook("renderer_javascript"))
+
         # render template
         return render_template(
             "page.html",
@@ -595,6 +597,7 @@ class Page:
             description=description,
             library_requirements=library_requirements,
             canonical_url=canonical_url,
+            extra_js=extra_js,
         )
 
     def preview(self, content=None, cursor_line=None):

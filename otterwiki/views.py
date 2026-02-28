@@ -34,6 +34,8 @@ from otterwiki.helper import (
 )
 from otterwiki.version import __version__
 from otterwiki.util import sanitize_pagename
+from otterwiki.plugins import call_hook, collect_hook
+import otterwiki.pluginmgmt
 
 from flask_login import login_required
 
@@ -125,6 +127,7 @@ def syntax():
 def help(topic=None):
     toc = None
     content = "TODO"
+    library_requirements = {}
     if topic == "admin":
         with open(os.path.join(app.root_path, "help_admin.md")) as f:
             md = f.read()
@@ -149,16 +152,22 @@ def help(topic=None):
             ]
         ]
         return render_template("help_syntax.html", toc=toc, in_help=True)
+    elif topic == "plugins":
+        content, toc, library_requirements = (
+            otterwiki.pluginmgmt.generate_help()
+        )
     else:
         with open(os.path.join(app.root_path, "help.md")) as f:
             md = f.read()
             content, toc, library_requirements = render.markdown(md)
+    extra_js = "".join(collect_hook("renderer_javascript"))
     # default help
     return render_template(
         "help.html",
         content=content,
         toc=toc,
         library_requirements=library_requirements,
+        extra_js=extra_js,
     )
 
 
@@ -677,3 +686,27 @@ def pull_webhook(webhook_hash):
             jsonify({"status": "error", "message": "Failed to trigger pull"}),
             500,
         )
+
+
+@app.route("/-/plugin/<string:name>/<string:extra>", methods=["POST", "GET"])
+def plugin_url_request(name, extra):
+    result = call_hook(
+        "url_request", plugin=name, extra=extra, values=request.values
+    )
+    if not result:
+        abort(404)
+    return result
+
+
+@app.route(
+    "/-/admin/plugin/<string:name>/<string:extra>", methods=["POST", "GET"]
+)
+def plugin_url_admin_request(name, extra):
+    if not otterwiki.auth.has_permission("ADMIN"):
+        abort(403)
+    result = call_hook(
+        "url_admin_request", plugin=name, extra=extra, valuies=request.values
+    )
+    if not result:
+        abort(404)
+    return result
