@@ -209,3 +209,12 @@ table.datatable-table:focus {
 	outline: solid 1px black;
 	outline-offset: -1px;
 }
+
+div.datatable-container caption {
+	font-size: 2rem;
+	font-weight: bold;
+}
+
+div.datatable-bottom {
+	margin-bottom: 2rem;
+}
