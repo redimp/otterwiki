@@ -834,3 +834,164 @@ def test_user_with_empty_password_issues_204_205(app_with_user, test_client):
             follow_redirects=True,
         )
         assert "please update your password." in rv.data.decode()
+
+
+def test_register_first_user(create_app, test_client, req_ctx):
+    """
+    This test verifies that the first user that is registered becomes admin.
+    """
+    from otterwiki.auth import SimpleAuth, db
+
+    first_email = "admin@example.com"
+    second_email = "random@example.com"
+    password = "password1234"
+
+    db.session.query(SimpleAuth.User).delete()
+    # check users to make sure we start from scratch
+    assert len(SimpleAuth.User.query.all()) == 0
+    create_app.config["ADMIN_USER_EMAIL"] = ""
+
+    # Register random_email
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": first_email,
+            "name": "Admin User",
+            "password1": password,
+            "password2": password,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    # Register admin email
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": second_email,
+            "name": "Random User",
+            "password1": password,
+            "password2": password,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    admin_user = SimpleAuth.User.query.filter_by(email=first_email).first()
+    assert admin_user
+    assert admin_user.is_admin is True
+    random_user = SimpleAuth.User.query.filter_by(email=second_email).first()
+    assert random_user
+    assert random_user.is_admin is False
+    # clean up
+    db.session.query(SimpleAuth.User).delete()
+    create_app.config["ADMIN_USER_EMAIL"] = ""
+
+
+def test_register_first_admin_user_email(create_app, test_client, req_ctx):
+    """
+    This test verifies that with ADMIN_USER_EMAIL configured only user with
+    this email gets admin permissions
+    """
+    from otterwiki.auth import SimpleAuth, db
+
+    admin_email = "admin@example.com"
+    random_email = "random@example.com"
+    password = "password1234"
+
+    db.session.query(SimpleAuth.User).delete()
+    # check users to make sure we start from scratch
+    assert len(SimpleAuth.User.query.all()) == 0
+    create_app.config["ADMIN_USER_EMAIL"] = admin_email
+
+    # Register random_email
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": random_email,
+            "name": "Random User",
+            "password1": password,
+            "password2": password,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    # Register admin email
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": admin_email,
+            "name": "Admin User",
+            "password1": password,
+            "password2": password,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    admin_user = SimpleAuth.User.query.filter_by(email=admin_email).first()
+    assert admin_user
+    assert admin_user.is_admin is True
+    random_user = SimpleAuth.User.query.filter_by(email=random_email).first()
+    assert random_user
+    assert random_user.is_admin is False
+    # clean up
+    db.session.query(SimpleAuth.User).delete()
+    create_app.config["ADMIN_USER_EMAIL"] = ""
+
+
+def test_register_first_admin_user_email_disabled(
+    create_app, test_client, req_ctx
+):
+    """
+    This test verifies that even with ADMIN_USER_EMAIL configured
+    a user with this email does not get admin acccess if another admin is already registered.
+    This prevents edge cases where old admin users have been deleted and the config is forgotten.
+    """
+    from otterwiki.auth import SimpleAuth, db
+
+    admin_email = "admin@example.com"
+    random_email = "random@example.com"
+    password = "password1234"
+
+    db.session.query(SimpleAuth.User).delete()
+    # check users to make sure we start from scratch
+    assert len(SimpleAuth.User.query.all()) == 0
+
+    create_app.config["ADMIN_USER_EMAIL"] = ""
+    # Register random_email
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": random_email,
+            "name": "Random User",
+            "password1": password,
+            "password2": password,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # enable ADMIN_USER_EMAIL, must have no effect since random_email already is admin
+    create_app.config["ADMIN_USER_EMAIL"] = admin_email
+    # Register admin email
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": admin_email,
+            "name": "Admin User",
+            "password1": password,
+            "password2": password,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    admin_user = SimpleAuth.User.query.filter_by(email=admin_email).first()
+    assert admin_user
+    assert admin_user.is_admin is False
+    random_user = SimpleAuth.User.query.filter_by(email=random_email).first()
+    assert random_user
+    assert random_user.is_admin is True
+    # clean up
+    db.session.query(SimpleAuth.User).delete()
+    create_app.config["ADMIN_USER_EMAIL"] = ""

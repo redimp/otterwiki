@@ -235,14 +235,20 @@ class SimpleAuth:
         # hash password
         hashed_password = generate_password_hash(password, method="scrypt")
         # handle flags
-        # first user is admin
-        if len(self.User.query.all()) < 1:
+        is_admin = False
+        # handle auto approval
+        is_approved = app.config["AUTO_APPROVAL"] is True
+        if not empty(app.config["ADMIN_USER_EMAIL"]):
+            if (
+                len(self.User.query.filter_by(is_admin=True).all()) < 1
+                and email == app.config["ADMIN_USER_EMAIL"]
+            ):
+                is_admin = True
+                is_approved = True
+        # if not limit is set by ADMIN_USER_EMAIL first user is admin
+        elif len(self.User.query.all()) < 1:
             is_admin = True
             is_approved = True
-        else:
-            is_admin = False
-            # handle auto approval
-            is_approved = app.config["AUTO_APPROVAL"] is True
         # create user object
         user = self.User(  # pyright: ignore
             name=name,
