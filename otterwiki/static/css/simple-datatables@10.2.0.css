@@ -254,3 +254,12 @@ table.datatable-table:focus {
 input.datatable-input[type="search"]::-webkit-search-cancel-button {
 	-webkit-appearance: none;
 }
+
+div.datatable-container caption {
+	font-size: 2rem;
+	font-weight: bold;
+}
+
+div.datatable-bottom {
+	margin-bottom: 2rem;
+}

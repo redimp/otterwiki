@@ -4,6 +4,7 @@
 from otterwiki.plugins import hookimpl, plugin_manager, EmbeddingArgs
 from bs4 import BeautifulSoup
 from otterwiki.util import sha256sum
+import mistune
 
 """
 The default Embeddings are implemented as Plugins via pluggy despite of
@@ -41,10 +42,14 @@ class DatatableEmbedding:
 </div></div>
 """
 
+    str_options = ["caption"]
+    int_options = ["perPage"]
+    bool_options = ["searchable", "fixedHeight", "sortable", "paging"]
+
     # FIXME: abusing renderer_markdown_preprocess, we might need another hook
     @hookimpl
     def renderer_markdown_preprocess(self, md: str) -> str:
-        self.table_ids = []
+        self.datatables = {}
         return md
 
     @hookimpl
@@ -56,29 +61,83 @@ class DatatableEmbedding:
         if embedding.lower() != "datatable":
             return None
         body = "\n".join(args.args)
+        # default options
+        options = {
+            "perpage": "25",
+            "fixedheight": "true",
+            "sortable": "true",
+        }
+        # collect options
+        for k, v in args.options.items():
+            # all lowercase
+            if k.lower() in [
+                x.lower()
+                for x in self.bool_options
+                + self.str_options
+                + self.int_options
+            ]:
+                options[k.lower()] = v
+
         # find all tables
         soup = BeautifulSoup(body, 'html.parser')
-
         for table in soup.find_all('table'):
-            id = sha256sum(str(table))[:10]
-            self.table_ids.append(id)
-            # add the id to the table
+            id = ""
+            while id == "" or id in self.datatables:
+                id = sha256sum(str(table) + str(id))[:10]
+            self.datatables[id] = options
+            # add the id to the html table element
             table['id'] = f"s-dt-{id}"
-            pass
         # after modifying the table, turn back into html
         return str(soup)
 
     @hookimpl
     def renderer_javascript(self) -> str | None:
-        print(f"renderer_javascript: {self.table_ids=}")
-        if not self.table_ids or not len(self.table_ids):
+        if not self.datatables or len(self.datatables) < 0:
             return None
 
-        # add js block
         script = "<script type=\"text/javascript\"><!--DatatableEmbedding-->\n"
-        for id in self.table_ids:
+        # add js block
+        for id, options in self.datatables.items():
+            # default values
+            perPageSelect = {25: "25", 50: "50", 100: "100", 0: "All"}
+            # add perPage value to perPageSelect if set
+            try:
+                add_page = int(options.get("perpage"))
+                perPageSelect[add_page] = str(add_page)
+            except ValueError:
+                pass
+            # glue perPageSelect into jsoptions
+            jsoptions = [
+                f"perPageSelect: [{
+                ",".join(f"[\"{perPageSelect[k]}\", {k}]" for k in sorted(perPageSelect.keys()))
+            }]"
+            ]
+            for bool_option in self.bool_options:
+                if options.get(bool_option.lower(), None):
+                    value = (
+                        "true"
+                        if options.get(bool_option.lower(), "").lower()
+                        in ["yes", "true", "1", "y"]
+                        else "false"
+                    )
+                    jsoptions.append(f"{bool_option}: {value}")
+            for str_option in self.str_options:
+                if options.get(str_option.lower(), None):
+                    jsoptions.append(
+                        f"{str_option}: \"{mistune.escape(options.get(str_option))}\""
+                    )
+            for int_option in self.int_options:
+                if options.get(int_option.lower(), None):
+                    try:
+                        jsoptions.append(
+                            f"{int_option}: {int(options.get(int_option.lower()))}"
+                        )
+                    except ValueError as e:
+                        print(e)
+                        pass
             script += f"""
-let datatable_{id} = new simpleDatatables.DataTable("#s-dt-{id}");
+let options_{id} = {{{", ".join(jsoptions)}}};
+let datatable_{id} = new simpleDatatables.DataTable("#s-dt-{id}", options_{id});
 """
         script += "</script>"
         return script
