@@ -4,7 +4,7 @@
 <script id="MathJax-script" async src="{{ url_for("static", filename="mathjax/tex-chtml.js") }}"></script>
 {%- endif %}
 {%- if (library_requirements and library_requirements.requires_mermaid) or force_load_libraries %}
-<script src="{{ url_for("static", filename="js/mermaid@11.6.0.min.js") }}"></script>
+<script src="{{ url_for("static", filename="js/mermaid@11.12.3.min.js") }}"></script>
 <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function(event) {
         let theme = 'neutral';
