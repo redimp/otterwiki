@@ -309,6 +309,13 @@ class OtterWikiPluginSpec:
         """
 
     @hookspec
+    def help_category_prelude(self, category) -> str | None:
+        """
+        This hook is called to get information about the category
+        the plugin belongs to.
+        """
+
+    @hookspec
     def url_request(
         self,
         plugin: str,
