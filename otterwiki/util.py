@@ -16,6 +16,9 @@ from functools import lru_cache
 from typing import List, Tuple
 from unidiff import PatchSet
 
+# the cursor magic word which is ignored by the rendering
+cursormagicword = "CuRsoRm4g1cW0Rd"
+
 
 def ttl_lru_cache(ttl: int = 60, maxsize: int = 128):
     """

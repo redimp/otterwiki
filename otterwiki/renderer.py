@@ -30,10 +30,7 @@ from otterwiki.renderer_plugins import (
     plugin_frontmatter,
     plugin_frontmatter_title,
 )
-from otterwiki.util import empty, slugify
-
-# the cursor magic word which is ignored by the rendering
-cursormagicword = "CuRsoRm4g1cW0Rd"
+from otterwiki.util import empty, slugify, cursormagicword
 
 #
 # patch mistune table_plugin so that not all the newlines at the end of a table are removed
