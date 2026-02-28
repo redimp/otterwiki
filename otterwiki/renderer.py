@@ -29,6 +29,7 @@ from otterwiki.renderer_plugins import (
     plugin_wikilink,
     plugin_frontmatter,
     plugin_frontmatter_title,
+    plugin_embeddings,
 )
 from otterwiki.util import empty, slugify, cursormagicword
 
@@ -511,6 +512,7 @@ class OtterwikiRenderer:
                 plugin_frontmatter,
                 plugin_frontmatter_title,
                 plugin_abbr,
+                plugin_embeddings,
             ],
             env=self.env,
         )

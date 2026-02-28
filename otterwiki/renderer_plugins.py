@@ -1,14 +1,35 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+"""
+This file contains plugins that extend the mistune Markdown renderer.
+
+Specifically, it includes plugins for:
+
+- Alerts: Adds the ability to create highlighted alert messages.
+- Embeddings: Allows embedding external plugins providing functionality beyond markdown.
+- Fancy Blocks: Allows for creating visually distinct blocks with custom styles (e.g., info, warning).
+- Folding: Enables collapsing blocks of text.
+- Footnotes: Adds support for creating and displaying footnotes in Markdown.
+- Frontmatter: Parses and utilizes frontmatter information (e.g., title, metadata) at the beginning of a document.
+- Math: Supports rendering mathematical expressions using LaTeX syntax.
+- Spoilers: Provides functionality to hide content behind a button.
+- Task Lists: Enables the creation of to-do lists with checkboxes.
+- Wiki Links: Handles wiki links.
+"""
+
 import re
 import yaml
+import base64
 
 from mistune.inline_parser import LINK_LABEL
 from mistune.util import unikey, ESCAPE_TEXT
 import urllib.parse
-from otterwiki.util import slugify
 from otterwiki.plugins import chain_hooks
+from otterwiki.util import slugify, cursormagicword
+from otterwiki.plugins import EmbeddingArgs, call_hook
+
+# import otterwiki.renderer_embeddings  # pyright: ignore
 
 __all__ = ['plugin_task_lists', 'plugin_footnotes']
 
@@ -771,6 +792,147 @@ class mistunePluginFrontmatterTitle:
         md.after_render_hooks.append(self.after_render)
 
 
+class mistunePluginEmbeddings:
+    EMBEDDING_RE = re.compile(
+        r"{{([A-z ]+)(.+?)}}$", flags=re.MULTILINE | re.DOTALL
+    )
+
+    def parse_block(self, block, m, state):
+        cursor = False
+        # check if the cursor was set inside the embedding (in preview mode)
+        if cursormagicword in m.group(0):
+            cursor = True
+            m = self.EMBEDDING_RE.match(
+                m.group(0).replace(cursormagicword, "")
+            )
+            if not m:
+                return
+        children = []
+        # getting the embeddings name
+        embedding_name = m.group(1)
+        embedding_args = m.group(2)
+
+        # initialize results
+        args = EmbeddingArgs()
+        children = []
+
+        # check if the embedding is a one liner
+        embedding_in_one_line = "\n" not in embedding_args.strip()
+
+        # find all options
+        re_option = re.compile(r"(\|([a-zA-z0-9\-_ ]+)=([^\|\n]+)\n?)")
+        match = re_option.search(embedding_args)
+        while match is not None:
+            # key and value found
+            key = match.group(2)
+            value = match.group(3)
+            # store raw value
+            args.options_raw[key] = value
+            # parse options and args out of embedding_block and add them as children
+            # this makes it possible to get the markdown parsed that may be used in the options
+            grandchildren = block.parse_text(value, state)
+            # store children
+            children.append(
+                {
+                    "type": "embedding_option",
+                    "children": grandchildren,
+                    "params": (key, value),
+                }
+            )
+            # remove this option from the block
+            embedding_args = embedding_args.replace(match.group(0), "")
+            # check for more options
+            match = re_option.search(embedding_args)
+        # strip syntax artefact if one-line syntax is used
+        # FIXME: not completely happy with this
+        if (
+            embedding_in_one_line
+            and len(embedding_args)
+            and embedding_args[0] == "|"
+        ):
+            embedding_args = embedding_args[1:]
+
+        # what is left over in embedding_block is what we consider as embedding_args
+        args.args_raw = [embedding_args]
+
+        # parse the args, so that all markdown syntax can be used
+        grandchildren = block.parse(embedding_args, state)
+
+        children.append(
+            {
+                "type": "embedding_option",
+                "children": grandchildren,
+                "params": (
+                    None,
+                    embedding_args,
+                ),
+            }
+        )
+        return {
+            "type": "embedding_block",
+            "params": (embedding_name, args, cursor),
+            "children": children,
+        }
+
+    def render_html_block(
+        self,
+        text: str,
+        embedding_name: str,
+        args: EmbeddingArgs,
+        cursor: bool = False,
+    ):
+        for argument in text.splitlines():
+            parts = argument.split(":")
+            value = base64.b64decode(parts[-1].encode()).decode()
+            if len(parts) == 1:
+                args.args.append(value)
+            elif len(parts) == 2:
+                args.options[parts[0]] = value
+
+        try:
+            output = call_hook(
+                "embedding_render",
+                embedding=embedding_name,
+                args=args,
+            )
+        except Exception as e:
+            # render exceptions in the output
+            output = f"<p class=\"text-danger\"><tt>{embedding_name}</tt> Error: {e}</p>"
+
+        if output is None:
+            # no ouput means either no embedding has been found or nothing was rendered.
+            output = f"<p class=\"text-danger\">Unknown Embedding:&nbsp;<tt>{embedding_name}</tt></p>"
+
+        if cursor:
+            return cursormagicword + output
+        return output
+
+    def render_embedding_option(self, value, key=None, raw_value=None):
+        # strip the <p>..</p>\n from the value
+        if value.startswith("<p>"):
+            value = value[3:]
+        if value.endswith("</p>\n"):
+            value = value[:-5]
+        # encode the value as base64
+        value = base64.b64encode(value.encode()).decode()
+        if key:
+            return f"{key}:{value}\n"
+        else:
+            return f"{value}\n"
+
+    def __call__(self, md):
+        md.block.register_rule(
+            'embedding_block', self.EMBEDDING_RE, self.parse_block
+        )
+
+        md.block.rules.append('embedding_block')
+
+        md.renderer.register("embedding_option", self.render_embedding_option)
+
+        if md.renderer.NAME == "html":
+            md.renderer.register("embedding_block", self.render_html_block)
+
+
 plugin_task_lists = mistunePluginTaskLists()
 plugin_footnotes = mistunePluginFootnotes()
 plugin_mark = mistunePluginMark()
@@ -782,3 +944,4 @@ plugin_alerts = mistunePluginAlerts()
 plugin_wikilink = mistunePluginWikiLink()
 plugin_frontmatter = mistunePluginFrontmatter()
 plugin_frontmatter_title = mistunePluginFrontmatterTitle()
+plugin_embeddings = mistunePluginEmbeddings()
