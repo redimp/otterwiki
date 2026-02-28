@@ -238,13 +238,23 @@ class SimpleAuth:
         is_admin = False
         # handle auto approval
         is_approved = app.config["AUTO_APPROVAL"] is True
+        # check if user registered with ADMIN_USER_EMAIL
         if not empty(app.config["ADMIN_USER_EMAIL"]):
             if (
                 len(self.User.query.filter_by(is_admin=True).all()) < 1
                 and email == app.config["ADMIN_USER_EMAIL"]
             ):
+                # user is expected to be admin
                 is_admin = True
                 is_approved = True
+
+            if (
+                len(self.User.query.filter_by(is_admin=True).all()) > 0
+                and email == app.config["ADMIN_USER_EMAIL"]
+            ):
+                app.logger.warning(
+                    f"Admin registration with {email}==ADMIN_USER_EMAIL skipped: Existing admin account(s) found."
+                )
         # if not limit is set by ADMIN_USER_EMAIL first user is admin
         elif len(self.User.query.all()) < 1:
             is_admin = True
