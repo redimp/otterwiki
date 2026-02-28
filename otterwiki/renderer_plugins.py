@@ -29,7 +29,7 @@ from otterwiki.plugins import chain_hooks
 from otterwiki.util import slugify, cursormagicword
 from otterwiki.plugins import EmbeddingArgs, call_hook
 
-# import otterwiki.renderer_embeddings  # pyright: ignore
+import otterwiki.renderer_embeddings  # pyright: ignore
 
 __all__ = ['plugin_task_lists', 'plugin_footnotes']
 
