@@ -72,6 +72,7 @@ app.config.update(
     TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES=False,
     HOME_PAGE="",
     RENDERER_HTML_WHITELIST="",
+    ADMIN_USER_EMAIL="",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
