@@ -17,3 +17,7 @@
     });
 </script>
 {%- endif %}
+{%- if (library_requirements and library_requirements.requires_datatables) or force_load_libraries %}
+<script type="text/javascript" src="{{ url_for("static", filename="js/simple-datatables@10.2.0.min.js") }}"></script>
+{%- endif %}
+{{extra_js|safe}}
