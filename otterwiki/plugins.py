@@ -9,10 +9,28 @@ that will be expanded in the future.
 See docs/plugin_examples for examples.
 """
 
+from dataclasses import dataclass, field
+from typing import Tuple
+from werkzeug.datastructures import MultiDict
+
 import pluggy
 
 hookspec = pluggy.HookspecMarker("otterwiki")
 hookimpl = pluggy.HookimplMarker("otterwiki")
+
+
+@dataclass
+class EmbeddingArgs:
+    args: list[str] = field(default_factory=list)
+    options: dict[str, str] = field(default_factory=dict)
+    args_raw: list[str] = field(default_factory=list)
+    options_raw: dict[str, str] = field(default_factory=dict)
+
+    def get_flag(self, key: str, default: bool = False) -> bool:
+        try:
+            return self.options[key].lower() in ["true", "1", "on", "yes"]
+        except KeyError:
+            return default
 
 
 class OtterWikiPluginSpec:
@@ -66,6 +84,13 @@ class OtterWikiPluginSpec:
         """
 
     @hookspec
+    def renderer_javascript(self) -> str | None:
+        """
+        Reurns:
+            javascript code added to the rendered page
+        """
+
+    @hookspec
     def page_view_htmlcontent_postprocess(self, html, page) -> str | None:
         """
         This hook receives the rendered HTML content of a page after markdown
@@ -77,6 +102,22 @@ class OtterWikiPluginSpec:
 
         Returns:
             The transformed HTML content
+        """
+
+    @hookspec
+    def embedding_parse(
+        self, embedding, embedding_options={}, embedding_args=[]
+    ):
+        """
+        This hooks receives the name of the processed embedding and the args and returns
+        the html generated.
+        """
+
+    @hookspec
+    def embedding_render(self, embedding: str, args: EmbeddingArgs):
+        """
+        This hooks receives the name of the processed embedding and the args and returns
+        the html generated.
         """
 
     @hookspec
@@ -250,6 +291,53 @@ class OtterWikiPluginSpec:
         Called after a page has been renamed.
         """
 
+    @hookspec
+    def info(
+        self,
+    ) -> Tuple[str, str, str] | None:
+        """
+        This hook is called to retrieve information about the plugin.
+        The return value is supposed to be the name of the plugin, a
+        short descripton and the category of the plugin. For generating the
+        User help the plugins are grouped by category.
+        """
+
+    @hookspec
+    def help(self, plugin: str) -> Tuple[str, str] | None:
+        """
+        This hook is called to generate the documentation (help) for the plugin
+        """
+
+    @hookspec
+    def url_request(
+        self,
+        plugin: str,
+        extra: str,
+        method: str = "GET",
+        values: MultiDict = MultiDict(),
+    ) -> str | None:
+        """
+        This hook receives the requests to /-/plugin/<name>/<extra>
+        with POST/GET in the method and values combined the combination of
+        args (the key/values in the query string) and form (key/value pairs
+        from the body for a post request), preferring args if keys overlap
+        """
+
+    @hookspec
+    def url_admin_request(
+        self,
+        plugin: str,
+        extra: str,
+        method: str = "GET",
+        values: MultiDict = MultiDict(),
+    ) -> str | None:
+        """
+        This hook receives the requests to /-/admin/plugin/<name>/<extra>
+        with POST/GET in the method and values combined the combination of
+        args (the key/values in the query string) and form (key/value pairs
+        from the body for a post request), preferring args if keys overlap
+        """
+
 
 # pluggy doesn't by default handle chaining the output of one plugin into
 # another, so this is a small utility function to do this.
@@ -260,6 +348,28 @@ def chain_hooks(hook_name, value, *args, **kwargs):
         fn = getattr(impl, 'function')
         value = fn(value, *args, **kwargs)
     return value
+
+
+def call_hook(hook_name, *args, **kwargs):
+    for impl in getattr(plugin_manager.hook, hook_name).get_hookimpls():
+        fn = getattr(impl, 'function')
+        value = fn(*args, **kwargs)
+        if value is not None:
+            return value
+    return None
+
+
+def collect_hook(hook_name, *args, **kwargs):
+    result = []
+    try:
+        for impl in getattr(plugin_manager.hook, hook_name).get_hookimpls():
+            fn = getattr(impl, 'function')
+            value = fn(*args, **kwargs)
+            if value is not None:
+                result.append(value)
+    except AttributeError:
+        pass
+    return result
 
 
 # this plugin_manager is exported so the normal pluggy API can be used in
