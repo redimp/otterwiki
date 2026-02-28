@@ -475,6 +475,7 @@ class OtterwikiRenderer:
         }
         self.requires_mermaid = False
         self.requires_mathjax = False
+        self.requires_datatables = True
 
         custom_allowlist = (
             config.get('RENDERER_HTML_ALLOWLIST', '').strip() or None
@@ -624,6 +625,7 @@ class OtterwikiRenderer:
             {
                 'requires_mermaid': self.requires_mermaid,
                 'requires_mathjax': self.requires_mathjax,
+                'requires_datatables': self.requires_datatables,
             },
         )
 
