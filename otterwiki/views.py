@@ -163,6 +163,8 @@ def help(topic=None):
             md = f.read()
             content, toc, library_requirements = render.markdown(md)
     extra_js = "".join(collect_hook("renderer_javascript"))
+    if len(extra_js):
+        extra_js = f"<script type=\"text/javascript\">{extra_js}</script>"
     # default help
     return render_template(
         "help.html",

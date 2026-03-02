@@ -133,7 +133,7 @@ The DataTable Embedding is for turning markdown tables into datatables that can 
         if not self.datatables or len(self.datatables) < 0:
             return None
 
-        script = "<script type=\"text/javascript\"><!--DatatableEmbedding-->\n"
+        script = ""
         # add js block
         for id, options in self.datatables.items():
             # default values
@@ -180,7 +180,6 @@ The DataTable Embedding is for turning markdown tables into datatables that can 
 let options_{id} = {{{", ".join(jsoptions)}}};
 let datatable_{id} = new simpleDatatables.DataTable("#s-dt-{id}", options_{id});
 """
-        script += "</script>"
         return script
 
 

@@ -670,6 +670,17 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
                 preview_block.innerHTML = data.preview_content;
                 sidebar_toc.innerHTML = data.preview_toc;
                 extranav_toc.innerHTML = data.preview_toc;
+                if (data.preview_js)
+                {
+                    try {
+                        eval(data.preview_js);
+                    }
+                    catch(e) {
+                        console.log("Error", e.stack);
+                        console.log("Error", e.name);
+                        console.log("Error", e.message);
+                    }
+                }
             })
             .then(function () {
                 cursor = document.getElementById("otterwiki_cursor");
