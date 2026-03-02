@@ -376,6 +376,42 @@ def test_password_nonexistent_user_fails(runner):
     assert "not found" in result.output
 
 
+def test_password_delete_password(runner_with_user, cli_app_with_user):
+    """--delete-password unsets the password_hash."""
+    from otterwiki.auth import SimpleAuth
+
+    result = runner_with_user.invoke(
+        args=["user", "password", "existing@example.com", "-d"]
+    )
+    assert result.exit_code == 0, result.output
+    assert "deleted successfully" in result.output
+
+    user = SimpleAuth.User.query.filter_by(
+        email="existing@example.com"
+    ).first()
+    assert user.password_hash is None
+
+
+def test_password_generate_password(runner_with_user, cli_app_with_user):
+    """--generate-password sets a new password and prints it."""
+    from otterwiki.auth import SimpleAuth
+    from werkzeug.security import check_password_hash
+
+    result = runner_with_user.invoke(
+        args=["user", "password", "existing@example.com", "-g"]
+    )
+    assert result.exit_code == 0, result.output
+    assert "set to:" in result.output
+
+    generated = result.output.strip().split("set to:")[-1].strip()
+    assert len(generated) == 12
+
+    user = SimpleAuth.User.query.filter_by(
+        email="existing@example.com"
+    ).first()
+    assert check_password_hash(user.password_hash, generated)
+
+
 def test_password_send_reset_no_mail_server_fails(
     runner_with_user, cli_app_with_user
 ):

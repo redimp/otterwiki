@@ -109,9 +109,7 @@ def _print_user_summary(user):
     click.echo(f"  Approved:       {'yes' if user.is_approved else 'no'}")
     click.echo(f"  Email confirmed:{'yes' if user.email_confirmed else 'no'}")
     click.echo(f"  Permissions:    {', '.join(perms) if perms else 'none'}")
-    click.echo(
-        f"  Password:       {'set' if user.password_hash else 'not set (cannot log in)'}"
-    )
+    click.echo(f"  Password:       {'set' if user.password_hash else 'none'}")
 
 
 @user_cli.command("create")
@@ -296,12 +294,33 @@ def user_edit(email, new_email, new_name, flags, permissions):
     default=False,
     help="Send a password reset email (requires mail server).",
 )
-def user_password(email, password_interactive, send_password_reset):
+@click.option(
+    "--delete-password",
+    "-d",
+    is_flag=True,
+    default=False,
+    help="Unset the user's password so they cannot log in until a reset is requested.",
+)
+@click.option(
+    "--generate-password",
+    "-g",
+    is_flag=True,
+    default=False,
+    help="Generate a secure 12-character password and print it.",
+)
+def user_password(
+    email,
+    password_interactive,
+    send_password_reset,
+    delete_password,
+    generate_password,
+):
     """Set or reset a user's password.
 
     EMAIL is the email address of the user (required).
 
-    Exactly one of --password-interactive or --send-password-reset must be provided.
+    Exactly one of --password-interactive, --send-password-reset,
+    --delete-password, or --generate-password must be provided.
 
     Examples:
 
@@ -309,29 +328,63 @@ def user_password(email, password_interactive, send_password_reset):
 
         flask user password user@example.com --send-password-reset
 
+        flask user password user@example.com --delete-password
+
+        flask user password user@example.com --generate-password
+
         flask user password user@example.com -i
 
         flask user password user@example.com -r
+
+        flask user password user@example.com -d
+
+        flask user password user@example.com -g
     """
     from werkzeug.security import generate_password_hash
 
-    if not password_interactive and not send_password_reset:
+    options_count = sum(
+        [
+            password_interactive,
+            send_password_reset,
+            delete_password,
+            generate_password,
+        ]
+    )
+
+    if options_count == 0:
         click.echo(
-            "Error: Provide --password-interactive (-i) or --send-password-reset (-r).",
+            "Error: Provide --password-interactive (-i), --send-password-reset (-r), --delete-password (-d), or --generate-password (-g).",
             err=True,
         )
         sys.exit(1)
 
-    if password_interactive and send_password_reset:
+    if options_count > 1:
         click.echo(
-            "Error: --password-interactive and --send-password-reset are mutually exclusive.",
+            "Error: --password-interactive, --send-password-reset, --delete-password, and --generate-password are mutually exclusive.",
             err=True,
         )
         sys.exit(1)
 
     user = _get_user(email)
 
-    if password_interactive:
+    if delete_password:
+        user.password_hash = None
+        db.session.add(user)
+        db.session.commit()
+        click.echo(f"Password for '{user.email}' deleted successfully.")
+
+    elif generate_password:
+        import secrets
+        import string
+
+        alphabet = string.ascii_letters + string.digits + string.punctuation
+        password = "".join(secrets.choice(alphabet) for _ in range(12))
+        user.password_hash = generate_password_hash(password, method="scrypt")
+        db.session.add(user)
+        db.session.commit()
+        click.echo(f"Password for '{user.email}' set to: {password}")
+
+    elif password_interactive:
         while True:
             password1 = click.prompt("New password", hide_input=True, err=True)
             password2 = click.prompt(
