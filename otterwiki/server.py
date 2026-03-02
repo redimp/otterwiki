@@ -228,8 +228,8 @@ for plugin, dist in plugininfo:
     )
 # setup plugins
 plugin_manager.hook.setup(
-    app=app, storage=storage, db=db
-)  # pyright: ignore never unbound
+    app=app, storage=storage, db=db  # pyright: ignore never unbound
+)
 
 
 #
@@ -346,7 +346,9 @@ githttpserver = otterwiki.remote.GitHttpServer(path=app.config["REPOSITORY"])
 # initialize repository management stuff
 import otterwiki.repomgmt
 
-otterwiki.repomgmt.initialize_repo_management(storage)
+otterwiki.repomgmt.initialize_repo_management(
+    storage  # pyright: ignore never unbound
+)
 
 # contains application routes,
 # using side-effect of import executing the file to get
