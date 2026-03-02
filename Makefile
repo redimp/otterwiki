@@ -16,7 +16,8 @@ HELM_VERSION := $(shell grep ^version helm/Chart.yaml | awk '{print $$2}')
 
 all: run
 
-.PHONY: clean coverage run debug shell sdist docker-build docker-test
+.PHONY: clean coverage run debug cli shell sdist docker-build docker-test
+ARGS ?=
 
 clean:
 	rm -rf venv *.egg-info dist *.log* otterwiki/__pycache__ tests/__pycache__
@@ -35,6 +36,9 @@ run: venv settings.cfg
 
 debug: venv settings.cfg
 	FLASK_ENV=development FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask run --port $(PORT)
+
+cli: venv settings.cfg
+	FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=$(PWD)/settings.cfg venv/bin/flask $(ARGS)
 
 profiler: venv settings.cfg
 	FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg \

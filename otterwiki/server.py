@@ -351,3 +351,6 @@ otterwiki.repomgmt.initialize_repo_management(storage)
 # contains application routes,
 # using side-effect of import executing the file to get
 import otterwiki.views  # pyright: ignore
+
+# register CLI commands
+import otterwiki.cli  # pyright: ignore
