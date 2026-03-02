@@ -35,6 +35,7 @@ FROM alpine:3.20.1
 ARG GIT_TAG
 ENV GIT_TAG=$GIT_TAG
 # environment variables (I'm not sure if anyone ever would modify this)
+ENV FLASK_APP=otterwiki.server
 ENV OTTERWIKI_SETTINGS=/app-data/settings.cfg
 ENV OTTERWIKI_REPOSITORY=/app-data/repository
 # unify debian and alpine user and groups

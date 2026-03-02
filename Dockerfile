@@ -56,6 +56,7 @@ ENV GIT_TAG=$GIT_TAG
 ENV PUID=33
 ENV PGID=33
 # environment variables (I'm not sure if anyone ever would modify this)
+ENV FLASK_APP=otterwiki.server
 ENV OTTERWIKI_SETTINGS=/app-data/settings.cfg
 ENV OTTERWIKI_REPOSITORY=/app-data/repository
 # install supervisord and python
