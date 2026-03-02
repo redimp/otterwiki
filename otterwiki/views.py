@@ -3,6 +3,7 @@
 
 import os
 import hashlib
+from timeit import default_timer as timer
 
 from flask import (
     request,
@@ -13,6 +14,7 @@ from flask import (
     redirect,
     url_for,
     jsonify,
+    g,
 )
 from otterwiki.server import app, githttpserver
 from otterwiki.wiki import (
@@ -710,3 +712,23 @@ def plugin_url_admin_request(name, extra):
     if not result:
         abort(404)
     return result
+
+
+@app.route("/-/plugin-static.css")
+def plugin_static_css():
+    static_css = g.get("plugin_static_css")
+    if static_css is None:
+        t_start = timer()
+        static_css = "" + "\n".join(collect_hook("static_css"))
+        if timer() - t_start > 0.05:
+            app.logger.info(
+                f"Generating plugin_static_css took {timer() - t_start:.3f}s."
+            )
+        g.plugin_static_css = static_css
+    response = make_response(
+        static_css,
+        200,
+    )
+    response.mimetype = "text/css"
+    response.headers['Cache-Control'] = "max-age=300"
+    return response

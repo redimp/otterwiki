@@ -309,6 +309,13 @@ class OtterWikiPluginSpec:
         """
 
     @hookspec
+    def static_css(self) -> str | None:
+        """
+        css required by the plugin. Will be added to all sites
+        via the template layout.html
+        """
+
+    @hookspec
     def help_category_prelude(self, category) -> str | None:
         """
         This hook is called to get information about the category

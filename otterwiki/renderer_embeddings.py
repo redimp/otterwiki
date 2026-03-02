@@ -243,6 +243,13 @@ Display images in frames on the wiki page.
             "pos", "right"
         )
         floating = args.options.get("float", position)
+
+        if floating.lower() == "left":
+            margin = "margin: .5rem .5rem 0 .5rem"
+        else:
+            floating = "right"
+            margin = "margin: .5rem 0 .5rem .5rem"
+
         userstyle = args.options_raw.get("style", "")
         width = args.options.get("width", "30%")
         content += "\n".join(args.args)
@@ -252,7 +259,7 @@ Display images in frames on the wiki page.
             "border-style: solid",
             "border-color: rgba(128, 128, 128, 0.3)",
             "padding: .5rem",
-            "margin: .5rem 0 .5rem .5rem",
+            margin,
         ]
 
         if floating.lower() in ["left", "right"]:
@@ -427,6 +434,12 @@ markdown=True
             "pos", "right"
         )
         floating = args.options.get("float", position)
+
+        if floating.lower() == "left":
+            margin = "margin: .5rem .5rem 0 .5rem"
+        else:
+            floating = "right"
+            margin = "margin: .5rem 0 .5rem .5rem"
         userstyle = args.options_raw.get("style", "")
 
         styles = [
@@ -434,8 +447,8 @@ markdown=True
             "border-style: solid",
             "border-color: rgba(128, 128, 128, 0.3)",
             "padding: .5rem",
-            "margin: .5rem 0 .5rem .5rem",
             "background-color: rgba(0, 0, 0, 0.2)",
+            margin,
         ]
 
         if width:
