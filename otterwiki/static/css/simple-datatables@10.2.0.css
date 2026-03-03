@@ -28,7 +28,19 @@
 	padding: 6px;
 	background-color: rgba(64,64,64,0.2);
 	border: 1px solid rgba(128,128,128,0.2);
-	color: rgba(128,128,128,0.8);
+	color: rgba(0,0,0,0.8);
+}
+
+.dark-mode .datatable-selector {
+	color: rgba(192,192,192,0.8);
+}
+
+.dark-mode input.datatable-input {
+	color: rgba(192,192,192,0.8);
+}
+
+input.datatable-input {
+	color: rgba(0,1,0,0.8);
 }
 
 .datatable-selector:focus {
@@ -195,13 +207,23 @@
 	opacity: 0.2;
 }
 
-
 .datatable-sorter::before {
+	border-top: 4px solid rgba(64,64,64,1.0);
+	bottom: 0px;
+}
+
+.dark-mode .datatable-sorter::before {
 	border-top: 4px solid rgba(128,128,128,1.0);
 	bottom: 0px;
 }
 
 .datatable-sorter::after {
+	border-bottom: 4px solid rgba(64,64,64,1.0);
+	border-top: 4px solid transparent;
+	top: 0px;
+}
+
+.dark-mode .datatable-sorter::after {
 	border-bottom: 4px solid rgba(128,128,128,1.0);
 	border-top: 4px solid transparent;
 	top: 0px;
@@ -229,7 +251,7 @@
 }
 
 .datatable-filter-active .datatable-filter::before {
-    opacity: 0.6;
+    opacity: 1.0;
 }
 
 .datatable-empty {
