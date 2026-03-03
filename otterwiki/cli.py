@@ -281,7 +281,7 @@ def user_edit(email, new_email, new_name, flags, permissions):
 @user_cli.command("password")
 @click.argument("email")
 @click.option(
-    "--password-interactive",
+    "--interactive",
     "-i",
     is_flag=True,
     default=False,
@@ -295,14 +295,14 @@ def user_edit(email, new_email, new_name, flags, permissions):
     help="Send a password reset email (requires mail server).",
 )
 @click.option(
-    "--delete-password",
+    "--delete",
     "-d",
     is_flag=True,
     default=False,
     help="Unset the user's password so they cannot log in until a reset is requested.",
 )
 @click.option(
-    "--generate-password",
+    "--generate",
     "-g",
     is_flag=True,
     default=False,
@@ -310,27 +310,27 @@ def user_edit(email, new_email, new_name, flags, permissions):
 )
 def user_password(
     email,
-    password_interactive,
+    interactive,
     send_password_reset,
-    delete_password,
-    generate_password,
+    delete,
+    generate,
 ):
     """Set or reset a user's password.
 
     EMAIL is the email address of the user (required).
 
-    Exactly one of --password-interactive, --send-password-reset,
-    --delete-password, or --generate-password must be provided.
+    Exactly one of --interactive, --send-password-reset,
+    --delete, or --generate must be provided.
 
     Examples:
 
-        flask user password user@example.com --password-interactive
+        flask user password user@example.com --interactive
 
         flask user password user@example.com --send-password-reset
 
-        flask user password user@example.com --delete-password
+        flask user password user@example.com --delete
 
-        flask user password user@example.com --generate-password
+        flask user password user@example.com --generate
 
         flask user password user@example.com -i
 
@@ -344,36 +344,36 @@ def user_password(
 
     options_count = sum(
         [
-            password_interactive,
+            interactive,
             send_password_reset,
-            delete_password,
-            generate_password,
+            delete,
+            generate,
         ]
     )
 
     if options_count == 0:
         click.echo(
-            "Error: Provide --password-interactive (-i), --send-password-reset (-r), --delete-password (-d), or --generate-password (-g).",
+            "Error: Provide --interactive (-i), --send-password-reset (-r), --delete (-d), or --generate (-g).",
             err=True,
         )
         sys.exit(1)
 
     if options_count > 1:
         click.echo(
-            "Error: --password-interactive, --send-password-reset, --delete-password, and --generate-password are mutually exclusive.",
+            "Error: --interactive, --send-password-reset, --delete, and --generate are mutually exclusive.",
             err=True,
         )
         sys.exit(1)
 
     user = _get_user(email)
 
-    if delete_password:
+    if delete:
         user.password_hash = None
         db.session.add(user)
         db.session.commit()
         click.echo(f"Password for '{user.email}' deleted successfully.")
 
-    elif generate_password:
+    elif generate:
         import secrets
         import string
 
@@ -384,7 +384,7 @@ def user_password(
         db.session.commit()
         click.echo(f"Password for '{user.email}' set to: {password}")
 
-    elif password_interactive:
+    elif interactive:
         while True:
             password1 = click.prompt("New password", hide_input=True, err=True)
             password2 = click.prompt(

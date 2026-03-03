@@ -357,7 +357,7 @@ def test_password_both_options_fails(runner_with_user):
             "user",
             "password",
             "existing@example.com",
-            "--password-interactive",
+            "--interactive",
             "--send-password-reset",
         ],
         input="password123\npassword123\n",
