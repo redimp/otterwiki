@@ -1287,15 +1287,21 @@ class Attachment:
             )
 
     def get_thumbnail_icon(self):
-        if self.mimetype is not None:
-            if self.mimetype == "application/pdf":
-                return (
-                    '<i class="far fa-file-pdf" style="font-size:48px;"></i>'
-                )
-            if self.mimetype.startswith("text"):
-                return (
-                    '<i class="far fa-file-alt" style="font-size:48px;"></i>'
-                )
+        if self.mimetype and self.mimetype.startswith("video/"):
+            return '<i class="far fa-file-video" style="font-size:48px;"></i>'
+        if self.mimetype and self.mimetype in [
+            "application/x-bzip",
+            "application/x-bzip2",
+            "application/zip",
+            "application/x-tar",
+        ]:
+            return (
+                '<i class="far fa-file-archive" style="font-size:48px;"></i>'
+            )
+        if self.mimetype == "application/pdf":
+            return '<i class="far fa-file-pdf" style="font-size:48px;"></i>'
+        if self.mimetype and self.mimetype.startswith("text"):
+            return '<i class="far fa-file-alt" style="font-size:48px;"></i>'
         return '<i class="far fa-file" style="font-size:48px;"></i>'
 
     @property
