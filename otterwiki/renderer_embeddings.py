@@ -277,7 +277,7 @@ Display images in frames on the wiki page.
             if caption
             else ""
         )
-        return f"<div style=\"{style};{userstyle}\">{content}{caption}</div>"
+        return f"<div class=\"imageframe-caption\" style=\"{style};{userstyle}\">{content}{caption}</div>"
 
 
 class VideoEmbedding:
@@ -462,7 +462,7 @@ markdown=True
         style += userstyle
 
         caption = (
-            f"<div style=\"text-align:center;width:100%;font-weight:bold;\">{caption}</div>"
+            f"<div class=\"infobox-caption\" style=\"text-align:center;width:100%;font-weight:bold;\">{caption}</div>"
             if caption
             else ""
         )
