@@ -72,6 +72,106 @@ markdown=True
     assert "markdown=True" == divhighlight.text.strip()
 
 
+def test_imageframe_basic():
+    md = """
+{{ImageFrame
+|caption=Test Caption
+![alt](/img/test.png)
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    # default float is right
+    assert "float:right" in frame.get("style", "")
+    assert "clear:right" in frame.get("style", "")
+    # default width
+    assert "width:30%" in frame.get("style", "")
+    # caption rendered
+    caption = frame.find("div", class_="imageframe")
+    assert caption is not None
+    assert caption.text == "Test Caption"
+    # image rendered inside frame
+    assert frame.find("img") is not None
+
+
+def test_imageframe_position_left():
+    md = """
+{{ImageFrame
+|position=left
+|width=50%
+![alt](/img/test.png)
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    style = frame.get("style", "")
+    assert "float:left" in style
+    assert "clear:left" in style
+    assert "width:50%" in style
+
+
+def test_imageframe_no_caption():
+    md = """
+{{ImageFrame
+![alt](/img/test.png)
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    # no caption div when caption is omitted
+    assert frame.find("div", class_="imageframe") is None
+
+
+def test_imageframe_text_align():
+    md = """
+{{ImageFrame
+|text-align=center
+![alt](/img/test.png)
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    assert "text-align:center" in frame.get("style", "")
+
+
+def test_imageframe_custom_style():
+    md = """
+{{ImageFrame
+|style=opacity:0.8
+![alt](/img/test.png)
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    assert "opacity:0.8" in frame.get("style", "")
+
+
+def test_imageframe_alias():
+    md = """
+{{Image Frame
+|caption=Alias Test
+![alt](/img/test.png)
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    caption = frame.find("div", class_="imageframe")
+    assert caption is not None
+    assert caption.text == "Alias Test"
+
+
 def test_attachmentlist(create_app):
     author = ("Test Author", "test@example.com")
     create_app.storage.store(
