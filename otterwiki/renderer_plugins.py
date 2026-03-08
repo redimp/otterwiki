@@ -827,7 +827,7 @@ class mistunePluginEmbeddings:
             key = match.group(2)
             value = match.group(3)
             # store raw value
-            args.options_raw[key] = value
+            args.options_raw[key.lower()] = value
             # parse options and args out of embedding_block and add them as children
             # this makes it possible to get the markdown parsed that may be used in the options
             grandchildren = block.parse_text(value, state)
