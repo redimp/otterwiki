@@ -172,6 +172,132 @@ def test_imageframe_alias():
     assert caption.text == "Alias Test"
 
 
+DATATABLE_MD = """\
+{{datatable
+| Name | Score |
+| ---- | ----: |
+| Alice | 42 |
+| Bob | 7 |
+}}
+"""
+
+
+def test_datatable_basic():
+    html, _, _ = render.markdown(DATATABLE_MD)
+    soup = BeautifulSoup(html, "html.parser")
+    # table must have an s-dt-* id
+    table = soup.find("table", id=lambda v: v and v.startswith("s-dt-"))
+    assert table is not None
+    # content is preserved
+    assert "Alice" in html
+    assert "Bob" in html
+
+
+def test_datatable_javascript():
+    from otterwiki.plugins import collect_hook
+
+    render.markdown(DATATABLE_MD)
+    js_parts = collect_hook("renderer_javascript")
+    js = "".join(js_parts)
+    assert "simpleDatatables.DataTable" in js
+    assert "s-dt-" in js
+
+
+def test_datatable_options_bool():
+    from otterwiki.plugins import collect_hook
+
+    md = """\
+{{datatable
+|paging=false
+|searchable=true
+|sortable=false
+|fixedHeight=false
+| A | B |
+| - | - |
+| 1 | 2 |
+}}
+"""
+    render.markdown(md)
+    js = "".join(collect_hook("renderer_javascript"))
+    assert "paging: false" in js
+    assert "searchable: true" in js
+    assert "sortable: false" in js
+    assert "fixedHeight: false" in js
+
+
+def test_datatable_option_perpage():
+    from otterwiki.plugins import collect_hook
+
+    md = """\
+{{datatable
+|perPage=42
+| A | B |
+| - | - |
+| 1 | 2 |
+}}
+"""
+    render.markdown(md)
+    js = "".join(collect_hook("renderer_javascript"))
+    assert "perPage: 42" in js
+    # custom perPage value must appear in the perPageSelect list
+    assert '"42", 42' in js
+
+
+def test_datatable_option_caption():
+    from otterwiki.plugins import collect_hook
+
+    md = """\
+{{datatable
+|caption=My Table
+| A | B |
+| - | - |
+| 1 | 2 |
+}}
+"""
+    render.markdown(md)
+    js = "".join(collect_hook("renderer_javascript"))
+    assert 'caption: "My Table"' in js
+
+
+def test_datatable_multiple_tables():
+    from otterwiki.plugins import collect_hook
+
+    md = """\
+{{datatable
+| A | B |
+| - | - |
+| 1 | 2 |
+
+| X | Y |
+| - | - |
+| 3 | 4 |
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    tables = soup.find_all("table", id=lambda v: v and v.startswith("s-dt-"))
+    assert len(tables) == 2
+    # each table must have a unique id
+    ids = [t["id"] for t in tables]
+    assert ids[0] != ids[1]
+    # JS must initialise both
+    js = "".join(collect_hook("renderer_javascript"))
+    assert js.count("simpleDatatables.DataTable") == 2
+
+
+def test_datatable_no_table():
+    from otterwiki.plugins import collect_hook
+
+    md = """\
+{{datatable
+No table here, just text.
+}}
+"""
+    html, _, _ = render.markdown(md)
+    js = "".join(collect_hook("renderer_javascript"))
+    assert "simpleDatatables.DataTable" not in js
+
+
 def test_attachmentlist(create_app):
     author = ("Test Author", "test@example.com")
     create_app.storage.store(
