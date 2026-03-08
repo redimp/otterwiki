@@ -1,7 +1,9 @@
 #!/usr/bin/env pyton
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import csv
 import fnmatch
+import io
 
 from otterwiki.plugins import hookimpl, plugin_manager, EmbeddingArgs
 from bs4 import BeautifulSoup
@@ -80,6 +82,34 @@ The DataTable Embedding is for turning markdown tables into datatables that can 
 }}
 
 </div></div>
+
+<div class="row mb-10">
+CSV attachments can also be rendered as datatables:
+<div class="col-md-8 col-sm-12">
+
+```
+{{datatable
+|src=data.csv
+|delimiter=;
+|quotechar="
+|header=true
+|columns=1,3
+|headers=Name,Score
+|caption=My Data
+}}
+```
+
+</div><div class="col-md-4 col-sm-12 pl-20">
+
+Options specific to CSV:
+- `src`: filename of a CSV attachment on the page
+- `delimiter` field delimiter, default `;`
+- `quotechar` character used to quote fields, default `"`
+- `header` use first row as column headers (default `true`)
+- `columns` comma-separated list of 1-based column indices or header names to include
+- `headers` comma-separated list of column header labels (overrides CSV headers)
+
+</div></div>
 """
 
     str_options = ["caption"]
@@ -93,6 +123,110 @@ The DataTable Embedding is for turning markdown tables into datatables that can 
         return md
 
     @hookimpl
+    def page_render_context(self, page, preview: bool):
+        self.page = page
+
+    def _csv_to_html_table(self, args: EmbeddingArgs) -> str:
+        """Build an HTML table string from a CSV page attachment."""
+        from otterwiki.wiki import Attachment
+
+        src = args.options.get('src', None)
+        if not src:
+            return ''
+
+        delimiter = args.options.get(
+            'delimiter',
+            args.options.get('sep', args.options.get('separator', ';')),
+        )
+        quotechar = args.options_raw.get('quotechar', '"')
+        use_header = args.get_flag('header', True)
+        columns_opt = args.options.get('columns', None)
+        headers_opt = args.options.get('headers', None)
+        if delimiter == "\\t":
+            delimiter = "\t"
+
+        page = getattr(self, 'page', None)
+        if page is None:
+            raise ValueError('no page context available.')
+
+        attachment = Attachment(page.pagepath, src)
+        if not attachment.exists():
+            raise ValueError(f'csv attachment "{src}" not found.')
+        with open(attachment.abspath, 'r', encoding='utf-8', newline='') as f:
+            content = f.read()
+
+        reader = csv.reader(
+            io.StringIO(content), delimiter=delimiter, quotechar=quotechar
+        )
+        rows = list(reader)
+
+        if not rows:
+            return '<table></table>'
+
+        if use_header:
+            header_row = rows[0]
+            data_rows = rows[1:]
+        else:
+            header_row = None
+            data_rows = rows
+
+        # Determine which columns to include
+        n_cols = len(
+            header_row
+            if header_row is not None
+            else (data_rows[0] if data_rows else [])
+        )
+        all_indices = list(range(n_cols))
+
+        if columns_opt:
+            col_specs = [c.strip() for c in columns_opt.split(',')]
+            try:
+                # 1-based integer indices
+                col_indices = [int(c) - 1 for c in col_specs]
+            except ValueError:
+                # column names — requires a header row
+                if header_row is not None:
+                    col_indices = [
+                        header_row.index(name)
+                        for name in col_specs
+                        if name in header_row
+                    ]
+                else:
+                    col_indices = all_indices
+        else:
+            col_indices = all_indices
+
+        # Override display headers
+        if headers_opt:
+            override_headers = [h.strip() for h in headers_opt.split(',')]
+        else:
+            override_headers = None
+
+        html = '<table>\n'
+
+        if use_header or override_headers:
+            html += '<thead><tr>'
+            if override_headers:
+                for h in override_headers:
+                    html += f'<th>{mistune.escape(h)}</th>'
+            elif header_row is not None:
+                for i in col_indices:
+                    cell = header_row[i] if 0 <= i < len(header_row) else ''
+                    html += f'<th>{mistune.escape(cell)}</th>'
+            html += '</tr></thead>\n'
+
+        html += '<tbody>\n'
+        for row in data_rows:
+            html += '<tr>'
+            for i in col_indices:
+                cell = row[i] if 0 <= i < len(row) else ''
+                html += f'<td>{mistune.escape(cell)}</td>'
+            html += '</tr>\n'
+        html += '</tbody>\n</table>\n'
+
+        return html
+
+    @hookimpl
     def embedding_render(
         self,
         embedding: str,
@@ -100,7 +234,13 @@ The DataTable Embedding is for turning markdown tables into datatables that can 
     ):
         if embedding.lower() != "datatable":
             return None
-        body = "\n".join(args.args)
+
+        src = args.options.get('src', None)
+        if src:
+            body = self._csv_to_html_table(args)
+        else:
+            body = "\n".join(args.args)
+
         # default options
         options = {
             "perpage": "25",

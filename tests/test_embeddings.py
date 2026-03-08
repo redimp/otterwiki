@@ -275,7 +275,9 @@ def test_datatable_multiple_tables():
 """
     html, _, _ = render.markdown(md)
     soup = BeautifulSoup(html, "html.parser")
-    tables = soup.find_all("table", id=lambda v: v and v.startswith("s-dt-"))
+    tables = soup.find_all(
+        "table", id=lambda v: v and v.startswith("s-dt-")
+    )  # pyright: ignore
     assert len(tables) == 2
     # each table must have a unique id
     ids = [t["id"] for t in tables]
@@ -296,6 +298,267 @@ No table here, just text.
     html, _, _ = render.markdown(md)
     js = "".join(collect_hook("renderer_javascript"))
     assert "simpleDatatables.DataTable" not in js
+
+
+def test_datatable_csv_basic(create_app):
+    author = ("Test Author", "test@example.com")
+    csv_content = "Name;Score\nAlice;42\nBob;7\n"
+    create_app.storage.store(
+        "csvpage.md",
+        content="# CSV Test\n{{datatable\n|src=data.csv\n}}\n",
+        author=author,
+        message="csv page",
+    )
+    create_app.storage.store(
+        "csvpage/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvpage/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find(
+        "table", id=lambda v: v and v.startswith("s-dt-")
+    )  # pyright: ignore
+    assert table is not None
+    assert "Alice" in html
+    assert "Bob" in html
+    # headers from first row
+    assert "Name" in html
+    assert "Score" in html
+
+
+def test_datatable_csv_custom_delimiter(create_app):
+    author = ("Test Author", "test@example.com")
+    csv_content = "Name,Score\nAlice,42\nBob,7\n"
+    create_app.storage.store(
+        "csvpage_sep.md",
+        content="# CSV Test\n{{datatable\n|src=data.csv\n|delimiter=,\n}}\n",
+        author=author,
+        message="csv page",
+    )
+    create_app.storage.store(
+        "csvpage_sep/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvpage_sep/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find(
+        "table", id=lambda v: v and v.startswith("s-dt-")
+    )  # pyright: ignore
+    assert table is not None
+    assert "Alice" in html
+    assert "Name" in html
+
+
+def test_datatable_csv_column_selection_by_index(create_app):
+    author = ("Test Author", "test@example.com")
+    csv_content = "Name;Score;Date\nAlice;42;2024-01-01\nBob;7;2024-02-01\n"
+    create_app.storage.store(
+        "csvpage_cols.md",
+        content="# CSV Test\n{{datatable\n|src=data.csv\n|columns=1,2\n}}\n",
+        author=author,
+        message="csv page",
+    )
+    create_app.storage.store(
+        "csvpage_cols/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvpage_cols/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find(
+        "table", id=lambda v: v and v.startswith("s-dt-")  # pyright: ignore
+    )  # pyright: ignore
+    assert table is not None
+    assert "Alice" in html
+    assert "Name" in html
+    assert "Score" in html
+    assert "Date" not in table.decode_contents()
+
+
+def test_datatable_csv_column_selection_by_name(create_app):
+    author = ("Test Author", "test@example.com")
+    csv_content = "Name;Score;Date\nAlice;42;2024-01-01\nBob;7;2024-02-01\n"
+    create_app.storage.store(
+        "csvpage_colname.md",
+        content="# CSV Test\n{{datatable\n|src=data.csv\n|columns=Name,Score\n}}\n",
+        author=author,
+        message="csv page",
+    )
+    create_app.storage.store(
+        "csvpage_colname/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvpage_colname/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find(
+        "table", id=lambda v: v and v.startswith("s-dt-")  # pyright: ignore
+    )
+    assert table is not None
+    assert "Alice" in table.text
+    assert "Date" not in table.decode_contents()
+
+
+def test_datatable_csv_header_override(create_app):
+    author = ("Test Author", "test@example.com")
+    csv_content = "Name;Score\nAlice;42\nBob;7\n"
+    create_app.storage.store(
+        "csvpage_hdr.md",
+        content="# CSV Test\n{{datatable\n|src=data.csv\n|headers=Player,Points\n}}\n",
+        author=author,
+        message="csv page",
+    )
+    create_app.storage.store(
+        "csvpage_hdr/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvpage_hdr/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find(
+        "table", id=lambda v: v and v.startswith("s-dt-")  # pyright: ignore
+    )  # pyright: ignore
+    assert table is not None
+    assert "Player" in html
+    assert "Points" in html
+    # original CSV headers should not appear
+    assert table.find("thead")
+    assert (
+        "Name" not in table.find("thead").decode_contents()
+    )  # pyright:ignore
+    assert (
+        "Score" not in table.find("thead").decode_contents()
+    )  # pyright:ignore
+
+
+def test_datatable_csv_no_header(create_app):
+    author = ("Test Author", "test@example.com")
+    csv_content = "Alice;42\nBob;7\n"
+    create_app.storage.store(
+        "csvpage_nohdr.md",
+        content="# CSV Test\n{{datatable\n|src=data.csv\n|header=false\n}}\n",
+        author=author,
+        message="csv page",
+    )
+    create_app.storage.store(
+        "csvpage_nohdr/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvpage_nohdr/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find(
+        "table", id=lambda v: v and v.startswith("s-dt-")  # pyright: ignore
+    )  # pyright: ignore
+    assert table is not None
+    assert "Alice" in html
+    assert "Bob" in html
+    assert table.find("thead") is None
+
+
+def test_datatable_csv_missing_file(create_app):
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "csvpage_miss.md",
+        content="# CSV Test\n{{datatable\n|src=missing.csv\n}}\n",
+        author=author,
+        message="csv page",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvpage_miss/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert "not found" in html
+
+
+def test_datatable_csv_quotechar_default(create_app):
+    """Double-quoted fields with embedded separators are parsed correctly."""
+    author = ("Test Author", "test@example.com")
+    # "Alice, Jr." contains the default separator (;) inside quotes — but we
+    # use the default quotechar (") so the field must be kept intact.
+    csv_content = 'Name;Score\n"Alice, Jr.";42\nBob;7\n'
+    create_app.storage.store(
+        "csvpage_qc1.md",
+        content="# CSV Test\n{{datatable\n|src=data.csv\n}}\n",
+        author=author,
+        message="csv page",
+    )
+    create_app.storage.store(
+        "csvpage_qc1/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvpage_qc1/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find(
+        "table", id=lambda v: v and v.startswith("s-dt-")  # pyright: ignore
+    )
+    assert table is not None
+    # The quoted field must appear as a single cell, not be split
+    cells = [td.get_text() for td in table.find_all("td")]
+    assert "Alice, Jr." in cells
+    assert "42" in cells
+
+
+def test_datatable_csv_quotechar_custom(create_app):
+    """Custom quotechar is respected when parsing CSV fields."""
+    author = ("Test Author", "test@example.com")
+    # Use single-quote as quotechar; field contains the separator
+    csv_content = "Name;Score\n'O;Brien';99\nBob;7\n"
+    create_app.storage.store(
+        "csvpage_qc2.md",
+        content="# CSV Test\n{{datatable\n|src=data.csv\n|quotechar='\n}}\n",
+        author=author,
+        message="csv page",
+    )
+    create_app.storage.store(
+        "csvpage_qc2/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvpage_qc2/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find(
+        "table", id=lambda v: v and v.startswith("s-dt-")  # pyright: ignore
+    )
+    assert table is not None
+    cells = [td.get_text() for td in table.find_all("td")]
+    assert "O;Brien" in cells
+    assert "99" in cells
 
 
 def test_attachmentlist(create_app):
