@@ -45,7 +45,7 @@ from otterwiki.helper import (
     upsert_pagecrumbs,
 )
 from otterwiki.models import Drafts
-from otterwiki.plugins import chain_hooks, collect_hook, plugin_manager
+from otterwiki.plugins import chain_hooks, collect_hook, call_hook, plugin_manager
 from otterwiki.renderer import pygments_render
 from otterwiki.server import app, app_renderer, db, storage
 from otterwiki.sidebar import SidebarMenu, SidebarPageIndex
@@ -503,6 +503,9 @@ class Page:
                 f"""This page was loaded from the repository but is not added under git version control. Make a commit on the <a href="/{self.pagepath}/edit" class="alert-link">Edit page</a> to add it.""",
             ]
 
+        # send context of the page rendered to plugins
+        call_hook("page_render_context", page=self, preview=False)
+
         # render markdown
         htmlcontent, toc, library_requirements = app_renderer.markdown(
             self.content, page_url=self.page_view_url
@@ -609,6 +612,9 @@ class Page:
             self.exists_or_404()
             # no content in form use loaded page
             content = self.content
+
+        # send context of the page rendered to plugins
+        call_hook("page_render_context", page=self, preview=True)
 
         # render preview html from markdown
         content_html, toc, library_requirements = app_renderer.markdown(
