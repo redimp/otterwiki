@@ -105,6 +105,16 @@ class OtterWikiPluginSpec:
         """
 
     @hookspec
+    def page_render_context(self, page, preview: bool) -> None:
+        """
+        This hooks recevied the context of the page currently being rendered.
+
+        Args:
+            page: The otterwiki.wiki.Page object
+            preview: bool True if page is previewed
+        """
+
+    @hookspec
     def embedding_parse(
         self, embedding, embedding_options={}, embedding_args=[]
     ):
