@@ -52,7 +52,7 @@
             <td>{{f.filesize}}
             <td>{{f.datetime|format_datetime}}<br/><span class="btn revision-small">{{f.revision}}</span></td>
             <td>{{f.author_name}}</td>
-            <td>{{f.message}}</td>
+            <td class="text-wrap">{{f.message}}</td>
 {% if has_permission("READ") %}
             <td><a href="{{ url_for("edit_attachment", pagepath=pagepath, filename=f.filename) }}" class=""><i class="fas fa-edit"></i></a></td>
 {% endif %}
