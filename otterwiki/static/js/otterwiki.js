@@ -768,8 +768,30 @@ var otterwiki_editor = {
         var relative_cursor = { line: orig_cursor.line - block_start.line, ch: orig_cursor.ch };
         // get selected block
         var text = cm_editor.getSelection();
+        const TABLE_RE = /\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n{0,1}/;
         // parse table
-        var match = text.match(/\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n{0,1}/);
+        var match = text.match(TABLE_RE);
+        // If the table match doesn't span the full block (e.g. table is inside a
+        // {{datatable}} embedding, or surrounded by text with no blank lines),
+        // narrow the editor selection to just the matched table lines. This prevents
+        // table_arr_replace from overwriting surrounding content.
+        if (match !== null && (match.index > 0 || match[0].trimEnd().length < text.trimEnd().length)) {
+            var text_before = text.substring(0, match.index);
+            var line_offset = (text_before.match(/\n/g) || []).length;
+            var table_start_line = block_start.line + line_offset;
+            var table_lines = match[0].split('\n');
+            // split leaves a trailing empty element when the match ends with \n
+            if (match[0].endsWith('\n')) table_lines.pop();
+            var table_end_line = table_start_line + table_lines.length - 1;
+            var table_end_ch = table_lines[table_lines.length - 1].length;
+            // narrow the editor selection to the table only
+            cm_editor.doc.setSelection(
+                {line: table_start_line, ch: 0},
+                {line: table_end_line, ch: table_end_ch}
+            );
+            // recompute relative cursor against the narrowed selection
+            relative_cursor = { line: orig_cursor.line - table_start_line, ch: orig_cursor.ch };
+        }
         if (match == null) {
             // restore selection
             cm_editor.setSelection(orig_cursor, orig_cursor_end);
