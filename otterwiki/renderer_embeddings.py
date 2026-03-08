@@ -1,6 +1,8 @@
 #!/usr/bin/env pyton
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import fnmatch
+
 from otterwiki.plugins import hookimpl, plugin_manager, EmbeddingArgs
 from bs4 import BeautifulSoup
 from otterwiki.util import sha256sum
@@ -200,6 +202,8 @@ class ImageFrameEmbedding:
         return """
 <div class="row mb-10">
 Display images in frames on the wiki page.
+</div><div class="row mb-10">
+
 <div class="col-md-8 col-sm-12">
 
 ```
@@ -481,7 +485,175 @@ markdown=True
         return f"<div class=\"infobox\" style=\"{style};\">{caption}{table_html}</div>"
 
 
+class AttachmentListEmbedding:
+    @hookimpl
+    def info(self):
+        return (
+            "AttachmentList",
+            "Embedding for displaying the attachments to the current page.",
+            "Syntax/Embeddings",
+        )
+
+    @hookimpl
+    def page_render_context(
+        self,
+        page,
+        preview: bool,
+    ):
+        self.page = page
+        self.attachments = page._attachments_list()
+        self.preview = preview
+
+    @hookimpl
+    def embedding_render(
+        self,
+        embedding: str,
+        args: EmbeddingArgs,
+    ):
+        if embedding.lower() not in (
+            'attachmentlist',
+            'attachment list',
+            'attachments',
+        ):
+            return None
+
+        attachments = getattr(self, 'attachments', [])
+        filter_pattern = args.options.get('filter', '*')
+        fmt = args.options.get(
+            'fmt', args.options.get('format', 'full')
+        ).lower()
+        show_icons = args.get_flag(
+            'icons', False if fmt == "minimal" else True
+        )
+
+        if filter_pattern and filter_pattern != '*':
+            attachments = [
+                f
+                for f in attachments
+                if fnmatch.fnmatch(f['filename'], filter_pattern)
+            ]
+
+        caption = mistune.escape(args.options.get('caption', ''))
+        caption_html = f'<caption>{caption}</caption>' if caption else ''
+
+        if not attachments:
+            return (
+                f'<div class="attachmentlist-embedding">'
+                f'<table class="table">{caption_html}</table>'
+                f'</div>'
+            )
+
+        # build header and rows depending on format
+        if fmt == 'minimal':
+            header = f'<th>Attachment</th>'
+        elif fmt == 'details':
+            header = f'<th>Filename</th><th>Size</th><th>Date</th>'
+        else:  # full
+            header = (
+                f'<th>Attachment</th>'
+                f'<th>Size</th>'
+                f'<th>Date</th>'
+                f'<th>Author</th>'
+                f'<th>Comment</th>'
+            )
+
+        if show_icons:
+            header = f'<th></th>' + header
+
+        rows = ''
+        for f in attachments:
+            filename = mistune.escape(f['filename'])
+            url = f['url'] or ''
+
+            if show_icons:
+                thumb = (
+                    f'<img src="{f["thumbnail_url"]}"/>'
+                    if f.get('thumbnail_url')
+                    else f.get('thumbnail_icon', '')
+                )
+                icon_cell = f'<td width="1"><a href="{url}">{thumb}</a></td>'
+            else:
+                icon_cell = ''
+
+            if fmt == 'minimal':
+                cells = f'<td><a href="{url}">{filename}</a></td>'
+            elif fmt == 'details':
+                dt = f['datetime']
+                dt_str = (
+                    dt.strftime('%Y-%m-%d %H:%M')
+                    if hasattr(dt, 'strftime')
+                    else mistune.escape(str(dt))
+                )
+                filesize = mistune.escape(f['filesize'])
+                cells = (
+                    f'<td><a href="{url}">{filename}</a></td>'
+                    f'<td>{filesize}</td>'
+                    f'<td>{dt_str}</td>'
+                )
+            else:  # full
+                dt = f['datetime']
+                dt_str = (
+                    dt.strftime('%Y-%m-%d %H:%M')
+                    if hasattr(dt, 'strftime')
+                    else mistune.escape(str(dt))
+                )
+                filesize = mistune.escape(f['filesize'])
+                author = mistune.escape(f['author_name'] or '')
+                message = mistune.escape(f['message'] or '')
+                cells = (
+                    f'<td><a href="{url}">{filename}</a></td>'
+                    f'<td>{filesize}</td>'
+                    f'<td>{dt_str}</td>'
+                    f'<td>{author}</td>'
+                    f'<td class="text-wrap">{message}</td>'
+                )
+
+            rows += f'<tr>{icon_cell}{cells}</tr>\n'
+
+        return (
+            f'<div class="attachmentlist-embedding">'
+            f'<table class="table">'
+            f'{caption_html}'
+            f'<thead><tr>{header}</tr></thead>'
+            f'<tbody>{rows}</tbody>'
+            f'</table>'
+            f'</div>'
+        )
+
+    @hookimpl
+    def help(self, plugin):
+        if plugin.lower() != "attachmentlist":
+            return None
+
+        return """
+<div class="row mb-10">
+Display attachments to the current page as list.
+</div><div class="row mb-10">
+<div class="col">
+
+```
+{{Attachments
+|caption=Attachments
+|filter=*
+|format=full/details/minimal
+|icon=true/false
+}}
+```
+
+With format you can decide what is displayed in the table: `minimal` shows only the filenames, `details` shows filename, date and size, `full` shows all information.
+</div>
+
+</div><div class="row mb-10">
+
+<table class="table"><thead><tr><th></th><th>Attachment</th><th>Size</th><th>Date</th><th>Author</th><th>Comment</th></tr></thead><tbody><tr><td width="1"><a href="#"><i class="far fa-file-pdf" style="font-size:48px;"></i></a></td><td><a href="#">example.pdf</a></td><td>110.0KiB</td><td>2026-03-08 11:26</td><td>Anonymous</td><td class="text-wrap">Added AttachmentList documentation.</td></tr>
+</tbody></table>
+
+</div>
+"""
+
+
 plugin_manager.register(ImageFrameEmbedding())
 plugin_manager.register(InfoBoxEmbedding())
 plugin_manager.register(VideoEmbedding())
 plugin_manager.register(DatatableEmbedding())
+plugin_manager.register(AttachmentListEmbedding())
