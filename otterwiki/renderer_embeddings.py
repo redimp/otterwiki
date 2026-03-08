@@ -273,7 +273,7 @@ Display images in frames on the wiki page.
 
         style = ";".join(styles)
         caption = (
-            f"<div style=\"text-align:center;width:100%;font-weight:bold;\">{caption}</div>"
+            f"<div class=\"imageframe\" style=\"text-align:center;width:100%;font-weight:bold;\">{caption}</div>"
             if caption
             else ""
         )
@@ -467,20 +467,18 @@ markdown=True
             else ""
         )
 
-        table_html = (
-            "<table style=\"width:100%;border: none;background:none;\">"
-        )
+        table_html = "<table class=\"infobox\" style=\"width:100%;border: none;background:none;\">"
         if content:
-            table_html += f"<tr><td style=\"border:none;text-align:{text_align}\" colspan=\"2\">{content}</td><tr>"
+            table_html += f"<tr class=\"infobox-args\"><td style=\"border:none;text-align:{text_align}\" colspan=\"2\">{content}</td><tr>"
         for key, value in args.options.items():
             if key in ["caption", "width", "float", "text-align"]:
                 continue
             if key.startswith("_"):
                 key = key[1:]
-            table_html += f"<tr style=\"border:none;\"><td style=\"border: none;padding: .5rem;\"><strong>{key}</strong></td><td style=\"border: none;padding: .5rem;\">{value}</td></tr>"
+            table_html += f"<tr class=\"infobox-key-value\" style=\"border:none;\"><td style=\"border: none;padding: .5rem;\"><strong>{key}</strong></td><td style=\"border: none;padding: .5rem;\">{value}</td></tr>"
         table_html += "</table>"
 
-        return f"<div style=\"{style};\">{caption}{table_html}</div>"
+        return f"<div class=\"infobox\" style=\"{style};\">{caption}{table_html}</div>"
 
 
 plugin_manager.register(ImageFrameEmbedding())

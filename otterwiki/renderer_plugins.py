@@ -794,7 +794,7 @@ class mistunePluginFrontmatterTitle:
 
 class mistunePluginEmbeddings:
     EMBEDDING_RE = re.compile(
-        r"{{([A-z ]+)(.+?)}}$", flags=re.MULTILINE | re.DOTALL
+        r"{{([A-z ]+)(.*?)}}$", flags=re.MULTILINE | re.DOTALL
     )
 
     def parse_block(self, block, m, state):
