@@ -16,7 +16,7 @@
                 <details {% if pagepath and pagepath.lower().startswith(value.path.lower()) %}open{% endif %}>
                     <summary class="sidebarmenu">
                         {% if pagepath and pagepath.lower() == value.path.lower() %}
-                        <span>{{value["header"]}}</span>
+                        <a href="/{{value["path"]}}" aria-current="page">{{value["header"]}}</a>
                         {% else %}
                         <a href="/{{value["path"]}}">{{value["header"]}}</a>
                         {% endif %}
@@ -29,7 +29,7 @@
                 <li>
                     <div class="summary-details">
                         {% if pagepath and pagepath.lower() == value.path.lower() %}
-                        <span>{{value["header"]}}</span>
+                        <a href="/{{value["path"]}}" aria-current="page">{{value["header"]}}</a>
                         {% else %}
                         <a href="/{{value["path"]}}">{{value["header"]}}</a>
                         {% endif %}

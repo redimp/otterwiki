@@ -203,8 +203,9 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     border-color: transparent;
 }
 
-.sidebarmenu span {
+.sidebarmenu a[aria-current="page"] {
     color: var(--lm-link-text-color);
+    opacity: 1;
 }
 
 .dark-mode .sidebarmenu a {
@@ -214,7 +215,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     color: rgba(255, 255, 255, 1);
 }
 
-.dark-mode .sidebarmenu span {
+.dark-mode .sidebarmenu a[aria-current="page"] {
     color: var(--dm-link-text-color);
 }
 
