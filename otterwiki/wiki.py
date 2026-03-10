@@ -45,7 +45,7 @@ from otterwiki.helper import (
     upsert_pagecrumbs,
 )
 from otterwiki.models import Drafts
-from otterwiki.plugins import chain_hooks
+from otterwiki.plugins import chain_hooks, plugin_manager
 from otterwiki.renderer import pygments_render
 from otterwiki.server import app, app_renderer, db, storage
 from otterwiki.sidebar import SidebarMenu, SidebarPageIndex
@@ -746,6 +746,13 @@ class Page:
             toast("Nothing changed.", "warning")
         else:
             toast("{} saved.".format(self.pagename_full))
+            # notify plugins
+            plugin_manager.hook.page_saved(
+                pagepath=self.pagepath,
+                content=content,
+                author=author,
+                message=commit,
+            )
         # take care of drafts
         self.discard_draft(author)
         # redirect to view
@@ -951,6 +958,7 @@ class Page:
                     self.pagename, new_pagename
                 )
             try:
+                old_pagepath = self.pagepath
                 self.rename(new_pagename, message, author)
             except Exception as e:
                 # I tried to plumb an error message in here, but it did not show up in the UI - turns out these messages
@@ -961,6 +969,13 @@ class Page:
                 toast("Renaming failed.", "error")
                 app.logger.error(f"Renaming failed: {e}")
             else:
+                # notify plugins
+                plugin_manager.hook.page_renamed(
+                    old_pagepath=old_pagepath,
+                    new_pagepath=new_pagename,
+                    author=author,
+                    message=message,
+                )
                 return redirect(url_for("view", path=new_pagename))
         return self.rename_form(new_pagename, message)
 
@@ -1009,6 +1024,12 @@ class Page:
             files,
             message=message,
             author=author,
+        )
+        # notify plugins
+        plugin_manager.hook.page_deleted(
+            pagepath=self.pagepath,
+            author=author,
+            message=message,
         )
         toast("{} deleted.".format(self.pagename))
         return redirect(url_for("changelog"))

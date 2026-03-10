@@ -230,6 +230,26 @@ class OtterWikiPluginSpec:
             None
         """
 
+    @hookspec
+    def page_saved(self, pagepath, content, author, message) -> None:
+        """
+        Called after a page has been saved and the content has changed.
+        """
+
+    @hookspec
+    def page_deleted(self, pagepath, author, message) -> None:
+        """
+        Called after a page has been deleted.
+        """
+
+    @hookspec
+    def page_renamed(
+        self, old_pagepath, new_pagepath, author, message
+    ) -> None:
+        """
+        Called after a page has been renamed.
+        """
+
 
 # pluggy doesn't by default handle chaining the output of one plugin into
 # another, so this is a small utility function to do this.
