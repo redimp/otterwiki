@@ -186,7 +186,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     margin-bottom: .5rem;
 }
 
-.sidebar-menu a {
+.sidebar-menu a, .sidebar-menu span {
     line-height: 2rem;
 }
 
