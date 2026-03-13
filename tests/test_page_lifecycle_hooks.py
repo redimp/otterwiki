@@ -2,7 +2,14 @@
 
 """Tests for page lifecycle hooks (page_saved, page_deleted, page_renamed)."""
 
-from otterwiki.plugins import hookimpl, plugin_manager
+import sys
+
+from otterwiki.plugins import hookimpl
+
+
+def _get_plugin_manager():
+    """Get the current plugin_manager, even after module reloads by other tests."""
+    return sys.modules["otterwiki.plugins"].plugin_manager
 
 
 class HookRecorder:
@@ -60,7 +67,7 @@ def save_page(client, pagename, content, commit_message):
 
 def make_recorder():
     recorder = HookRecorder()
-    plugin_manager.register(recorder)
+    _get_plugin_manager().register(recorder)
     return recorder
 
 
@@ -75,7 +82,7 @@ def test_page_saved_hook(test_client):
         assert "# Hello" in data["content"]
         assert data["message"] == "create page"
     finally:
-        plugin_manager.unregister(recorder)
+        _get_plugin_manager().unregister(recorder)
 
 
 def test_page_saved_hook_not_fired_when_unchanged(test_client):
@@ -86,7 +93,7 @@ def test_page_saved_hook_not_fired_when_unchanged(test_client):
         save_page(test_client, "HookNoChangeTest", "# Same", "no-op save")
         assert len(recorder.calls) == 0
     finally:
-        plugin_manager.unregister(recorder)
+        _get_plugin_manager().unregister(recorder)
 
 
 def test_page_deleted_hook(test_client):
@@ -105,7 +112,7 @@ def test_page_deleted_hook(test_client):
         assert data["pagepath"] == "HookDeleteTest"
         assert data["message"] == "bye"
     finally:
-        plugin_manager.unregister(recorder)
+        _get_plugin_manager().unregister(recorder)
 
 
 def test_page_renamed_hook(test_client):
@@ -125,4 +132,4 @@ def test_page_renamed_hook(test_client):
         assert data["new_pagepath"] == "HookRenameNew"
         assert data["message"] == "renaming"
     finally:
-        plugin_manager.unregister(recorder)
+        _get_plugin_manager().unregister(recorder)
