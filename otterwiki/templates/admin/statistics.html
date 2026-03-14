@@ -1,0 +1,34 @@
+{% extends "settings.html" %}
+
+{% block title %}
+  <title>Contribution Dashboard</title>
+{% endblock %}
+
+{% block js %}
+{{ super() }}
+{% set force_load_libraries = true %}
+{% include 'snippets/renderer_js.html' %}
+{% endblock %}
+
+
+{% block content %}
+<div class="page">
+
+<div class="mermaid">
+pie showData
+    title All Commits
+{% for author, count in all_commits %}
+    "{{ author }}" : {{ count }}
+{% endfor %}
+</div>
+
+<div class="mermaid">
+pie showData
+    title Last 30 Days
+{% for author, count in last_30_days %}
+    "{{ author }}" : {{ count }}
+{% endfor %}
+</div>
+
+</div>
+{% endblock %}
