@@ -484,10 +484,14 @@ Embed a video player that supports video and audio playback in your document.
         if args.get_flag("loop", True):
             flags.append("loop")
         src = args.options_raw.get("src", [])
+        # first join all args blocks with new lines and split again
+        args_list = "\n".join(args.args_raw).splitlines()
         if type(src) is str:
-            src = [src] + args.args_raw
+            src = [src] + args_list
         elif type(src) is list:
-            src += args.args_raw
+            src += args_list
+        # filter out blank entries (e.g. from empty body)
+        src = [s.strip() for s in src if s.strip()]
 
         if len(src) < 1:
             raise ValueError("No src given.")

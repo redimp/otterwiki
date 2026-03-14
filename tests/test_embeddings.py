@@ -717,6 +717,261 @@ def test_attachmentlist_format_details(create_app):
     assert "Comment" not in contents
 
 
+def test_infobox_alias():
+    md = """
+{{Info Box
+|caption=Alias
+|key=val
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup.find("div", class_="infobox") is not None
+
+
+def test_infobox_position_left():
+    md = """
+{{InfoBox
+|position=left
+|key=val
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    box = soup.find("div", class_="infobox")
+    assert box is not None
+    style = box.get("style", "")
+    assert "float:left" in style
+    assert "clear:left" in style
+
+
+def test_infobox_width():
+    md = """
+{{InfoBox
+|width=50%
+|key=val
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    box = soup.find("div", class_="infobox")
+    assert box is not None
+    assert "width:50%" in box.get("style", "")
+
+
+def test_infobox_custom_style():
+    md = """
+{{InfoBox
+|style=opacity:0.5
+|key=val
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    box = soup.find("div", class_="infobox")
+    assert box is not None
+    assert "opacity:0.5" in box.get("style", "")
+
+
+def test_infobox_underscore_key():
+    """Keys prefixed with _ have the underscore stripped."""
+    md = """
+{{InfoBox
+|_Hidden Key=secret
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="infobox")
+    assert table is not None
+    assert "Hidden Key" in table.get_text()
+    assert "_Hidden Key" not in table.get_text()
+
+
+def test_infobox_excluded_keys_not_in_rows():
+    """caption, width, float and text-align must not appear as key-value rows."""
+    md = """
+{{InfoBox
+|caption=Cap
+|width=40%
+|float=left
+|text-align=center
+|visible=yes
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    rows = soup.find_all("tr", class_="infobox-key-value")
+    keys = [
+        r.find("strong").get_text(strip=True) for r in rows if r.find("strong")
+    ]
+    assert "caption" not in keys
+    assert "width" not in keys
+    assert "float" not in keys
+    assert "text-align" not in keys
+    assert "visible" in keys
+
+
+def test_infobox_no_content():
+    """InfoBox with only key-value options and no body text."""
+    md = """
+{{InfoBox
+|Answer=42
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    box = soup.find("div", class_="infobox")
+    assert box is not None
+    # no infobox-args row when there is no body content
+    assert soup.find("tr", class_="infobox-args") is None
+    rows = soup.find_all("tr", class_="infobox-key-value")
+    assert len(rows) == 1
+    assert "42" in rows[0].get_text()
+
+
+def test_video_basic():
+    md = """
+{{Video
+/static/otter.mp4
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    video = soup.find("video")
+    assert video is not None
+    source = video.find("source")
+    assert source is not None
+    assert source.get("src") == "/static/otter.mp4"
+    assert source.get("type") == "video/mp4"
+
+
+def test_video_width():
+    md = """
+{{Video
+|width=60%
+/static/otter.mp4
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    video = soup.find("video")
+    assert video is not None
+    assert video.get("width") == "60%"
+
+
+def test_video_default_flags():
+    """controls, muted and loop are on by default; autoplay is off."""
+    md = """
+{{Video
+/static/otter.mp4
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    video = soup.find("video")
+    assert video is not None
+    attrs = video.attrs
+    assert "controls" in attrs
+    assert "muted" in attrs
+    assert "loop" in attrs
+    assert "autoplay" not in attrs
+
+
+def test_video_flag_overrides():
+    """autoplay=true enables it; controls=false removes it."""
+    md = """
+{{Video
+|controls=false
+|autoplay=true
+|muted=false
+|loop=false
+/static/otter.mp4
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    video = soup.find("video")
+    assert video is not None
+    attrs = video.attrs
+    assert "autoplay" in attrs
+    assert "controls" not in attrs
+    assert "muted" not in attrs
+    assert "loop" not in attrs
+
+
+def test_video_src_option():
+    """src= option is equivalent to passing the URL as a body arg."""
+    md = """
+{{Video
+|src=/static/otter.mp4
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    video = soup.find("video")
+    assert video is not None
+    source = video.find("source")
+    assert source is not None
+    assert source.get("src") == "/static/otter.mp4"
+
+
+def test_video_ogg_type():
+    md = """
+{{Video
+/static/otter.ogg
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    source = soup.find("source")
+    assert source is not None
+    assert source.get("type") == "video/ogg"
+
+
+def test_video_unknown_extension():
+    """Sources with unknown extensions get no type attribute."""
+    md = """
+{{Video
+/static/otter.webm
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    source = soup.find("source")
+    assert source is not None
+    assert source.get("type") is None
+
+
+def test_video_multiple_sources():
+    md = """
+{{Video
+/static/otter.mp4
+/static/otter.ogg
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    sources = soup.find_all("source")
+    assert len(sources) == 2
+    srcs = [s.get("src") for s in sources]
+    assert "/static/otter.mp4" in srcs
+    assert "/static/otter.ogg" in srcs
+
+
+def test_video_no_src():
+    """Missing src renders an error message, not a video element."""
+    md = """
+{{Video
+}}
+"""
+    html, _, _ = render.markdown(md)
+    assert "Error" in html
+    assert "Video" in html
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup.find("video") is None
+
+
 def test_attachmentlist_no_icons(create_app):
     author = ("Test Author", "test@example.com")
     create_app.storage.store(
