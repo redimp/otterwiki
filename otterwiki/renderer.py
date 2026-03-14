@@ -97,15 +97,15 @@ def showmagicword(line, html):
     return "".join(arr)
 
 
-def parse_custom_whitelist(custom_whitelist: str = None) -> tuple:
+def parse_custom_allowlist(custom_allowlist: str = None) -> tuple:
     """
-    Parse custom whitelist string into tags and attributes dictionaries.
+    Parse custom allowlist string into tags and attributes dictionaries.
     """
     custom_tags = []
     custom_attributes = {}
 
-    if custom_whitelist and custom_whitelist.strip():
-        for item in custom_whitelist.split(','):
+    if custom_allowlist and custom_allowlist.strip():
+        for item in custom_allowlist.split(','):
             item = item.strip()
             if not item:
                 continue
@@ -135,7 +135,7 @@ def clean_html(
     html: str, custom_tags: list = None, custom_attributes: dict = None
 ) -> str:
     """
-    Clean HTML using a whitelist approach - only allow safe tags and attributes.
+    Clean HTML using an allowlist approach - only allow safe tags and attributes.
     This prevents XSS attacks via various vectors like:
     - <script> tags
     - Event handlers (onclick, onload, onbegin, etc.)
@@ -249,11 +249,11 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
     toc_tree = []
     toc_anchors = {}
 
-    def __init__(self, env, custom_whitelist=None, *args, **kwargs):
+    def __init__(self, env, custom_allowlist=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.env = env
-        self.custom_tags, self.custom_attributes = parse_custom_whitelist(
-            custom_whitelist
+        self.custom_tags, self.custom_attributes = parse_custom_allowlist(
+            custom_allowlist
         )
 
     def inline_html(self, html):
@@ -476,11 +476,11 @@ class OtterwikiRenderer:
         self.requires_mermaid = False
         self.requires_mathjax = False
 
-        custom_whitelist = (
-            config.get('RENDERER_HTML_WHITELIST', '').strip() or None
+        custom_allowlist = (
+            config.get('RENDERER_HTML_ALLOWLIST', '').strip() or None
         )
         self.md_renderer = OtterwikiMdRenderer(
-            env=self.env, custom_whitelist=custom_whitelist
+            env=self.env, custom_allowlist=custom_allowlist
         )
 
         # set reference to renderer in md_renderer for library requirement tracking

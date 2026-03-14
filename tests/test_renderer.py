@@ -353,15 +353,15 @@ def test_clean_html_allowed_tags():
 
 def test_clean_html_custom_tags():
     """Test that custom allowed tags work"""
-    from otterwiki.renderer import parse_custom_whitelist
+    from otterwiki.renderer import parse_custom_allowlist
 
     # Without custom tags, svg should be escaped (not in default list)
     result = clean_html('<svg><circle cx="50" cy="50" r="40"/></svg>')
     assert '&lt;svg' in result  # Should be escaped
 
     # With custom tags, svg should be allowed
-    custom_whitelist = 'svg,circle'
-    custom_tags, custom_attributes = parse_custom_whitelist(custom_whitelist)
+    custom_allowlist = 'svg,circle'
+    custom_tags, custom_attributes = parse_custom_allowlist(custom_allowlist)
     result = clean_html(
         '<svg><circle cx="50" cy="50" r="40"/></svg>',
         custom_tags=custom_tags,
@@ -376,7 +376,7 @@ def test_clean_html_custom_tags():
 
 def test_clean_html_custom_attributes():
     """Test that custom attributes can be specified for tags"""
-    from otterwiki.renderer import parse_custom_whitelist
+    from otterwiki.renderer import parse_custom_allowlist
 
     # iframe is not in default list, so it should be escaped
     result = clean_html(
@@ -385,8 +385,8 @@ def test_clean_html_custom_attributes():
     assert '&lt;iframe' in result
 
     # Allow iframe with specific attributes (space-separated)
-    custom_whitelist = 'iframe[src width height]'
-    custom_tags, custom_attributes = parse_custom_whitelist(custom_whitelist)
+    custom_allowlist = 'iframe[src width height]'
+    custom_tags, custom_attributes = parse_custom_allowlist(custom_allowlist)
     result = clean_html(
         '<iframe src="https://example.com" width="800" height="600"></iframe>',
         custom_tags=custom_tags,
@@ -407,8 +407,8 @@ def test_clean_html_custom_attributes():
     )  # Should be escaped due to dangerous protocol
 
     # Test multiple tags with mixed attribute specifications
-    custom_whitelist = 'iframe[src width height],svg,button'
-    custom_tags, custom_attributes = parse_custom_whitelist(custom_whitelist)
+    custom_allowlist = 'iframe[src width height],svg,button'
+    custom_tags, custom_attributes = parse_custom_allowlist(custom_allowlist)
     result = clean_html(
         '<svg><rect/></svg><button>Click</button>',
         custom_tags=custom_tags,
@@ -416,8 +416,8 @@ def test_clean_html_custom_attributes():
     )
     assert '<svg' in result and '<button' in result
 
-    # Test that if user explicitly whitelists onclick, it's allowed (pure whitelist approach)
-    custom_tags, custom_attributes = parse_custom_whitelist('button[onclick]')
+    # Test that if user explicitly allowlists onclick, it's allowed (pure allowlist approach)
+    custom_tags, custom_attributes = parse_custom_allowlist('button[onclick]')
     result = clean_html(
         '<button onclick="alert(1)">Click</button>',
         custom_tags=custom_tags,
@@ -425,10 +425,10 @@ def test_clean_html_custom_attributes():
     )
     assert (
         '<button' in result and 'onclick="alert(1)"' in result
-    )  # onclick is explicitly whitelisted
+    )  # onclick is explicitly allowlisted
 
-    # But onclick is NOT allowed without explicit whitelisting
-    custom_tags, custom_attributes = parse_custom_whitelist('button')
+    # But onclick is NOT allowed without explicit allowlisting
+    custom_tags, custom_attributes = parse_custom_allowlist('button')
     result = clean_html(
         '<button onclick="alert(1)">Click</button>',
         custom_tags=custom_tags,

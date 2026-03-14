@@ -71,7 +71,7 @@ app.config.update(
     LOG_LEVEL_WERKZEUG="INFO",
     TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES=False,
     HOME_PAGE="",
-    RENDERER_HTML_WHITELIST="",
+    RENDERER_HTML_ALLOWLIST="",
     ADMIN_USER_EMAIL="",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
