@@ -1525,6 +1525,7 @@ document.querySelector('#content-wrapper').addEventListener('scroll', (event) =>
       if (header_anchors[i].getBoundingClientRect().y > 0 &&
           header_anchors[i].getBoundingClientRect().y < viewHeight) {
         for (var j = sidebar_links.length - 1; j>= 0; j--) {
+          if (header_anchors[i].getElementsByClassName("anchor").length == 0) continue;
           if (sidebar_links[j].href == header_anchors[i].getElementsByClassName("anchor")[0].href) {
             sidebar_links[j].classList.add('sidebar-active');
           }
