@@ -307,13 +307,17 @@ def changelog(revision=None):
 @app.route("/-/changelog/feed.rss")
 def changelog_feed_rss():
     chlg = Changelog()
-    return chlg.feed_rss()
+    response = make_response(chlg.feed_rss())
+    response.headers['Content-Type'] = 'application/rss+xml; charset=utf-8'
+    return response
 
 
 @app.route("/-/changelog/feed.atom")
 def changelog_feed_atom():
     chlg = Changelog()
-    return chlg.feed_atom()
+    response = make_response(chlg.feed_atom())
+    response.headers['Content-Type'] = 'application/atom+xml; charset=utf-8'
+    return response
 
 
 @app.route("/-/index")
