@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Replace preview watermark with a lighter version ([cfee9d3](https://github.com/redimp/otterwiki/commit/cfee9d3b62db68b115e13f6136570eb6e5402a3e) by Gabriele Bartoli/@Prodeguerriero).
 - Editor table reformat not affecting other blocks ([bcfe326](https://github.com/redimp/otterwiki/commit/bcfe326fec022330b09c200ec5aa5bb7e839a25d)).
 - Don't escape text in links, markdown in link text is allowed ([70a5911](https://github.com/redimp/otterwiki/commit/70a59118028186c4ae9580324efcd1326824f0dc)).
+- Prevent zoom into forms on iOS ([169669f](https://github.com/redimp/otterwiki/pull/398/changes/169669ff2bac9ae58959c6b0125e8bbb762b5f43) by @gokomer)
 
 ### Dependencies
 
