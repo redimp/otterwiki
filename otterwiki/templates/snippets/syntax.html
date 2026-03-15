@@ -458,6 +458,20 @@ flowchart LR
 
 Mermaid support all kinds of diagrams: flowcharts, class diagrams, pie charts, mindmaps, etc. For more information see the <a href="https://mermaid.js.org/intro/syntax-reference.html">Mermaid Documentation</a>.
 
+{{ heading("Embeddings") }}
+
+An Otter Wiki supports Embeddings which are beyond the official Markdown syntax.
+
+{%- if embedding_info %}
+<ul class="mt-10">
+    {%- for ei in embedding_info%}
+    <li class="font-size-14"><code>{{ '{{' }}{{ei[0]}}{{ '}}' }}</code>: {{ei[1]}}</li>
+    {%-endfor%}
+</ul>
+{%- endif %}
+
+See the <a href="/-/help/plugins#syntaxembeddings">Syntax/Embedding Guide</a> for details.
+
 {{ heading("Remark") }}
 There's actually a lot more to Markdown than this. See the official
 <a href="http://daringfireball.net/projects/markdown/basics">introduction</a> and

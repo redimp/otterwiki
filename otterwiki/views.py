@@ -153,7 +153,17 @@ def help(topic=None):
                 'Diagrams',
             ]
         ]
-        return render_template("help_syntax.html", toc=toc, in_help=True)
+        # embeddings info
+
+        embedding_info = otterwiki.pluginmgmt.collect_plugin_info(
+            category="Syntax/Embeddings"
+        )
+        return render_template(
+            "help_syntax.html",
+            toc=toc,
+            in_help=True,
+            embedding_info=embedding_info,
+        )
     elif topic == "plugins":
         content, toc, library_requirements = (
             otterwiki.pluginmgmt.generate_help()
