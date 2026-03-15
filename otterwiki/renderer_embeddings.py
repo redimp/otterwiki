@@ -776,11 +776,11 @@ Display attachments to the current page as list.
 <div class="col">
 
 ```
-{{Attachments
+{{AttachmentList
 |caption=Attachments
 |filter=*
 |format=full/details/minimal
-|icon=true/false
+|icons=true/false
 }}
 ```
 
