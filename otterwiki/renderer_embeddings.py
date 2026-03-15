@@ -21,7 +21,7 @@ class DatatableEmbedding:
     def info(self):
         return (
             "DataTable",
-            "Embedding for displaying tables.",
+            "Renders sort-, search and pageable tables.",
             "Syntax/Embeddings",
         )
 
@@ -330,7 +330,7 @@ class ImageFrameEmbedding:
     def info(self):
         return (
             "ImageFrame",
-            "Embedding for displaying images in frames in pages.",
+            "Render an image/images in a framed box next to the main content.",
             "Syntax/Embeddings",
         )
 
@@ -429,7 +429,7 @@ class VideoEmbedding:
     def info(self):
         return (
             "Video",
-            "Embedding for displaying video attachments.",
+            "Embed a video from an url or an attachment",
             "Syntax/Embeddings",
         )
 
@@ -512,7 +512,7 @@ class InfoBoxEmbedding:
     def info(self):
         return (
             "InfoBox",
-            "Embedding for displaying information on a page in a standardized way.",
+            "Render structured information next to the main content in a standardized way",
             "Syntax/Embeddings",
         )
 
@@ -634,7 +634,7 @@ class AttachmentListEmbedding:
     def info(self):
         return (
             "AttachmentList",
-            "Embedding for displaying the attachments to the current page.",
+            "Render the attachments to the current page as table.",
             "Syntax/Embeddings",
         )
 

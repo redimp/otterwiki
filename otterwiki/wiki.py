@@ -45,7 +45,13 @@ from otterwiki.helper import (
     upsert_pagecrumbs,
 )
 from otterwiki.models import Drafts
-from otterwiki.plugins import chain_hooks, collect_hook, call_hook, plugin_manager
+from otterwiki.plugins import (
+    chain_hooks,
+    collect_hook,
+    call_hook,
+    plugin_manager,
+)
+from otterwiki.pluginmgmt import collect_plugin_info
 from otterwiki.renderer import pygments_render
 from otterwiki.server import app, app_renderer, db, storage
 from otterwiki.sidebar import SidebarMenu, SidebarPageIndex
@@ -719,6 +725,8 @@ class Page:
         )
         # get page listing
         page_idx = PageIndex()
+        # collect embedding_info to display in the markdown syntax help
+        embedding_info = collect_plugin_info(category="Syntax/Embeddings")
 
         return render_template(
             "editor.html",
@@ -738,6 +746,7 @@ class Page:
                 self.metadata.get("revision", "") if self.metadata else ""
             ),
             force_load_libraries=True,
+            embedding_info=embedding_info,
         )
 
     def save(self, content, commit, author):

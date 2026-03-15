@@ -53,3 +53,16 @@ def generate_help():
     content, toc, library_requirements = render.markdown(content)
 
     return content, toc, library_requirements
+
+
+def collect_plugin_info(category=None):
+    """
+    Lists the info for all plugins
+    """
+    plugins_info = collect_hook("info")
+    if category:
+        plugins_info = [p for p in plugins_info if p[2] == category]
+    # sort plugins_info by category, name
+    plugins_info.sort(key=lambda info: (info[2], info[0]))
+
+    return plugins_info
