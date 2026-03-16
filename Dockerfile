@@ -2,8 +2,6 @@
 # compile stage
 #
 FROM debian:12.11-slim AS compile-stage
-LABEL maintainer="Ralph Thesen <mail@redimp.de>"
-LABEL org.opencontainers.image.source="https://github.com/redimp/otterwiki"
 # install python environment
 RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
     rm /etc/apt/apt.conf.d/docker-clean && \
@@ -50,6 +48,8 @@ CMD ["tox"]
 # production stage
 #
 FROM debian:12.11-slim
+LABEL maintainer="Ralph Thesen <mail@redimp.de>"
+LABEL org.opencontainers.image.source="https://github.com/redimp/otterwiki"
 # arg for marking dev images
 ARG GIT_TAG
 ENV GIT_TAG=$GIT_TAG
