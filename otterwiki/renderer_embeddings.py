@@ -828,8 +828,108 @@ With format you can decide what is displayed in the table: `minimal` shows only 
 """
 
 
+class PageIndexEmbedding:
+    @hookimpl
+    def info(self):
+        return (
+            "PageIndex",
+            "Render a page index listing all pages below the" " current page.",
+            "Syntax/Embeddings",
+        )
+
+    @hookimpl
+    def page_render_context(self, page, preview: bool):
+        self.page = page
+
+    @hookimpl
+    def help(self, plugin):
+        if plugin.lower() != "pageindex":
+            return None
+
+        return """
+<div class="row mb-10">
+Display a page index listing pages below the current page,
+optionally filtered by a glob pattern.
+<div class="col-md-8 col-sm-12">
+
+```
+{{PageIndex
+|src=*
+|toc=true/false
+|toggle=true/false
+}}
+```
+
+Options:
+- `src`: glob pattern to filter pages by title (default `*`, matches all pages)
+- `toc`: show page headings (default `false`)
+- `toggle`: show the toggle for the page headings (default `true`)
+
+</div>
+<div class="col-md-4 col-sm-12">
+
+<div class="pageindex-letterblock" style="width:80%; float: right;"><h2 class="content-title font-weight-bolder pageindex-header">E</h2>
+<div class="pageindex-pageblock pageindex-depth-0" style="padding-left:0.0rem;">
+<a class="global-toc-link pageindex-page pageindex-depth-0" href="$">Example 1</a><br/>
+<a class="global-toc-link pageindex-page pageindex-depth-0" href="$">Example 2</a>
+</div>
+</div>
+
+</div>
+</div>
+"""
+
+    @hookimpl
+    def embedding_render(
+        self,
+        embedding: str,
+        args: EmbeddingArgs,
+    ):
+        if embedding.lower() not in ('pageindex', 'page index'):
+            return None
+
+        from flask import render_template
+        from otterwiki.pageindex import PageIndex
+
+        src = args.options.get('src', '*')
+        show_toc = args.get_flag('toc', False)
+        heading_toggle = args.get_flag('toggle', True)
+
+        page = getattr(self, 'page', None)
+        path = page.pagepath if page else None
+        page_index = PageIndex(path=path)
+
+        pages = page_index.toc
+        if src != '*':
+            pages = {}
+            for letter, entries in page_index.toc.items():
+                filtered = [
+                    e
+                    for e in entries
+                    if fnmatch.fnmatch(e.title.rstrip('/'), src)
+                ]
+                if filtered:
+                    pages[letter] = filtered
+
+        togglediv = f"""<div class="d-inline-block custom-switch font-size-12 mb-10">
+    <input type="checkbox" id="switch-headings" {"checked" if show_toc else ""} value="" onchange="otterwiki.toggleClass(event.target.checked,'pagetoc')"><label for="switch-headings">Toggle page headings</label>
+</div>"""
+
+        return (
+            (togglediv if heading_toggle else '')
+            + '<div class="pageindex-embedding">'
+            + render_template(
+                'snippets/pageindex.html',
+                pages=pages,
+                hide_toc=not show_toc,
+            )
+            + '</div>'
+        )
+
+
 plugin_manager.register(ImageFrameEmbedding())
 plugin_manager.register(InfoBoxEmbedding())
 plugin_manager.register(VideoEmbedding())
 plugin_manager.register(DatatableEmbedding())
 plugin_manager.register(AttachmentListEmbedding())
+plugin_manager.register(PageIndexEmbedding())
