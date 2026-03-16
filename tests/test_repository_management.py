@@ -8,7 +8,6 @@ from unittest.mock import patch, MagicMock
 from bs4 import BeautifulSoup
 import pytest
 
-
 # Test constants
 TEST_REMOTE_URL = "git@github.com:test/repo.git"
 TEST_PRIVATE_KEY = "-----BEGIN OPENSSH PRIVATE KEY-----\ntest_key_content\n-----END OPENSSH PRIVATE KEY-----"

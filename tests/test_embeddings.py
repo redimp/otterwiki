@@ -1142,3 +1142,111 @@ def test_attachmentlist_no_icons(create_app):
     # no img or fa icon in the table
     assert table_div.find("img") is None
     assert "fa-file" not in table_div.decode_contents()
+
+
+def test_pageindex_embedding(create_app):
+    author = ("Test Author", "test@example.com")
+    # The parent page with the embedding
+    create_app.storage.store(
+        "indexpage.md",
+        content="# Index\n{{PageIndex}}\n",
+        author=author,
+        message="add index page",
+    )
+    # Child pages below indexpage/
+    create_app.storage.store(
+        "indexpage/alpha.md",
+        content="# Alpha\nAlpha page.",
+        author=author,
+        message="add alpha",
+    )
+    create_app.storage.store(
+        "indexpage/beta.md",
+        content="# Beta\nBeta page.",
+        author=author,
+        message="add beta",
+    )
+    # A sibling page that should NOT appear
+    create_app.storage.store(
+        "sibling.md",
+        content="# Sibling\nSibling page.",
+        author=author,
+        message="add sibling",
+    )
+    client = create_app.test_client()
+    response = client.get("/Indexpage/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    pi_div = soup.find("div", class_="pageindex-embedding")
+    assert pi_div is not None
+    contents = pi_div.decode_contents()
+    assert "Alpha" in contents
+    assert "Beta" in contents
+    assert "Sibling" not in contents
+
+
+def test_pageindex_embedding_src_filter(create_app):
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "filterpage.md",
+        content="# Filter\n{{PageIndex\n|src=Ca*\n}}\n",
+        author=author,
+        message="add filter page",
+    )
+    create_app.storage.store(
+        "filterpage/cat.md",
+        content="# Cat\nMeow.",
+        author=author,
+        message="add cat",
+    )
+    create_app.storage.store(
+        "filterpage/car.md",
+        content="# Car\nVroom.",
+        author=author,
+        message="add car",
+    )
+    create_app.storage.store(
+        "filterpage/dog.md",
+        content="# Dog\nWoof.",
+        author=author,
+        message="add dog",
+    )
+    client = create_app.test_client()
+    response = client.get("/Filterpage/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    pi_div = soup.find("div", class_="pageindex-embedding")
+    assert pi_div is not None
+    contents = pi_div.decode_contents()
+    assert "Cat" in contents
+    assert "Car" in contents
+    assert "Dog" not in contents
+
+
+def test_pageindex_embedding_toc(create_app):
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "tocindex.md",
+        content="# Index\n{{PageIndex\n|toc=true\n}}\n",
+        author=author,
+        message="add toc index",
+    )
+    create_app.storage.store(
+        "tocindex/tocpage.md",
+        content="# Toc Page\n## Section One\n## Section Two\n",
+        author=author,
+        message="add toc page",
+    )
+    client = create_app.test_client()
+    response = client.get("/Tocindex/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    pi_div = soup.find("div", class_="pageindex-embedding")
+    assert pi_div is not None
+    pagetoc = pi_div.find("div", class_="pagetoc")
+    assert pagetoc is not None
+    assert "Section One" in pagetoc.decode_contents()
+    assert "Section Two" in pagetoc.decode_contents()
