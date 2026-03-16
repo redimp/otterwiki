@@ -812,6 +812,76 @@ def test_infobox_excluded_keys_not_in_rows():
     assert "visible" in keys
 
 
+def test_infobox_unicode_key():
+    """Option keys may contain UTF-8 characters."""
+    md = """
+{{InfoBox
+|Größe=180cm
+|名前=Otter
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="infobox")
+    assert table is not None
+    rows = table.find_all("tr", class_="infobox-key-value")
+    keys = {
+        r.find("strong")
+        .get_text(strip=True): r.find_all("td")[1]
+        .get_text(strip=True)
+        for r in rows
+        if r.find("strong")
+    }
+    assert keys["Größe"] == "180cm"
+    assert keys["名前"] == "Otter"
+
+
+def test_infobox_escaped_equals_in_key():
+    r"""Keys containing \= have the backslash-equals converted to =."""
+    md = """
+{{InfoBox
+|a\\=b=value
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="infobox")
+    assert table is not None
+    rows = table.find_all("tr", class_="infobox-key-value")
+    keys = {
+        r.find("strong")
+        .get_text(strip=True): r.find_all("td")[1]
+        .get_text(strip=True)
+        for r in rows
+        if r.find("strong")
+    }
+    assert keys["a=b"] == "value"
+
+
+def test_infobox_unicode_key_with_escaped_equals():
+    r"""Combine UTF-8 key with \= in the same embedding."""
+    md = """
+{{InfoBox
+|Schlüssel\\=1=eins
+|clé=deux
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="infobox")
+    assert table is not None
+    rows = table.find_all("tr", class_="infobox-key-value")
+    keys = {
+        r.find("strong")
+        .get_text(strip=True): r.find_all("td")[1]
+        .get_text(strip=True)
+        for r in rows
+        if r.find("strong")
+    }
+    assert keys["Schlüssel=1"] == "eins"
+    assert keys["clé"] == "deux"
+
+
 def test_infobox_no_content():
     """InfoBox with only key-value options and no body text."""
     md = """

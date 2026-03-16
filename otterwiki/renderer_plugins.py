@@ -820,11 +820,14 @@ class mistunePluginEmbeddings:
         embedding_in_one_line = "\n" not in embedding_args.strip()
 
         # find all options
-        re_option = re.compile(r"(\|([a-zA-z0-9\-_ ]+)=([^\|\n]+)\n?)")
+        re_option = re.compile(
+            r"(\|((?:[\w\- ]|\\=)+)=([^\|\n]+)\n?)",
+            flags=re.UNICODE,
+        )
         match = re_option.search(embedding_args)
         while match is not None:
             # key and value found
-            key = match.group(2)
+            key = match.group(2).replace(r'\=', '=')
             value = match.group(3)
             # store raw value
             args.options_raw[key.lower()] = value
