@@ -858,6 +858,66 @@ def test_infobox_escaped_equals_in_key():
     assert keys["a=b"] == "value"
 
 
+def test_infobox_escape_characters_413():
+    md = """
+{{InfoBox
+|caption=Issue #413
+|Key=Value
+|Key:=Value:
+|•Key·=•Value·
+|KeyA\\|=Value\\|
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="infobox")
+    assert table is not None
+    rows = table.find_all("tr", class_="infobox-key-value")
+    keys = {
+        r.find("strong")
+        .get_text(strip=True): r.find_all("td")[1]
+        .get_text(strip=True)
+        for r in rows
+        if r.find("strong")
+    }
+    assert keys["Key"] == "Value"
+    assert keys["•Key·"] == "•Value·"
+    assert keys["Key:"] == "Value:"
+    assert keys["Key:"] == "Value:"
+    assert keys["KeyA|"] == "Value|"
+
+
+def test_infobox_escape_pipe():
+    md = """
+{{InfoBox
+|caption=Escape a pipe
+|KeyPipe\\|=ValuePipe\\|
+|\\|LeadPipeKey=\\|ValuePipe
+\\|Pipe in Args
+Pipe in the middle\\|of the args
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="infobox")
+    assert table is not None
+    rows = table.find_all("tr", class_="infobox-key-value")
+    keys = {
+        r.find("strong")
+        .get_text(strip=True): r.find_all("td")[1]
+        .get_text(strip=True)
+        for r in rows
+        if r.find("strong")
+    }
+    assert keys["KeyPipe|"] == "ValuePipe|"
+    assert keys["|LeadPipeKey"] == "|ValuePipe"
+    # check args
+    args = table.find("tr", class_="infobox-args")
+    assert args
+    assert "|Pipe in Args" in args.text
+    assert "Pipe in the middle|of the args" in args.text
+
+
 def test_infobox_unicode_key_with_escaped_equals():
     r"""Combine UTF-8 key with \= in the same embedding."""
     md = """
@@ -880,6 +940,22 @@ def test_infobox_unicode_key_with_escaped_equals():
     }
     assert keys["Schlüssel=1"] == "eins"
     assert keys["clé"] == "deux"
+
+
+def test_infobox_args():
+    """InfoBox with only body text."""
+    md = """
+{{InfoBox
+And test all these as args : \\| \\= • ·
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="infobox")
+    assert table is not None
+    args = table.find("tr", class_="infobox-args")
+    assert args
+    assert "And test all these as args : | = • ·" in args.text
 
 
 def test_infobox_no_content():
