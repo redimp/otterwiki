@@ -995,3 +995,128 @@ def test_register_first_admin_user_email_disabled(
     # clean up
     db.session.query(SimpleAuth.User).delete()
     create_app.config["ADMIN_USER_EMAIL"] = ""
+
+
+def test_login_redirect_next_parameter(app_with_user):
+    """Test that unauthenticated users are redirected to login with ?next="""
+    test_client = app_with_user.test_client()
+    # access a @login_required page without being logged in
+    rv = test_client.get("/-/settings", follow_redirects=False)
+    assert rv.status_code == 302
+    location = rv.headers["Location"]
+    assert "/-/login" in location
+    assert "next=" in location
+    assert "%2F-%2Fsettings" in location or "/-/settings" in location
+
+
+def test_login_next_shown_in_form(app_with_user):
+    """Test that the login form includes the next parameter."""
+    test_client = app_with_user.test_client()
+    rv = test_client.get("/-/login?next=%2F-%2Fsettings")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    # the next value should be present in a hidden form field
+    assert "/-/settings" in html
+
+
+def test_login_redirects_to_next_after_login(app_with_user):
+    """Test that after login the user is redirected to the next page."""
+    test_client = app_with_user.test_client()
+    rv = test_client.post(
+        "/-/login",
+        data={
+            "email": "mail@example.org",
+            "password": "password1234",
+            "next": "/-/settings",
+        },
+        follow_redirects=False,
+    )
+    assert rv.status_code == 302
+    location = rv.headers["Location"]
+    assert "/-/settings" in location
+
+
+def test_login_next_ignores_external_url(app_with_user):
+    """Test that external URLs in next are ignored (open redirect protection)."""
+    test_client = app_with_user.test_client()
+    rv = test_client.post(
+        "/-/login",
+        data={
+            "email": "mail@example.org",
+            "password": "password1234",
+            "next": "http://evil.example.com/steal",
+        },
+        follow_redirects=False,
+    )
+    assert rv.status_code == 302
+    location = rv.headers["Location"]
+    # must not redirect to the external URL
+    assert "evil.example.com" not in location
+
+
+def test_login_next_empty_redirects_to_index(app_with_user):
+    """Test that an empty next value redirects to the index."""
+    test_client = app_with_user.test_client()
+    rv = test_client.post(
+        "/-/login",
+        data={
+            "email": "mail@example.org",
+            "password": "password1234",
+            "next": "",
+        },
+        follow_redirects=False,
+    )
+    assert rv.status_code == 302
+    location = rv.headers["Location"]
+    assert location.endswith("/")
+
+
+def test_login_next_preserved_on_failed_login(app_with_user):
+    """Test that the next parameter is preserved when login fails."""
+    test_client = app_with_user.test_client()
+    rv = test_client.post(
+        "/-/login",
+        data={
+            "email": "mail@example.org",
+            "password": "wrongpassword",
+            "next": "/-/settings",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    assert "/-/settings" in html
+    assert "Invalid email address or password." in html
+
+
+def test_login_next_full_flow(app_with_user):
+    """Test the full flow: access protected page -> login -> redirected back."""
+    test_client = app_with_user.test_client()
+    # step 1: access protected page, get redirected to login
+    rv = test_client.get("/-/settings", follow_redirects=False)
+    assert rv.status_code == 302
+    login_url = rv.headers["Location"]
+    assert "/-/login" in login_url
+
+    # step 2: follow redirect to login page
+    rv = test_client.get(login_url)
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    assert "/-/settings" in html
+
+    # step 3: submit login with next parameter
+    rv = test_client.post(
+        "/-/login",
+        data={
+            "email": "mail@example.org",
+            "password": "password1234",
+            "next": "/-/settings",
+        },
+        follow_redirects=False,
+    )
+    assert rv.status_code == 302
+    assert "/-/settings" in rv.headers["Location"]
+
+    # step 4: follow redirect to the original page
+    rv = test_client.get(rv.headers["Location"])
+    assert rv.status_code == 200
