@@ -3,7 +3,6 @@
 
 import hmac
 from datetime import datetime
-from urllib.parse import urlsplit
 from uuid import uuid4
 
 import flask_login
@@ -156,7 +155,11 @@ class SimpleAuth:
             # login
             login_user(user, remember=remember is not None)
             # set next_page
-            if not next_page or urlsplit(next_page).netloc != "":
+            if (
+                not next_page
+                or not next_page.startswith('/')
+                or next_page.startswith('//')
+            ):
                 next_page = url_for("index")
             # check if the users password_hash is going to be deprecated
             if user.password_hash.startswith("sha256$"):

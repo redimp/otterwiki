@@ -203,7 +203,7 @@ def clean_html(
     soup = BeautifulSoup(html, 'html.parser')
     _escape = False
 
-    for element in soup:
+    for element in soup.find_all(True):
         if not hasattr(element, 'name') or element.name is None:
             continue
 
