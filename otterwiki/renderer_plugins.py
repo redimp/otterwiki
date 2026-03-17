@@ -831,14 +831,14 @@ class mistunePluginEmbeddings:
 
         # find all options
         re_option = re.compile(
-            r"(\|((?:[\w\- ]|\\=)+)=([^\|\n]+)\n?)",
+            r"((?<!\\)\|((?:\\\||\\=|[^=\|\n])+)=((?:\\\||[^\|\n])+)\n?)",
             flags=re.UNICODE,
         )
         match = re_option.search(embedding_args)
         while match is not None:
             # key and value found
-            key = match.group(2).replace(r'\=', '=')
-            value = match.group(3)
+            key = match.group(2).replace(r'\=', '=').replace(r'\|', '|')
+            value = match.group(3).replace(r'\|', '|')
             # store raw value
             args.options_raw[key.lower()] = value
             # parse options and args out of embedding_block and add them as children
@@ -866,6 +866,8 @@ class mistunePluginEmbeddings:
             embedding_args = embedding_args[1:]
 
         # what is left over in embedding_block is what we consider as embedding_args
+        # unescape \| in the remaining args
+        embedding_args = embedding_args.replace(r'\|', '|')
         args.args_raw = [embedding_args]
 
         # parse the args, so that all markdown syntax can be used
@@ -895,7 +897,7 @@ class mistunePluginEmbeddings:
         cursor: bool = False,
     ):
         for argument in text.splitlines():
-            parts = argument.split(":")
+            parts = argument.rsplit(":", maxsplit=1)
             value = base64.b64decode(parts[-1].encode()).decode()
             if len(parts) == 1:
                 args.args.append(value)
