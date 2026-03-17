@@ -48,6 +48,8 @@ def _update_preference(name, value, commit=False):
 
 
 def handle_mail_preferences(form):
+    if not has_permission("ADMIN"):
+        abort(403)
     # handle test_mail (sent via the same form)
     if not empty(form.get('test_mail_preferences')):
         return handle_test_mail_preferences(form)
@@ -104,6 +106,8 @@ def handle_mail_preferences(form):
 
 
 def handle_sidebar_preferences(form):
+    if not has_permission("ADMIN"):
+        abort(403)
     custom_menu_js = json.dumps(
         [
             {
@@ -163,6 +167,8 @@ def handle_sidebar_preferences(form):
 
 
 def handle_app_preferences(form):
+    if not has_permission("ADMIN"):
+        abort(403)
     for name in [
         "site_name",
         "site_logo",
@@ -200,6 +206,8 @@ def handle_app_preferences(form):
 
 
 def handle_content_and_editing(form):
+    if not has_permission("ADMIN"):
+        abort(403)
     for name in [
         "commit_message",
         "default_commit_message",
@@ -219,6 +227,8 @@ def handle_content_and_editing(form):
 
 
 def handle_repository_management(form):
+    if not has_permission("ADMIN"):
+        abort(403)
     # handle repo actions first
     git_action_result = None
 
@@ -390,6 +400,8 @@ def _handle_git_pull():
 
 
 def handle_test_mail_preferences(form):
+    if not has_permission("ADMIN"):
+        abort(403)
     recipient = form.get("mail_recipient")
     if empty(recipient):
         # default current user

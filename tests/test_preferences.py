@@ -309,6 +309,47 @@ def test_permissions_post_requires_admin(app_with_user, other_client):
     assert rv.status_code == 403
 
 
+def test_admin_endpoints_require_admin(app_with_user, other_client):
+    """All /-/admin endpoints must return 403 for non-admin users
+    on both GET and POST — verifies each handler checks ADMIN."""
+    endpoints = [
+        ("/-/admin", {"update_preferences": "true"}),
+        ("/-/admin/mail_preferences", {"mail_sender": "x@x.org"}),
+        ("/-/admin/sidebar_preferences", {}),
+        ("/-/admin/user_management", {"is_admin": [1]}),
+        (
+            "/-/admin/permissions_and_registration",
+            {"READ_access": "ANONYMOUS"},
+        ),
+        ("/-/admin/content_and_editing", {}),
+        ("/-/admin/repository_management", {}),
+    ]
+    for url, post_data in endpoints:
+        rv = other_client.get(url)
+        assert (
+            rv.status_code == 403
+        ), f"GET {url} expected 403, got {rv.status_code}"
+        rv = other_client.post(url, data=post_data)
+        assert (
+            rv.status_code == 403
+        ), f"POST {url} expected 403, got {rv.status_code}"
+
+
+def test_user_endpoints_require_admin(app_with_user, other_client):
+    """/-/user/ and /-/user/<id> must return 403 for non-admin users."""
+    # user edit
+    rv = other_client.get("/-/user/1")
+    assert rv.status_code == 403
+    rv = other_client.post("/-/user/1", data={"name": "x", "email": "x@x.org"})
+    assert rv.status_code == 403
+    # user add
+    rv = other_client.post(
+        "/-/user/",
+        data={"name": "New", "email": "new@new.org"},
+    )
+    assert rv.status_code == 403
+
+
 def test_sidebar_preferences(app_with_user, admin_client):
     # check the form
     rv = admin_client.get("/-/admin/sidebar_preferences")
