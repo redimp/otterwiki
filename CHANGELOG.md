@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.18.1](https://github.com/redimp/otterwiki/releases/tag/v2.18.1) - 2026-03-17
+
+<small>[Compare with v2.18.0](https://github.com/redimp/otterwiki/compare/v2.18.0...v2.18.1)</small>
+
+**Security Update**
+
+This release addresses a critical security vulnerability. We strongly recommend
+updating to this version as soon as possible. The vulnerability allowed users
+who were logged in but did not have administrator privileges to modify application
+preferences, potentially leading to unauthorized changes and unauthorized access.
+
+### Security Fix
+
+- added missing guards (and tests) in preferences ([#415](https://github.com/redimp/otterwiki/pull/415) by Schuyler Erle/@schuyler and [711f344](https://github.com/redimp/otterwiki/commit/711f344ac7b4a279bdac97b80f2098d5ab62fb1f) by @redimp).
+
+### Bug Fixes
+
+- support Unicode and escaped equals in option keys ([af52da9](https://github.com/redimp/otterwiki/commit/af52da96679641003ce3083b759d2029d09dfaea) by Ralph Thesen).
+- add docker labels to production stage and not compile-stage ([bacc848](https://github.com/redimp/otterwiki/commit/bacc8483ce68f6fd1cb289a56c4620f1eb587967) by Maksymilian Wrzesień/@m-wrzesien).
+- typo in AttachmentList documentation ([dad590e](https://github.com/redimp/otterwiki/commit/dad590e5e44c05a83809ce1c4abe872244ad99fe) by Ralph Thesen).
+
 ## [v2.18.0](https://github.com/redimp/otterwiki/releases/tag/v2.18.0) - 2026-03-14
 
 <small>[Compare with v2.17.3](https://github.com/redimp/otterwiki/compare/v2.17.3...v2.18.0)</small>
