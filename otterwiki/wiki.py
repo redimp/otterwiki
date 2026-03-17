@@ -327,12 +327,16 @@ class Changelog:
         return fg
 
     def feed_rss(self):
+        if not has_permission("READ"):
+            abort(403)
         fg = self.get_feedgenerator()
         # update link
         fg.link(href=url_for("changelog_feed_rss", _external=True), rel='self')
         return fg.rss_str(pretty=True)
 
     def feed_atom(self):
+        if not has_permission("READ"):
+            abort(403)
         fg = self.get_feedgenerator()
         fg.id(url_for("changelog_feed_atom", _external=True))
         # update link
@@ -613,6 +617,8 @@ class Page:
         )
 
     def preview(self, content=None, cursor_line=None):
+        if not has_permission("WRITE"):
+            abort(403)
         if content is None:
             # handle case that the page doesn't exists
             self.exists_or_404()

@@ -249,6 +249,40 @@ def test_table_align():
     assert '<td style="text-align:right">right td</td>' in html
 
 
+def test_clean_html_nested_xss():
+    """Test that XSS via nested elements inside allowed wrapper tags is blocked.
+    Regression test for clean_html() only checking top-level elements.
+    """
+    # <script> nested inside an allowed <p> tag
+    result = clean_html('<p><script>alert(1)</script></p>')
+    assert '<script>' not in result
+    assert '&lt;script&gt;' in result
+
+    # event handler on <img> nested inside an allowed <div> — whole block must be escaped
+    result = clean_html('<div><img src="x" onerror="alert(1)"></div>')
+    assert (
+        '<div>' not in result
+    )  # the whole block is escaped, not passed through
+    assert '&lt;div&gt;' in result
+
+    # deeply nested dangerous tag: <p> > <span> > <script>
+    result = clean_html('<p><span><script>alert(2)</script></span></p>')
+    assert '<script>' not in result
+    assert '&lt;script&gt;' in result
+
+    # javascript: href on <a> nested inside an allowed <div> — whole block must be escaped
+    result = clean_html('<div><a href="javascript:alert(3)">click</a></div>')
+    assert '<div>' not in result
+    assert '&lt;div&gt;' in result
+
+    # disallowed tag nested inside an allowed <blockquote>
+    result = clean_html(
+        '<blockquote><iframe src="https://evil.com"></iframe></blockquote>'
+    )
+    assert '<iframe' not in result
+    assert '&lt;iframe' in result
+
+
 def test_clean_html_script():
     assert clean_html("<script>") == "&lt;script&gt;"
     assert (
@@ -359,8 +393,9 @@ def test_clean_html_custom_tags():
     result = clean_html('<svg><circle cx="50" cy="50" r="40"/></svg>')
     assert '&lt;svg' in result  # Should be escaped
 
-    # With custom tags, svg should be allowed
-    custom_allowlist = 'svg,circle'
+    # With custom tags AND their attributes, svg/circle should be allowed
+    # cx, cy, r are attributes on circle that must also be allowlisted
+    custom_allowlist = 'svg,circle[cx cy r]'
     custom_tags, custom_attributes = parse_custom_allowlist(custom_allowlist)
     result = clean_html(
         '<svg><circle cx="50" cy="50" r="40"/></svg>',
@@ -407,7 +442,8 @@ def test_clean_html_custom_attributes():
     )  # Should be escaped due to dangerous protocol
 
     # Test multiple tags with mixed attribute specifications
-    custom_allowlist = 'iframe[src width height],svg,button'
+    # rect must also be allowlisted since it is a nested child of svg
+    custom_allowlist = 'iframe[src width height],svg,rect,button'
     custom_tags, custom_attributes = parse_custom_allowlist(custom_allowlist)
     result = clean_html(
         '<svg><rect/></svg><button>Click</button>',
