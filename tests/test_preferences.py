@@ -298,6 +298,17 @@ def test_preferences_403(app_with_user, other_client):
     assert rv.status_code == 403
 
 
+def test_permissions_post_requires_admin(app_with_user, other_client):
+    """POST to permissions_and_registration must return 403 for non-admin users
+    without following redirects — verifies the handler itself checks ADMIN,
+    not just the GET form renderer."""
+    rv = other_client.post(
+        "/-/admin/permissions_and_registration",
+        data={"READ_access": "ANONYMOUS"},
+    )
+    assert rv.status_code == 403
+
+
 def test_sidebar_preferences(app_with_user, admin_client):
     # check the form
     rv = admin_client.get("/-/admin/sidebar_preferences")
