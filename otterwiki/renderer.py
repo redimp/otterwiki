@@ -147,7 +147,7 @@ def clean_html(
     # tags and attrs are logically groupped by types
     # fmt: off
     ALLOWED_TAGS = [
-        'p', 'br', 'hr', 'span', 'div',
+        'p', 'br', 'hr', 'span', 'div', 'i',
         'strong', 'em', 'b', 'i', 'u', 's', 'strike', 'del', 'ins', 'sub', 'sup', 'mark', 'small',
         'ul', 'ol', 'li', 'dl', 'dt', 'dd',
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -157,6 +157,7 @@ def clean_html(
         'a', 'img',
         'abbr', 'address', 'time', 'details', 'summary',
         'video', 'audio', 'source',
+        'input','label'
     ]
 
     ALLOWED_ATTRIBUTES = {
@@ -164,14 +165,17 @@ def clean_html(
         'img': ['src', 'alt', 'title', 'width', 'height', 'class'],
         'abbr': ['title'],
         'time': ['datetime'],
-        'td': ['colspan', 'rowspan', 'align', 'valign'],
-        'th': ['colspan', 'rowspan', 'align', 'valign', 'scope'],
+        'td': ['colspan', 'rowspan', 'align', 'valign', 'width'],
+        'th': ['colspan', 'rowspan', 'align', 'valign', 'scope', 'width'],
         'col': ['span', 'width'],
         'colgroup': ['span', 'width'],
         'table': ['border', 'cellpadding', 'cellspacing', 'width'],
         'video': ['controls', 'width', 'height', 'poster'],
         'source': ['src', 'type'],
         'audio': ['controls', 'src'],
+        'input': ['type', 'checked', 'id', 'value'],
+        'label': ['for'],
+        'span' : ['role'],
         # generic attributes allowed on most tags
         '*': ['id', 'class', 'title', 'style'],
     }
