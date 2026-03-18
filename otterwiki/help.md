@@ -53,9 +53,9 @@ You can view the history of a page with <span class="help-button"><span class="b
 **View revision:** You can open every revision using the date <span class="help-button"><a href="#">YYYY-MM-DD hh:mm</a></span> link in the history.
 
 **Display a single commit:** You can view a single commit using the revision
-link, e.g. <span class="help-button"><a href="#" x class="btn revision-small">012abc</a></span>
+link, e.g. <span class="help-button"><a href="#" class="btn revision-small">012abc</a></span>
 
-**Revert a commit:** You can revert a commit using the <span class="help-button"><a hre="#"><i class="fas fa-undo"></i></a></span> link in the history. This will create a revert commit.
+**Revert a commit:** You can revert a commit using the <span class="help-button"><a href="#"><i class="fas fa-undo"></i></a></span> link in the history. This will create a revert commit.
 
 #### Page blame
 
@@ -65,7 +65,7 @@ Using <span class="help-button"><span class="btn btn-square btn-sm"><i class="fa
 <span class="help-button"><a href="#">YYYY-MM-DD HH:mm</a></span> link of the line.
 
 **Display a single commit**: You can view the state of the page when a specific
-commit was made using the revision link of the line, e.g. <span class="help-button"><a href="#" x class="btn revision-small">012abc</a></span>.
+commit was made using the revision link of the line, e.g. <span class="help-button"><a href="#" class="btn revision-small">012abc</a></span>.
 
 #### Page rename
 
@@ -96,7 +96,7 @@ The pasted image will be uploaded and attached to the page you are editing.
 #### Editing attachments
 
 Open the attachment menu via <span class="help-button"><span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span> <i class="fas fa-caret-right"></i> <span class="btn btn-square btn-sm"><i class="fa fa-paperclip"></i></span> Attachments</span>.
-In addition to uploading, each attachment can also be opened via the <span class="help-button"><a hre="#"><i class="fas fa-edit"></i></a></span> for editing, which allows you to replace, rename or delete the attachment. The history of the attachment is displayed and offers the possibility to revert changes using <span class="help-button"><a hre="#"><i class="fas fa-undo"></i></a></span>.
+In addition to uploading, each attachment can also be opened via the <span class="help-button"><a href="#"><i class="fas fa-edit"></i></a></span> for editing, which allows you to replace, rename or delete the attachment. The history of the attachment is displayed and offers the possibility to revert changes using <span class="help-button"><a href="#"><i class="fas fa-undo"></i></a></span>.
 
 #### Inline attached images
 
@@ -167,9 +167,9 @@ as commits.
 the **File** column.
 
 **Display a single commit**: You can show the state of the page when a specific
-commit was made by using the revision link in the line, e.g. <span class="help-button"><a href="#" x class="btn revision-small">012abc</a></span>.
+commit was made by using the revision link in the line, e.g. <span class="help-button"><a href="#" class="btn revision-small">012abc</a></span>.
 
-**Revert a commit:** You can revert a commit using the <span class="help-button"><a hre="#"><i class="fas fa-undo"></i></a></span> link in the history. This will create a revert commit.
+**Revert a commit:** You can revert a commit using the <span class="help-button"><a href="#"><i class="fas fa-undo"></i></a></span> link in the history. This will create a revert commit.
 
 ---
 
