@@ -29,7 +29,39 @@ class DatatableEmbedding:
     def help_category_prelude(self, category):
         if category != self.info()[2]:
             return None
-        return "Embeddings are additions to the standard markdown syntax in An Otter Wiki. They provide capabilities beyond basic markdown, such as special layout elements, enhanced features, and entirely new functionality. <br/><span class=\"text-secondary-dm bg-secondary-lm\">Embeddings are an experimental feature and subject to change.</span>"
+        return (
+            "Embeddings are additions to the standard markdown syntax"
+            " in An Otter Wiki. They provide capabilities beyond basic"
+            " markdown, such as special layout elements, enhanced"
+            " features, and entirely new functionality."
+            " <br/><span class=\"text-secondary-dm bg-secondary-lm\">"
+            "Embeddings are an experimental feature and subject to"
+            " change.</span>\n\n"
+            "<h4>Usage</h4>"
+            "An embedding starts with <code>{{"
+            "<em>EmbeddingName</em></code> and ends with"
+            " <code>}}</code>. Between the opening and closing"
+            " braces you can pass **options** and **args**.\n\n"
+            "**Options** are key-value pairs separated by"
+            " <code>|</code> in the form"
+            " <code>|key=value</code>. "
+            "Each option starts with a <code>|</code> followed by"
+            " the key, an <code>=</code>, and the value.\n\n"
+            "**Args** are any remaining lines that are not options."
+            " They form the body content of the embedding and can"
+            " contain regular markdown.\n\n"
+            "```\n"
+            "{{EmbeddingName\n"
+            "|option1=value1\n"
+            "|option2=value2\n"
+            "args content (markdown)\n"
+            "}}\n"
+            "```\n"
+            "**Escaping:** Use <code>\\\\|</code> to include a"
+            " literal <code>|</code> in a key, value, or args."
+            " Use <code>\\\\=</code> to include a literal"
+            " <code>=</code> in a key.\n\n"
+        )
 
     @hookimpl
     def help(self, plugin):
