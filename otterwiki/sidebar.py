@@ -85,7 +85,15 @@ class SidebarMenu:
         return self.menu
 
 
+class SidebarPageIndexEntry:
+    def __init__(self, path: str, header: str):
+        self.children: OrderedDict[str, SidebarPageIndexEntry] = OrderedDict()
+        self.path: str = path
+        self.header: str = header
+
+
 class SidebarPageIndex:
+
     AXT_HEADING = re.compile(
         r' {0,3}(#{1,6})(?!#+)(?: *\n+|' r'\s+([^\n]*?)(?:\n+|\s+?#+\s*\n+))'
     )
@@ -109,64 +117,114 @@ class SidebarPageIndex:
         self.filenames_and_header = []
 
         # load pages
-        if self.mode == "":
-            self.tree = None
-        else:
-            self.tree = OrderedDict()
+        self.tree: OrderedDict[str, SidebarPageIndexEntry] = OrderedDict()
+        if self.mode != "":
             # load all siblings and parents of the current page
             self.load(self.path)
             # check if focus has been disabled, via SIDEBAR_MENUTREE_FOCUS
             if self.focus == "OFF" and path != "":
                 # without focus load all pages
                 self.load(path="")
-            self.tree = self.order_tree(self.tree)
+            self.tree = self.filter_order_tree(self.tree)
 
-    def read_header(self, filename):
+    def read_header(self, filename: str) -> str | None:
+        """
+        Read header of the file
+
+        Args:
+            filename: File of which to get
+
+        Returns:
+            header string or none if not found
+        """
         filehead = storage.load(filename, size=512)
         # find first markdown header in filehead
         header = [line for (_, line) in self.AXT_HEADING.findall(filehead)]
-        header += [line for (line, _) in self.SETEX_HEADING.findall(filehead)]
         if len(header):
             return header[0]
+
+        header = [line for (line, _) in self.SETEX_HEADING.findall(filehead)]
+        if len(header):
+            return header[0]
+
         return None
 
-    def order_tree(
+    def filter_order_tree(
         self,
-        tree: OrderedDict,
-    ):
-        # convert OrderedDict into list
+        tree: OrderedDict[str, SidebarPageIndexEntry],
+    ) -> OrderedDict[str, SidebarPageIndexEntry]:
+        """
+        Filter and order passed tree
+
+        Args:
+            tree: Tree to filter and order
+
+        Returns:
+            new filtered and ordered tree
+        """
         entries = list(tree.items())
-        # decide sort_key lambda on mode
-        if app.config["SIDEBAR_MENUTREE_IGNORE_CASE"]:
-            sort_key = lambda k: (True, str.lower(k[0]))
-        else:
-            sort_key = lambda k: (True, k[0])
-        if self.mode in ["DIRECTORIES_GROUPED"]:
-            if app.config["SIDEBAR_MENUTREE_IGNORE_CASE"]:
-                sort_key = lambda k: (
-                    len(k[1]["children"]) == 0,
-                    str.lower(k[0]),
-                )
-            else:
-                sort_key = lambda k: (len(k[1]["children"]) == 0, k[0])
-        # sort entries
-        filtered_list = sorted(entries, key=sort_key)
+
+        def sort_by_lower(
+            key: tuple[str, SidebarPageIndexEntry],
+        ) -> tuple[bool, str]:
+            return (True, str.lower(key[0]))
+
+        def sort_by_lower_directories(
+            key: tuple[str, SidebarPageIndexEntry],
+        ) -> tuple[bool, str]:
+            return (len(key[1].children) == 0, str.lower(key[0]))
+
+        def sort_by_ignore_case(
+            key: tuple[str, SidebarPageIndexEntry],
+        ) -> tuple[bool, str]:
+            return (True, key[0])
+
+        def sort_by_ignore_case_directories(
+            key: tuple[str, SidebarPageIndexEntry],
+        ) -> tuple[bool, str]:
+            return (len(key[1].children) == 0, key[0])
+
         # filter entries
         if self.mode in ["DIRECTORIES_ONLY"]:
-            filtered_list = [
-                x for x in filtered_list if len(x[1]["children"]) > 0
-            ]
-        # after filtering and ordering: back to OrderedDict
-        stree = OrderedDict(filtered_list)
-        # recursively take care of the child nodes
-        for key, values in stree.items():
-            if values["children"]:
-                stree[key]["children"] = self.order_tree(
-                    values["children"],
-                )
-        return stree
+            entries = [x for x in entries if len(x[1].children) > 0]
 
-    def add_node(self, tree, prefix, parts, header=None):
+        # sort entries
+        if app.config["SIDEBAR_MENUTREE_IGNORE_CASE"]:
+            sort_key = sort_by_lower
+        else:
+            sort_key = sort_by_ignore_case
+        if self.mode in ["DIRECTORIES_GROUPED"]:
+            if app.config["SIDEBAR_MENUTREE_IGNORE_CASE"]:
+                sort_key = sort_by_lower_directories
+            else:
+                sort_key = sort_by_ignore_case_directories
+
+        entries.sort(key=sort_key)
+
+        # after filtering and ordering: back to OrderedDict
+        sorted_tree = OrderedDict(entries)
+
+        # recursively take care of the child nodes
+        for key, values in sorted_tree.items():
+            if values.children:
+                sorted_tree[key].children = self.filter_order_tree(
+                    values.children,
+                )
+        return sorted_tree
+
+    def add_node(
+        self,
+        tree: OrderedDict[str, SidebarPageIndexEntry],
+        prefix: list[str],
+        parts: list[str],
+        header: str | None = None,
+    ):
+        """
+        Add new nodes based of 'prefix' and 'parts' into the given position in the 'tree'
+
+        Args:
+            tree: Tree where to insert new node
+        """
         # handle max_depth
         if (
             self.max_depth
@@ -174,28 +232,34 @@ class SidebarPageIndex:
         ):
             return
         if parts[0] not in tree:
-            tree[parts[0]] = {
-                "children": OrderedDict(),
-                "path": get_pagename(
+            new_entry = SidebarPageIndexEntry(
+                path=get_pagename(
                     join_path(prefix + parts),
                     full=True,
                     header=header if len(parts) == 1 else None,
                 ),
-                "header": get_pagename_for_title(
+                header=get_pagename_for_title(
                     join_path(prefix + parts),
                     full=False,
                     header=header if len(parts) == 1 else None,
                 ),
-            }
+            )
+            tree[parts[0]] = new_entry
         if len(parts) > 1:
             self.add_node(
-                tree[parts[0]]["children"],
+                tree[parts[0]].children,
                 prefix + [parts[0]],
                 parts[1:],
                 header,
             )
 
-    def load(self, path):
+    def load(self, path: str):
+        """
+        Add sidebar page index entries into self.tree
+
+        Args:
+            path: Path within storage from which to get entires
+        """
         t_start = timer()
         files, _ = storage.list(p=path)
         app.logger.debug(
@@ -203,7 +267,7 @@ class SidebarPageIndex:
         )
 
         t_start = timer()
-        entries = []
+        entries: list[str] = []
         for filename in [
             f for f in files if f.endswith(".md")
         ]:  # filter .md files
@@ -214,7 +278,7 @@ class SidebarPageIndex:
                 pp = join_path(parents[0 : i + 1])
                 entries.append(pp)
             entries.append(filename)
-        entries = sorted(list(set(entries)))
+        list(set(entries)).sort()
 
         for entry in entries:
             header = None
@@ -228,5 +292,5 @@ class SidebarPageIndex:
             f"SidebarPageIndex.load({path}) reading entries, adding nodes took {timer() - t_start:.3f} seconds."
         )
 
-    def query(self):
+    def query(self)-> OrderedDict[str, SidebarPageIndexEntry]:
         return self.tree

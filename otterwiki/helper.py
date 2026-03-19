@@ -212,7 +212,9 @@ def get_pagename(filepath, full=False, header=None):
     return "/".join(arr)
 
 
-def get_pagename_for_title(filepath, full=False, header=None):
+def get_pagename_for_title(
+    filepath: str, full: bool = False, header: str | None = None
+):
     '''this will derive the page name for display purposes (titles, breadcrumbs, etc.) with underscore replacement'''
     pagename = get_pagename(filepath, full=full, header=header)
 
