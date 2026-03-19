@@ -323,6 +323,13 @@ class mistunePluginFancyBlocks:
     FANCY_BLOCK_HEADER = re.compile(r'^#{1,5}\s*(.*)\n+')
 
     def parse_fancy_block(self, block, m, state):
+        cursor = False
+        # check if the cursor was set inside the fancy block (in preview mode)
+        if cursormagicword in m.group(0):
+            cursor = True
+            m = self.FANCY_BLOCK.match(m.group(0).replace(cursormagicword, ""))
+            if not m:
+                return
         text = m.group(4) or ""
         family = m.group(3).strip().lower()
 
@@ -348,12 +355,12 @@ class mistunePluginFancyBlocks:
 
         return {
             "type": "fancy_block",
-            "params": (family, header),
+            "params": (family, header, cursor),
             "text": text,
             "children": children,
         }
 
-    def render_html_fancy_block(self, text, family, header):
+    def render_html_fancy_block(self, text, family, header, cursor=False):
         if family in ["info", "blue"]:
             cls = "alert alert-primary"
         elif family in ["warning", "yellow"]:
@@ -373,9 +380,12 @@ class mistunePluginFancyBlocks:
         else:
             header = ""
         text = text.strip()
-        return (
+        output = (
             f'<div class="{cls} mb-20" role="alert">{header}\n{text}</div>\n'
         )
+        if cursor:
+            return cursormagicword + output
+        return output
 
     def __call__(self, md):
         md.block.register_rule(

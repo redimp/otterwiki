@@ -48,6 +48,12 @@ a^2+b^2=c^2
 [[Text to display|WikiPage]]
 
 [Example Link with text](http://example.com)
+
+
+:::danger
+Test
+:::
+
 """
 
 """
