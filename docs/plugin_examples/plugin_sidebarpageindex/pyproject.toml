@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "otterwiki_sidebarpageindex"
+description = "Example plugin demonstrating sidebar page index filter and sort processing hooks."
+version = "0.1.0"
+authors = [
+    { name = "rengyr", email = "code@rengyr.eu" }
+]
+
+[project.entry-points.otterwiki]
+sidebarpageindex = "otterwiki_sidebarpageindex"
