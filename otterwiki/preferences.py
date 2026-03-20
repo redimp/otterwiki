@@ -591,11 +591,14 @@ def sidebar_preferences_form():
     if not has_permission("ADMIN"):
         abort(403)
     # we reuse SidebarPageIndex to generate a list of all pages
-    sn = SidebarPageIndex("", mode="*")
+    sn = SidebarPageIndex("", mode="*", filter_order=False)
     pages = [
         get_pagename_for_title(fh[0], full=True, header=fh[1])
         for fh in sn.filenames_and_header
     ]
+    pages = list(set(pages))
+    pages.sort()
+
     # render form
     return render_template(
         "admin/sidebar_preferences.html",

@@ -221,7 +221,7 @@ class PageIndex:
             if not current_user.is_authenticated:
                 return redirect(url_for("login"))
             abort(403)
-        menutree = SidebarPageIndex(get_page_directoryname(self.path or "/"))
+        menutree = SidebarPageIndex(self.path)
 
         # build the title and description used in the meta og tags ...
         if self.path is None or self.path.rstrip("/") == "":

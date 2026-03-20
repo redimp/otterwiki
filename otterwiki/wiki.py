@@ -187,7 +187,7 @@ class Changelog:
             # use the shorter page list
             pages = pages_short
 
-        menutree = SidebarPageIndex(get_page_directoryname("/"))
+        menutree = SidebarPageIndex("/")
         return render_template(
             "changelog.html",
             log=log,
@@ -245,7 +245,7 @@ class Changelog:
             filename = list(url_map.keys())[0]
             pagepath = get_pagepath(get_pagename(filename, full=True))
 
-        menutree = SidebarPageIndex(get_page_directoryname(pagepath or "/"))
+        menutree = SidebarPageIndex(pagepath)
 
         file_diffs = patchset2filedict(patchset)
         return render_template(
@@ -471,7 +471,7 @@ class Page:
             )
 
         source = pygments_render(self.content, lang='markdown')
-        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(self.pagepath)
 
         return render_template(
             "source.html",
@@ -539,7 +539,7 @@ class Page:
         if self.revision is not None:
             title = "{} ({})".format(self.pagename, self.revision)
 
-        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(self.pagepath)
 
         htmlcontent = chain_hooks(
             "page_view_htmlcontent_postprocess", htmlcontent, self
@@ -850,7 +850,7 @@ class Page:
                     ("", "", "", int(row[3]), line, oddeven, row[0], "", 0)
                 )
                 fdata[last_index][8] += 1
-        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(self.pagepath)
         return render_template(
             "blame.html",
             title="{} - blame {}".format(self.pagename, self.revision),
@@ -875,7 +875,7 @@ class Page:
         url_map = patchset2urlmap(patchset, rev_b, rev_a)
         file_diffs = patchset2filedict(patchset)
 
-        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(self.pagepath)
         return render_template(
             "diff.html",
             title="{} - diff {} {}".format(self.pagename, rev_a, rev_b),
@@ -921,7 +921,7 @@ class Page:
             )
 
             log.append(entry)
-        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(self.pagepath)
         return render_template(
             "history.html",
             title="{} - History".format(self.pagename),
@@ -1013,7 +1013,7 @@ class Page:
     def rename_form(self, new_pagename=None, message=None):
         if not has_permission("WRITE"):
             abort(403)
-        menutree = SidebarPageIndex(get_page_directoryname(self.pagepath))
+        menutree = SidebarPageIndex(self.pagepath)
         olddrafts = Drafts.query.filter_by(pagepath=self.pagepath).all()
         if new_pagename != self.pagepath:
             newdrafts = Drafts.query.filter_by(
