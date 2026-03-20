@@ -9,11 +9,16 @@ that will be expanded in the future.
 See docs/plugin_examples for examples.
 """
 
+from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Tuple
 from werkzeug.datastructures import MultiDict
 
 import pluggy
+
+import typing
+
+if typing.TYPE_CHECKING:
+    from otterwiki.sidebar import SidebarPageIndexEntry
 
 hookspec = pluggy.HookspecMarker("otterwiki")
 hookimpl = pluggy.HookimplMarker("otterwiki")
@@ -304,7 +309,7 @@ class OtterWikiPluginSpec:
     @hookspec
     def info(
         self,
-    ) -> Tuple[str, str, str] | None:
+    ) -> tuple[str, str, str] | None:
         """
         This hook is called to retrieve information about the plugin.
         The return value is supposed to be the name of the plugin, a
@@ -313,7 +318,7 @@ class OtterWikiPluginSpec:
         """
 
     @hookspec
-    def help(self, plugin: str) -> Tuple[str, str] | None:
+    def help(self, plugin: str) -> tuple[str, str] | None:
         """
         This hook is called to generate the documentation (help) for the plugin
         """
@@ -360,6 +365,42 @@ class OtterWikiPluginSpec:
         with POST/GET in the method and values combined the combination of
         args (the key/values in the query string) and form (key/value pairs
         from the body for a post request), preferring args if keys overlap
+        """
+
+    @hookspec
+    def sidebar_page_index_filter_entries(
+        self,
+        sidebarPageIndexEntries: list[tuple[str, 'SidebarPageIndexEntry']],
+        file_path: str | None,
+        mode: str,
+    ) -> None:
+        """
+        This hook allows plugins to filter sidebar page index entries.
+        Only root entries needs to be filtered as the hook is called for list
+        of children of every entry.
+
+        Args:
+            sidebarPageIndexEntries: Tree roots of entries that will be shown
+            file_path: Path to current open viewed
+            mode: filter/sort mode to use (constants from config)
+        """
+
+    @hookspec
+    def sidebar_page_index_sort_entries(
+        self,
+        sidebarPageIndexEntries: list[tuple[str, 'SidebarPageIndexEntry']],
+        file_path: str | None,
+        mode: str,
+    ) -> None:
+        """
+        This hook allows plugins to order sidebar page index entries.
+        Only root entries needs to be sorted as the hook is called for list
+        of children of every entry.
+
+        Args:
+            sidebarPageIndexEntries: Tree roots of entries that will be shown
+            file_path: Path to current open viewed
+            mode: filter/sort mode to use (constants from config)
         """
 
 
