@@ -133,7 +133,7 @@ class SidebarPageIndex:
 
         # load pages
         self.tree: OrderedDict[str, SidebarPageIndexEntry] = OrderedDict()
-        if self.mode != "":
+        if self.mode:
             # check if focus has been disabled, via SIDEBAR_MENUTREE_FOCUS
             if self.focus == "OFF":
                 # without focus load all pages
