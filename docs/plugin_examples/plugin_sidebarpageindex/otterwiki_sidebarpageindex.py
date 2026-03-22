@@ -12,7 +12,6 @@ Features:
 - Reverse sort pages by their name
 """
 
-from collections import OrderedDict
 from flask import request
 from otterwiki.plugins import hookimpl, plugin_manager
 from otterwiki.util import (
