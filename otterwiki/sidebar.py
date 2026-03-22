@@ -115,10 +115,8 @@ class SidebarPageIndex:
             mode: filter/sort mode to use (constants from config)
             filter_order: if to use filters and sorting on page index
         """
-        self.file_path = path
         self.path = get_page_directoryname(path or "/")
         if not app.config["RETAIN_PAGE_NAME_CASE"]:
-            self.file_path = self.file_path.lower() if self.file_path else None
             self.path = self.path.lower()
         self.path_depth = len(split_path(self.path))
         try:
@@ -211,7 +209,6 @@ class SidebarPageIndex:
         call_hook(
             "sidebar_page_index_filter_entries",
             sidebarPageIndexEntries=entries,
-            file_path=self.file_path,
             mode=self.mode,
         )
 
@@ -231,7 +228,6 @@ class SidebarPageIndex:
         call_hook(
             "sidebar_page_index_sort_entries",
             sidebarPageIndexEntries=entries,
-            file_path=self.file_path,
             mode=self.mode,
         )
 
