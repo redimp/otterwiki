@@ -378,6 +378,12 @@ class OtterWikiPluginSpec:
         Only root entries needs to be filtered as the hook is called for list
         of children of every entry.
 
+        Plugins must mutate ``sidebarPageIndexEntries`` in-place (e.g.
+        ``sidebarPageIndexEntries[:] = filtered``) rather than returning a
+        new list.  Return values are ignored because the hookspec does not
+        use ``firstresult``; only in-place changes are visible to the
+        caller and to subsequent plugins.
+
         Args:
             sidebarPageIndexEntries: Tree roots of entries that will be shown
             mode: filter/sort mode to use (constants from config)
@@ -393,6 +399,12 @@ class OtterWikiPluginSpec:
         This hook allows plugins to order sidebar page index entries.
         Only root entries needs to be sorted as the hook is called for list
         of children of every entry.
+
+        Plugins must mutate ``sidebarPageIndexEntries`` in-place (e.g.
+        ``sidebarPageIndexEntries.sort(...)``) rather than returning a
+        new list.  Return values are ignored because the hookspec does not
+        use ``firstresult``; only in-place changes are visible to the
+        caller and to subsequent plugins.
 
         Args:
             sidebarPageIndexEntries: Tree roots of entries that will be shown
