@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.18.2](https://github.com/redimp/otterwiki/releases/tag/v2.18.2) - 2026-03-22
+
+<small>[Compare with v2.18.1](https://github.com/redimp/otterwiki/compare/v2.18.1...v2.18.2)</small>
+
+### Features
+
+- New `{{PageIndex}}` embedding that renders the page index of subpages ([ed6d1df](https://github.com/redimp/otterwiki/commit/ed6d1df8aa053eaf6a5f733ed6244c101a8cc89b)).
+- New `sidebarPageIndex` plugin hook for sidebar page index filter and sort ([f98af59](https://github.com/redimp/otterwiki/commit/f98af593cd36f57cf70676812fe60b34203a30f7) by @Rengyr).
+
+### Bug Fixes
+
+- `clean_html` fix, additional permission checks, fixed login redirects ([4c92ebc](https://github.com/redimp/otterwiki/commit/4c92ebcd21dae6a9f0682925442ac51b7ad2099c) by @deseven).
+- Typos in help, allow more tags and attributes in `clean_html` ([a942327](https://github.com/redimp/otterwiki/commit/a94232776ea306111ff0cd8cfc3a3ed903005815)).
+- Prepend preview cursor if found in a fancy block, see #377 ([2b8c44c](https://github.com/redimp/otterwiki/commit/2b8c44cc0dd1f239820765ee2a274a2472bf1826)).
+- Embedding key value parsing, see #413 ([4edba9c](https://github.com/redimp/otterwiki/commit/4edba9c97876c88b0ca1c1d298fdfb308718e7b6)).
+
+### Documentation
+
+- Added documentation for general use of embeddings ([3dc9cfa](https://github.com/redimp/otterwiki/commit/3dc9cfa6fd9bd4fb92f9400db96c9451d2671817)).
+- Add example for sidebar page index plugin ([65c60e2](https://github.com/redimp/otterwiki/commit/65c60e221e67b8fb8f7fd737cb51e3a43f74c30b) by @Rengyr).
+- Added note that the hooks has to modify `sidebarPageIndexEntries` in-place ([1cf1a45](https://github.com/redimp/otterwiki/commit/1cf1a45b277dc1dbafd0b79852c1d52859801e8c)).
+
 ## [v2.18.1](https://github.com/redimp/otterwiki/releases/tag/v2.18.1) - 2026-03-17
 
 <small>[Compare with v2.18.0](https://github.com/redimp/otterwiki/compare/v2.18.0...v2.18.1)</small>
