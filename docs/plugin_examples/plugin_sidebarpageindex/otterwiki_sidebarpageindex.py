@@ -13,6 +13,7 @@ Features:
 """
 
 from collections import OrderedDict
+from flask import request
 from otterwiki.plugins import hookimpl, plugin_manager
 from otterwiki.util import (
     split_path,
@@ -35,7 +36,6 @@ class SidebarPageIndexExample:
     def sidebar_page_index_filter_entries(
         self,
         sidebarPageIndexEntries: list[tuple],
-        file_path: str | None,
         mode: str,
     ) -> None:
         """
@@ -45,18 +45,23 @@ class SidebarPageIndexExample:
 
         Args:
             sidebarPageIndexEntries: Tree roots of entries that will be shown
-            file_path: Path to current open viewed
             mode: filter/sort mode to use (constants from config)
         """
+
+        current_path = request.path
+        if not self.app.config["RETAIN_PAGE_NAME_CASE"]:
+            current_path = current_path.lower()
+        paths = split_path(current_path)
 
         def should_show(
             entry: tuple,
         ) -> bool:
-            if file_path:
-                paths = split_path(file_path)
-                for path in paths:
-                    if path == entry[1].header:
-                        return True
+            entry_path = entry[1].header
+            if not self.app.config["RETAIN_PAGE_NAME_CASE"]:
+                entry_path = entry_path.lower()
+            for path in paths:
+                if path == entry_path:
+                    return True
             return not entry[0].endswith("_hidden")
 
         sidebarPageIndexEntries[:] = [
@@ -67,7 +72,6 @@ class SidebarPageIndexExample:
     def sidebar_page_index_sort_entries(
         self,
         sidebarPageIndexEntries: list[tuple],
-        file_path: str | None,
         mode: str,
     ) -> None:
         """
@@ -77,7 +81,6 @@ class SidebarPageIndexExample:
 
         Args:
             sidebarPageIndexEntries: Tree roots of entries that will be shown
-            file_path: Path to current open viewed
             mode: filter/sort mode to use (constants from config)
         """
 

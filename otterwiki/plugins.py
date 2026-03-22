@@ -371,7 +371,6 @@ class OtterWikiPluginSpec:
     def sidebar_page_index_filter_entries(
         self,
         sidebarPageIndexEntries: list[tuple[str, 'SidebarPageIndexEntry']],
-        file_path: str | None,
         mode: str,
     ) -> None:
         """
@@ -381,7 +380,6 @@ class OtterWikiPluginSpec:
 
         Args:
             sidebarPageIndexEntries: Tree roots of entries that will be shown
-            file_path: Path to current open viewed
             mode: filter/sort mode to use (constants from config)
         """
 
@@ -389,7 +387,6 @@ class OtterWikiPluginSpec:
     def sidebar_page_index_sort_entries(
         self,
         sidebarPageIndexEntries: list[tuple[str, 'SidebarPageIndexEntry']],
-        file_path: str | None,
         mode: str,
     ) -> None:
         """
@@ -399,7 +396,6 @@ class OtterWikiPluginSpec:
 
         Args:
             sidebarPageIndexEntries: Tree roots of entries that will be shown
-            file_path: Path to current open viewed
             mode: filter/sort mode to use (constants from config)
         """
 
