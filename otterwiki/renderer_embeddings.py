@@ -78,6 +78,7 @@ The DataTable Embedding is for turning markdown tables into datatables that can 
 |paging=false
 |perPage=42
 |searchable=false
+|sortable=true
 |fixedHeight=True
 |caption=Python Stable
 | Version | Released   |
@@ -383,6 +384,9 @@ Display images in frames on the wiki page.
 |caption=An Otter Wiki Logo
 |width=30%
 |position=right/left/center
+|float=right/left
+|text-align=center/left/right/justify
+|style=custom css
 [![](/static/img/otter.png)](/static/img/otter.png)
 }}
 ```
@@ -476,18 +480,20 @@ Embed a video player that supports video and audio playback in your document.
 
 ```
 {{Video
-|width=80%
-|muted=true
-|controls=true
-|autoplay=on
-/static/img/otter.mp4
+|width=10%
+|muted=false/true
+|controls=true/false
+|autoplay=false/true
+|loop=false/true
+|src=/full/path/to/video.mp4
+/alternative/full/path/to/video.mp4
 }}
 ```
 
 </div><div class="col-md-4 col-sm-12" style="text-align:right; padding-top:10px;">
 
 {{Video
-|width=80%
+|width=100%
 |muted=true
 |controls=true
 |autoplay=on
@@ -561,9 +567,13 @@ An element for displaying structured data in a document.
 ````
 {{InfoBox
 |caption=Some Caption
+|position=right/left
+|float=right/left
+|width=30%
+|text-align=justify
+|style=custom css
 |Random Key=Value
 |Answer=42
-|text-align=justify
 |Homepage=[otterwiki.com](https://otterwiki.com)
 Lorem _ipsum_ dolor sit **amet**, consectetur
 adipiscing elit.
