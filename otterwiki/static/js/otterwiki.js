@@ -757,7 +757,7 @@ var otterwiki_editor = {
         }
         return cells.length - 1;
     },
-        findTable: function() {
+        _findTable: function() {
         var orig_cursor = cm_editor.getCursor('start');
         var orig_cursor_end = cm_editor.getCursor('end');
         const block = otterwiki_editor._findBlock(true);
