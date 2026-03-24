@@ -5,12 +5,11 @@ import re
 import mistune
 from bs4 import BeautifulSoup
 from markupsafe import Markup, escape
-from mistune.plugins import (
-    plugin_strikethrough,
-    plugin_table,
-    plugin_url,
-    plugin_abbr,
-)
+from mistune.plugins.formatting import strikethrough as plugin_strikethrough
+from mistune.plugins.table import table as plugin_table, table_in_list
+from mistune.plugins.url import url as plugin_url
+from mistune.plugins.abbr import abbr as plugin_abbr
+from mistune.util import striptags as mistune_striptags
 from pygments.formatters import HtmlFormatter
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
@@ -36,11 +35,15 @@ from otterwiki.util import empty, slugify, cursormagicword
 #
 # patch mistune table_plugin so that not all the newlines at the end of a table are removed
 #
-mistune.plugins.plugin_table.TABLE_PATTERN = re.compile(  # pyright: ignore
-    r' {0,3}\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n{0,1}'
+mistune.plugins.table.TABLE_PATTERN = (  # pyright: ignore
+    r'^ {0,3}\|(?P<table_head>.+)\|[ \t]*\n'
+    r' {0,3}\|(?P<table_align> *[-:]+[-| :]*)\|[ \t]*\n'
+    r'(?P<table_body>(?: {0,3}\|.*\|[ \t]*(?:\n|$))*)\n{0,1}'
 )
-mistune.plugins.plugin_table.NP_TABLE_PATTERN = re.compile(  # pyright: ignore
-    r' {0,3}(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n{0,1}'
+mistune.plugins.table.NP_TABLE_PATTERN = (  # pyright: ignore
+    r'^ {0,3}(?P<nptable_head>\S.*\|.*)\n'
+    r' {0,3}(?P<nptable_align>[-:]+ *\|[-| :]*)\n'
+    r'(?P<nptable_body>(?:.*\|.*(?:\n|$))*)\n{0,1}'
 )
 
 
@@ -280,12 +283,13 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         self.toc_tree = []
         self.toc_anchors = {}
 
-    def image(self, src, alt="", title=None):
-        # escape src, title and alt
+    def image(self, text, url="", title=None):
+        # text is rendered alt children; strip tags for the alt attribute
+        alt = mistune.escape(mistune_striptags(text))
+        # escape url and title
         if title:
             title = mistune.escape(title)
-        alt = mistune.escape(alt)
-        src = mistune.escape_url(self._safe_url(src))
+        src = mistune.escape_url(self.safe_url(url))
 
         if not empty(title):
             image_html = (
@@ -308,11 +312,11 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         )
         return processed_html
 
-    def link(self, link, text=None, title=None):
+    def link(self, text, url=None, title=None):
         if empty(text):
-            text = link
-        # escape link, title
-        link = mistune.escape_url(self._safe_url(link))
+            text = url
+        # escape url, title
+        link = mistune.escape_url(self.safe_url(url))
 
         if title:
             link_html = '<a href="{}" title="{}">{}</a>'.format(
@@ -381,7 +385,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         html = showmagicword(cursorline, html)
         return prefix + html
 
-    def heading(self, text, level):
+    def heading(self, text, level, **attrs):
         raw = Markup(text).striptags()
         anchor = slugify(raw)
         try:
@@ -419,48 +423,60 @@ class OtterwikiBlockParser(mistune.BlockParser):
 
     def parse_indent_code(self, m, state):
         """
-        Overrides mistunes rendering, since mistune catches one \n too much
+        Overrides mistunes rendering, since mistune catches one \\n too much.
+        Re-match the v3 scanner's group(0) against our custom INDENT_CODE regex
+        so that group(1) strips the extra trailing blank-line newlines exactly
+        as v2 did.
         """
-        raw = m.group(1)
+        m2 = self.INDENT_CODE.match(m.group(0))
+        raw = m2.group(1) if m2 else m.group(0)
         text = mistune.block_parser.expand_leading_tab(raw)
         code = mistune.block_parser._INDENT_CODE_TRIM.sub(  # pyright: ignore
             '', text
         )
         code = code.lstrip('\n')
-        return self.tokenize_block_code(code, None, state)
+        state.append_token({"type": "block_code", "raw": code, "style": "indent"})
+        return m.end()
 
 
 class OtterwikiInlineParser(mistune.InlineParser):
-    def __init__(self, env, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, env, hard_wrap=False):
+        super().__init__(hard_wrap=hard_wrap)
         self.env = env
 
     def parse_codespan(self, m, state):
-        # mistune replaces multiple spaces and newlines with " "
-        # and removes leading and trailing whitespace
-        #    re.sub(r'[ \n]+', ' ', m.group(2).strip())
+        # Override: replace only newlines with spaces (not multiple spaces),
+        # preserving internal whitespace beyond what the standard parser strips.
+        marker = m.group(0)
+        pattern = re.compile(r"(.*?[^`])" + marker + r"(?!`)", re.S)
+        pos = m.end()
+        m2 = pattern.match(state.src, pos)
+        if m2:
+            end_pos = m2.end()
+            code = m2.group(1)
+            # Replace newlines with spaces (our custom behaviour)
+            code = re.sub(r'\n+', ' ', code)
+            state.append_token({"type": "codespan", "raw": code})
+            return end_pos
+        else:
+            state.append_token({"type": "text", "raw": marker})
+            return pos
 
-        code = re.sub(r'\n+', ' ', m.group(2))
-        return 'codespan', code
-
-    def parse_std_link(self, m, state):
-        line = m.group(0)
-        text = m.group(1)
-        link = mistune.inline_parser.ESCAPE_CHAR.sub(r'\1', m.group(2))
-        if link.startswith('<') and link.endswith('>'):
-            link = link[1:-1]
-        elif link.startswith("./"):
-            if self.env.get("PAGE_URL", None) is not None:
-                link = self.env["PAGE_URL"] + "/" + link
-
-        title = m.group(3)
-        if title:
-            title = mistune.inline_parser.ESCAPE_CHAR.sub(r'\1', title[1:-1])
-
-        if line[0] == '!':
-            return 'image', mistune.escape_url(link), text, title
-
-        return self.tokenize_link(line, link, text, title, state)
+    def parse_link(self, m, state):
+        # Call the standard v3 link parser first
+        result = super().parse_link(m, state)
+        if result is None:
+            return result
+        # Post-process: if the last token is a link/image with a ./relative URL,
+        # prepend the PAGE_URL
+        page_url = self.env.get("PAGE_URL")
+        if page_url and state.tokens:
+            last = state.tokens[-1]
+            if last.get("type") in ("link", "image") and last.get("attrs"):
+                url = last["attrs"].get("url", "")
+                if url.startswith("./"):
+                    last["attrs"]["url"] = page_url + "/" + url
+        return result
 
 
 class OtterwikiMdParser(mistune.Markdown):
@@ -492,7 +508,7 @@ class OtterwikiRenderer:
         # set reference to renderer in md_renderer for library requirement tracking
         self.md_renderer.renderer = self
         self.inline_parser = OtterwikiInlineParser(
-            env=self.env, renderer=self.md_renderer, hard_wrap=False
+            env=self.env, hard_wrap=False
         )
         self.block_parser = OtterwikiBlockParser()
 
@@ -524,7 +540,7 @@ class OtterwikiRenderer:
         self.htmlcursor = " <span id=\"otterwiki_cursor\"></span> "
         # thanks to https://github.com/lepture/mistune/issues/158#issuecomment-830481284
         # we can enable tables in lists
-        self.mistune.block.list_rules += ['table', 'nptable']  # pyright:ignore
+        table_in_list(self.mistune)
 
     def markdown(self, text, cursor=None, **kwargs):
         self.md_renderer.reset_toc()
