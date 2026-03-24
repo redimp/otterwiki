@@ -1,6 +1,6 @@
 {#- vim: set et ts=8 sts=4 sw=4 ai: -#}
-{% if has_permission('READ') %}
-{% if menutree %}
+{%- if has_permission('READ') %}
+{%- if menutree %}
     <details class="collapse-panel" open>
 
         <summary class="collapse-header">
@@ -8,7 +8,7 @@
         </summary>
 
         <div class="collapse-content">
-            <!-- menutree [[ -->
+            {#- menutree [[ #}
             <ul class="sidebarmenu parent-sidebar-menu">
             {%- for key, value in menutree.items() recursive -%}
             {%- if value["children"] %}
@@ -24,18 +24,18 @@
             {%- else %}
                 <li>
                     <div class="summary-details">
-                        {% if pagepath and pagepath.lower() == value.path.lower() %}
+                        {%- if pagepath and pagepath.lower() == value.path.lower() %}
                         <a href="/{{value["path"]}}" aria-current="page">{{value["header"]}}</a>
-                        {% else %}
+                        {%- else %}
                         <a href="/{{value["path"]}}">{{value["header"]}}</a>
-                        {% endif %}
+                        {%- endif %}
                     </div>
                 </li>
-            {%endif%}
+            {%- endif %}
             {%- endfor %}
             </ul>
-            <!-- ]] menutree -->
+            {#- ]] menutree #}
         </div>
     </details>
-{% endif %}{# if menutreee #}
-{% endif %}{# if has_permission('READ') #}
+{%- endif %}{# if menutreee #}
+{%- endif %}{# if has_permission('READ') #}

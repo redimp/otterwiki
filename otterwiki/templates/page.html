@@ -19,7 +19,7 @@
 {% endblock %}
 {#
 #}
-{% block navbardropdown %}
+{%- block navbardropdown %}
                     <a href="{{ url_for('attachments', pagepath=pagepath) }}" class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="fa fa-paperclip"></i>
@@ -38,38 +38,38 @@
                         </span>
                         Blame
                     </a>
-{% if has_permission('READ') and not has_permission('WRITE') %}
+{%- if has_permission('READ') and not has_permission('WRITE') %}
                     <a href="{{ url_for('source', pagepath=pagepath) }}" class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="fab fa-markdown"></i>
                         </span>
                         View Source
                     </a>
-{% endif %}
-{% include 'snippets/navbardropdown_rename_remove.html' %}
+{%- endif %}
+{%- include 'snippets/navbardropdown_rename_remove.html' %}
                     <div class="dropdown-divider mt-5 mb-5"></div>
 {{ super() }}
-{% endblock %}
+{%- endblock %}
 {#
 #}
-{% block navbar %}
-{% if has_permission('WRITE') %}
+{%- block navbar %}
+{%- if has_permission('WRITE') %}
 <a href="{{ url_for('edit', path=pagepath) }}" id="edit-page-btn" class="btn btn-primary" role="button" title="Edit Page (e)"><i class="fas fa-pencil-alt"></i></a>
-{% elif not current_user.is_authenticated %}
+{%- elif not current_user.is_authenticated %}
 <a href="{{ url_for('login') }}" class="btn" role="button"><i class="fas fa-sign-in-alt" title="Login"></i></a>
-{% endif %}
-{% endblock %}
+{%- endif %}
+{%- endblock %}
 {#
 #}
-{% block extra_nav -%}
+{%- block extra_nav %}
 {{ super() }}
 {{plugin_sidebar_right_inject(pagepath)|safe}}
 {%- endblock %}
 {#
 #}
-{% block content %}
+{%- block content %}
 <div class="page">
 {{htmlcontent|safe}}
 </div>
 {{content}}
-{% endblock %}
+{%- endblock %}
