@@ -852,11 +852,11 @@ class mistunePluginFrontmatterTitle:
 
 class mistunePluginEmbeddings:
     EMBEDDING_RE = re.compile(
-        r"{{([A-z ]+)(.*?)}}$", flags=re.MULTILINE | re.DOTALL
+        r"{{([A-Za-z ]+)(.*?)}}$", flags=re.MULTILINE | re.DOTALL
     )
     # Pattern with inline DOTALL for registration with v3's block scanner
     # (which compiles with re.M only, so re.DOTALL flag is lost)
-    _EMBEDDING_SCANNER_PATTERN = r"{{(?s:([A-z ]+)(.*?))}}$"
+    _EMBEDDING_SCANNER_PATTERN = r"{{(?s:([A-Za-z ]+)(.*?))}}$"
 
     def parse_block(self, block, m, state):
         cursor = False
