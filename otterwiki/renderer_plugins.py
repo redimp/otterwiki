@@ -172,7 +172,7 @@ class mistunePluginFootnotes:
         return result + output
 
     def render_html_footnote_ref(self, key, fn, index):
-        return f'<sup class="footnote-ref" id="fnref-{fn}"><a href="#fn-{index}">{index}</a></sup>'
+        return f'<sup class="footnote-ref" id="fnref-{index}"><a href="#fn-{fn}">{index}</a></sup>'
 
     def render_html_footnotes(self, text):
         return (
