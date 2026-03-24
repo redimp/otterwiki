@@ -371,9 +371,6 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             # mark that Mermaid is required
             if hasattr(self, 'renderer'):
                 self.renderer.requires_mermaid = True
-            html = "".join(
-                ["\\[{}\\]".format(line) for line in code.strip().splitlines()]
-            )
             # replace \n with <br/> for convenient diagram writing (and match the github syntax)
             code = code.replace("\\n", "<br/>")
             html = '\n<pre class="mermaid">{}\n</pre>\n'.format(code.strip())
