@@ -343,7 +343,7 @@ class mistunePluginFancyBlocks:
     _FANCY_BLOCK_SCANNER_PATTERN = (
         r'( {0,3})(\:{3,}|~{3,})([^\:\n]*)\n'
         r'(?:|([\s\S]*?)\n)'
-        r'(?: {0,3}(?:\:{3,}|~{3,})[~\:]* *\n+|$)'
+        r'(?: {0,3}(?:\:{3,}|~{3,})[~\:]* *\n+|\Z)'
     )
 
     def parse_fancy_block(self, block, m, state):

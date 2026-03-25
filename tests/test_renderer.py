@@ -717,6 +717,30 @@ With _formatted_ content.
     assert 'class="alert alert-myblock' in html
 
 
+def test_fancy_blocks_multiline():
+    # Multi-paragraph body must stay inside the div (regression: $ under re.MULTILINE
+    # matches end-of-line, causing the lazy [\s\S]*? to stop after the first body line)
+    md = """:::info
+# An info block
+
+with some content.
+:::
+
+and some text."""
+    html, _, _ = render.markdown(md)
+    assert '<h4 class="alert-heading">An info block</h4>' in html
+    assert '<div class="alert alert-primary' in html
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html, "html.parser")
+    div = soup.find("div", class_="alert-primary")
+    assert div is not None, "alert-primary div not found"
+    assert "with some content" in div.get_text()
+    # trailing paragraph is outside the div
+    paras = soup.find_all("p")
+    outside_paras = [p for p in paras if not p.find_parent("div", class_="alert")]
+    assert any("and some text" in p.get_text() for p in outside_paras)
+
+
 def test_spoiler():
     md = """>! Spoiler blocks reveal their
 >! content on click on the icon."""
