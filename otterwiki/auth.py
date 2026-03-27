@@ -143,7 +143,7 @@ class SimpleAuth:
             ):
                 toast(
                     "Please confirm your email address. "
-                    + "<a href='{}'>Resend confirmation link.</a>".format(
+                    + "Resend confirmation link: {}.".format(
                         url_for("request_confirmation_link", email=email)
                     ),
                     "warning",
@@ -169,7 +169,7 @@ class SimpleAuth:
                     f"User has deprecated password hash: {user.email}"
                 )
                 toast(
-                    f"Please <a href='{url_for('settings')}'>update your password</a>. The hashing method used is deprecated. Check <a href='{url_for('settings')}'>settings</a> for additional information.",
+                    "Please update your password in Settings. The hashing method used is deprecated.",
                     "warning",
                 )
             else:
