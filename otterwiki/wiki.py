@@ -2,7 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
-import re
+import regex
 from datetime import UTC, datetime, timedelta
 from io import BytesIO
 from time import strftime
@@ -552,11 +552,11 @@ class Page:
         # strip the title if the description starts with it
         description = description.removeprefix(title)
         # replace new lines with middle dots
-        description = re.sub(r'[\n]+', '\n', description.strip())
+        description = regex.sub(r'[\n]+', '\n', description.strip())
         # add a seperator for better readability
         description = description.replace("\n", "·")
         # make sure the sperator does directly follow a punctuation mark
-        description = re.sub(r"([!.:,])\s*·", r"\1 ", description)
+        description = regex.sub(r"([!.:,])\s*·", r"\1 ", description)
         # finally shorten the description and use it as SITE_DESCRIPTION
         description = textwrap.shorten(
             description,
@@ -1571,16 +1571,16 @@ class Search:
         if empty(self.query):
             return
         if not self.is_regexp:
-            self.needle = "(" + re.escape(self.query) + ")"
+            self.needle = "(" + regex.escape(self.query) + ")"
         else:
             self.needle = "(" + self.query + ")"
         try:
             # compile regexp
             if self.is_casesensitive:
-                self.re = re.compile(self.needle)
+                self.re = regex.compile(self.needle)
             else:
-                self.re = re.compile(self.needle, re.IGNORECASE)
-            self.rei = re.compile(self.needle, re.IGNORECASE)
+                self.re = regex.compile(self.needle, regex.IGNORECASE)
+            self.rei = regex.compile(self.needle, regex.IGNORECASE)
         except Exception as e:
             toast("Error in search term: {}".format(e), "error")
             return
@@ -1600,7 +1600,11 @@ class Search:
         t_start = timer()
         for fn in md_files:
             # check if pagename matches
-            mi = self.rei.search(get_pagename(fn))
+            try:
+                mi = self.rei.search(get_pagename(fn), timeout=5)
+            except regex.TimeoutError:
+                app.logger.warning(f"Search regex timed out on pagename: {fn}")
+                mi = None
             if mi is not None:
                 fn_result[fn] = [
                     True,
@@ -1613,7 +1617,11 @@ class Search:
             haystack = storage.load(fn)
             lastlinematched = False
             for i, line in enumerate(haystack.splitlines()):
-                m = self.re.search(line)
+                try:
+                    m = self.re.search(line, timeout=5)
+                except regex.TimeoutError:
+                    app.logger.warning(f"Search regex timed out on file: {fn}")
+                    m = None
                 if m:
                     if fn not in fn_result:
                         fn_result[fn] = [False]
@@ -1644,9 +1652,19 @@ class Search:
             for i, line in enumerate(matches):
                 # filenames are not casesensitive ...
                 if i == 0 and fnmatch == 1:
-                    n += len(self.rei.findall(line))
+                    try:
+                        n += len(self.rei.findall(line, timeout=5))
+                    except regex.TimeoutError:
+                        app.logger.warning(
+                            "Search regex timed out on findall (rei)"
+                        )
                 else:
-                    n += len(self.re.findall(line))
+                    try:
+                        n += len(self.re.findall(line, timeout=5))
+                    except regex.TimeoutError:
+                        app.logger.warning(
+                            "Search regex timed out on findall (re)"
+                        )
             key = [
                 fnmatch,
                 n,
@@ -1658,9 +1676,14 @@ class Search:
             if fnmatch == 1:
                 summary = [matches.pop(0)]
                 # overwrite key[4]
-                key[4] = self.rei.sub(
-                    r'<span class="page-match">\1</span>', cast(str, key[4])
-                )
+                try:
+                    key[4] = self.rei.sub(
+                        r'<span class="page-match">\1</span>',
+                        cast(str, key[4]),
+                        timeout=5,
+                    )
+                except regex.TimeoutError:
+                    app.logger.warning("Search regex timed out on rei.sub")
             front, end = [], []
             while len("".join(front) + "".join(end)) < 200:
                 try:
@@ -1684,9 +1707,13 @@ class Search:
                 if i == 0 and fnmatch == 1:
                     summary[i] = None
                 else:
-                    summary[i] = self.re.sub(
-                        r'<span class="text-match">\1</span>', l
-                    )
+                    try:
+                        summary[i] = self.re.sub(
+                            r'<span class="text-match">\1</span>', l, timeout=5
+                        )
+                    except regex.TimeoutError:
+                        app.logger.warning("Search regex timed out on re.sub")
+                        summary[i] = l
             # store summary with key
             result[tuple(key)] = summary
         app.logger.debug(
