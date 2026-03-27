@@ -360,7 +360,10 @@ def get_ftoc(filename, mtime=None):
                 pass
         except:
             pass
-    content = storage.load(filename)
+    try:
+        content = storage.load(filename)
+    except StorageError:
+        return []
     # parse file contents
     _, ftoc, _ = app_renderer.markdown(content)
     update_ftoc_cache(filename, ftoc, mtime)

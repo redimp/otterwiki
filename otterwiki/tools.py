@@ -13,7 +13,7 @@ from flask import (
 
 from timeit import default_timer as timer
 
-from otterwiki.gitstorage import StorageNotFound
+from otterwiki.gitstorage import StorageError, StorageNotFound
 from otterwiki.server import app, db, storage
 from otterwiki.models import Drafts
 from otterwiki.auth import has_permission, get_author
@@ -127,7 +127,10 @@ def handle_housekeeping_emptypages(form):
             pass  # continue
         # read file
         pagename = get_pagename(filename, full=True)
-        content = storage.load(filename, size=512).strip()
+        try:
+            content = storage.load(filename, size=512).strip()
+        except StorageError:
+            continue
         if len(content) < 1:
             pages[pagename] = "Page is empty"
             continue
@@ -175,7 +178,10 @@ def handle_housekeeping_brokenwikilinks(form):
     broken_links_occurrences = {}
 
     for filename in files_md:
-        content = storage.load(filename)
+        try:
+            content = storage.load(filename)
+        except StorageError:
+            continue
         current_pagename = get_pagename(filename, full=True)
 
         wikilinks = WIKI_LINK_PATTERN.findall(content)

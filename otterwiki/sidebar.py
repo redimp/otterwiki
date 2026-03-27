@@ -8,6 +8,7 @@ from collections import OrderedDict
 from timeit import default_timer as timer
 from flask import url_for
 from otterwiki.plugins import call_hook
+from otterwiki.gitstorage import StorageError
 from otterwiki.server import storage, app
 from otterwiki.util import (
     get_page_directoryname,
@@ -155,7 +156,10 @@ class SidebarPageIndex:
         Returns:
             header string or none if not found
         """
-        filehead = storage.load(filename, size=512)
+        try:
+            filehead = storage.load(filename, size=512)
+        except StorageError:
+            return None
         # find first markdown header in filehead
         header = [line for (_, line) in self.AXT_HEADING.findall(filehead)]
         if len(header):

@@ -19,6 +19,10 @@ class StorageError(Exception):
     pass
 
 
+class StorageErrorEncoding(StorageError):
+    pass
+
+
 class StorageNotFound(StorageError):
     pass
 
@@ -104,14 +108,27 @@ class GitStorage(object):
                 )
                 if mode == "rb":
                     content = content.encode("utf8", "surrogateescape")
+                else:
+                    # git show uses surrogateescape for non-UTF-8 bytes,
+                    # which produces surrogate characters that cannot be
+                    # encoded back to UTF-8. Detect this early.
+                    content.encode("utf8")
             except git.exc.GitCommandError:
                 raise StorageNotFound
+            except (UnicodeDecodeError, UnicodeEncodeError):
+                raise StorageErrorEncoding(
+                    "{} could not be decoded as text.".format(filename)
+                )
             return content
         try:
             with open(os.path.join(self.path, filename), mode=mode) as f:
                 content = f.read(size)
         except (IOError, FileNotFoundError):
             raise StorageNotFound("{} not found.".format(filename))
+        except UnicodeDecodeError:
+            raise StorageErrorEncoding(
+                "{} could not be decoded as text.".format(filename)
+            )
         return content
 
     @ttl_lru_cache(maxsize=128, ttl=60)
