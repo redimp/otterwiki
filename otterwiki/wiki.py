@@ -4,6 +4,7 @@
 import os
 import regex
 from datetime import UTC, datetime, timedelta
+
 from io import BytesIO
 from time import strftime
 from timeit import default_timer as timer
@@ -70,6 +71,9 @@ from otterwiki.util import (
     get_PatchSet,
     int_or_None,
 )
+
+# global timeout used in regexps
+_REGEX_TIMEOUT = 5
 
 if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
     PIL.Image.Resampling = PIL.Image
@@ -1596,14 +1600,16 @@ class Search:
             f"Search storage.list() and filter took {timer() - t_start:.3f} seconds."
         )
         fn_result = {}
+        _regex_timed_out = False
 
         t_start = timer()
         for fn in md_files:
             # check if pagename matches
             try:
-                mi = self.rei.search(get_pagename(fn), timeout=5)
+                mi = self.rei.search(get_pagename(fn), timeout=_REGEX_TIMEOUT)
             except regex.TimeoutError:
                 app.logger.warning(f"Search regex timed out on pagename: {fn}")
+                _regex_timed_out = True
                 mi = None
             if mi is not None:
                 fn_result[fn] = [
@@ -1618,9 +1624,10 @@ class Search:
             lastlinematched = False
             for i, line in enumerate(haystack.splitlines()):
                 try:
-                    m = self.re.search(line, timeout=5)
+                    m = self.re.search(line, timeout=_REGEX_TIMEOUT)
                 except regex.TimeoutError:
                     app.logger.warning(f"Search regex timed out on file: {fn}")
+                    _regex_timed_out = True
                     m = None
                 if m:
                     if fn not in fn_result:
@@ -1653,18 +1660,22 @@ class Search:
                 # filenames are not casesensitive ...
                 if i == 0 and fnmatch == 1:
                     try:
-                        n += len(self.rei.findall(line, timeout=5))
+                        n += len(
+                            self.rei.findall(line, timeout=_REGEX_TIMEOUT)
+                        )
                     except regex.TimeoutError:
                         app.logger.warning(
                             "Search regex timed out on findall (rei)"
                         )
+                        _regex_timed_out = True
                 else:
                     try:
-                        n += len(self.re.findall(line, timeout=5))
+                        n += len(self.re.findall(line, timeout=_REGEX_TIMEOUT))
                     except regex.TimeoutError:
                         app.logger.warning(
                             "Search regex timed out on findall (re)"
                         )
+                        _regex_timed_out = True
             key = [
                 fnmatch,
                 n,
@@ -1680,10 +1691,11 @@ class Search:
                     key[4] = self.rei.sub(
                         r'<span class="page-match">\1</span>',
                         cast(str, key[4]),
-                        timeout=5,
+                        timeout=_REGEX_TIMEOUT,
                     )
                 except regex.TimeoutError:
                     app.logger.warning("Search regex timed out on rei.sub")
+                    _regex_timed_out = True
             front, end = [], []
             while len("".join(front) + "".join(end)) < 200:
                 try:
@@ -1709,16 +1721,24 @@ class Search:
                 else:
                     try:
                         summary[i] = self.re.sub(
-                            r'<span class="text-match">\1</span>', l, timeout=5
+                            r'<span class="text-match">\1</span>',
+                            l,
+                            timeout=_REGEX_TIMEOUT,
                         )
                     except regex.TimeoutError:
                         app.logger.warning("Search regex timed out on re.sub")
+                        _regex_timed_out = True
                         summary[i] = l
             # store summary with key
             result[tuple(key)] = summary
         app.logger.debug(
             f"Search simplify result took {timer() - t_start:.3f} seconds."
         )
+        if _regex_timed_out:
+            toast(
+                "Search regex timed out. Results may be incomplete.",
+                "warning",
+            )
 
         return result
 
