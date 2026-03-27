@@ -37,8 +37,10 @@ from otterwiki.util import random_password, empty
 
 
 def check_password_hash_backport(pwhash, password):
-    if pwhash is None or len(pwhash.strip()) < 0:
-        app.logger.warning(f"")
+    if not pwhash or not pwhash.strip():
+        app.logger.warning(
+            "check_password_hash_backport called with empty or None pwhash"
+        )
         return False
     # split pwhash to check the method
     triplet = pwhash.split("$", 2)
