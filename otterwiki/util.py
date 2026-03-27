@@ -5,7 +5,7 @@ import datetime
 import mimetypes
 import os.path
 import pathlib
-import random
+import secrets
 import re
 import regex
 import string
@@ -152,9 +152,9 @@ def is_valid_email(email):
     return mail_regexp.fullmatch(email) is not None
 
 
-def random_password(len=8):
+def random_password(len=16):
     return "".join(
-        random.choice(string.ascii_lowercase + string.digits)
+        secrets.choice(string.ascii_lowercase + string.digits)
         for _ in range(len)
     )
 
