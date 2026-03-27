@@ -655,13 +655,10 @@ class Page:
             breadcrumbs=self.breadcrumbs(),
         )
 
-        preview_js = "".join(collect_hook("renderer_javascript"))
-
         return {
             "preview_content": preview_html,
             "preview_toc": toc_html,
             "library_requirements": library_requirements,
-            "preview_js": preview_js,
         }
 
     def editor(self, author, handle_draft=None):
