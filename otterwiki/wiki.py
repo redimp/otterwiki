@@ -376,6 +376,7 @@ class Page:
         )
 
         # load page content and metadata
+        self.storage_error = None
         try:
             self.content, self.metadata = self.load(revision=self.revision)
             self.exists = True
@@ -383,6 +384,11 @@ class Page:
             self.metadata = None
             self.content = None
             self.exists = False
+        except StorageError as e:
+            self.metadata = None
+            self.content = None
+            self.exists = True
+            self.storage_error = str(e)
 
         if self.content is not None:
             header = get_header(self.content)
@@ -456,6 +462,8 @@ class Page:
                 return redirect(url_for("login"))
             abort(403)
         # handle case that the page doesn't exists
+        if self.storage_error is not None:
+            abort(500, description=self.storage_error)
         self.exists_or_404()
 
         # set title
@@ -509,6 +517,31 @@ class Page:
         self.exists_or_404()
 
         upsert_pagecrumbs(get_pagename(self.pagepath, full=True))
+
+        if self.storage_error is not None:
+            menutree = SidebarPageIndex(self.pagepath)
+            return render_template(
+                "page.html",
+                title=self.pagename,
+                revision=self.revision,
+                pagename=self.pagename,
+                pagepath=self.pagepath,
+                htmlcontent="",
+                toc=[],
+                breadcrumbs=self.breadcrumbs(),
+                danger_alert=[
+                    "Storage error",
+                    self.storage_error,
+                ],
+                menutree=menutree.query(),
+                custom_menu=SidebarMenu().query(),
+                description="",
+                library_requirements=[],
+                canonical_url=url_for(
+                    "view", path=self.pagepath, _external=True
+                ),
+                extra_js="",
+            )
 
         danger_alert = False
         if not self.metadata:
@@ -671,6 +704,8 @@ class Page:
     def editor(self, author, handle_draft=None):
         if not has_permission("WRITE"):
             abort(403)
+        if self.storage_error is not None:
+            abort(500, description=self.storage_error)
         if self.exists:
             content = self.content
             # FIXME: This could be improved by storing the last position a user
@@ -808,6 +843,8 @@ class Page:
                 return redirect(url_for("login"))
             abort(403)
         # handle case that the page doesn't exists
+        if self.storage_error is not None:
+            abort(500, description=self.storage_error)
         self.exists_or_404(in_git=True)
 
         data = storage.blame(self.filename, self.revision)
@@ -1620,7 +1657,10 @@ class Search:
                     ),
                 ]
             # open file, read file
-            haystack = storage.load(fn)
+            try:
+                haystack = storage.load(fn)
+            except StorageError:
+                continue
             lastlinematched = False
             for i, line in enumerate(haystack.splitlines()):
                 try:

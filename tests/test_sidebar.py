@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import os
+
 from bs4 import BeautifulSoup
 
 
@@ -210,3 +212,51 @@ def test_sidebar_custom_menu_backward_compatibility(
     menu_data = get_sidebar_menu(test_client)
     assert menu_data is not None
     assert ("Home Page", "/Home") in menu_data["links"]
+
+
+def test_sidebar_menutree_with_invalid_utf8(create_app, req_ctx):
+    """Sidebar menu tree renders valid pages even when one has invalid UTF-8."""
+    from otterwiki.sidebar import SidebarPageIndex
+
+    storage = create_app.storage
+
+    # create valid pages
+    storage.store(
+        "ValidPage.md",
+        "# Valid Page\n\nSome content.",
+        author=("Test", "test@example.org"),
+    )
+    storage.store(
+        "AnotherPage.md",
+        "# Another Page\n\nMore content.",
+        author=("Test", "test@example.org"),
+    )
+
+    # write a file with invalid UTF-8 bytes directly to the repo
+    broken_path = os.path.join(storage.path, "BrokenPage.md")
+    with open(broken_path, "wb") as f:
+        f.write(b"# Broken\n\xff\xfe invalid utf8 sequence")
+    storage.commit(
+        ["BrokenPage.md"],
+        message="add broken page",
+        author=("Test", "test@example.org"),
+    )
+
+    # disable focus so the sidebar loads all pages
+    create_app.config["SIDEBAR_MENUTREE_FOCUS"] = "OFF"
+    tree = SidebarPageIndex(path="/").query()
+    page_names = list(tree.keys())
+
+    # all three pages (plus the default Home) should be present
+    assert "ValidPage" in page_names
+    assert "AnotherPage" in page_names
+    assert "BrokenPage" in page_names
+
+    # valid pages have their markdown header extracted
+    valid_headers = dict(
+        (fn, h) for fn, h in SidebarPageIndex(path="/").filenames_and_header
+    )
+    assert valid_headers["ValidPage"] == "Valid Page"
+    assert valid_headers["AnotherPage"] == "Another Page"
+    # broken page header could not be read, falls back to None
+    assert valid_headers["BrokenPage"] is None

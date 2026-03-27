@@ -711,3 +711,68 @@ def test_data_indexpath_attribute(test_client):
     assert body
     data_index_path = body.get("data-index-path", "")
     assert data_index_path == "indexpathtest"
+
+
+def _create_broken_utf8_page(storage, pagename="brokenutf8"):
+    """Helper: create a page with invalid UTF-8 bytes in the repo."""
+    filename = f"{pagename}.md"
+    # first create a valid commit so history exists
+    storage.store(
+        filename,
+        "# Valid\n\nValid content.",
+        author=("Test", "test@example.org"),
+        message=f"added {pagename}",
+    )
+    # overwrite with broken bytes and commit
+    broken_path = os.path.join(storage.path, filename)
+    with open(broken_path, "wb") as f:
+        f.write(b"# Broken\n\xff\xfe invalid utf8 sequence")
+    storage.commit(
+        [filename],
+        message=f"break {pagename}",
+        author=("Test", "test@example.org"),
+    )
+    # return both revisions
+    log = storage.log(filename)
+    return log[0]["revision"], log[1]["revision"]
+
+
+def test_page_view_broken_utf8(test_client, create_app):
+    """Viewing a page with broken UTF-8 shows the error in a danger alert."""
+    _create_broken_utf8_page(create_app.storage)
+    rv = test_client.get("/brokenutf8")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    assert "Storage error" in html
+    assert "could not be decoded as text" in html
+
+
+def test_page_view_broken_utf8_revision(test_client, create_app):
+    """Viewing a broken UTF-8 page at a specific revision shows the error."""
+    broken_rev, valid_rev = _create_broken_utf8_page(create_app.storage)
+    # broken revision should show the error
+    rv = test_client.get(f"/brokenutf8/view/{broken_rev}")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    assert "Storage error" in html
+    assert "could not be decoded as text" in html
+    # valid revision should render fine
+    rv = test_client.get(f"/brokenutf8/view/{valid_rev}")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    assert "Storage error" not in html
+    assert "Valid content" in html
+
+
+def test_page_source_broken_utf8(test_client, create_app):
+    """Source view of a page with broken UTF-8 returns 500."""
+    _create_broken_utf8_page(create_app.storage)
+    rv = test_client.get("/brokenutf8/source")
+    assert rv.status_code == 500
+
+
+def test_page_blame_broken_utf8(test_client, create_app):
+    """Blame view of a page with broken UTF-8 returns 500."""
+    _create_broken_utf8_page(create_app.storage)
+    rv = test_client.get("/brokenutf8/blame")
+    assert rv.status_code == 500
