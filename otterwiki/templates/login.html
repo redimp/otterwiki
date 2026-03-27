@@ -2,6 +2,7 @@
 {% extends "form.html" %}
 {% block formcontent %}
 <form action="{{ url_for("login") }}" method="POST" class="form-inline">{# <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 {% if next %}
     <input type="hidden" name="next" value="{{next}}">
 {% endif %}

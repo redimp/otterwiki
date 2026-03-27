@@ -9,6 +9,7 @@
 <div class="w-600 mw-full">
 <div class="card">
 <form action="{{ url_for("edit_attachment", pagepath=pagepath, filename=filename) }}" method="POST" class="form-inline">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="form-group">
     <label for="new_filename" class="required w-150">New filename</label>
     <input type="text" class="form-control" name="new_filename" id="new_filename" placeholder="{{filename}}" value="{{new_filename if new_filename else filename}}">
@@ -26,6 +27,7 @@
 {# replace #}
 <div class="card">
   <form action="{{ url_for("attachments" , pagepath=pagepath) }}" method="POST" class="form-inline" enctype=multipart/form-data>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input name="filename" type="hidden" value="{{filename}}">
   <div class="custom-file">
     <input name="file" type="file" id="file-upload" multiple="multiple">

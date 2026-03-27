@@ -40,6 +40,7 @@ from otterwiki.plugins import call_hook, collect_hook
 import otterwiki.pluginmgmt
 
 from flask_login import login_required
+from otterwiki.server import csrf
 
 
 #
@@ -671,6 +672,7 @@ def git_receive_pack():
 
 
 @app.route("/-/api/v1/pull/<string:webhook_hash>", methods=["POST", "GET"])
+@csrf.exempt
 def pull_webhook(webhook_hash):
     """
     Webhook endpoint for triggering git pulls from remote repositories.

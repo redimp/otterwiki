@@ -35,6 +35,7 @@
 {# log #}
 <div class="w-full mw-full">
   <form action="{{ url_for('history', path=pagepath) }}" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <button type="submit" class="btn btn-primary">Compare Revisions</button>
 </div>
 <div class="w-full mw-full my-15">

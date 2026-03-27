@@ -40,6 +40,7 @@ def create_app(tmpdir):
     # enable test and debug settings
     app.config["TESTING"] = True
     app.config["DEBUG"] = True
+    app.config["WTF_CSRF_ENABLED"] = False
     yield app
     # make sure GIT_REMOTE_*_ENABLED is false to avoid weird side effects
     app.config["GIT_REMOTE_PULL_ENABLED"] = False
