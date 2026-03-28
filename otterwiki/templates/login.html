@@ -5,6 +5,16 @@
 {% if next %}
     <input type="hidden" name="next" value="{{next}}">
 {% endif %}
+{% if message %}
+  <div class="form-group">
+    <div>
+      {{ message }}
+      {% if confirmation_url %}
+        <a href="{{ confirmation_url }}" class="btn btn-secondary">Resend confirmation link.</a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
   <div class="form-group">
     <label for="email" class="required w-100">eMail Address</label>
     <input type="text" class="form-control" name="email" id="email" placeholder="you@example.com" value="{{email if email}}" autofocus>

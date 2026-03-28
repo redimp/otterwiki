@@ -97,7 +97,14 @@ class SimpleAuth:
             return ("Anonymous", "")
         return (current_user.name, current_user.email)
 
-    def login_form(self, email, remember=None, next=None):
+    def login_form(
+        self,
+        email,
+        remember=None,
+        next=None,
+        message=None,
+        confirmation_url=None,
+    ):
         if next is None:
             next = request.args.get("next")
         # render template
@@ -106,6 +113,8 @@ class SimpleAuth:
             title="Login",
             email=email,
             remember=remember,
+            message=message,
+            confirmation_url=confirmation_url,
             next=next,
         )
 
@@ -141,14 +150,14 @@ class SimpleAuth:
                 and not user.is_admin
                 and not user.email_confirmed
             ):
-                toast(
-                    "Please confirm your email address. "
-                    + "Resend confirmation link: {}.".format(
-                        url_for("request_confirmation_link", email=email)
+                return self.login_form(
+                    email=email,
+                    remember=remember,
+                    message="Your email address has not been confirmed.",
+                    confirmation_url=url_for(
+                        "request_confirmation_link", email=email
                     ),
-                    "warning",
                 )
-                return redirect(url_for("login"))
             if not user.is_admin and (
                 self._user_needs_approvement() and not user.is_approved
             ):
