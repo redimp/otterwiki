@@ -112,10 +112,12 @@ class mistunePluginFootnotes:
         state.env.setdefault('footnotes', []).append(key)
         # footnote number
         fn = list(state.env['def_footnotes'].keys()).index(key) + 1
-        state.append_token({
-            'type': 'footnote_ref',
-            'attrs': {'key': key, 'fn': fn, 'index': index},
-        })
+        state.append_token(
+            {
+                'type': 'footnote_ref',
+                'attrs': {'key': key, 'fn': fn, 'index': index},
+            }
+        )
         return m.end()
 
     def parse_def_footnote(self, block, m, state):
@@ -157,6 +159,7 @@ class mistunePluginFootnotes:
 
     def md_footnotes_hook(self, md, result, state):
         from mistune.core import BlockState as _BlockState
+
         footnotes = state.env.get('footnotes')
         if not footnotes:
             return result
@@ -225,7 +228,9 @@ class mistunePluginFootnotes:
         )
 
         if md.renderer.NAME == 'html':
-            md.renderer.register('footnote_ref', _rm(self.render_html_footnote_ref))
+            md.renderer.register(
+                'footnote_ref', _rm(self.render_html_footnote_ref)
+            )
             md.renderer.register(
                 'footnote_item', _rm(self.render_html_footnote_item)
             )
@@ -292,7 +297,7 @@ class mistunePluginTaskLists:
             m = self.TASK_LIST_ITEM.match(text)
             if m:
                 mark = m.group(1)
-                first_child['text'] = text[m.end():]
+                first_child['text'] = text[m.end() :]
 
                 checked = mark != '[ ]'
                 item['type'] = 'task_list_item'
@@ -319,7 +324,9 @@ class mistunePluginMark:
 
     def __call__(self, md):
         self.MARK_RE = re.compile(self.MARK_PATTERN)
-        md.inline.register('mark', self.MARK_PATTERN, self.parse_mark, before='emphasis')
+        md.inline.register(
+            'mark', self.MARK_PATTERN, self.parse_mark, before='emphasis'
+        )
 
         if md.renderer.NAME == 'html':
             md.renderer.register('mark', _rm(self.render_html_mark))
@@ -348,7 +355,9 @@ class mistunePluginFancyBlocks:
 
     def parse_fancy_block(self, block, m, state):
         cursor = False
-        end_pos = m.end()  # save original scanner match end before re-assigning m
+        end_pos = (
+            m.end()
+        )  # save original scanner match end before re-assigning m
         # check if the cursor was set inside the fancy block (in preview mode)
         if cursormagicword in m.group(0):
             cursor = True
@@ -384,11 +393,17 @@ class mistunePluginFancyBlocks:
         child = state.child_state(text)
         block.parse(child, rules)
 
-        state.append_token({
-            "type": "fancy_block",
-            "attrs": {"family": family, "header": header, "cursor": cursor},
-            "children": child.tokens,
-        })
+        state.append_token(
+            {
+                "type": "fancy_block",
+                "attrs": {
+                    "family": family,
+                    "header": header,
+                    "cursor": cursor,
+                },
+                "children": child.tokens,
+            }
+        )
         return end_pos
 
     def render_html_fancy_block(self, text, family, header, cursor=False):
@@ -420,11 +435,15 @@ class mistunePluginFancyBlocks:
 
     def __call__(self, md):
         md.block.register(
-            'fancy_block', self._FANCY_BLOCK_SCANNER_PATTERN, self.parse_fancy_block
+            'fancy_block',
+            self._FANCY_BLOCK_SCANNER_PATTERN,
+            self.parse_fancy_block,
         )
 
         if md.renderer.NAME == "html":
-            md.renderer.register("fancy_block", _rm(self.render_html_fancy_block))
+            md.renderer.register(
+                "fancy_block", _rm(self.render_html_fancy_block)
+            )
 
 
 class mistunePluginSpoiler:
@@ -441,10 +460,12 @@ class mistunePluginSpoiler:
         child = state.child_state(text)
         block.parse(child)
 
-        state.append_token({
-            "type": "spoiler_block",
-            "children": child.tokens,
-        })
+        state.append_token(
+            {
+                "type": "spoiler_block",
+                "children": child.tokens,
+            }
+        )
         return m.end()
 
     def render_html_spoiler_block(self, text):
@@ -495,11 +516,13 @@ class mistunePluginFold:
         child = state.child_state(text)
         block.parse(child)
 
-        state.append_token({
-            "type": "fold_block",
-            "children": child.tokens,
-            "attrs": {"header": header},
-        })
+        state.append_token(
+            {
+                "type": "fold_block",
+                "children": child.tokens,
+                "attrs": {"header": header},
+            }
+        )
         return m.end()
 
     def render_html_fold_block(self, text, header=None):
@@ -525,36 +548,50 @@ class mistunePluginFold:
         )
 
         if md.renderer.NAME == "html":
-            md.renderer.register("fold_block", _rm(self.render_html_fold_block))
+            md.renderer.register(
+                "fold_block", _rm(self.render_html_fold_block)
+            )
 
 
 class mistunePluginMath:
-    MATH_BLOCK = re.compile(r'(\${2})((?:\\.|.)*)\${2}', re.DOTALL)
-    # Scanner pattern with inline (?s:...) flag: v3 block scanner compiles with
-    # re.M only, so the compiled re.DOTALL flag on MATH_BLOCK is lost when
-    # .pattern is extracted. Use inline DOTALL so multi-line $$...$$ blocks match.
-    _MATH_BLOCK_SCANNER_PATTERN = r'(\${2})((?s:(?:\\.|.)*))\${2}'
+    MATH_BLOCK = re.compile(r'\s*(\${2})((?:\\.|.)*?)\${2}\s*', re.DOTALL)
+    # Scanner pattern anchored to line start (^ with re.M) so that $$
+    # inside backtick code spans mid-paragraph is not consumed as a
+    # block math token.  Uses non-greedy .*? so adjacent blocks stay
+    # separate, and inline (?s:...) for DOTALL since the block scanner
+    # compiles with re.M only.
+    _MATH_BLOCK_SCANNER_PATTERN = r'^\s*(\${2})((?s:(?:\\.|.)*?))\${2}\s*$'
     MATH_INLINE_PATTERN = (
         r'\$(?=[^\s\$])('
         r'(?:\\\$|[^\$])*'
         r'(?:' + ESCAPE_TEXT + r'|[^\s\$]))\$'
     )
+    # Inline display math: $$...$$ appearing in inline context (e.g.
+    # inside list items) where the block scanner cannot reach.
+    MATH_DISPLAY_INLINE_PATTERN = r'\$\$((?:\\\$|[^\$])+)\$\$'
+    MATH_DISPLAY_INLINE_RE = None  # type: ignore[assignment] # compiled lazily
     MATH_INLINE_RE = None  # type: ignore[assignment] # compiled lazily in __call__
 
     def parse_block(self, block, m, state):
         m2 = self.MATH_BLOCK.match(m.group(0))
         text = m2.group(2) if m2 else ""
-        state.append_token({
-            "type": "math_block",
-            "raw": text,
-        })
+        state.append_token(
+            {
+                "type": "math_block",
+                "raw": text,
+            }
+        )
         return m.end()
 
     def render_html_block(self, text):
         return f'''\n\\[{text}\\]\n'''
 
     def parse_inline(self, inline, m, state):
-        m2 = self.MATH_INLINE_RE.match(m.group(0)) if self.MATH_INLINE_RE else None
+        m2 = (
+            self.MATH_INLINE_RE.match(m.group(0))
+            if self.MATH_INLINE_RE
+            else None
+        )
         text = m2.group(1) if m2 else m.group(0)[1:-1]
         state.append_token({'type': 'math_inline', 'raw': text})
         return m.end()
@@ -562,13 +599,49 @@ class mistunePluginMath:
     def render_html_inline(self, text):
         return '\\(' + text + '\\)'
 
+    def parse_display_inline(self, inline, m, state):
+        m2 = (
+            self.MATH_DISPLAY_INLINE_RE.match(m.group(0))
+            if self.MATH_DISPLAY_INLINE_RE
+            else None
+        )
+        text = m2.group(1) if m2 else m.group(0)[2:-2]
+        state.append_token(
+            {
+                'type': 'math_display_inline',
+                'raw': text,
+            }
+        )
+        return m.end()
+
+    def render_html_display_inline(self, text):
+        return '\\[' + text + '\\]'
+
     def __call__(self, md):
+        self.MATH_DISPLAY_INLINE_RE = re.compile(
+            self.MATH_DISPLAY_INLINE_PATTERN
+        )
         self.MATH_INLINE_RE = re.compile(self.MATH_INLINE_PATTERN)
-        md.block.register('math_block', self._MATH_BLOCK_SCANNER_PATTERN, self.parse_block)
-        md.inline.register('math_inline', self.MATH_INLINE_PATTERN, self.parse_inline)
+        md.block.register(
+            'math_block', self._MATH_BLOCK_SCANNER_PATTERN, self.parse_block
+        )
+        # Register display math ($$...$$) before single-$ inline math
+        # so that $$ is matched first in the inline alternation.
+        md.inline.register(
+            'math_display_inline',
+            self.MATH_DISPLAY_INLINE_PATTERN,
+            self.parse_display_inline,
+        )
+        md.inline.register(
+            'math_inline', self.MATH_INLINE_PATTERN, self.parse_inline
+        )
 
         if md.renderer.NAME == "html":
             md.renderer.register("math_block", _rm(self.render_html_block))
+            md.renderer.register(
+                'math_display_inline',
+                _rm(self.render_html_display_inline),
+            )
             md.renderer.register('math_inline', _rm(self.render_html_inline))
 
 
@@ -610,11 +683,13 @@ class mistunePluginAlerts:
         child = state.child_state(text)
         block.parse(child)
 
-        state.append_token({
-            "type": "alert_block",
-            "children": child.tokens,
-            "attrs": {"type": type},
-        })
+        state.append_token(
+            {
+                "type": "alert_block",
+                "children": child.tokens,
+                "attrs": {"type": type},
+            }
+        )
         return m.end()
 
     def render_html_alert_block(self, text, type):
@@ -630,7 +705,9 @@ class mistunePluginAlerts:
         )
 
         if md.renderer.NAME == "html":
-            md.renderer.register("alert_block", _rm(self.render_html_alert_block))
+            md.renderer.register(
+                "alert_block", _rm(self.render_html_alert_block)
+            )
 
 
 class mistunePluginWikiLink:
@@ -689,11 +766,13 @@ class mistunePluginWikiLink:
         new_state = state.copy()
         new_state.src = title
         children = inline.render(new_state)
-        state.append_token({
-            'type': 'wikilink',
-            'children': children,
-            'attrs': {'link': link},
-        })
+        state.append_token(
+            {
+                'type': 'wikilink',
+                'children': children,
+                'attrs': {'link': link},
+            }
+        )
         return m.end()
 
     def before_parse(self, md, state):
@@ -771,10 +850,12 @@ class mistunePluginFrontmatter:
                         state.env['frontmatter_title'] = title.strip('"\'')
         except Exception:
             state.env['frontmatter'] = {}
-        state.append_token({
-            'type': 'frontmatter',
-            'raw': frontmatter,
-        })
+        state.append_token(
+            {
+                'type': 'frontmatter',
+                'raw': frontmatter,
+            }
+        )
         return m.end()
 
     def render_html_frontmatter(self, text):
@@ -800,7 +881,9 @@ class mistunePluginFrontmatter:
         md.block.rules.insert(0, 'frontmatter')
 
         if md.renderer.NAME == 'html':
-            md.renderer.register('frontmatter', _rm(self.render_html_frontmatter))
+            md.renderer.register(
+                'frontmatter', _rm(self.render_html_frontmatter)
+            )
 
 
 class mistunePluginFrontmatterTitle:
@@ -860,7 +943,9 @@ class mistunePluginEmbeddings:
 
     def parse_block(self, block, m, state):
         cursor = False
-        end_pos = m.end()  # save original scanner match end before re-assigning m
+        end_pos = (
+            m.end()
+        )  # save original scanner match end before re-assigning m
         # check if the cursor was set inside the embedding (in preview mode)
         if cursormagicword in m.group(0):
             cursor = True
@@ -942,11 +1027,17 @@ class mistunePluginEmbeddings:
                 },
             }
         )
-        state.append_token({
-            "type": "embedding_block",
-            "attrs": {"embedding_name": embedding_name, "args": args, "cursor": cursor},
-            "children": children,
-        })
+        state.append_token(
+            {
+                "type": "embedding_block",
+                "attrs": {
+                    "embedding_name": embedding_name,
+                    "args": args,
+                    "cursor": cursor,
+                },
+                "children": children,
+            }
+        )
         return end_pos
 
     def render_html_block(
@@ -997,13 +1088,19 @@ class mistunePluginEmbeddings:
 
     def __call__(self, md):
         md.block.register(
-            'embedding_block', self._EMBEDDING_SCANNER_PATTERN, self.parse_block
+            'embedding_block',
+            self._EMBEDDING_SCANNER_PATTERN,
+            self.parse_block,
         )
 
-        md.renderer.register("embedding_option", _rm(self.render_embedding_option))
+        md.renderer.register(
+            "embedding_option", _rm(self.render_embedding_option)
+        )
 
         if md.renderer.NAME == "html":
-            md.renderer.register("embedding_block", _rm(self.render_html_block))
+            md.renderer.register(
+                "embedding_block", _rm(self.render_html_block)
+            )
 
 
 plugin_task_lists = mistunePluginTaskLists()
