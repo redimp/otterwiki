@@ -23,5 +23,3 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ### Authors
 
 An Otter Wiki is written and maintained by Ralph Thesen <mail@redimp.de>.
-
-[modeline]: # ( vim: set fenc=utf-8 spell spl=en sts=4 et tw=72: )
