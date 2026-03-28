@@ -336,7 +336,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         return processed_html
 
     def codespan(self, text):
-        if text.startswith("$") and text.endswith("$"):
+        if len(text) >= 3 and text.startswith("$") and text.endswith("$"):
             # mark that MathJax is required
             if hasattr(self, 'renderer'):
                 self.renderer.requires_mathjax = True
@@ -432,7 +432,9 @@ class OtterwikiBlockParser(mistune.BlockParser):
             '', text
         )
         code = code.lstrip('\n')
-        state.append_token({"type": "block_code", "raw": code, "style": "indent"})
+        state.append_token(
+            {"type": "block_code", "raw": code, "style": "indent"}
+        )
         return m.end()
 
 
