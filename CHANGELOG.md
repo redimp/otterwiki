@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.19.0](https://github.com/redimp/otterwiki/releases/tag/v2.19.0) - 2026-03-28
+
+<small>[Compare with v2.18.2](https://github.com/redimp/otterwiki/compare/v2.18.2...v2.19.0)</small>
+
+### Security Fixes
+
+- Prevent XSS via flash message toast ([f0f4da9](https://github.com/redimp/otterwiki/commit/f0f4da92f98f37c35ce37c13214f267d80af1d04) by @onovy).
+- Replace raw URL in unconfirmed-email toast with template variables ([e581cdb](https://github.com/redimp/otterwiki/commit/e581cdba9a15ea4379ec70a1a7bb5a4e2ef77350)).
+- Prevent ReDoS via user-supplied regex with timeout in search ([0c84d58](https://github.com/redimp/otterwiki/commit/0c84d582d065922d6b9d9ea30307eecf5c78880f) by @onovy).
+
+### Bug Fixes
+
+- Handle non-UTF-8 files gracefully instead of crashing ([f81a173](https://github.com/redimp/otterwiki/commit/f81a1732cd6fa3fe862be5c42e1c60902de34d29)).
+- Correct math block parsing in code spans, lists and inline contexts ([0ef7138](https://github.com/redimp/otterwiki/commit/0ef7138374e25ad015eeba4705ca7b753f1f49e8)).
+- Inline math blocks must be more than `$` or `$$` ([593aba4](https://github.com/redimp/otterwiki/commit/593aba41fb5608f41d59ce34c1cf2362ad0a9227)).
+- Fix multi-paragraph fancy blocks by replacing `$` with `\Z` in scanner pattern ([3a49e3c](https://github.com/redimp/otterwiki/commit/3a49e3cacc6a4a02f7a8f70f449bbfe83d3eac70) by @onovy).
+- Swap footnote ref id/href so multi-reference footnotes produce valid anchors ([04feafa](https://github.com/redimp/otterwiki/commit/04feafa72fa4ae3d417f70b926802cd03c3be78d) by @onovy).
+- Correct `[A-z]` regex typo to `[A-Za-z]` in embedding name pattern ([2422d91](https://github.com/redimp/otterwiki/commit/2422d91eb912e0e31bb243ee629ef3484162a8f0) by @onovy).
+- Fix `_findTable` function name ([4ea9bff](https://github.com/redimp/otterwiki/commit/4ea9bff9109767cfcd0ea1054ddf5c4bb589da8c) by @onovy).
+- Remove dead code in mermaid `block_code` branch ([581310c](https://github.com/redimp/otterwiki/commit/581310c5d82bb865f97b7c995591c5458c3f6efc) by @onovy).
+
+### Dependencies
+
+- Upgrade mistune from 2.0.5 to 3.2.0 ([abf3d61](https://github.com/redimp/otterwiki/commit/abf3d615690d8016f684607f6bf49d88e0691e0b) by @onovy).
+
+### Misc
+
+- Helm chart: fix `storageClassName`, update version ([04d308f](https://github.com/redimp/otterwiki/commit/04d308ff7d31700e20baea657d43a784f88dc548)).
+- Clean up template newlines ([392e58c](https://github.com/redimp/otterwiki/commit/392e58cc77319210633d4cf9a73c4d2309a4e07c)).
+
 ## [v2.18.2](https://github.com/redimp/otterwiki/releases/tag/v2.18.2) - 2026-03-22
 
 <small>[Compare with v2.18.1](https://github.com/redimp/otterwiki/compare/v2.18.1...v2.18.2)</small>
