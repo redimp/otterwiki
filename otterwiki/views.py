@@ -613,7 +613,6 @@ def attachments(pagepath):
     return p.render_attachments()
 
 
-@csrf.exempt
 @app.route("/<path:pagepath>/inline_attachment", methods=["POST"])
 def inline_attachment(pagepath):
     p = Page(pagepath)

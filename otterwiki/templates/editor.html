@@ -517,6 +517,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
 #}
     inlineAttachment.editors.codemirror4.attach(cm_editor, {
         uploadUrl: {{ url_for('inline_attachment', pagepath=pagepath) | tojson }},
+        extraHeaders: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
         allowedTypes: ['*'],
         urlText: function(filename, result) {
             var imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff'];
