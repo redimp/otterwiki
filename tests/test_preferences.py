@@ -548,7 +548,14 @@ def test_user_management(app_with_user, admin_client):
         follow_redirects=True,
     )
     assert rv.status_code == 200
-    assert "You can't remove all admins" in rv.data.decode()
+
+    soup = BeautifulSoup(rv.data.decode(), "html.parser")
+    scripts = soup.find_all("script", type="text/javascript")
+    assert scripts
+    assert any(
+        r"You can\u0026#39;t remove all admins" in script.text
+        for script in scripts
+    )
 
     # test prevention of removing all approved users
     rv = admin_client.post(
@@ -560,7 +567,13 @@ def test_user_management(app_with_user, admin_client):
         follow_redirects=True,
     )
     assert rv.status_code == 200
-    assert "You can't disable all users" in rv.data.decode()
+    soup = BeautifulSoup(rv.data.decode(), "html.parser")
+    scripts = soup.find_all("script", type="text/javascript")
+    assert scripts
+    assert any(
+        r"You can\u0026#39;t disable all users" in script.text
+        for script in scripts
+    )
 
     # test approved flag
     rv = admin_client.post(
