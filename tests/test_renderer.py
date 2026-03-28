@@ -61,7 +61,30 @@ def test_codespan():
     assert "Two  Spaces" in html
 
 
-def test_codeblock():
+def test_codeblock_spaces():
+    md = """# Header
+Paragraph1
+
+    <html>
+        <head>
+            <title>Test</title>
+        </head>
+    </html>
+
+Paragraph2.
+"""
+    html, _, _ = render.markdown(md)
+
+    assert html
+    pre_code = BeautifulSoup(html, "html.parser").find(
+        'pre', {'class': 'code'}
+    )
+    assert pre_code
+    assert "&lt;title&gt;Test&lt;/title&gt;" in str(pre_code)
+    assert "<title>" in pre_code.text
+
+
+def test_codeblock_backticks():
     html, _, _ = render.markdown(
         """```
 abc
@@ -578,6 +601,153 @@ def test_math_code_inline():
     assert "\\(a\\)" in html
 
 
+def test_math_in_code_backticks():
+    md = r"""# Header
+The TeX style, where inline math is encapsulated with `$` and equations with `$$`, e.g.
+
+```
+    When $a \ne 0$, there are two solutions
+    to $ax^2 + bx + c = 0$ and they are
+
+    $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
+```
+
+Fin.
+"""
+    html, _, _ = render.markdown(md)
+    pre_code = BeautifulSoup(html, "html.parser").find(
+        'pre', {'class': 'code'}
+    )
+    assert pre_code
+    assert r"$$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$" in str(pre_code)
+    assert "<code>$</code>" in html
+    assert "<code>$$</code>" in html
+
+
+def test_math_in_code():
+    md = r"""# Header
+The TeX style, where inline math is encapsulated with `$` and equations with `$$`, e.g.
+
+    When $a \ne 0$, there are two solutions
+    to $ax^2 + bx + c = 0$ and they are
+
+    $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
+
+Fin.
+"""
+    html, _, _ = render.markdown(md)
+    assert html
+    pre_code = BeautifulSoup(html, "html.parser").find(
+        'pre', {'class': 'code'}
+    )
+    assert pre_code
+    assert r"$$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$" in str(pre_code)
+
+
+def test_mathjax_inline_in_list():
+    md = r"""- item $a^2$ end
+- item `$b^2$` end
+"""
+    html, _, _ = render.markdown(md)
+    assert "\\(a^2\\)" in html
+    assert "\\(b^2\\)" in html
+
+
+def test_mathjax_inline_in_ordered_list():
+    md = r"""1. First $x = 1$
+2. Second $y = 2$
+"""
+    html, _, _ = render.markdown(md)
+    assert "\\(x = 1\\)" in html
+    assert "\\(y = 2\\)" in html
+    assert "<ol>" in html
+
+
+def test_mathjax_inline_in_nested_list():
+    md = r"""- item one
+  - nested $a + b$
+- item two $c + d$
+"""
+    html, _, _ = render.markdown(md)
+    assert "\\(a + b\\)" in html
+    assert "\\(c + d\\)" in html
+
+
+def test_mathjax_block_in_list():
+    md = r"""- item one
+
+  $$x = 1$$
+
+- item two
+"""
+    html, _, _ = render.markdown(md)
+    assert "\\[x = 1\\]" in html
+    soup = BeautifulSoup(html, "html.parser")
+    items = soup.find_all('li')
+    assert len(items) == 2
+    assert "item one" in items[0].get_text()
+    assert "item two" in items[1].get_text()
+
+
+def test_math_codespan_in_list():
+    md = r"""- item with `$` and `$$`
+- another item
+"""
+    html, _, _ = render.markdown(md)
+    assert "<code>$</code>" in html
+    assert "<code>$$</code>" in html
+
+
+def test_math_code_block_in_list():
+    md = r"""- item one
+
+        $$x = 1$$
+
+- item two
+"""
+    html, _, _ = render.markdown(md)
+    pre_code = BeautifulSoup(html, "html.parser").find(
+        'pre', {'class': 'code'}
+    )
+    assert pre_code
+    assert "$$x = 1$$" in pre_code.text
+    soup = BeautifulSoup(html, "html.parser")
+    items = soup.find_all('li')
+    assert len(items) == 2
+    assert "item one" in items[0].get_text()
+    assert "item two" in items[1].get_text()
+
+
+def test_math_code_mix_in_list():
+    md = r""" ## Lists
+
+- abc `$x=2`
+- def `$y=3`
+- Block
+  ```math
+  x=3
+  ```
+- line2
+- Block $$y=4$$
+- line4
+"""
+    html, _, _ = render.markdown(md)
+    assert html
+    soup = BeautifulSoup(html, "html.parser")
+    items = soup.find_all('li')
+    assert len(items) == 6
+    print(items)
+    # backtick code spans with $ prefix are not mathjax
+    assert items[0].find('code').string == '$x=2'
+    assert items[1].find('code').string == '$y=3'
+    # ```math block renders as mathjax block
+    assert "\\[x=3\\]" in str(items[2])
+    assert "line2" in items[3].get_text()
+    # inline $$y=4$$ renders as mathjax display math
+    assert "\\[y=4\\]" in str(items[4])
+    assert "line4" in items[5].get_text()
+
+
 def test_latex_inline():
     md = """
 $latex1$
@@ -731,13 +901,16 @@ and some text."""
     assert '<h4 class="alert-heading">An info block</h4>' in html
     assert '<div class="alert alert-primary' in html
     from bs4 import BeautifulSoup
+
     soup = BeautifulSoup(html, "html.parser")
     div = soup.find("div", class_="alert-primary")
     assert div is not None, "alert-primary div not found"
     assert "with some content" in div.get_text()
     # trailing paragraph is outside the div
     paras = soup.find_all("p")
-    outside_paras = [p for p in paras if not p.find_parent("div", class_="alert")]
+    outside_paras = [
+        p for p in paras if not p.find_parent("div", class_="alert")
+    ]
     assert any("and some text" in p.get_text() for p in outside_paras)
 
 
