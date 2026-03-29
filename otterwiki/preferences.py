@@ -197,6 +197,7 @@ def handle_app_preferences(form):
         server_name = None
 
     _update_preference("SERVER_NAME", server_name)
+    _update_preference("HOME_PAGE", home_page)
 
     # commit changes to the database
     db.session.commit()
