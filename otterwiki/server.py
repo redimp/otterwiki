@@ -127,6 +127,10 @@ else:
         fatal_error(e)
 
 
+# make sure SERVER_NAME is None if empty (to make url_for work)
+if otterwiki.util.empty(app.config["SERVER_NAME"]):
+    app.config["SERVER_NAME"] = None
+
 # check if the git repository is empty
 if (len(storage.list()[0]) < 1) and (  # pyright: ignore never unbound
     len(storage.log()) < 1  # pyright: ignore
