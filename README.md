@@ -63,7 +63,7 @@ On Linux/MacOS/BSD and other UNIX-like systems:
 On Windows:
 
 ```powershell
-run_local.ps1
+.\run_local.ps1
 ```
 
 4. Open your browser at [http://localhost:8080](http://localhost:8080)
