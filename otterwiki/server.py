@@ -76,6 +76,8 @@ app.config.update(
     ADMIN_USER_EMAIL="",
     SESSION_COOKIE_SAMESITE="Lax",
     SECURITY_HEADERS=True,
+    WTF_CSRF_ENABLED=True,
+    WTF_CSRF_TIME_LIMIT=86400,
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 

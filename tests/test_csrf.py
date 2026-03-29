@@ -18,22 +18,36 @@ from flask.testing import FlaskClient
 
 
 @pytest.fixture
-def raw_client(create_app):
+def csrf_app(create_app):
+    """Wrap create_app with WTF_CSRF_ENABLED=True."""
+    create_app.config['WTF_CSRF_ENABLED'] = True
+    return create_app
+
+
+@pytest.fixture
+def csrf_app_with_user(app_with_user):
+    """Wrap app_with_user with WTF_CSRF_ENABLED=True."""
+    app_with_user.config['WTF_CSRF_ENABLED'] = True
+    return app_with_user
+
+
+@pytest.fixture
+def raw_client(csrf_app):
     """A plain FlaskClient that does NOT inject CSRF tokens."""
-    old_cls = create_app.test_client_class
-    create_app.test_client_class = FlaskClient
-    client = create_app.test_client()
-    create_app.test_client_class = old_cls
+    old_cls = csrf_app.test_client_class
+    csrf_app.test_client_class = FlaskClient
+    client = csrf_app.test_client()
+    csrf_app.test_client_class = old_cls
     return client
 
 
 @pytest.fixture
-def raw_admin_client(app_with_user):
+def raw_admin_client(csrf_app_with_user):
     """A plain FlaskClient logged in as admin, without CSRF injection."""
-    old_cls = app_with_user.test_client_class
-    app_with_user.test_client_class = FlaskClient
-    client = app_with_user.test_client()
-    app_with_user.test_client_class = old_cls
+    old_cls = csrf_app_with_user.test_client_class
+    csrf_app_with_user.test_client_class = FlaskClient
+    client = csrf_app_with_user.test_client()
+    csrf_app_with_user.test_client_class = old_cls
     # Login requires a CSRF token -- fetch one manually.
     token = _get_csrf_token(client)
     result = client.post(
@@ -373,10 +387,11 @@ class TestCSRFExempt:
 class TestCSRFTestClient:
     """Verify the CSRFTestClient fixture injects tokens correctly."""
 
-    def test_auto_injected_post(self, test_client):
+    def test_auto_injected_post(self, csrf_app):
         """The standard test_client (CSRFTestClient) must inject tokens
         automatically, so POSTs succeed without manual token handling."""
-        rv = test_client.post(
+        client = csrf_app.test_client()
+        rv = client.post(
             "/-/search",
             data={"query": "hello"},
             follow_redirects=True,
