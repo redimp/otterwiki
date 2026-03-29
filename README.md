@@ -31,7 +31,42 @@ Check out the demo <https://demo.otterwiki.com>.
 ## Installation
 
 Read the [installation guide](https://otterwiki.com/Installation) to get
-started. Recommended is the installation with `docker-compose`.
+started. For production deployments, see [quick start with `docker-compose`](#quick-start-with-docker-compose). For non-production evaluation see [Quick start for non-production use](#quick-start-for-non-production-use).
+
+### Quick start for non-production use
+
+An Otter Wiki can be run locally without using Docker.  This is not appropriate for production deployment but can be used to get up and running quickly, such as for evaluation or local use.
+
+1. Install Pre-requisites
+
+Install [Python](https://www.python.org/downloads/) version 3.11 or newer and [git](https://git-scm.com/install/).
+
+2. Clone the repository, set up a virtual environment and install dependencies
+
+```bash
+cd /my/projects/dir
+git clone https://github.com/redimp/otterwiki.git
+cd otterwiki
+python3 -m venv venv 
+source venv/bin/activate # on windows: `venv/scripts/activate`
+python3 -m pip install .
+```
+
+3. Run
+
+On Linux/MacOS/BSD and other UNIX-like systems:
+
+```bash
+./run_local.sh
+```
+
+On Windows:
+
+```powershell
+run_local.ps1
+```
+
+4. Open your browser at [http://localhost:8080](http://localhost:8080)
 
 ### Quick start with docker-compose
 
