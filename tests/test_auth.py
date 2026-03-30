@@ -581,6 +581,50 @@ def test_lost_password_invalid_token(app_with_user, test_client):
     assert "Invalid email address." in rv.data.decode()
 
 
+def test_lost_password_token_reuse(app_with_user, test_client, req_ctx):
+    """Password reset token must be single-use — second use is rejected."""
+    app_with_user.test_mail.state.suppress = True
+    with app_with_user.test_mail.record_messages() as outbox:
+        # Step 1: Request password reset
+        rv = test_client.post(
+            "/-/lost_password",
+            data={"email": "mail@example.org"},
+            follow_redirects=True,
+        )
+        assert len(outbox) == 1
+        # Extract token from email
+        m = re.search(
+            r"\/-\/recover_password\/(\S+)", outbox[0].body, flags=re.MULTILINE
+        )
+        assert m is not None
+        token = m.group(1)
+
+        # Step 2: First use — should succeed (logs in, redirects to settings)
+        rv = test_client.get(
+            f"/-/recover_password/{token}",
+            follow_redirects=True,
+        )
+        assert "please update your password." in rv.data.decode()
+
+        # Log out so we can test the token again
+        test_client.get("/-/logout")
+
+        # Step 3: Second use of same token — should be rejected
+        rv = test_client.get(
+            f"/-/recover_password/{token}",
+            follow_redirects=True,
+        )
+        result = rv.data.decode()
+        # Token must be rejected — should NOT see the success message
+        assert "please update your password." not in result
+        # Should see an error/rejection message
+        assert (
+            "Invalid" in result
+            or "expired" in result
+            or "already used" in result
+        )
+
+
 #
 # register
 #
