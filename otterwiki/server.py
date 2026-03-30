@@ -307,6 +307,15 @@ def slugify(s, keep_slashes=True):
 
 app.jinja_env.globals.update(os_getenv=os.getenv)
 
+
+@app.after_request
+def set_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['Referrer-Policy'] = 'same-origin'
+    return response
+
+
 from otterwiki.helper import load_custom_html
 
 
