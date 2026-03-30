@@ -508,6 +508,9 @@ class SimpleAuth:
                     user.last_seen.isoformat() if user.last_seen else ''
                 )
                 if token_data.get('ls') != expected_ls:
+                    app.logger.warning(
+                        f"auth.recover_password_token() expired email={email} last_seen={token_data.get('ls')}"
+                    )
                     toast("Token already used or expired.", "error")
                     return redirect(url_for("login"))
             # Invalidate the token by updating last_seen NOW (before login_user)
