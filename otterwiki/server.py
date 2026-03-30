@@ -73,6 +73,7 @@ app.config.update(
     HOME_PAGE="",
     RENDERER_HTML_ALLOWLIST="",
     ADMIN_USER_EMAIL="",
+    SECURITY_HEADERS=True,
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
@@ -310,9 +311,10 @@ app.jinja_env.globals.update(os_getenv=os.getenv)
 
 @app.after_request
 def set_security_headers(response):
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-    response.headers['Referrer-Policy'] = 'same-origin'
+    if app.config['SECURITY_HEADERS']:
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['Referrer-Policy'] = 'same-origin'
     return response
 
 
