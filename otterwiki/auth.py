@@ -453,7 +453,13 @@ class SimpleAuth:
             toast("This email address is unknown.", "error")
         else:
             # recovery process
-            token = serialize(email, salt="lost-password-email")
+            token = serialize(
+                {
+                    'email': email,
+                    'ls': user.last_seen.isoformat() if user.last_seen else '',
+                },
+                salt="lost-password-email",
+            )
             # generate mail
             subject = "Password Recovery - {} - An Otter Wiki".format(
                 app.config["SITE_NAME"]
@@ -478,7 +484,7 @@ class SimpleAuth:
 
     def handle_recover_password_token(self, token):
         try:
-            email = deserialize(
+            token_data = deserialize(
                 token, salt="lost-password-email", max_age=86400
             )
         except SerializeError:
@@ -486,11 +492,29 @@ class SimpleAuth:
                 "auth.recover_password_token() Invalid token: {}".format(token)
             )
             toast("Invalid token.", "error")
-            # redirect
             return redirect(url_for("login"))
+        # Support both old (plain string) and new (dict) token formats
+        if isinstance(token_data, str):
+            email = token_data
+            check_canary = False
+        else:
+            email = token_data['email']
+            check_canary = True
         user = self.User.query.filter_by(email=email).first()
         if user is not None:
-            login_user(user, remember=True)
+            # For new-format tokens: validate last_seen canary (single-use enforcement)
+            if check_canary:
+                expected_ls = (
+                    user.last_seen.isoformat() if user.last_seen else ''
+                )
+                if token_data.get('ls') != expected_ls:
+                    toast("Token already used or expired.", "error")
+                    return redirect(url_for("login"))
+            # Invalidate the token by updating last_seen NOW (before login_user)
+            user.last_seen = datetime.now()
+            db.session.add(user)
+            db.session.commit()
+            login_user(user, remember=False)
             app.logger.info(
                 "auth: Password recovery successful: {}".format(email)
             )
@@ -498,7 +522,7 @@ class SimpleAuth:
             return redirect(url_for("settings"))
         else:
             toast("Invalid email address.")
-        return lost_password_form()
+        return self.lost_password_form()
 
     def has_permission(self, permission, user):
         if user.is_authenticated and user.is_admin:
