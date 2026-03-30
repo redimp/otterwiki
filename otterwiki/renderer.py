@@ -373,7 +373,9 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
                 self.renderer.requires_mermaid = True
             # replace \n with <br/> for convenient diagram writing (and match the github syntax)
             code = code.replace("\\n", "<br/>")
-            html = '\n<pre class="mermaid">{}\n</pre>\n'.format(code.strip())
+            html = '\n<pre class="mermaid">{}\n</pre>\n'.format(
+                escape(code.strip())
+            )
             return html
         else:
             html = prefix + pygments_render(
