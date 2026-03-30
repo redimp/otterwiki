@@ -2,6 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
+import hmac
 import hashlib
 from timeit import default_timer as timer
 
@@ -674,7 +675,7 @@ def git_receive_pack():
 def pull_webhook(webhook_hash):
     """
     Webhook endpoint for triggering git pulls from remote repositories.
-    The webhook_hash should match the SHA-256 hash generated from remote_url + 'otterwiki'.
+    The webhook_hash should match the HMAC-SHA256 hash generated from remote_url using SECRET_KEY.
     """
     from otterwiki.repomgmt import get_repo_manager
 
@@ -685,8 +686,10 @@ def pull_webhook(webhook_hash):
     if not remote_url:
         abort(404)
 
-    expected_hash = hashlib.sha256(
-        (remote_url + 'otterwiki').encode()
+    expected_hash = hmac.new(
+        app.config['SECRET_KEY'].encode(),
+        remote_url.encode(),
+        hashlib.sha256,
     ).hexdigest()
 
     if webhook_hash != expected_hash:

@@ -4,6 +4,7 @@
 import os
 import tempfile
 import hashlib
+import hmac
 from unittest.mock import patch, MagicMock
 from bs4 import BeautifulSoup
 import pytest
@@ -353,8 +354,10 @@ class TestGitRemotePull:
         assert rv.status_code == 200
 
         # Calculate webhook hash and trigger webhook
-        webhook_hash = hashlib.sha256(
-            (test_data['remote_url'] + 'otterwiki').encode()
+        webhook_hash = hmac.new(
+            app_with_user.config['SECRET_KEY'].encode(),
+            test_data['remote_url'].encode(),
+            hashlib.sha256,
         ).hexdigest()
         rv = admin_client.post(f"/-/api/v1/pull/{webhook_hash}")
         assert rv.status_code == 200
@@ -381,8 +384,10 @@ class TestGitRemotePull:
         )
         assert rv.status_code == 200
 
-        correct_hash = hashlib.sha256(
-            (test_data['remote_url'] + 'otterwiki').encode()
+        correct_hash = hmac.new(
+            app_with_user.config['SECRET_KEY'].encode(),
+            test_data['remote_url'].encode(),
+            hashlib.sha256,
         ).hexdigest()
         rv = admin_client.post(f"/-/api/v1/pull/{correct_hash}")
         assert rv.status_code == 404
