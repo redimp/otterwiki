@@ -69,7 +69,7 @@
 {# author #}
             <td class="min" style="white-space:nowrap">{%if not entry.author_email%}{{entry.author_name}}{%else%}<a href="mailto:{{entry.author_email}}">{{entry.author_name}}</a>{%endif%}</td>
 {# files #}
-            <td class="text-wrap">{{entry.message}}</td>
+            <td class="text-wrap">{{entry.message or '-/-'}}</td>
           </tr>
 {% endfor %}
         </tbody>
