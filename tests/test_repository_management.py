@@ -3,11 +3,10 @@
 
 import os
 import tempfile
-import hashlib
-import hmac
 from unittest.mock import patch, MagicMock
 from bs4 import BeautifulSoup
 import pytest
+from otterwiki.util import compute_webhook_hash
 
 # Test constants
 TEST_REMOTE_URL = "git@github.com:test/repo.git"
@@ -354,12 +353,11 @@ class TestGitRemotePull:
         assert rv.status_code == 200
 
         # Calculate webhook hash and trigger webhook
-        webhook_hash = hmac.new(
-            app_with_user.config['SECRET_KEY'].encode(),
-            test_data['remote_url'].encode(),
-            hashlib.sha256,
-        ).hexdigest()
-        rv = admin_client.post(f"/-/api/v1/pull/{webhook_hash}")
+        wh = compute_webhook_hash(
+            app_with_user.config['SECRET_KEY'],
+            test_data['remote_url'],
+        )
+        rv = admin_client.post(f"/-/api/v1/pull/{wh}")
         assert rv.status_code == 200
 
         mock_repo_manager.auto_pull_webhook.assert_called_once()
@@ -384,11 +382,10 @@ class TestGitRemotePull:
         )
         assert rv.status_code == 200
 
-        correct_hash = hmac.new(
-            app_with_user.config['SECRET_KEY'].encode(),
-            test_data['remote_url'].encode(),
-            hashlib.sha256,
-        ).hexdigest()
+        correct_hash = compute_webhook_hash(
+            app_with_user.config['SECRET_KEY'],
+            test_data['remote_url'],
+        )
         rv = admin_client.post(f"/-/api/v1/pull/{correct_hash}")
         assert rv.status_code == 404
 
@@ -817,3 +814,112 @@ class TestRepositoryErrorNotifications:
             for admin_user in admin_users:
                 if admin_user.email:
                     assert admin_user.email in admin_emails
+
+
+class TestWebhookUrlDisplay:
+    """Test webhook URL display on admin repository management page."""
+
+    def test_webhook_url_displayed_on_admin_page(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Test that webhook URL with correct HMAC is displayed in input field."""
+        # Enable pull feature
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={
+                "git_remote_pull_enabled": "True",
+                "git_remote_pull_url": test_data['remote_url'],
+                "git_remote_pull_private_key": test_data['private_key'],
+                "update_preferences": "true",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+        # GET admin page
+        rv = admin_client.get(ADMIN_REPO_MGMT_URL)
+        assert rv.status_code == 200
+
+        # Parse HTML and extract webhook URL input value
+        soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+        webhook_input = soup.find(
+            'input', {'id': 'git_remote_pull_webhook_url'}
+        )
+        assert webhook_input is not None
+
+        webhook_url = webhook_input.get('value', '')
+
+        # Compute expected hash using SECRET_KEY (backend algorithm)
+        expected_hash = compute_webhook_hash(
+            app_with_user.config['SECRET_KEY'],
+            test_data['remote_url'],
+        )
+
+        # Assert webhook URL is non-empty and contains the correct hash
+        assert webhook_url != ''
+        assert expected_hash in webhook_url
+
+    def test_webhook_url_empty_when_no_remote_configured(
+        self, app_with_user, admin_client
+    ):
+        """Test webhook URL field is empty when no remote is configured."""
+        # GET admin page (fresh fixture, no pull feature enabled)
+        rv = admin_client.get(ADMIN_REPO_MGMT_URL)
+        assert rv.status_code == 200
+
+        # Parse HTML and extract webhook URL input value
+        soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+        webhook_input = soup.find(
+            'input', {'id': 'git_remote_pull_webhook_url'}
+        )
+        assert webhook_input is not None
+
+        webhook_url = webhook_input.get('value', '')
+
+        # Assert value is empty
+        assert webhook_url == ''
+
+    @patch('otterwiki.repomgmt.RepositoryManager.auto_pull_webhook')
+    @patch('otterwiki.repomgmt.get_repo_manager')
+    def test_webhook_url_works_with_backend(
+        self,
+        mock_get_repo_manager,
+        mock_auto_pull_webhook,
+        app_with_user,
+        admin_client,
+        test_data,
+    ):
+        """Test that webhook URL extracted from page can trigger backend."""
+        # Configure mocks
+        mock_repo_manager = MagicMock()
+        mock_repo_manager.auto_pull_webhook.return_value = True
+        mock_get_repo_manager.return_value = mock_repo_manager
+
+        # Enable pull feature
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={
+                "git_remote_pull_enabled": "True",
+                "git_remote_pull_url": test_data['remote_url'],
+                "git_remote_pull_private_key": test_data['private_key'],
+                "update_preferences": "true",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+        # GET admin page and extract webhook URL from input field
+        rv = admin_client.get(ADMIN_REPO_MGMT_URL)
+        soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+        webhook_input = soup.find(
+            'input', {'id': 'git_remote_pull_webhook_url'}
+        )
+        webhook_url = webhook_input.get('value', '')
+
+        # Extract path from webhook URL (strip scheme and host)
+        # The webhook URL should be like: http://localhost/-/api/v1/pull/<hash>
+        webhook_hash = webhook_url.split('/')[-1] if webhook_url else ''
+
+        # Test by posting to the webhook endpoint
+        rv = admin_client.post(f"/-/api/v1/pull/{webhook_hash}")
+        assert rv.status_code == 200
