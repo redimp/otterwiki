@@ -28,6 +28,7 @@ from otterwiki.pageindex import PageIndex
 import otterwiki.auth
 import otterwiki.preferences
 import otterwiki.tools
+from otterwiki.statistics import StatisticsService
 from otterwiki.renderer import render
 from otterwiki.helper import (
     toast,
@@ -40,6 +41,7 @@ from otterwiki.plugins import call_hook, collect_hook
 import otterwiki.pluginmgmt
 
 from flask_login import login_required
+from flask import current_app
 
 
 #
@@ -269,6 +271,25 @@ def admin_mail_preferences():
         return otterwiki.preferences.mail_preferences_form()
     else:
         return otterwiki.preferences.handle_mail_preferences(request.form)
+
+
+@app.route("/-/admin/statistics")
+@login_required
+def admin_statistics():
+
+    service = StatisticsService(current_app.config["REPOSITORY"])
+
+    try:
+        all_commits = service.commit_statistics()
+        last_30_days = service.commit_statistics(since_days=30)
+    except Exception as e:
+        return f"Git log failed: {e}", 500
+
+    return render_template(
+        "admin/statistics.html",
+        all_commits=all_commits,
+        last_30_days=last_30_days,
+    )
 
 
 @app.route(
