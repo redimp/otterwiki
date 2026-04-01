@@ -222,6 +222,90 @@ class TestCSRFRejection:
         )
         assert rv.status_code == 400
 
+    def test_admin_sidebar_preferences_rejected(self, raw_admin_client):
+        rv = raw_admin_client.post(
+            "/-/admin/sidebar_preferences",
+            data={},
+        )
+        assert rv.status_code == 400
+
+    def test_admin_permissions_rejected(self, raw_admin_client):
+        rv = raw_admin_client.post(
+            "/-/admin/permissions_and_registration",
+            data={},
+        )
+        assert rv.status_code == 400
+
+    def test_admin_content_and_editing_rejected(self, raw_admin_client):
+        rv = raw_admin_client.post(
+            "/-/admin/content_and_editing",
+            data={},
+        )
+        assert rv.status_code == 400
+
+    def test_admin_repository_management_rejected(self, raw_admin_client):
+        rv = raw_admin_client.post(
+            "/-/admin/repository_management",
+            data={},
+        )
+        assert rv.status_code == 400
+
+    def test_admin_mail_preferences_rejected(self, raw_admin_client):
+        rv = raw_admin_client.post(
+            "/-/admin/mail_preferences",
+            data={},
+        )
+        assert rv.status_code == 400
+
+    def test_user_edit_rejected(self, raw_admin_client):
+        rv = raw_admin_client.post(
+            "/-/user/",
+            data={"name": "Hacked Name"},
+        )
+        assert rv.status_code == 400
+
+    def test_page_edit_rejected(self, raw_admin_client):
+        rv = raw_admin_client.post(
+            "/Home/edit",
+            data={"draft": "edit"},
+        )
+        assert rv.status_code == 400
+
+    def test_page_history_rejected(self, raw_admin_client):
+        rv = raw_admin_client.post(
+            "/Home/history",
+            data={"rev_a": "aaa", "rev_b": "bbb"},
+        )
+        assert rv.status_code == 400
+
+    def test_edit_attachment_rejected(self, raw_admin_client):
+        rv = raw_admin_client.post(
+            "/Home/attachment/test.png",
+            data={"new_filename": "evil.png"},
+        )
+        assert rv.status_code == 400
+
+    def test_revert_rejected(self, raw_admin_client):
+        rv = raw_admin_client.post(
+            "/-/revert/abc123",
+            data={"message": "revert"},
+        )
+        assert rv.status_code == 400
+
+    def test_plugin_url_rejected(self, raw_client):
+        rv = raw_client.post(
+            "/-/plugin/fakeplugin/action",
+            data={},
+        )
+        assert rv.status_code == 400
+
+    def test_admin_plugin_url_rejected(self, raw_admin_client):
+        rv = raw_admin_client.post(
+            "/-/admin/plugin/fakeplugin/action",
+            data={},
+        )
+        assert rv.status_code == 400
+
 
 # ---------------------------------------------------------------------------
 # Tests -- invalid / tampered tokens must be rejected
@@ -377,6 +461,28 @@ class TestCSRFExempt:
         # proving CSRF is not the gatekeeper.
         rv = raw_client.post("/-/api/v1/pull/somefakehash")
         assert rv.status_code != 400
+
+    def test_git_info_refs_exempt(self, raw_client):
+        rv = raw_client.post("/.git/info/refs")
+        # 400 from missing service param is fine -- not a CSRF 400
+        assert rv.status_code == 400
+        assert b"CSRF" not in rv.data
+
+    def test_git_upload_pack_exempt(self, raw_client):
+        rv = raw_client.post(
+            "/.git/git-upload-pack",
+            data=b"",
+            content_type="application/x-git-upload-pack-request",
+        )
+        assert rv.status_code != 400 or b"CSRF" not in rv.data
+
+    def test_git_receive_pack_exempt(self, raw_client):
+        rv = raw_client.post(
+            "/.git/git-receive-pack",
+            data=b"",
+            content_type="application/x-git-receive-pack-request",
+        )
+        assert rv.status_code != 400 or b"CSRF" not in rv.data
 
 
 # ---------------------------------------------------------------------------
