@@ -24,7 +24,7 @@ from otterwiki.helper import (
     get_pagename,
     get_pagename_for_title,
 )
-from otterwiki.util import empty, is_valid_email
+from otterwiki.util import empty, is_valid_email, compute_webhook_hash
 from flask_login import current_user
 from otterwiki.auth import (
     has_permission,
@@ -571,10 +571,21 @@ def content_and_editing_form():
 def repository_management_form(git_action_result=None):
     if not has_permission("ADMIN"):
         abort(403)
+    webhook_url = ''
+    if app.config.get('GIT_REMOTE_PULL_ENABLED'):
+        remote_url = app.config.get('GIT_REMOTE_PULL_URL', '')
+        if remote_url:
+            webhook_hash = compute_webhook_hash(
+                app.config['SECRET_KEY'], remote_url
+            )
+            webhook_url = url_for(
+                'pull_webhook', webhook_hash=webhook_hash, _external=True
+            )
     return render_template(
         "admin/repository_management.html",
         title="Repository Management",
         git_action_result=git_action_result,
+        webhook_url=webhook_url,
     )
 
 

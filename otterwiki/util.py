@@ -439,3 +439,13 @@ def sha256sum(s: str) -> str:
     hash = sha256()
     hash.update(s.encode())
     return hash.hexdigest()
+
+
+def compute_webhook_hash(secret_key: str, remote_url: str) -> str:
+    import hmac
+
+    return hmac.new(
+        secret_key.encode(),
+        remote_url.encode(),
+        sha256,
+    ).hexdigest()

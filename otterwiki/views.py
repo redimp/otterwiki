@@ -2,8 +2,6 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
-import hmac
-import hashlib
 from timeit import default_timer as timer
 
 from flask import (
@@ -36,7 +34,7 @@ from otterwiki.helper import (
     get_pagename_prefixes,
 )
 from otterwiki.version import __version__
-from otterwiki.util import sanitize_pagename
+from otterwiki.util import sanitize_pagename, compute_webhook_hash
 from otterwiki.plugins import call_hook, collect_hook
 import otterwiki.pluginmgmt
 
@@ -686,11 +684,7 @@ def pull_webhook(webhook_hash):
     if not remote_url:
         abort(404)
 
-    expected_hash = hmac.new(
-        app.config['SECRET_KEY'].encode(),
-        remote_url.encode(),
-        hashlib.sha256,
-    ).hexdigest()
+    expected_hash = compute_webhook_hash(app.config['SECRET_KEY'], remote_url)
 
     if webhook_hash != expected_hash:
         abort(404)
