@@ -450,7 +450,10 @@ class SimpleAuth:
         if not is_valid_email(email):
             toast("This email address is invalid.", "error")
         elif user is None:
-            toast("This email address is unknown.", "error")
+            # do not leak whether email is registered
+            toast(
+                "If this email is registered, you will receive a password reset link."
+            )
         else:
             # recovery process
             token = serialize(
@@ -476,9 +479,7 @@ class SimpleAuth:
             app.logger.info("auth: Password recovery for: {}".format(email))
             # notify user
             toast(
-                "A recovery link been sent to {}. Please check your mailbox.".format(
-                    email
-                )
+                "If this email is registered, you will receive a password reset link."
             )
         return self.lost_password_form()
 

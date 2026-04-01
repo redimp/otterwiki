@@ -560,7 +560,10 @@ def test_lost_password_form_address(app_with_user, test_client):
         },
         follow_redirects=True,
     )
-    assert "This email address is unknown." in rv.data.decode()
+    assert (
+        "If this email is registered, you will receive a password reset link."
+        in rv.data.decode()
+    )
 
 
 def test_lost_password_invalid_token(app_with_user, test_client):
