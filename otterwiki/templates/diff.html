@@ -29,7 +29,7 @@
 {% if metadata %}
 <span class="datetime" title="{{metadata.datetime|format_datetime("deltanow")}} ago">{{metadata.datetime|format_datetime}}</span>
 {%if not metadata.author_email%}{{metadata.author_name}}{%else%}<a href="mailto:{{metadata.author_email}}">{{metadata.author_name}}</a>{%endif%}:
-{{metadata.message or '-/-'|safe}}
+{{metadata.message or '-/-'}}
 {%endif%}
 <table class="diff">
 {% for file in patchset %}
