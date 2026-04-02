@@ -34,7 +34,11 @@ from otterwiki.helper import (
     get_pagename_prefixes,
 )
 from otterwiki.version import __version__
-from otterwiki.util import sanitize_pagename, compute_webhook_hash
+from otterwiki.util import (
+    sanitize_pagename,
+    compute_webhook_hash,
+    compute_webhook_hash_legacy,
+)
 from otterwiki.plugins import call_hook, collect_hook
 import otterwiki.pluginmgmt
 
@@ -684,7 +688,12 @@ def pull_webhook(webhook_hash):
     if not remote_url:
         abort(404)
 
-    expected_hash = compute_webhook_hash(app.config['SECRET_KEY'], remote_url)
+    if app.config.get('GIT_REMOTE_PULL_URL_SECURE'):
+        expected_hash = compute_webhook_hash(
+            app.config['SECRET_KEY'], remote_url
+        )
+    else:
+        expected_hash = compute_webhook_hash_legacy(remote_url)
 
     if webhook_hash != expected_hash:
         abort(404)

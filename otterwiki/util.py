@@ -449,3 +449,7 @@ def compute_webhook_hash(secret_key: str, remote_url: str) -> str:
         remote_url.encode(),
         sha256,
     ).hexdigest()
+
+
+def compute_webhook_hash_legacy(remote_url: str) -> str:
+    return sha256((remote_url + 'otterwiki').encode()).hexdigest()

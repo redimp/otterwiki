@@ -21,10 +21,14 @@ from otterwiki.sidebar import SidebarPageIndex, SidebarMenu
 from otterwiki.helper import (
     toast,
     send_mail,
-    get_pagename,
     get_pagename_for_title,
 )
-from otterwiki.util import empty, is_valid_email, compute_webhook_hash
+from otterwiki.util import (
+    empty,
+    is_valid_email,
+    compute_webhook_hash,
+    compute_webhook_hash_legacy,
+)
 from flask_login import current_user
 from otterwiki.auth import (
     has_permission,
@@ -291,6 +295,8 @@ def handle_repository_management(form):
             )
         else:
             _update_preference("GIT_REMOTE_PULL_ENABLED", "True")
+            if pull_remote_url != app.config.get('GIT_REMOTE_PULL_URL', ''):
+                _update_preference("GIT_REMOTE_PULL_URL_SECURE", "True")
             _update_preference("GIT_REMOTE_PULL_URL", pull_remote_url)
 
             pull_private_key = form.get(
@@ -575,9 +581,12 @@ def repository_management_form(git_action_result=None):
     if app.config.get('GIT_REMOTE_PULL_ENABLED'):
         remote_url = app.config.get('GIT_REMOTE_PULL_URL', '')
         if remote_url:
-            webhook_hash = compute_webhook_hash(
-                app.config['SECRET_KEY'], remote_url
-            )
+            if app.config.get('GIT_REMOTE_PULL_URL_SECURE'):
+                webhook_hash = compute_webhook_hash(
+                    app.config['SECRET_KEY'], remote_url
+                )
+            else:
+                webhook_hash = compute_webhook_hash_legacy(remote_url)
             webhook_url = url_for(
                 'pull_webhook', webhook_hash=webhook_hash, _external=True
             )

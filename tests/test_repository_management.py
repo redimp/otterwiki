@@ -6,7 +6,7 @@ import tempfile
 from unittest.mock import patch, MagicMock
 from bs4 import BeautifulSoup
 import pytest
-from otterwiki.util import compute_webhook_hash
+from otterwiki.util import compute_webhook_hash, compute_webhook_hash_legacy
 
 # Test constants
 TEST_REMOTE_URL = "git@github.com:test/repo.git"
@@ -923,3 +923,289 @@ class TestWebhookUrlDisplay:
         # Test by posting to the webhook endpoint
         rv = admin_client.post(f"/-/api/v1/pull/{webhook_hash}")
         assert rv.status_code == 200
+
+
+class TestWebhookHashBackwardCompatibility:
+    """Test backward compatibility between legacy and secure webhook hash modes."""
+
+    def _enable_pull_feature(self, admin_client, test_data):
+        """Helper to enable pull feature with test data."""
+        return admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={
+                "git_remote_pull_enabled": "True",
+                "git_remote_pull_url": test_data['remote_url'],
+                "git_remote_pull_private_key": test_data['private_key'],
+                "update_preferences": "true",
+            },
+            follow_redirects=True,
+        )
+
+    def test_legacy_hash_function(self):
+        """Test that compute_webhook_hash_legacy returns sha256(url + 'otterwiki')."""
+        import hashlib
+
+        url = "git@github.com:test/repo.git"
+        expected = hashlib.sha256((url + 'otterwiki').encode()).hexdigest()
+        assert compute_webhook_hash_legacy(url) == expected
+
+    def test_hashes_differ(self, app_with_user):
+        """Test that legacy hash and HMAC hash differ for the same URL."""
+        url = "git@github.com:test/repo.git"
+        legacy = compute_webhook_hash_legacy(url)
+        hmac_h = compute_webhook_hash(app_with_user.config['SECRET_KEY'], url)
+        assert legacy != hmac_h
+
+    @patch('otterwiki.repomgmt.RepositoryManager.auto_pull_webhook')
+    @patch('otterwiki.repomgmt.get_repo_manager')
+    def test_legacy_mode_webhook_accepts_legacy_hash(
+        self,
+        mock_get_repo_manager,
+        mock_auto_pull_webhook,
+        app_with_user,
+        admin_client,
+        test_data,
+    ):
+        """Test that legacy mode accepts legacy hash."""
+        mock_repo_manager = MagicMock()
+        mock_repo_manager.auto_pull_webhook.return_value = True
+        mock_get_repo_manager.return_value = mock_repo_manager
+
+        # Enable pull (this auto-sets flag to True)
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+
+        # Override to legacy mode for this test
+        app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] = False
+
+        # Compute legacy hash and post to webhook
+        legacy_hash = compute_webhook_hash_legacy(test_data['remote_url'])
+        rv = admin_client.post(f"/-/api/v1/pull/{legacy_hash}")
+        assert rv.status_code == 200
+
+    def test_legacy_mode_webhook_rejects_hmac_hash(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Test that legacy mode rejects HMAC hash."""
+        # Enable pull (auto-sets flag to True)
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+
+        # Override to legacy mode
+        app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] = False
+
+        # HMAC hash should be rejected
+        hmac_hash = compute_webhook_hash(
+            app_with_user.config['SECRET_KEY'],
+            test_data['remote_url'],
+        )
+        rv = admin_client.post(f"/-/api/v1/pull/{hmac_hash}")
+        assert rv.status_code == 404
+
+    @patch('otterwiki.repomgmt.RepositoryManager.auto_pull_webhook')
+    @patch('otterwiki.repomgmt.get_repo_manager')
+    def test_secure_mode_webhook_accepts_hmac_hash(
+        self,
+        mock_get_repo_manager,
+        mock_auto_pull_webhook,
+        app_with_user,
+        admin_client,
+        test_data,
+    ):
+        """Test that secure mode accepts HMAC hash."""
+        mock_repo_manager = MagicMock()
+        mock_repo_manager.auto_pull_webhook.return_value = True
+        mock_get_repo_manager.return_value = mock_repo_manager
+
+        # Enable pull (auto-sets flag to True — secure mode)
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+        assert app_with_user.config.get('GIT_REMOTE_PULL_URL_SECURE') == True
+
+        hmac_hash = compute_webhook_hash(
+            app_with_user.config['SECRET_KEY'],
+            test_data['remote_url'],
+        )
+        rv = admin_client.post(f"/-/api/v1/pull/{hmac_hash}")
+        assert rv.status_code == 200
+
+    def test_secure_mode_webhook_rejects_legacy_hash(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Test that secure mode rejects legacy hash."""
+        # Enable pull (auto-sets flag to True)
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+        assert app_with_user.config.get('GIT_REMOTE_PULL_URL_SECURE') == True
+
+        legacy_hash = compute_webhook_hash_legacy(test_data['remote_url'])
+        rv = admin_client.post(f"/-/api/v1/pull/{legacy_hash}")
+        assert rv.status_code == 404
+
+    def test_auto_upgrade_on_enable(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Test that enabling pull auto-upgrades flag to True."""
+        # Reset flag to False to simulate fresh/legacy install
+        app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] = False
+
+        # Enable pull via admin form
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+
+        # Flag must be True now
+        assert app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] == True
+
+    def test_auto_upgrade_on_url_change(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Test that changing URL reactivates flag to True even if manually set back to False."""
+        # Enable pull first
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+        assert app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] == True
+
+        # Manually reset flag to False (simulating legacy install)
+        app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] = False
+
+        # Re-save pull settings with a DIFFERENT URL
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={
+                "git_remote_pull_enabled": "True",
+                "git_remote_pull_url": "git@github.com:other/changed-repo.git",
+                "git_remote_pull_private_key": "**********",
+                "update_preferences": "true",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+        # Flag must be True again because URL changed
+        assert app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] == True
+
+    def test_one_way_ratchet(self, app_with_user, admin_client, test_data):
+        """Test that disabling pull does not reset the flag."""
+        # Enable pull — sets flag to True
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+        assert app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] == True
+
+        # Disable pull via form (no pull checkbox = disabled)
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={"update_preferences": "true"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+        # Flag must still be True — one-way ratchet
+        assert app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] == True
+
+    def test_no_upgrade_on_same_url_resave(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Re-saving with unchanged URL should NOT upgrade to secure mode."""
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+        assert app_with_user.config.get('GIT_REMOTE_PULL_URL_SECURE') == True
+
+        # Set back to legacy mode in both app config and database
+        app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] = False
+        from otterwiki.server import db, Preferences
+
+        with app_with_user.app_context():
+            entry = Preferences.query.filter_by(
+                name='GIT_REMOTE_PULL_URL_SECURE'
+            ).first()
+            if entry:
+                entry.value = "False"
+                db.session.commit()
+
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={
+                "git_remote_pull_enabled": "True",
+                "git_remote_pull_url": test_data['remote_url'],
+                "git_remote_pull_private_key": "**********",
+                "update_preferences": "true",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+        assert app_with_user.config.get('GIT_REMOTE_PULL_URL_SECURE') == False
+
+        # Clean up: disable pull so subsequent tests start fresh
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={"update_preferences": "true"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+    def test_admin_page_shows_correct_url_legacy_mode(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Test admin page shows legacy hash URL when flag is False."""
+        # Enable pull (auto-sets flag to True)
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+
+        # Override flag to legacy mode for admin display test
+        app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] = False
+
+        # GET admin page
+        rv = admin_client.get(ADMIN_REPO_MGMT_URL)
+        assert rv.status_code == 200
+
+        soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+        webhook_input = soup.find(
+            'input', {'id': 'git_remote_pull_webhook_url'}
+        )
+        assert webhook_input is not None
+
+        webhook_url = webhook_input.get('value', '')
+        expected_legacy_hash = compute_webhook_hash_legacy(
+            test_data['remote_url']
+        )
+        assert webhook_url != ''
+        assert expected_legacy_hash in webhook_url
+
+        # Ensure HMAC hash is NOT in the URL
+        hmac_hash = compute_webhook_hash(
+            app_with_user.config['SECRET_KEY'],
+            test_data['remote_url'],
+        )
+        assert hmac_hash not in webhook_url
+
+    def test_admin_page_shows_correct_url_secure_mode(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Test admin page shows HMAC hash URL when flag is True."""
+        # Enable pull (auto-sets flag to True)
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+        assert app_with_user.config.get('GIT_REMOTE_PULL_URL_SECURE') == True
+
+        # GET admin page
+        rv = admin_client.get(ADMIN_REPO_MGMT_URL)
+        assert rv.status_code == 200
+
+        soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+        webhook_input = soup.find(
+            'input', {'id': 'git_remote_pull_webhook_url'}
+        )
+        assert webhook_input is not None
+
+        webhook_url = webhook_input.get('value', '')
+        expected_hmac_hash = compute_webhook_hash(
+            app_with_user.config['SECRET_KEY'],
+            test_data['remote_url'],
+        )
+        assert webhook_url != ''
+        assert expected_hmac_hash in webhook_url
+
+        # Ensure legacy hash is NOT in the URL
+        legacy_hash = compute_webhook_hash_legacy(test_data['remote_url'])
+        assert legacy_hash not in webhook_url
