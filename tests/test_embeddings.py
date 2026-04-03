@@ -83,9 +83,8 @@ def test_imageframe_basic():
     soup = BeautifulSoup(html, "html.parser")
     frame = soup.find("div", class_="imageframe-caption")
     assert frame is not None
-    # default float is right
-    assert "float:right" in frame.get("style", "")
-    assert "clear:right" in frame.get("style", "")
+    # default float is right via CSS class
+    assert "imageframe-float-right" in frame.get("class", [])
     # default width
     assert "width:30%" in frame.get("style", "")
     # caption rendered
@@ -108,10 +107,21 @@ def test_imageframe_position_left():
     soup = BeautifulSoup(html, "html.parser")
     frame = soup.find("div", class_="imageframe-caption")
     assert frame is not None
-    style = frame.get("style", "")
-    assert "float:left" in style
-    assert "clear:left" in style
-    assert "width:50%" in style
+    assert "imageframe-float-left" in frame.get("class", [])
+    assert "width:50%" in frame.get("style", "")
+
+
+def test_imageframe_default_floats_right():
+    md = """
+{{ImageFrame
+![alt](/img/test.png)
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    assert "imageframe-float-right" in frame.get("class", [])
 
 
 def test_imageframe_no_caption():

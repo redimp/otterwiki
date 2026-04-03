@@ -404,6 +404,39 @@ Display images in frames on the wiki page.
 """
 
     @hookimpl
+    def static_css(self):
+        return """
+div.imageframe-caption {
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    padding: .5rem;
+}
+div.imageframe-caption.imageframe-float-right {
+    float: right;
+    clear: right;
+    margin: .5rem 0 .5rem .5rem;
+}
+div.imageframe-caption.imageframe-float-left {
+    float: left;
+    clear: left;
+    margin: .5rem .5rem 0 .5rem;
+}
+div.imageframe {
+    text-align: center;
+    width: 100%;
+    font-weight: bold;
+}
+@media (max-width: 576px) {
+    div.imageframe-caption.imageframe-float-right,
+    div.imageframe-caption.imageframe-float-left {
+        float: none;
+        clear: both;
+        margin: .5rem 0;
+        width: 100% !important;
+    }
+}
+"""
+
+    @hookimpl
     def embedding_render(
         self,
         embedding: str,
@@ -423,42 +456,29 @@ Display images in frames on the wiki page.
             "pos", "right"
         )
         floating = args.options.get("float", position)
-
-        if floating.lower() == "left":
-            margin = "margin: .5rem .5rem 0 .5rem"
-        else:
+        if floating.lower() != "left":
             floating = "right"
-            margin = "margin: .5rem 0 .5rem .5rem"
 
         userstyle = args.options_raw.get("style", "")
         width = args.options.get("width", "30%")
         content += "\n".join(args.args)
 
-        styles = [
-            "border-width: 1px",
-            "border-style: solid",
-            "border-color: rgba(128, 128, 128, 0.3)",
-            "padding: .5rem",
-            margin,
-        ]
-
-        if floating.lower() in ["left", "right"]:
-            styles.append(f"float:{floating.lower()}")
-            styles.append(f"clear:{floating.lower()}")
-
+        # dynamic per-instance styles only; fixed styles live in static_css()
+        inline_styles = []
         if width:
-            styles.append(f"width:{width}")
-
+            inline_styles.append(f"width:{width}")
         if text_align:
-            styles.append(f"text-align:{text_align}")
-
-        style = ";".join(styles)
-        caption = (
-            f"<div class=\"imageframe\" style=\"text-align:center;width:100%;font-weight:bold;\">{caption}</div>"
-            if caption
-            else ""
+            inline_styles.append(f"text-align:{text_align}")
+        if userstyle:
+            inline_styles.append(userstyle)
+        style_attr = (
+            f' style="{";".join(inline_styles)}"' if inline_styles else ""
         )
-        return f"<div class=\"imageframe-caption\" style=\"{style};{userstyle}\">{content}{caption}</div>"
+
+        caption_html = (
+            f'<div class="imageframe">{caption}</div>' if caption else ""
+        )
+        return f'<div class="imageframe-caption imageframe-float-{floating}"{style_attr}>{content}{caption_html}</div>'
 
 
 class VideoEmbedding:
