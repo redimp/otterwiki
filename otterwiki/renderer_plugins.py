@@ -448,7 +448,7 @@ class mistunePluginFancyBlocks:
 
 class mistunePluginSpoiler:
     SPOILER_LEADING = re.compile(r'^ *\>\!', flags=re.MULTILINE)
-    SPOILER_BLOCK = re.compile(r'(?: {0,3}>![^\n]*(\n|$))+')
+    SPOILER_BLOCK = re.compile(r'^(?: {0,3}>![^\n]*(\n|$))+', re.MULTILINE)
 
     def parse_spoiler_block(self, block, m, state):
         text = m.group(0)
@@ -492,7 +492,7 @@ class mistunePluginSpoiler:
 
 class mistunePluginFold:
     FOLD_LEADING = re.compile(r'^ *\>\|', flags=re.MULTILINE)
-    FOLD_BLOCK = re.compile(r'(?: {0,3}>\|[^\n]*(\n|$))+')
+    FOLD_BLOCK = re.compile(r'^(?: {0,3}>\|[^\n]*(\n|$))+', re.MULTILINE)
 
     FOLD_BLOCK_HEADER = re.compile(r'^#{1,5}\s*(.*)\n+')
 
