@@ -211,7 +211,11 @@ def test_imageframe_src_attachment(create_app):
     soup = BeautifulSoup(response.data.decode(), "html.parser")
     frame = soup.find("div", class_="imageframe-caption")
     assert frame is not None
-    img = frame.find("img")
+    a = frame.find("a")
+    assert a is not None
+    assert "photo.png" in a.get("href", "")
+    assert a.get("target") == "_blank"
+    img = a.find("img")
     assert img is not None
     assert "photo.png" in img.get("src", "")
     caption = frame.find("div", class_="imageframe")
@@ -285,9 +289,36 @@ def test_imageframe_src_absolute_path(create_app):
     soup = BeautifulSoup(response.data.decode(), "html.parser")
     frame = soup.find("div", class_="imageframe-caption")
     assert frame is not None
-    img = frame.find("img")
+    a = frame.find("a")
+    assert a is not None
+    assert "photo.png" in a.get("href", "")
+    assert a.get("target") == "_blank"
+    img = a.find("img")
     assert img is not None
     assert "photo.png" in img.get("src", "")
+
+
+def test_imageframe_src_external_url():
+    """src= with https:// URL embeds the image directly without attachment lookup."""
+    md = """\
+{{ImageFrame
+|src=https://example.com/photo.jpg
+|alt=External photo
+|caption=Remote image
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    a = frame.find("a")
+    assert a is not None
+    assert a["href"] == "https://example.com/photo.jpg"
+    assert a.get("target") == "_blank"
+    img = a.find("img")
+    assert img is not None
+    assert img["src"] == "https://example.com/photo.jpg"
+    assert img["alt"] == "External photo"
 
 
 def test_imageframe_src_missing_attachment(create_app):

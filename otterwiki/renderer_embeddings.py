@@ -423,6 +423,15 @@ Use an absolute path to embed an attachment from another page:
 }}
 ```
 
+External images can be embedded via a full URL:
+
+```
+{{ImageFrame
+|src=https://example.com/image.png
+|alt=Description
+}}
+```
+
 </div><div class="col-md-4 col-sm-12" style="padding-top:5px;">
 
 {{ImageFrame
@@ -497,34 +506,45 @@ div.imageframe {
         userstyle = args.options_raw.get("style", "")
         width = args.options.get("width", "30%")
 
-        src = args.options.get("src", None)
+        src = args.options_raw.get("src", None)
         if src:
-            from otterwiki.wiki import Attachment
-
-            if src.startswith("/"):
-                # absolute: /pagepath/filename — attachment from another page
-                parts = src.lstrip("/").rsplit("/", 1)
-                if len(parts) != 2:
-                    raise ValueError(
-                        f'ImageFrame: invalid absolute src "{src}",'
-                        f' expected /pagepath/filename.'
-                    )
-                att_pagepath, att_filename = parts
+            alt = mistune.escape(args.options.get("alt", ""))
+            if src.startswith("https://") or src.startswith("http://"):
+                # external URL — embed directly
+                img_url = src
             else:
-                # relative: attachment on the current page
-                page = getattr(self, 'page', None)
-                if page is None:
+                from otterwiki.wiki import Attachment
+
+                if src.startswith("/"):
+                    # absolute: /pagepath/filename — attachment from another page
+                    parts = src.lstrip("/").rsplit("/", 1)
+                    if len(parts) != 2:
+                        raise ValueError(
+                            f'ImageFrame: invalid absolute src "{src}",'
+                            f' expected /pagepath/filename.'
+                        )
+                    att_pagepath, att_filename = parts
+                else:
+                    # relative: attachment on the current page
+                    page = getattr(self, 'page', None)
+                    if page is None:
+                        raise ValueError(
+                            "ImageFrame |src= requires a page context."
+                        )
+                    att_pagepath = page.pagepath
+                    att_filename = src
+                attachment = Attachment(att_pagepath, att_filename)
+                if not attachment.exists():
                     raise ValueError(
-                        "ImageFrame |src= requires a page context."
+                        f'ImageFrame: attachment "{src}" not found.'
                     )
-                att_pagepath = page.pagepath
-                att_filename = src
-            attachment = Attachment(att_pagepath, att_filename)
-            if not attachment.exists():
-                raise ValueError(f'ImageFrame: attachment "{src}" not found.')
-            alt = mistune.escape(args.options.get("alt", att_filename))
-            img_url = attachment.get_url()
-            content += f'<img src="{img_url}" alt="{alt}" style="width:100%">'
+                alt = alt or mistune.escape(att_filename)
+                img_url = attachment.get_url()
+            content += (
+                f'<a href="{img_url}" target="_blank">'
+                f'<img src="{img_url}" alt="{alt}" style="width:100%">'
+                f'</a>'
+            )
         else:
             content += "\n".join(args.args)
 
