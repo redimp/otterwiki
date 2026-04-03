@@ -4,6 +4,7 @@
 import csv
 import fnmatch
 import io
+import urllib.parse
 
 from otterwiki.plugins import hookimpl, plugin_manager, EmbeddingArgs
 from bs4 import BeautifulSoup
@@ -475,7 +476,8 @@ class VideoEmbedding:
             return None
 
         return """<div class="row mb-10">
-Embed a video player that supports video and audio playback in your document.
+Embed a video player that supports video and audio playback in your document,
+or embed a YouTube video by providing a YouTube URL.
 <div class="col-md-8 col-sm-12">
 
 ```
@@ -487,6 +489,19 @@ Embed a video player that supports video and audio playback in your document.
 |loop=false/true
 |src=/full/path/to/video.mp4
 /alternative/full/path/to/video.mp4
+}}
+```
+
+YouTube URLs (`youtube.com/watch?v=…` or `youtu.be/…`) are rendered as embedded iframes:
+
+```
+{{Video
+|width=100%
+|muted=false/true
+|controls=true/false
+|autoplay=false/true
+|loop=false/true
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
 }}
 ```
 
@@ -502,6 +517,21 @@ Embed a video player that supports video and audio playback in your document.
 
 </div></div>
 """
+
+    @staticmethod
+    def _get_youtube_id(url: str):
+        """Extract YouTube video ID from various URL formats, or return None."""
+        parsed = urllib.parse.urlparse(url)
+        host = parsed.netloc.lower().lstrip('www.')
+        if host == 'youtube.com' or host == 'youtube-nocookie.com':
+            if parsed.path.startswith('/embed/'):
+                return parsed.path.split('/')[2]
+            qs = urllib.parse.parse_qs(parsed.query)
+            ids = qs.get('v', [])
+            return ids[0] if ids else None
+        if host == 'youtu.be':
+            return parsed.path.lstrip('/')
+        return None
 
     @hookimpl
     def embedding_render(
@@ -533,16 +563,60 @@ Embed a video player that supports video and audio playback in your document.
 
         if len(src) < 1:
             raise ValueError("No src given.")
-        sources = ""
-        for s in src:
-            t = ""
-            if s.endswith(".mp4"):
-                t = " type=\"video/mp4\""
-            if s.endswith(".ogg"):
-                t = "type=\"video/ogg\""
-            sources += f"""<source src="{s}"{t}>\n"""
 
-        return f"<video width=\"{width}\" {' '.join(flags)}>\n{sources}\nYour browser does not support the video tag.\n</video>"
+        yt_sources = [s for s in src if self._get_youtube_id(s)]
+        file_sources = [s for s in src if not self._get_youtube_id(s)]
+        if yt_sources and file_sources:
+            raise ValueError(
+                "Cannot mix YouTube links and file sources in the same Video embedding."
+            )
+
+        # Build YouTube embed query params from options
+        yt_params = {}
+        if not args.get_flag("controls", True):
+            yt_params['controls'] = '0'
+        if args.get_flag("autoplay", False):
+            yt_params['autoplay'] = '1'
+        if args.get_flag("muted", True):
+            yt_params['mute'] = '1'
+        # loop requires playlist=VIDEO_ID; added per-video below
+
+        html_parts = []
+        video_sources = ""
+        for s in src:
+            yt_id = self._get_youtube_id(s)
+            if yt_id:
+                params = dict(yt_params)
+                if args.get_flag("loop", True):
+                    params['loop'] = '1'
+                    params['playlist'] = yt_id
+                qs = ('?' + urllib.parse.urlencode(params)) if params else ''
+                html_parts.append(
+                    f'<iframe width="{width}" height="315"'
+                    f' src="https://www.youtube.com/embed/{yt_id}{qs}"'
+                    f' title="YouTube video player" frameborder="0"'
+                    f' allow="accelerometer; autoplay; clipboard-write;'
+                    f' encrypted-media; gyroscope; picture-in-picture; web-share"'
+                    f' referrerpolicy="strict-origin-when-cross-origin"'
+                    f' allowfullscreen></iframe>'
+                )
+            else:
+                t = ""
+                if s.endswith(".mp4"):
+                    t = " type=\"video/mp4\""
+                elif s.endswith(".ogg"):
+                    t = " type=\"video/ogg\""
+                video_sources += f'<source src="{s}"{t}>\n'
+
+        if video_sources:
+            html_parts.append(
+                f'<video width="{width}" {" ".join(flags)}>\n'
+                f'{video_sources}\n'
+                f'Your browser does not support the video tag.\n'
+                f'</video>'
+            )
+
+        return "\n".join(html_parts)
 
 
 class InfoBoxEmbedding:

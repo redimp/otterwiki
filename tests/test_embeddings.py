@@ -1250,3 +1250,173 @@ def test_pageindex_embedding_toc(create_app):
     assert pagetoc is not None
     assert "Section One" in pagetoc.decode_contents()
     assert "Section Two" in pagetoc.decode_contents()
+
+
+# ---------------------------------------------------------------------------
+# Video embedding — YouTube
+# ---------------------------------------------------------------------------
+
+
+def _yt_iframe(html, index=0):
+    """Return the nth iframe from parsed html."""
+    soup = BeautifulSoup(html, "html.parser")
+    return soup.find_all("iframe")[index]
+
+
+def test_video_youtube_watch_url():
+    md = """\
+{{Video
+https://www.youtube.com/watch?v=To-f7l3O-G8
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert iframe is not None
+    assert "To-f7l3O-G8" in iframe["src"]
+    assert iframe["src"].startswith("https://www.youtube.com/embed/")
+
+
+def test_video_youtube_short_url():
+    md = """\
+{{Video
+https://youtu.be/To-f7l3O-G8
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "To-f7l3O-G8" in iframe["src"]
+
+
+def test_video_youtube_embed_url():
+    md = """\
+{{Video
+https://www.youtube.com/embed/To-f7l3O-G8
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "To-f7l3O-G8" in iframe["src"]
+
+
+def test_video_youtube_default_options():
+    """By default: controls shown, autoplay off, muted on, loop on."""
+    md = """\
+{{Video
+https://youtu.be/To-f7l3O-G8
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    src = iframe["src"]
+    assert "To-f7l3O-G8" in src
+    # controls on by default — no controls=0
+    assert "controls=0" not in src
+    # autoplay off by default
+    assert "autoplay" not in src
+    # muted on by default
+    assert "mute=1" in src
+    # loop on by default, requires playlist param
+    assert "loop=1" in src
+    assert "playlist=To-f7l3O-G8" in src
+
+
+def test_video_youtube_autoplay():
+    md = """\
+{{Video
+|autoplay=true
+https://youtu.be/To-f7l3O-G8
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "autoplay=1" in iframe["src"]
+
+
+def test_video_youtube_muted():
+    md = """\
+{{Video
+|muted=true
+https://youtu.be/To-f7l3O-G8
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "mute=1" in iframe["src"]
+
+
+def test_video_youtube_controls_off():
+    md = """\
+{{Video
+|controls=false
+https://youtu.be/To-f7l3O-G8
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "controls=0" in iframe["src"]
+
+
+def test_video_youtube_loop():
+    md = """\
+{{Video
+|loop=true
+https://youtu.be/To-f7l3O-G8
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "loop=1" in iframe["src"]
+    # YouTube requires playlist=VIDEO_ID for loop to work
+    assert "playlist=To-f7l3O-G8" in iframe["src"]
+
+
+def test_video_youtube_width():
+    md = """\
+{{Video
+|width=80%
+https://youtu.be/To-f7l3O-G8
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert iframe["width"] == "80%"
+
+
+def test_video_youtube_multiple():
+    md = """\
+{{Video
+https://youtu.be/To-f7l3O-G8
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    iframes = soup.find_all("iframe")
+    assert len(iframes) == 2
+    srcs = [f["src"] for f in iframes]
+    assert any("To-f7l3O-G8" in s for s in srcs)
+    assert any("dQw4w9WgXcQ" in s for s in srcs)
+
+
+def test_video_youtube_src_option():
+    """YouTube URL passed via |src= option should render as an iframe."""
+    md = """\
+{{Video
+|src=https://youtu.be/To-f7l3O-G8
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert iframe is not None
+    assert "To-f7l3O-G8" in iframe["src"]
+
+
+def test_video_youtube_mixed_sources_raises_error():
+    md = """\
+{{Video
+https://youtu.be/To-f7l3O-G8
+/path/to/video.mp4
+}}
+"""
+    html, _, _ = render.markdown(md)
+    assert "Cannot mix YouTube links and file sources" in html
