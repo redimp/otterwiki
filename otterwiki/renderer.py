@@ -46,6 +46,22 @@ mistune.plugins.table.NP_TABLE_PATTERN = (  # pyright: ignore
     r'(?P<nptable_body>(?:.*\|.*(?:\n|$))*)\n{0,1}'
 )
 
+#
+# patch mistune helpers to support parenthesis-delimited link titles per CommonMark spec.
+# mistune 3.2.0 only recognises "title" and 'title' forms; adding (...) fixes link
+# reference definitions like: [modeline]: # ( vim: set ft=markdown: )
+#
+import string as _string
+
+_PUNCTUATION = r"[" + re.escape(_string.punctuation) + r"]"
+mistune.helpers.LINK_TITLE_RE = re.compile(  # pyright: ignore
+    r"[ \t\n]+("
+    r'"(?:\\' + _PUNCTUATION + r'|[^"\x00])*"|'  # "title"
+    r"'(?:\\" + _PUNCTUATION + r"|[^'\x00])*'|"  # 'title'
+    r"\((?:\\" + _PUNCTUATION + r"|[^()\x00])*\)"  # (title)
+    r")"
+)
+
 
 def _pre_copy_to_clipboard_tag():
     return f"""<div class="copy-to-clipboard-outer"><div class="copy-to-clipboard-inner"><button class="btn alt-dm btn-xsm copy-to-clipboard" type="button"  onclick="otterwiki.copy_to_clipboard(this);"><i class="fa fa-copy" aria-hidden="true" alt="Copy to clipboard""></i></button></div><pre class="copy-to-clipboard code">"""

@@ -1272,6 +1272,73 @@ def test_link():
     assert a_html.attrs.get("title", None) == "With a title"
 
 
+def test_link_ref_definition_double_quoted_title():
+    """CommonMark 4.7: [label]: URL "title" — definition is silent, ref renders as link."""
+    md = '[example]: http://example.com "Example title"\n\n[example]\n'
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert a_html.attrs.get("href") == "http://example.com"
+    assert a_html.attrs.get("title") == "Example title"
+    assert a_html.text == "example"
+
+
+def test_link_ref_definition_single_quoted_title():
+    """CommonMark 4.7: [label]: URL 'title' — definition is silent, ref renders as link."""
+    md = "[example]: http://example.com 'Example title'\n\n[example]\n"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert a_html.attrs.get("href") == "http://example.com"
+    assert a_html.attrs.get("title") == "Example title"
+    assert a_html.text == "example"
+
+
+def test_link_ref_definition_paren_title():
+    """CommonMark 4.7: [label]: URL (title) — definition is silent, ref renders as link."""
+    md = "[example]: http://example.com (Example title)\n\n[example]\n"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert a_html.attrs.get("href") == "http://example.com"
+    assert a_html.attrs.get("title") == "Example title"
+    assert a_html.text == "example"
+
+
+def test_link_ref_definition_no_title():
+    """CommonMark 4.7: [label]: URL — definition without title is silent, ref renders as link."""
+    md = "[example]: http://example.com\n\n[example]\n"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert a_html.attrs.get("href") == "http://example.com"
+    assert a_html.attrs.get("title") is None
+    assert a_html.text == "example"
+
+
+def test_link_ref_definition_produces_no_output():
+    """CommonMark 4.7: a bare link reference definition must produce no output."""
+    for defn in [
+        "[x]: http://example.com\n",
+        '[x]: http://example.com "double"\n',
+        "[x]: http://example.com 'single'\n",
+        "[x]: http://example.com (paren)\n",
+    ]:
+        html, _, _ = render.markdown(defn)
+        assert (
+            BeautifulSoup(html, "html.parser").get_text().strip() == ""
+        ), f"definition produced output: {html!r}"
+
+
+def test_modeline_not_rendered():
+    """Link reference definitions with paren-delimited titles (e.g. vim modelines)
+    must be consumed silently and not appear in the rendered output."""
+    md = "[modeline]: # ( vim: set fenc=utf-8 spell tw=78 ft=markdown spl=en: )\n"
+    html, _, _ = render.markdown(md)
+    assert "modeline" not in html
+    assert "vim:" not in html
+
+
 def test_link_escape():
     md = "[click me](javascript:alert(document.cookie))"
     html, _, _ = render.markdown(md)
