@@ -665,8 +665,10 @@ class mistunePluginAlerts:
         flags=re.I,
     )
     # Pattern for scanner registration: uses (?i:...) inline flag (no global re.I)
+    # ^ anchor (with re.M) ensures the pattern only matches at line boundaries,
+    # preventing mid-line matches inside HTML like <code>>[!NOTE]\n> body</code>
     _ALERT_BLOCK_SCANNER_PATTERN = (
-        r'(?: {0,3}>\s*\[!(?i:'
+        r'^(?: {0,3}>\s*\[!(?i:'
         + TYPES_WITH_PIPES
         + r')\][^\n]*(?:\n|$))(?P<_alert_rest> {0,3}>[^\n]*(?:\n|$))+'
     )
