@@ -182,6 +182,131 @@ def test_imageframe_alias():
     assert caption.text == "Alias Test"
 
 
+def test_imageframe_src_attachment(create_app):
+    """src= option resolves an image attachment and renders an <img> tag."""
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "imgframepage.md",
+        content="{{ImageFrame\n|src=photo.png\n|caption=My Photo\n}}\n",
+        author=author,
+        message="add page",
+    )
+    # store a minimal 1x1 PNG as the attachment
+    import base64
+
+    png_1x1 = base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
+        "YPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    )
+    create_app.storage.store(
+        "imgframepage/photo.png",
+        content=png_1x1,
+        author=author,
+        message="add image",
+        mode="wb",
+    )
+    client = create_app.test_client()
+    response = client.get("/Imgframepage/view")
+    assert response.status_code == 200
+    soup = BeautifulSoup(response.data.decode(), "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    img = frame.find("img")
+    assert img is not None
+    assert "photo.png" in img.get("src", "")
+    caption = frame.find("div", class_="imageframe")
+    assert caption is not None
+    assert caption.text == "My Photo"
+
+
+def test_imageframe_src_attachment_alt(create_app):
+    """alt= option sets the img alt attribute."""
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "imgframealt.md",
+        content="{{ImageFrame\n|src=photo.png\n|alt=A nice photo\n}}\n",
+        author=author,
+        message="add page",
+    )
+    import base64
+
+    png_1x1 = base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
+        "YPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    )
+    create_app.storage.store(
+        "imgframealt/photo.png",
+        content=png_1x1,
+        author=author,
+        message="add image",
+        mode="wb",
+    )
+    client = create_app.test_client()
+    response = client.get("/Imgframealt/view")
+    assert response.status_code == 200
+    soup = BeautifulSoup(response.data.decode(), "html.parser")
+    img = soup.find("img", alt="A nice photo")
+    assert img is not None
+
+
+def test_imageframe_src_absolute_path(create_app):
+    """|src=/OtherPage/photo.png loads an attachment from another page."""
+    author = ("Test Author", "test@example.com")
+    import base64
+
+    png_1x1 = base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
+        "YPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    )
+    # store the image on OtherPage
+    create_app.storage.store(
+        "otherpage.md",
+        content="# Other Page\n",
+        author=author,
+        message="add other page",
+    )
+    create_app.storage.store(
+        "otherpage/photo.png",
+        content=png_1x1,
+        author=author,
+        message="add image",
+        mode="wb",
+    )
+    # embed it from a different page
+    create_app.storage.store(
+        "embedder.md",
+        content="{{ImageFrame\n|src=/otherpage/photo.png\n|caption=From Other\n}}\n",
+        author=author,
+        message="add embedder page",
+    )
+    client = create_app.test_client()
+    response = client.get("/Embedder/view")
+    assert response.status_code == 200
+    soup = BeautifulSoup(response.data.decode(), "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    img = frame.find("img")
+    assert img is not None
+    assert "photo.png" in img.get("src", "")
+
+
+def test_imageframe_src_missing_attachment(create_app):
+    """src= referencing a non-existent attachment renders an error."""
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "imgframemissing.md",
+        content="{{ImageFrame\n|src=missing.png\n}}\n",
+        author=author,
+        message="add page",
+    )
+    client = create_app.test_client()
+    response = client.get("/Imgframemissing/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert 'missing.png' in html
+    assert 'not found' in html.lower() or 'error' in html.lower()
+
+
 DATATABLE_MD = """\
 {{datatable
 | Name | Score |

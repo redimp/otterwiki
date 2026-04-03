@@ -384,11 +384,29 @@ Display images in frames on the wiki page.
 {{ImageFrame
 |caption=An Otter Wiki Logo
 |width=30%
-|position=right/left/center
+|position=right/left
 |float=right/left
 |text-align=center/left/right/justify
 |style=custom css
 [![](/static/img/otter.png)](/static/img/otter.png)
+}}
+```
+
+Use `|src=` to embed an attachment directly, with an optional `|alt=` text:
+
+```
+{{ImageFrame
+|caption=An Otter Wiki Logo
+|src=otter.png
+|alt=The Otter Wiki logo
+}}
+```
+
+Use an absolute path to embed an attachment from another page:
+
+```
+{{ImageFrame
+|src=/OtherPage/otter.png
 }}
 ```
 
@@ -402,6 +420,10 @@ Display images in frames on the wiki page.
 }}
 </div></div>
 """
+
+    @hookimpl
+    def page_render_context(self, page, preview: bool):
+        self.page = page
 
     @hookimpl
     def static_css(self):
@@ -461,7 +483,37 @@ div.imageframe {
 
         userstyle = args.options_raw.get("style", "")
         width = args.options.get("width", "30%")
-        content += "\n".join(args.args)
+
+        src = args.options.get("src", None)
+        if src:
+            from otterwiki.wiki import Attachment
+
+            if src.startswith("/"):
+                # absolute: /pagepath/filename — attachment from another page
+                parts = src.lstrip("/").rsplit("/", 1)
+                if len(parts) != 2:
+                    raise ValueError(
+                        f'ImageFrame: invalid absolute src "{src}",'
+                        f' expected /pagepath/filename.'
+                    )
+                att_pagepath, att_filename = parts
+            else:
+                # relative: attachment on the current page
+                page = getattr(self, 'page', None)
+                if page is None:
+                    raise ValueError(
+                        "ImageFrame |src= requires a page context."
+                    )
+                att_pagepath = page.pagepath
+                att_filename = src
+            attachment = Attachment(att_pagepath, att_filename)
+            if not attachment.exists():
+                raise ValueError(f'ImageFrame: attachment "{src}" not found.')
+            alt = mistune.escape(args.options.get("alt", att_filename))
+            img_url = attachment.get_url()
+            content += f'<img src="{img_url}" alt="{alt}" style="width:100%">'
+        else:
+            content += "\n".join(args.args)
 
         # dynamic per-instance styles only; fixed styles live in static_css()
         inline_styles = []
