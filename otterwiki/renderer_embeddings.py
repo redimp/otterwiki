@@ -164,7 +164,7 @@ Options specific to CSV:
         """Build an HTML table string from a CSV page attachment."""
         from otterwiki.wiki import Attachment
 
-        src = args.options.get('src', None)
+        src = args.options_raw.get('src', None)
         if not src:
             return ''
 
@@ -179,11 +179,24 @@ Options specific to CSV:
         if delimiter == "\\t":
             delimiter = "\t"
 
-        page = getattr(self, 'page', None)
-        if page is None:
-            raise ValueError('no page context available.')
+        if src.startswith("/"):
+            # absolute: /pagepath/filename — attachment from another page
+            parts = src.lstrip("/").rsplit("/", 1)
+            if len(parts) != 2:
+                raise ValueError(
+                    f'datatable: invalid absolute src "{src}",'
+                    f' expected /pagepath/filename.'
+                )
+            att_pagepath, att_filename = parts
+        else:
+            # relative: attachment on the current page
+            page = getattr(self, 'page', None)
+            if page is None:
+                raise ValueError('no page context available.')
+            att_pagepath = page.pagepath
+            att_filename = src
 
-        attachment = Attachment(page.pagepath, src)
+        attachment = Attachment(att_pagepath, att_filename)
         if not attachment.exists():
             raise ValueError(f'csv attachment "{src}" not found.')
         with open(attachment.abspath, 'r', encoding='utf-8', newline='') as f:

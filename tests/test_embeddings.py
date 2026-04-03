@@ -696,6 +696,37 @@ def test_datatable_csv_quotechar_custom(create_app):
     assert "99" in cells
 
 
+def test_datatable_csv_absolute_src(create_app):
+    """src=/OtherPage/data.csv loads a CSV attachment from another page."""
+    author = ("Test Author", "test@example.com")
+    csv_content = "City;Population\nBerlin;3.6M\nParis;2.1M\n"
+    create_app.storage.store(
+        "datasource.md",
+        content="# Data Source\n",
+        author=author,
+        message="add data source page",
+    )
+    create_app.storage.store(
+        "datasource/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    create_app.storage.store(
+        "csvabspage.md",
+        content="# CSV Abs Test\n{{datatable\n|src=/datasource/data.csv\n}}\n",
+        author=author,
+        message="csv abs page",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvabspage/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert "Berlin" in html
+    assert "Paris" in html
+    assert "City" in html
+
+
 def test_attachmentlist(create_app):
     author = ("Test Author", "test@example.com")
     create_app.storage.store(
