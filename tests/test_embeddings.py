@@ -740,9 +740,34 @@ def test_infobox_position_left():
     soup = BeautifulSoup(html, "html.parser")
     box = soup.find("div", class_="infobox")
     assert box is not None
-    style = box.get("style", "")
-    assert "float:left" in style
-    assert "clear:left" in style
+    assert "infobox-float-left" in box.get("class", [])
+
+
+def test_infobox_position_right():
+    md = """
+{{InfoBox
+|position=right
+|key=val
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    box = soup.find("div", class_="infobox")
+    assert box is not None
+    assert "infobox-float-right" in box.get("class", [])
+
+
+def test_infobox_default_floats_right():
+    md = """
+{{InfoBox
+|key=val
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    box = soup.find("div", class_="infobox")
+    assert box is not None
+    assert "infobox-float-right" in box.get("class", [])
 
 
 def test_infobox_width():
@@ -789,13 +814,17 @@ def test_infobox_underscore_key():
 
 
 def test_infobox_excluded_keys_not_in_rows():
-    """caption, width, float and text-align must not appear as key-value rows."""
+    """caption, width, float, position, pos, text-align, align and style must not appear as key-value rows."""
     md = """
 {{InfoBox
 |caption=Cap
 |width=40%
 |float=left
+|position=right
+|pos=right
 |text-align=center
+|align=center
+|style=opacity:0.5
 |visible=yes
 }}
 """
@@ -805,10 +834,17 @@ def test_infobox_excluded_keys_not_in_rows():
     keys = [
         r.find("strong").get_text(strip=True) for r in rows if r.find("strong")
     ]
-    assert "caption" not in keys
-    assert "width" not in keys
-    assert "float" not in keys
-    assert "text-align" not in keys
+    for excluded in (
+        "caption",
+        "width",
+        "float",
+        "position",
+        "pos",
+        "text-align",
+        "align",
+        "style",
+    ):
+        assert excluded not in keys
     assert "visible" in keys
 
 

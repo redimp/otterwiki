@@ -643,9 +643,9 @@ An element for displaying structured data in a document.
 |caption=Some Caption
 |position=right/left
 |float=right/left
-|width=30%
+|width=35%
 |text-align=justify
-|style=custom css
+|style=additional inline css
 |Random Key=Value
 |Answer=42
 |Homepage=[otterwiki.com](https://otterwiki.com)
@@ -657,6 +657,9 @@ markdown=True
 ```
 }}
 ````
+
+Note: On small screens the box automatically expands to full width regardless of the `width` option.
+The optional `|style=` allows additional inline CSS overrides.
 
 </div><div class="col-md-4 col-sm-12" style="padding-top:5px;">
 
@@ -678,6 +681,52 @@ markdown=True
 """
 
     @hookimpl
+    def static_css(self):
+        return """
+div.infobox {
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    padding: .5rem;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+div.infobox.infobox-float-right {
+    float: right;
+    clear: right;
+    margin: .5rem 0 .5rem .5rem;
+}
+div.infobox.infobox-float-left {
+    float: left;
+    clear: left;
+    margin: .5rem .5rem 0 .5rem;
+}
+div.infobox-caption {
+    text-align: center;
+    width: 100%;
+    font-weight: bold;
+}
+table.infobox {
+    width: 100%;
+    border: none;
+    background: none;
+}
+table.infobox tr {
+    border: none;
+}
+table.infobox td {
+    border: none;
+    padding: .5rem;
+}
+@media (max-width: 576px) {
+    div.infobox.infobox-float-right,
+    div.infobox.infobox-float-left {
+        float: none;
+        clear: both;
+        margin: .5rem 0;
+        width: 100% !important;
+    }
+}
+"""
+
+    @hookimpl
     def embedding_render(
         self,
         embedding: str,
@@ -691,58 +740,56 @@ markdown=True
         text_align = args.options.get("text-align", None) or args.options.get(
             "align", ""
         )
-        width = args.options.get("width", "30%")
+        width = args.options.get("width", "35%")
 
         position = args.options.get("position", None) or args.options.get(
             "pos", "right"
         )
         floating = args.options.get("float", position)
-
-        if floating.lower() == "left":
-            margin = "margin: .5rem .5rem 0 .5rem"
-        else:
+        if floating.lower() != "left":
             floating = "right"
-            margin = "margin: .5rem 0 .5rem .5rem"
+
         userstyle = args.options_raw.get("style", "")
 
-        styles = [
-            "border-width: 1px",
-            "border-style: solid",
-            "border-color: rgba(128, 128, 128, 0.3)",
-            "padding: .5rem",
-            "background-color: rgba(0, 0, 0, 0.2)",
-            margin,
-        ]
-
+        # dynamic per-instance styles only; fixed styles live in static_css()
+        inline_styles = []
         if width:
-            styles.append(f"width:{width}")
-
-        if floating.lower() in ["left", "right"]:
-            styles.append(f"float:{floating.lower()}")
-            styles.append(f"clear:{floating.lower()}")
-
-        style = ";".join(styles)
-        # append custom style
-        style += userstyle
-
-        caption = (
-            f"<div class=\"infobox-caption\" style=\"text-align:center;width:100%;font-weight:bold;\">{caption}</div>"
-            if caption
-            else ""
+            inline_styles.append(f"width:{width}")
+        if userstyle:
+            inline_styles.append(userstyle)
+        style_attr = (
+            f' style="{";".join(inline_styles)}"' if inline_styles else ""
         )
 
-        table_html = "<table class=\"infobox\" style=\"width:100%;border: none;background:none;\">"
+        caption_html = (
+            f'<div class="infobox-caption">{caption}</div>' if caption else ""
+        )
+
+        table_html = '<table class="infobox">'
         if content:
-            table_html += f"<tr class=\"infobox-args\"><td style=\"border:none;text-align:{text_align}\" colspan=\"2\">{content}</td><tr>"
+            align_attr = (
+                f' style="text-align:{text_align}"' if text_align else ""
+            )
+            table_html += f'<tr class="infobox-args"><td{align_attr} colspan="2">{content}</td></tr>'
+        skip_keys = {
+            "caption",
+            "width",
+            "float",
+            "position",
+            "pos",
+            "text-align",
+            "align",
+            "style",
+        }
         for key, value in args.options.items():
-            if key in ["caption", "width", "float", "text-align"]:
+            if key in skip_keys:
                 continue
             if key.startswith("_"):
                 key = key[1:]
-            table_html += f"<tr class=\"infobox-key-value\" style=\"border:none;\"><td style=\"border: none;padding: .5rem;\"><strong>{key}</strong></td><td style=\"border: none;padding: .5rem;\">{value}</td></tr>"
+            table_html += f'<tr class="infobox-key-value"><td><strong>{key}</strong></td><td>{value}</td></tr>'
         table_html += "</table>"
 
-        return f"<div class=\"infobox\" style=\"{style};\">{caption}{table_html}</div>"
+        return f'<div class="infobox infobox-float-{floating}"{style_attr}>{caption_html}{table_html}</div>'
 
 
 class AttachmentListEmbedding:
