@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.20.1](https://github.com/redimp/otterwiki/releases/tag/v2.20.1) - 2026-04-04
+
+<small>[Compare with v2.20.0](https://github.com/redimp/otterwiki/compare/v2.20.0...v2.20.1)</small>
+
+### Features
+
+- New `{{Figure}}` embedding for wrapping content blocks ([7e72dc1](https://github.com/redimp/otterwiki/commit/7e72dc1)).
+- Added YouTube support to `{{Video}}` embedding ([b3bd208](https://github.com/redimp/otterwiki/commit/b3bd208a036280b17745a1a6dcdd8e2e84be9551), [89459a5](https://github.com/redimp/otterwiki/commit/89459a5c6e179318290e2830e8a2584621d3ac1b)).
+- Added `src=` option to `{{ImageFrame}}` for embedding image attachments ([f0dbe4c](https://github.com/redimp/otterwiki/commit/f0dbe4c952d212690c344d0dc86ee4148145d189)).
+- Support absolute `src=` paths in `{{DataTable}}` ([881c1f0](https://github.com/redimp/otterwiki/commit/881c1f093c486364d2ba0dcd37e68be928edc3b3)).
+
+### Bug Fixes
+
+- Fix inline markdown rendering in embeddings help ([c89ac59](https://github.com/redimp/otterwiki/commit/c89ac5969f5f82476527280779e070e868518d44)).
+- Anchor fold/spoiler blocks to line start ([a015195](https://github.com/redimp/otterwiki/commit/a015195602de26b1db941472b6ae83cffb50db81)).
+- Support parenthesis-delimited titles in link reference definitions ([1facd98](https://github.com/redimp/otterwiki/commit/1facd98af78bda78f3a48aa4703bb47a1d8c3c78)).
+
+### Refactoring
+
+- Move `{{InfoBox}}` and `{{ImageFrame}}` inline styles to `static_css()` classes ([5f71637](https://github.com/redimp/otterwiki/commit/5f71637d9d7a3414e49fc1369dbd6523cbe4f8cf))
+  and ([22ceb2e](https://github.com/redimp/otterwiki/commit/22ceb2e3ee3ab0b1b66efb1ed14f914dbbd9e562)).
+
 ## [v2.20.0](https://github.com/redimp/otterwiki/releases/tag/v2.20.0) - 2026-04-01
 
 <small>[Compare with v2.19.0](https://github.com/redimp/otterwiki/compare/v2.19.0...v2.20.0)</small>
