@@ -1677,3 +1677,128 @@ https://m.youtube.com/e/dQw4w9WgXcQ
     iframe = _yt_iframe(html)
     assert iframe is not None
     assert "dQw4w9WgXcQ" in iframe["src"]
+
+
+def test_figure_basic():
+    md = """
+{{Figure
+|caption=Figure 1: Hello World
+```python
+print("hello")
+```
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    assert figure is not None
+    content = figure.find("div", class_="figure-embedding-content")
+    assert content is not None
+    assert "hello" in content.get_text()
+    caption = figure.find("div", class_="figure-embedding-caption")
+    assert caption is not None
+    assert "Figure 1: Hello World" in caption.get_text()
+
+
+def test_figure_no_caption():
+    md = """
+{{Figure
+Some content here.
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    assert figure is not None
+    caption = figure.find("div", class_="figure-embedding-caption")
+    assert caption is None
+
+
+def test_figure_width():
+    md = """
+{{Figure
+|width=60%
+Content
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    assert "width:60%" in figure.get("style", "")
+
+
+def test_figure_align_left():
+    md = """
+{{Figure
+|align=left
+Content
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    style = figure.get("style", "")
+    assert "margin-left:auto" not in style
+    assert "margin-right:auto" not in style
+
+
+def test_figure_align_right():
+    md = """
+{{Figure
+|align=right
+Content
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    style = figure.get("style", "")
+    assert "margin-left:auto" in style
+    assert "margin-right:0" in style
+
+
+def test_figure_custom_style():
+    md = """
+{{Figure
+|style=border-color:red
+Content
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    assert "border-color:red" in figure.get("style", "")
+
+
+def test_figure_height():
+    md = """
+{{Figure
+|height=200px
+Line 1
+
+Line 2
+
+Line 3
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    assert figure is not None
+    content = figure.find("div", class_="figure-embedding-content")
+    style = content.get("style", "")
+    assert "max-height:200px" in style
+    assert "overflow-y:auto" in style
+
+
+def test_figure_no_height():
+    md = """
+{{Figure
+Content
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    content = figure.find("div", class_="figure-embedding-content")
+    assert content.get("style") is None

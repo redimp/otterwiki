@@ -1166,6 +1166,130 @@ Options:
         )
 
 
+class FigureEmbedding:
+    @hookimpl
+    def info(self):
+        return (
+            "Figure",
+            "Wrap content in a figure with an optional caption.",
+            "Syntax/Embeddings",
+        )
+
+    @hookimpl
+    def help(self, plugin):
+        if plugin.lower() != "figure":
+            return None
+
+        return """
+<div class="row mb-10">
+A container for emphasizing content blocks (code, tables, images, etc.)
+with an optional caption — similar to a LaTeX figure.
+<div class="col">
+
+````
+{{Figure
+|caption=Figure 1: Example Python code
+|align=center/left/right
+|width=100%
+|height=300px
+|style=additional inline css
+```python
+#!/usr/bin/env python
+print("Hello, World!")
+```
+}}
+````
+</div></div>
+<div class="row mb-10">
+<div class="col">
+
+{{Figure
+|caption=Figure 1: Example Python code
+|width=100%
+```python
+#!/usr/bin/env python
+print("Hello, World!")
+```
+}}
+
+</div></div>
+"""
+
+    @hookimpl
+    def static_css(self):
+        return """
+div.figure-embedding {
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    padding: .5rem;
+    margin: 1rem auto;
+}
+div.figure-embedding-content {
+    width: 100%;
+}
+div.figure-embedding-content > :last-child {
+    margin-bottom: 0;
+}
+div.figure-embedding-caption {
+    text-align: center;
+    font-style: italic;
+}
+"""
+
+    @hookimpl
+    def embedding_render(
+        self,
+        embedding: str,
+        args: EmbeddingArgs,
+    ):
+        if embedding.lower() != "figure":
+            return None
+
+        content = "\n".join(args.args)
+        caption = args.options.get("caption", "")
+        align = args.options.get("align", "center")
+        width = args.options.get("width", "100%")
+        height = args.options.get("height", "")
+        userstyle = args.options_raw.get("style", "")
+
+        # dynamic per-instance styles only; fixed styles live in static_css()
+        inline_styles = []
+        if width:
+            inline_styles.append(f"width:{width}")
+        if align == "center":
+            inline_styles.append("margin-left:auto")
+            inline_styles.append("margin-right:auto")
+        elif align == "right":
+            inline_styles.append("margin-left:auto")
+            inline_styles.append("margin-right:0")
+        if userstyle:
+            inline_styles.append(userstyle)
+        style_attr = (
+            f' style="{";".join(inline_styles)}"' if inline_styles else ""
+        )
+
+        content_styles = []
+        if height:
+            content_styles.append(f"max-height:{height}")
+            content_styles.append("overflow-y:auto")
+        content_style_attr = (
+            f' style="{";".join(content_styles)}"' if content_styles else ""
+        )
+
+        caption_html = (
+            f'<div class="figure-embedding-caption">' f'{caption}</div>'
+            if caption
+            else ""
+        )
+
+        return (
+            f'<div class="figure-embedding"{style_attr}>'
+            f'<div class="figure-embedding-content"{content_style_attr}>{content}</div>'
+            f'{caption_html}'
+            f'</div>'
+        )
+
+
+plugin_manager.register(FigureEmbedding())
 plugin_manager.register(ImageFrameEmbedding())
 plugin_manager.register(InfoBoxEmbedding())
 plugin_manager.register(VideoEmbedding())
