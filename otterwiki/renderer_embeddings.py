@@ -4,6 +4,7 @@
 import csv
 import fnmatch
 import io
+import re
 import urllib.parse
 
 from otterwiki.plugins import hookimpl, plugin_manager, EmbeddingArgs
@@ -627,9 +628,11 @@ https://www.youtube.com/watch?v=dQw4w9WgXcQ
     def _get_youtube_id(url: str):
         """Extract YouTube video ID from various URL formats, or return None."""
         parsed = urllib.parse.urlparse(url)
-        host = parsed.netloc.lower().lstrip('www.')
+        host = re.sub(r'^(www|m)\.', '', parsed.netloc.lower())
         if host == 'youtube.com' or host == 'youtube-nocookie.com':
-            if parsed.path.startswith('/embed/'):
+            if parsed.path.startswith('/embed/') or parsed.path.startswith(
+                '/e/'
+            ):
                 return parsed.path.split('/')[2]
             qs = urllib.parse.parse_qs(parsed.query)
             ids = qs.get('v', [])
