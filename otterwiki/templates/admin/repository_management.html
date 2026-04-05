@@ -95,7 +95,7 @@
           <div class="form-group">
               <label for="git_remote_pull_webhook_url">Pull webhook URL</label>
               <div class="input-group">
-                  <input type="text" class="form-control" id="git_remote_pull_webhook_url" readonly>
+                  <input type="text" class="form-control" id="git_remote_pull_webhook_url" readonly value="{{ webhook_url }}">
                   <div class="input-group-append">
                       <button class="btn btn-outline-secondary" type="button" id="copy_webhook_url" title="Copy webhook URL">
                           <i class="fas fa-copy"></i>
@@ -165,24 +165,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const webhookUrlInput = document.getElementById('git_remote_pull_webhook_url');
     const copyButton = document.getElementById('copy_webhook_url');
 
-    async function generateWebhookHash(url) {
-        if (!url) return '';
-        // generate SHA-256 hash to match backend expectation
-        const str = url + 'otterwiki';
-        const encoder = new TextEncoder();
-        const data = encoder.encode(str);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
-    }
-
     async function updateWebhookUrl() {
         const remoteUrl = pullUrlInput.value.trim();
         if (remoteUrl) {
-            const hash = await generateWebhookHash(remoteUrl);
-            const webhookUrl = window.location.origin + '/-/api/v1/pull/' + hash;
-            webhookUrlInput.value = webhookUrl;
+            webhookUrlInput.value = '... save first to show new pull webhook URL ...';
         } else {
             webhookUrlInput.value = '';
         }
@@ -191,7 +177,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function togglePullFields() {
         if (pullCheckbox.checked) {
             pullParams.style.display = 'block';
-            updateWebhookUrl();
         } else {
             pullParams.style.display = 'none';
         }

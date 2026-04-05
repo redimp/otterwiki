@@ -63,6 +63,7 @@ app.config.update(
     COMMIT_MESSAGE="REQUIRED",  # OPTIONAL DISABLED
     DEFAULT_COMMIT_MESSAGE="",
     GIT_WEB_SERVER=False,
+    GIT_REMOTE_PULL_URL_SECURE=False,
     SIDEBAR_SHORTCUTS="home pageindex createpage",
     ROBOTS_TXT="allow",
     WIKILINK_STYLE="",
@@ -199,6 +200,7 @@ def update_app_config():
                 "GIT_WEB_SERVER",
                 "GIT_REMOTE_PUSH_ENABLED",
                 "GIT_REMOTE_PULL_ENABLED",
+                "GIT_REMOTE_PULL_URL_SECURE",
                 "HIDE_LOGO",
                 "TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES",
             ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
