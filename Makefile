@@ -14,6 +14,13 @@ PLATFORM ?= "linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6"
 PLATFORM_QUICK ?= "linux/arm64,linux/amd64"
 HELM_VERSION := $(shell grep ^version helm/Chart.yaml | awk '{print $$2}')
 
+# Detect OS and set venv binary path accordingly
+ifeq ($(OS),Windows_NT)
+	VENVBIN := venv/Scripts
+else
+	VENVBIN := venv/bin
+endif
+
 all: run
 
 .PHONY: clean coverage run debug cli shell sdist docker-build docker-test
@@ -27,43 +34,43 @@ clean:
 venv: pyproject.toml
 	rm -rf venv
 	python3 -m venv venv
-	venv/bin/pip install -U pip wheel
-	venv/bin/pip install -e '.[dev]'
-	venv/bin/pre-commit install
+	$(VENVBIN)/python3 -m pip install -U pip wheel
+	$(VENVBIN)/pip install -e '.[dev]'
+	$(VENVBIN)/pre-commit install
 
 run: venv settings.cfg
-	GIT_TAG=$(shell git describe --long) FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=$(PWD)/settings.cfg venv/bin/flask run --host 0.0.0.0 --port $(PORT)
+	GIT_TAG=$(shell git describe --long) FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=$(PWD)/settings.cfg $(VENVBIN)/flask run --host 0.0.0.0 --port $(PORT)
 
 debug: venv settings.cfg
-	FLASK_ENV=development FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask run --port $(PORT)
+	FLASK_ENV=development FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg $(VENVBIN)/flask run --port $(PORT)
 
 cli: venv settings.cfg
-	FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=$(PWD)/settings.cfg venv/bin/flask $(ARGS)
+	FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=$(PWD)/settings.cfg $(VENVBIN)/flask $(ARGS)
 
 profiler: venv settings.cfg
 	FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg \
-		venv/bin/python otterwiki/profiler.py
+		$(VENVBIN)/python otterwiki/profiler.py
 
 
 shell: venv
-	FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask shell
+	FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg $(VENVBIN)/flask shell
 
 test: venv
-	OTTERWIKI_SETTINGS="" venv/bin/pytest tests
+	OTTERWIKI_SETTINGS="" $(VENVBIN)/pytest tests
 
 tox: venv
-	venv/bin/tox
+	$(VENVBIN)/tox
 
 coverage: venv
-	OTTERWIKI_SETTINGS="" venv/bin/coverage run --source=otterwiki -m pytest tests
-	venv/bin/coverage report
-	venv/bin/coverage html
+	OTTERWIKI_SETTINGS="" $(VENVBIN)/coverage run --source=otterwiki -m pytest tests
+	$(VENVBIN)/coverage report
+	$(VENVBIN)/coverage html
 
 black:
-	venv/bin/black setup.py otterwiki/ tests/
+	$(VENVBIN)/black setup.py otterwiki/ tests/
 
 sdist: venv test
-	venv/bin/python setup.py sdist
+	$(VENVBIN)/python setup.py sdist
 
 settings.cfg:
 	@echo ""
@@ -87,7 +94,7 @@ otterwiki/static/js/cm-modes.min.js: Makefile tmp/codemirror-5.65.15
 		cat tmp/codemirror-5.65.15/mode/$$MODE/$$MODE.js \
 			>> otterwiki/static/js/cm-modes.js; \
 	done
-	./venv/bin/python -m rjsmin -p < otterwiki/static/js/cm-modes.js > otterwiki/static/js/cm-modes.min.js
+	./$(VENVBIN)/python -m rjsmin -p < otterwiki/static/js/cm-modes.js > otterwiki/static/js/cm-modes.min.js
 
 docker-test:
 	# make sure the image is rebuild
@@ -167,9 +174,9 @@ else
 endif
 
 pypi: test
-	./venv/bin/python3 -m pip install --upgrade build twine
-	./venv/bin/python3 -m build
-	./venv/bin/python3 -m twine upload -r pypi dist/*
+	./$(VENVBIN)/python3 -m pip install --upgrade build twine
+	./$(VENVBIN)/python3 -m build
+	./$(VENVBIN)/python3 -m twine upload -r pypi dist/*
 
 helm-build:
 	cd helm/ && helm lint ./
