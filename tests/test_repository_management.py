@@ -1209,3 +1209,130 @@ class TestWebhookHashBackwardCompatibility:
         # Ensure legacy hash is NOT in the URL
         legacy_hash = compute_webhook_hash_legacy(test_data['remote_url'])
         assert legacy_hash not in webhook_url
+
+    def test_regenerate_checkbox_upgrades_to_secure(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Test that checking regenerate checkbox upgrades to secure mode."""
+        # Enable pull (auto-sets flag to True)
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+
+        # Set back to legacy mode in both app config and database
+        app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] = False
+        from otterwiki.server import db, Preferences
+
+        with app_with_user.app_context():
+            entry = Preferences.query.filter_by(
+                name='GIT_REMOTE_PULL_URL_SECURE'
+            ).first()
+            if entry:
+                entry.value = "False"
+                db.session.commit()
+
+        # POST form with same URL + regenerate checkbox
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={
+                "git_remote_pull_enabled": "True",
+                "git_remote_pull_url": test_data['remote_url'],
+                "git_remote_pull_private_key": "**********",
+                "git_remote_pull_regenerate_webhook": "True",
+                "update_preferences": "true",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+        # Flag must be True now
+        assert app_with_user.config.get('GIT_REMOTE_PULL_URL_SECURE') == True
+
+        # Clean up: disable pull
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={"update_preferences": "true"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+    def test_legacy_warning_shown_when_not_secure(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Test that legacy warning is shown when secure flag is False."""
+        # Enable pull feature
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+
+        # Override flag to legacy mode (config only)
+        app_with_user.config['GIT_REMOTE_PULL_URL_SECURE'] = False
+
+        # GET admin page
+        rv = admin_client.get(ADMIN_REPO_MGMT_URL)
+        assert rv.status_code == 200
+
+        soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+
+        # Check regenerate checkbox is present
+        regenerate_input = soup.find(
+            'input', {'name': 'git_remote_pull_regenerate_webhook'}
+        )
+        assert regenerate_input is not None
+
+        # Check legacy warning text is present
+        html_text = soup.get_text()
+        assert 'legacy hash' in html_text.lower()
+
+        # Clean up: disable pull
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={"update_preferences": "true"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+    def test_legacy_warning_hidden_when_secure(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Test that legacy warning is hidden when secure flag is True."""
+        # Enable pull (auto-sets flag to True)
+        rv = self._enable_pull_feature(admin_client, test_data)
+        assert rv.status_code == 200
+        assert app_with_user.config.get('GIT_REMOTE_PULL_URL_SECURE') == True
+
+        # GET admin page
+        rv = admin_client.get(ADMIN_REPO_MGMT_URL)
+        assert rv.status_code == 200
+
+        soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+
+        # Check regenerate checkbox is NOT present
+        regenerate_input = soup.find(
+            'input', {'name': 'git_remote_pull_regenerate_webhook'}
+        )
+        assert regenerate_input is None
+
+        # Clean up: disable pull
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={"update_preferences": "true"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+    def test_legacy_warning_hidden_when_pull_disabled(
+        self, app_with_user, admin_client, test_data
+    ):
+        """Test that legacy warning is hidden when pull feature is disabled."""
+        # Leave pull disabled (default state)
+
+        # GET admin page
+        rv = admin_client.get(ADMIN_REPO_MGMT_URL)
+        assert rv.status_code == 200
+
+        soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+
+        # Check regenerate checkbox is NOT present
+        regenerate_input = soup.find(
+            'input', {'name': 'git_remote_pull_regenerate_webhook'}
+        )
+        assert regenerate_input is None
