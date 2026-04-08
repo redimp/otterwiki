@@ -188,6 +188,17 @@ def test_pageindex(test_client):
     assert data_index_path == "/"
 
 
+def test_sanitized_path_redirects_to_index(test_client):
+    """/%21 (!) gets sanitized to empty pagepath, should redirect to / with toast."""
+    rv = test_client.get("/%21")
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/"
+    # follow the redirect and check for the toast message
+    rv = test_client.get("/%21", follow_redirects=True)
+    assert rv.status_code == 200
+    assert "Invalid pagename." in rv.data.decode()
+
+
 def test_page_save(test_client):
     from otterwiki.server import storage
 
