@@ -295,7 +295,11 @@ def handle_repository_management(form):
             )
         else:
             _update_preference("GIT_REMOTE_PULL_ENABLED", "True")
-            if pull_remote_url != app.config.get('GIT_REMOTE_PULL_URL', ''):
+            if form.get(
+                "git_remote_pull_regenerate_webhook"
+            ) == "True" or pull_remote_url != app.config.get(
+                "GIT_REMOTE_PULL_URL", ""
+            ):
                 _update_preference("GIT_REMOTE_PULL_URL_SECURE", "True")
             _update_preference("GIT_REMOTE_PULL_URL", pull_remote_url)
 
