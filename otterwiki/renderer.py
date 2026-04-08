@@ -17,6 +17,7 @@ from pygments.util import ClassNotFound
 
 from otterwiki.plugins import chain_hooks
 from otterwiki.renderer_plugins import (
+    mistunePluginAlerts,
     plugin_alerts,
     plugin_fancy_blocks,
     plugin_fold,
@@ -433,8 +434,31 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
 class OtterwikiBlockParser(mistune.BlockParser):
     INDENT_CODE = re.compile(r'((?:\n*)(?:(?: {4}| *\t)[^\n]+\n*)+)\n')
 
+    # Pattern to detect alert syntax in the first line of a blockquote
+    _ALERT_DETECT = re.compile(
+        r'\s*\[!(?:' + mistunePluginAlerts.TYPES_WITH_PIPES + r')\]',
+        re.I,
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    def parse_block_quote(self, m, state):
+        """Override to detect alerts that were matched as blockquotes.
+
+        This handles the case where a blockquote-like pattern (e.g.
+        ``> [!TIP]``) is matched by mistune's list parser as a
+        ``block_quote`` break, bypassing the alert scanner.
+        """
+        if 'alert_block' in self._methods and self._ALERT_DETECT.match(
+            m.group('quote_1')
+        ):
+            # Re-match from cursor using the alert block scanner
+            alert_sc = self.compile_sc(['alert_block'])
+            m2 = alert_sc.match(state.src, m.start())
+            if m2:
+                return self._methods['alert_block'](m2, state)
+        return super().parse_block_quote(m, state)
 
     def parse_indent_code(self, m, state):
         """

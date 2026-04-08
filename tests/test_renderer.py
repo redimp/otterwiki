@@ -973,6 +973,35 @@ random paragraph 2."""
     assert '<p>random paragraph 2.</p>' in html
 
 
+def test_alert_after_list():
+    md = """1. Test
+2. Test
+
+> [!TIP]
+> Content
+"""
+    html, _, _ = render.markdown(md)
+    assert 'quote-alert' in html, "alert not rendered after list"
+    assert 'Content' in html
+
+
+def test_alert_after_list_with_paragraph():
+    md = """1. Test
+2. Test
+
+Another line
+
+> [!TIP]
+> Content
+"""
+    html, _, _ = render.markdown(md)
+    assert (
+        'quote-alert' in html
+    ), "alert not rendered after list with paragraph"
+    assert 'Content' in html
+    assert 'Another line' in html
+
+
 def test_mistunePluginAlerts():
     from otterwiki.renderer_plugins import mistunePluginAlerts
 
