@@ -8,6 +8,8 @@ spec:
   # An Otterwiki has no locking mechanism implemented. It's strongly recommended
   # to not run more than one replica, this has not been tested.
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "otterwiki.selectorLabels" . | nindent 6 }}
