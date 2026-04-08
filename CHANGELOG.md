@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.20.2](https://github.com/redimp/otterwiki/releases/tag/v2.20.2) - 2026-04-09
+
+<small>[Compare with v2.20.1](https://github.com/redimp/otterwiki/compare/v2.20.1...v2.20.2)</small>
+
+### Bug Fixes
+
+- Render alerts correctly after lists, see #450 ([6b02637](https://github.com/redimp/otterwiki/commit/6b02637)).
+- Redirect to `/` with toast when path sanitizes to empty pagename ([357deb8](https://github.com/redimp/otterwiki/commit/357deb8)).
+
 ## [v2.20.1](https://github.com/redimp/otterwiki/releases/tag/v2.20.1) - 2026-04-04
 
 <small>[Compare with v2.20.0](https://github.com/redimp/otterwiki/compare/v2.20.0...v2.20.1)</small>
