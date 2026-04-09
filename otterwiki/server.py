@@ -74,6 +74,8 @@ app.config.update(
     RENDERER_HTML_ALLOWLIST="",
     ADMIN_USER_EMAIL="",
     SECURITY_HEADERS=True,
+    PROXY_FIX_X_FOR=0,
+    RATELIMIT_ENABLED=True,
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
@@ -95,6 +97,13 @@ for key in app.config:
             ]
         else:
             app.config[key] = os.environ[key]
+
+# ProxyFix for reverse proxy deployments
+proxy_fix_x_for = int(app.config.get("PROXY_FIX_X_FOR", 0))
+if proxy_fix_x_for > 0:
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=proxy_fix_x_for)
+    app.logger.info(f"server: ProxyFix enabled with x_for={proxy_fix_x_for}")
 
 # configure logging
 app.logger.setLevel(app.config["LOG_LEVEL"])
@@ -214,6 +223,15 @@ def update_app_config():
 with app.app_context():
     db.create_all()
 update_app_config()
+
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    storage_uri="memory://",
+    enabled=app.config.get("RATELIMIT_ENABLED", True),
+)
 
 
 #
