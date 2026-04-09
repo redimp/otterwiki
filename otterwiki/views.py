@@ -16,7 +16,7 @@ from flask import (
     jsonify,
     g,
 )
-from otterwiki.server import app, githttpserver
+from otterwiki.server import app, githttpserver, limiter
 from otterwiki.wiki import (
     Page,
     Changelog,
@@ -355,7 +355,24 @@ def create():
 #
 # user login/logout/settings
 #
+def _login_rate_limit_key():
+    """Rate limit key combining IP and email for login brute-force protection."""
+    email = request.form.get("email", "").lower().strip()
+    if email:
+        return f"{request.remote_addr}:{email}"
+    return request.remote_addr
+
+
+def _lost_password_rate_limit_key():
+    """Rate limit key combining IP and email for lost password protection."""
+    email = request.form.get("email", "").lower().strip()
+    if email:
+        return f"{request.remote_addr}:{email}"
+    return request.remote_addr
+
+
 @app.route("/-/login", methods=["POST", "GET"])
+@limiter.limit("10/minute", key_func=_login_rate_limit_key, methods=["POST"])
 def login():
     email = request.cookies.get("email")
     if request.method == "GET":
@@ -388,6 +405,9 @@ def logout():
 
 
 @app.route("/-/lost_password", methods=["POST", "GET"])
+@limiter.limit(
+    "5/minute", key_func=_lost_password_rate_limit_key, methods=["POST"]
+)
 def lost_password():
     if request.method == "GET":
         return otterwiki.auth.lost_password_form()

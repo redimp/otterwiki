@@ -6,7 +6,7 @@ import os
 import sys
 import logging
 
-from flask import Flask
+from flask import Flask, request, redirect, url_for
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 
@@ -102,6 +102,7 @@ for key in app.config:
 proxy_fix_x_for = int(app.config.get("PROXY_FIX_X_FOR", 0))
 if proxy_fix_x_for > 0:
     from werkzeug.middleware.proxy_fix import ProxyFix
+
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=proxy_fix_x_for)
     app.logger.info(f"server: ProxyFix enabled with x_for={proxy_fix_x_for}")
 
@@ -226,12 +227,26 @@ update_app_config()
 
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+
 limiter = Limiter(
     get_remote_address,
     app=app,
     storage_uri="memory://",
     enabled=app.config.get("RATELIMIT_ENABLED", True),
 )
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    from otterwiki.helper import toast
+
+    app.logger.warning(
+        f"Rate limit exceeded: {request.remote_addr} on {request.path}"
+    )
+    toast("Too many attempts. Please try again later.", "error")
+    if "lost_password" in request.path:
+        return redirect(url_for("lost_password")), 429
+    return redirect(url_for("login")), 429
 
 
 #
