@@ -76,6 +76,8 @@ app.config.update(
     SECURITY_HEADERS=True,
     PROXY_FIX_X_FOR=0,
     RATELIMIT_ENABLED=True,
+    RATELIMIT_LOGIN="10/minute",
+    RATELIMIT_LOST_PASSWORD="5/minute",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 

@@ -372,7 +372,11 @@ def _lost_password_rate_limit_key():
 
 
 @app.route("/-/login", methods=["POST", "GET"])
-@limiter.limit("10/minute", key_func=_login_rate_limit_key, methods=["POST"])
+@limiter.limit(
+    lambda: app.config.get("RATELIMIT_LOGIN", "10/minute"),
+    key_func=_login_rate_limit_key,
+    methods=["POST"],
+)
 def login():
     email = request.cookies.get("email")
     if request.method == "GET":
@@ -406,7 +410,9 @@ def logout():
 
 @app.route("/-/lost_password", methods=["POST", "GET"])
 @limiter.limit(
-    "5/minute", key_func=_lost_password_rate_limit_key, methods=["POST"]
+    lambda: app.config.get("RATELIMIT_LOST_PASSWORD", "5/minute"),
+    key_func=_lost_password_rate_limit_key,
+    methods=["POST"],
 )
 def lost_password():
     if request.method == "GET":
