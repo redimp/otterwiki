@@ -1,10 +1,36 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import re
 import pytest
 import os
 import otterwiki.gitstorage
 from datetime import datetime
+from flask.testing import FlaskClient
+
+
+class CSRFTestClient(FlaskClient):
+    """Test client that automatically injects CSRF tokens."""
+
+    def _get_csrf_token(self):
+        response = super().get('/', follow_redirects=True)
+        match = re.search(
+            r'name="csrf-token" content="([^"]+)"',
+            response.data.decode(),
+        )
+        return match.group(1) if match else None
+
+    def post(self, *args, **kwargs):
+        data = kwargs.get('data')
+        if data is None:
+            token = self._get_csrf_token()
+            if token:
+                kwargs['data'] = {'csrf_token': token}
+        elif isinstance(data, dict) and 'csrf_token' not in data:
+            token = self._get_csrf_token()
+            if token:
+                data['csrf_token'] = token
+        return super().post(*args, **kwargs)
 
 
 @pytest.fixture
@@ -41,6 +67,7 @@ def create_app(tmpdir):
     # enable test and debug settings
     app.config["TESTING"] = True
     app.config["DEBUG"] = True
+    app.test_client_class = CSRFTestClient
     yield app
     # make sure GIT_REMOTE_*_ENABLED is false to avoid weird side effects
     app.config["GIT_REMOTE_PULL_ENABLED"] = False

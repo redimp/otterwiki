@@ -4,6 +4,7 @@
 <div class="card m-auto m-lg-20" id="sidebar_preferences">
 <div class="mw-full">
 <form action="{{ url_for("admin_sidebar_preferences") }}" method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <h2 class="card-title">Sidebar Preferences</h2>
 <h3 class="card-title">Shortcuts</h3>
 

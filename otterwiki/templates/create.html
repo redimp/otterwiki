@@ -2,6 +2,7 @@
 {% extends "form.html" %}
 {% block formcontent %}
 <form action="{{url_for("create")}}" method="POST" class="form-inline">{# class="w-400 mw-full" <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="form-group mb-10">
     <label for="pagename" class="required w-100">Page name</label>
     <input type="text" class="form-control" name="pagename" id="pagename" placeholder="Page name" required="required" value="{{ pagename if pagename }}" autofocus>

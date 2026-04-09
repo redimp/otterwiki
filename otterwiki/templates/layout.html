@@ -75,6 +75,8 @@
     {{load_custom_html('customHead.html')|safe}}
     {#- Plugin HTML head content #}
     {{plugin_html_head_inject()|safe}}
+    {#- CSRF token for JavaScript fetch() calls #}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 {%- block head %}
 {%- endblock %}
 {%- if request.cookies.get('halfmoon_preferredMode') == "dark-mode" %}
@@ -125,6 +127,7 @@
             <div class="navbar-content ml-auto">
 {%- block navbarsearch %}
                 <form action="{{ url_for("search") }}" method="post" class="relative">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <span class="top-search">
                 <input id="search-query" name="query" type="text" class="form-control mr-5" placeholder="Search" style="padding-right: 3.5rem;">
                 </span>

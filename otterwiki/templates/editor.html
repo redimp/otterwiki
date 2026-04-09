@@ -298,6 +298,7 @@
       </a>
       <h5 class="modal-title">Save {{pagename}}</h5>
       <form id="saveform" action="{{ url_for('save', path=pagepath) }}" method="post" autocomplete="off">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input id="save_content" type="hidden" name="content" value="">
       <input id="save_cursor_line" type="hidden" name="cursor_line" value="" />
       <input id="save_cursor_ch" type="hidden" name="cursor_ch" value="" />
@@ -412,6 +413,7 @@
 <a href="{{ url_for('view', path=pagepath) }}" class="btn btn-danger mr-5" role="button" title="Cancel"><i class="fas fa-window-close"></i></a>
 {%if config["COMMIT_MESSAGE"] == "DISABLED"%}
 <form id="saveform" action="{{ url_for('save', path=pagepath) }}" method="post" autocomplete="off">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <input id="save_content" type="hidden" name="content" value="">
 <input id="save_cursor_line" type="hidden" name="cursor_line" value="" />
 <input id="save_cursor_ch" type="hidden" name="cursor_ch" value="" />
@@ -515,6 +517,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
 #}
     inlineAttachment.editors.codemirror4.attach(cm_editor, {
         uploadUrl: {{ url_for('inline_attachment', pagepath=pagepath) | tojson }},
+        extraHeaders: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
         allowedTypes: ['*'],
         urlText: function(filename, result) {
             var imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff'];
@@ -599,6 +602,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         formData.append("revision", "{{revision}}");
         fetch({{ url_for('draft', path=pagepath) | tojson }}, {
             method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
             body: formData,
         })
             .then(function (response) {
@@ -661,6 +665,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         /* FIXME: display loader */
         fetch({{ url_for('preview', path=pagepath) | tojson }}, {
                 method: 'POST',
+                headers: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
                 body: formData,
             })
             .then(function (response) {

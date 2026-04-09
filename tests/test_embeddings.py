@@ -83,9 +83,8 @@ def test_imageframe_basic():
     soup = BeautifulSoup(html, "html.parser")
     frame = soup.find("div", class_="imageframe-caption")
     assert frame is not None
-    # default float is right
-    assert "float:right" in frame.get("style", "")
-    assert "clear:right" in frame.get("style", "")
+    # default float is right via CSS class
+    assert "imageframe-float-right" in frame.get("class", [])
     # default width
     assert "width:30%" in frame.get("style", "")
     # caption rendered
@@ -108,10 +107,21 @@ def test_imageframe_position_left():
     soup = BeautifulSoup(html, "html.parser")
     frame = soup.find("div", class_="imageframe-caption")
     assert frame is not None
-    style = frame.get("style", "")
-    assert "float:left" in style
-    assert "clear:left" in style
-    assert "width:50%" in style
+    assert "imageframe-float-left" in frame.get("class", [])
+    assert "width:50%" in frame.get("style", "")
+
+
+def test_imageframe_default_floats_right():
+    md = """
+{{ImageFrame
+![alt](/img/test.png)
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    assert "imageframe-float-right" in frame.get("class", [])
 
 
 def test_imageframe_no_caption():
@@ -170,6 +180,162 @@ def test_imageframe_alias():
     caption = frame.find("div", class_="imageframe")
     assert caption is not None
     assert caption.text == "Alias Test"
+
+
+def test_imageframe_src_attachment(create_app):
+    """src= option resolves an image attachment and renders an <img> tag."""
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "imgframepage.md",
+        content="{{ImageFrame\n|src=photo.png\n|caption=My Photo\n}}\n",
+        author=author,
+        message="add page",
+    )
+    # store a minimal 1x1 PNG as the attachment
+    import base64
+
+    png_1x1 = base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
+        "YPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    )
+    create_app.storage.store(
+        "imgframepage/photo.png",
+        content=png_1x1,
+        author=author,
+        message="add image",
+        mode="wb",
+    )
+    client = create_app.test_client()
+    response = client.get("/Imgframepage/view")
+    assert response.status_code == 200
+    soup = BeautifulSoup(response.data.decode(), "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    a = frame.find("a")
+    assert a is not None
+    assert "photo.png" in a.get("href", "")
+    assert a.get("target") == "_blank"
+    img = a.find("img")
+    assert img is not None
+    assert "photo.png" in img.get("src", "")
+    caption = frame.find("div", class_="imageframe")
+    assert caption is not None
+    assert caption.text == "My Photo"
+
+
+def test_imageframe_src_attachment_alt(create_app):
+    """alt= option sets the img alt attribute."""
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "imgframealt.md",
+        content="{{ImageFrame\n|src=photo.png\n|alt=A nice photo\n}}\n",
+        author=author,
+        message="add page",
+    )
+    import base64
+
+    png_1x1 = base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
+        "YPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    )
+    create_app.storage.store(
+        "imgframealt/photo.png",
+        content=png_1x1,
+        author=author,
+        message="add image",
+        mode="wb",
+    )
+    client = create_app.test_client()
+    response = client.get("/Imgframealt/view")
+    assert response.status_code == 200
+    soup = BeautifulSoup(response.data.decode(), "html.parser")
+    img = soup.find("img", alt="A nice photo")
+    assert img is not None
+
+
+def test_imageframe_src_absolute_path(create_app):
+    """|src=/OtherPage/photo.png loads an attachment from another page."""
+    author = ("Test Author", "test@example.com")
+    import base64
+
+    png_1x1 = base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
+        "YPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    )
+    # store the image on OtherPage
+    create_app.storage.store(
+        "otherpage.md",
+        content="# Other Page\n",
+        author=author,
+        message="add other page",
+    )
+    create_app.storage.store(
+        "otherpage/photo.png",
+        content=png_1x1,
+        author=author,
+        message="add image",
+        mode="wb",
+    )
+    # embed it from a different page
+    create_app.storage.store(
+        "embedder.md",
+        content="{{ImageFrame\n|src=/otherpage/photo.png\n|caption=From Other\n}}\n",
+        author=author,
+        message="add embedder page",
+    )
+    client = create_app.test_client()
+    response = client.get("/Embedder/view")
+    assert response.status_code == 200
+    soup = BeautifulSoup(response.data.decode(), "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    a = frame.find("a")
+    assert a is not None
+    assert "photo.png" in a.get("href", "")
+    assert a.get("target") == "_blank"
+    img = a.find("img")
+    assert img is not None
+    assert "photo.png" in img.get("src", "")
+
+
+def test_imageframe_src_external_url():
+    """src= with https:// URL embeds the image directly without attachment lookup."""
+    md = """\
+{{ImageFrame
+|src=https://example.com/photo.jpg
+|alt=External photo
+|caption=Remote image
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    frame = soup.find("div", class_="imageframe-caption")
+    assert frame is not None
+    a = frame.find("a")
+    assert a is not None
+    assert a["href"] == "https://example.com/photo.jpg"
+    assert a.get("target") == "_blank"
+    img = a.find("img")
+    assert img is not None
+    assert img["src"] == "https://example.com/photo.jpg"
+    assert img["alt"] == "External photo"
+
+
+def test_imageframe_src_missing_attachment(create_app):
+    """src= referencing a non-existent attachment renders an error."""
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "imgframemissing.md",
+        content="{{ImageFrame\n|src=missing.png\n}}\n",
+        author=author,
+        message="add page",
+    )
+    client = create_app.test_client()
+    response = client.get("/Imgframemissing/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert 'missing.png' in html
+    assert 'not found' in html.lower() or 'error' in html.lower()
 
 
 DATATABLE_MD = """\
@@ -561,6 +727,37 @@ def test_datatable_csv_quotechar_custom(create_app):
     assert "99" in cells
 
 
+def test_datatable_csv_absolute_src(create_app):
+    """src=/OtherPage/data.csv loads a CSV attachment from another page."""
+    author = ("Test Author", "test@example.com")
+    csv_content = "City;Population\nBerlin;3.6M\nParis;2.1M\n"
+    create_app.storage.store(
+        "datasource.md",
+        content="# Data Source\n",
+        author=author,
+        message="add data source page",
+    )
+    create_app.storage.store(
+        "datasource/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    create_app.storage.store(
+        "csvabspage.md",
+        content="# CSV Abs Test\n{{datatable\n|src=/datasource/data.csv\n}}\n",
+        author=author,
+        message="csv abs page",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvabspage/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert "Berlin" in html
+    assert "Paris" in html
+    assert "City" in html
+
+
 def test_attachmentlist(create_app):
     author = ("Test Author", "test@example.com")
     create_app.storage.store(
@@ -740,9 +937,34 @@ def test_infobox_position_left():
     soup = BeautifulSoup(html, "html.parser")
     box = soup.find("div", class_="infobox")
     assert box is not None
-    style = box.get("style", "")
-    assert "float:left" in style
-    assert "clear:left" in style
+    assert "infobox-float-left" in box.get("class", [])
+
+
+def test_infobox_position_right():
+    md = """
+{{InfoBox
+|position=right
+|key=val
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    box = soup.find("div", class_="infobox")
+    assert box is not None
+    assert "infobox-float-right" in box.get("class", [])
+
+
+def test_infobox_default_floats_right():
+    md = """
+{{InfoBox
+|key=val
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    box = soup.find("div", class_="infobox")
+    assert box is not None
+    assert "infobox-float-right" in box.get("class", [])
 
 
 def test_infobox_width():
@@ -789,13 +1011,17 @@ def test_infobox_underscore_key():
 
 
 def test_infobox_excluded_keys_not_in_rows():
-    """caption, width, float and text-align must not appear as key-value rows."""
+    """caption, width, float, position, pos, text-align, align and style must not appear as key-value rows."""
     md = """
 {{InfoBox
 |caption=Cap
 |width=40%
 |float=left
+|position=right
+|pos=right
 |text-align=center
+|align=center
+|style=opacity:0.5
 |visible=yes
 }}
 """
@@ -805,10 +1031,17 @@ def test_infobox_excluded_keys_not_in_rows():
     keys = [
         r.find("strong").get_text(strip=True) for r in rows if r.find("strong")
     ]
-    assert "caption" not in keys
-    assert "width" not in keys
-    assert "float" not in keys
-    assert "text-align" not in keys
+    for excluded in (
+        "caption",
+        "width",
+        "float",
+        "position",
+        "pos",
+        "text-align",
+        "align",
+        "style",
+    ):
+        assert excluded not in keys
     assert "visible" in keys
 
 
@@ -1250,3 +1483,322 @@ def test_pageindex_embedding_toc(create_app):
     assert pagetoc is not None
     assert "Section One" in pagetoc.decode_contents()
     assert "Section Two" in pagetoc.decode_contents()
+
+
+# ---------------------------------------------------------------------------
+# Video embedding — YouTube
+# ---------------------------------------------------------------------------
+
+
+def _yt_iframe(html, index=0):
+    """Return the nth iframe from parsed html."""
+    soup = BeautifulSoup(html, "html.parser")
+    return soup.find_all("iframe")[index]
+
+
+def test_video_youtube_watch_url():
+    md = """\
+{{Video
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert iframe is not None
+    assert "dQw4w9WgXcQ" in iframe["src"]
+    assert iframe["src"].startswith("https://www.youtube.com/embed/")
+
+
+def test_video_youtube_short_url():
+    md = """\
+{{Video
+https://youtu.be/dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "dQw4w9WgXcQ" in iframe["src"]
+
+
+def test_video_youtube_embed_url():
+    md = """\
+{{Video
+https://www.youtube.com/embed/dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "dQw4w9WgXcQ" in iframe["src"]
+
+
+def test_video_youtube_default_options():
+    """By default: controls shown, autoplay off, muted on, loop on."""
+    md = """\
+{{Video
+https://youtu.be/dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    src = iframe["src"]
+    assert "dQw4w9WgXcQ" in src
+    # controls on by default — no controls=0
+    assert "controls=0" not in src
+    # autoplay off by default
+    assert "autoplay" not in src
+    # muted on by default
+    assert "mute=1" in src
+    # loop on by default, requires playlist param
+    assert "loop=1" in src
+    assert "playlist=dQw4w9WgXcQ" in src
+
+
+def test_video_youtube_autoplay():
+    md = """\
+{{Video
+|autoplay=true
+https://youtu.be/dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "autoplay=1" in iframe["src"]
+
+
+def test_video_youtube_muted():
+    md = """\
+{{Video
+|muted=true
+https://youtu.be/dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "mute=1" in iframe["src"]
+
+
+def test_video_youtube_controls_off():
+    md = """\
+{{Video
+|controls=false
+https://youtu.be/dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "controls=0" in iframe["src"]
+
+
+def test_video_youtube_loop():
+    md = """\
+{{Video
+|loop=true
+https://youtu.be/dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert "loop=1" in iframe["src"]
+    # YouTube requires playlist=VIDEO_ID for loop to work
+    assert "playlist=dQw4w9WgXcQ" in iframe["src"]
+
+
+def test_video_youtube_width():
+    md = """\
+{{Video
+|width=80%
+https://youtu.be/dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert iframe["width"] == "80%"
+
+
+def test_video_youtube_multiple():
+    md = """\
+{{Video
+https://youtu.be/dQw4w9WgXcQ
+https://www.youtube.com/watch?v=5VmZFvJg7ro
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    iframes = soup.find_all("iframe")
+    assert len(iframes) == 2
+    srcs = [f["src"] for f in iframes]
+    assert any("dQw4w9WgXcQ" in s for s in srcs)
+    assert any("5VmZFvJg7ro" in s for s in srcs)
+
+
+def test_video_youtube_src_option():
+    """YouTube URL passed via |src= option should render as an iframe."""
+    md = """\
+{{Video
+|src=https://youtu.be/dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert iframe is not None
+    assert "dQw4w9WgXcQ" in iframe["src"]
+
+
+def test_video_youtube_mixed_sources_raises_error():
+    md = """\
+{{Video
+https://youtu.be/dQw4w9WgXcQ
+/path/to/video.mp4
+}}
+"""
+    html, _, _ = render.markdown(md)
+    assert "Cannot mix YouTube links and file sources" in html
+
+
+def test_video_youtube_mobile_url():
+    md = """\
+{{Video
+https://m.youtube.com/watch?v=dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert iframe is not None
+    assert "dQw4w9WgXcQ" in iframe["src"]
+
+
+def test_video_youtube_e_path_url():
+    md = """\
+{{Video
+https://m.youtube.com/e/dQw4w9WgXcQ
+}}
+"""
+    html, _, _ = render.markdown(md)
+    iframe = _yt_iframe(html)
+    assert iframe is not None
+    assert "dQw4w9WgXcQ" in iframe["src"]
+
+
+def test_figure_basic():
+    md = """
+{{Figure
+|caption=Figure 1: Hello World
+```python
+print("hello")
+```
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    assert figure is not None
+    content = figure.find("div", class_="figure-embedding-content")
+    assert content is not None
+    assert "hello" in content.get_text()
+    caption = figure.find("div", class_="figure-embedding-caption")
+    assert caption is not None
+    assert "Figure 1: Hello World" in caption.get_text()
+
+
+def test_figure_no_caption():
+    md = """
+{{Figure
+Some content here.
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    assert figure is not None
+    caption = figure.find("div", class_="figure-embedding-caption")
+    assert caption is None
+
+
+def test_figure_width():
+    md = """
+{{Figure
+|width=60%
+Content
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    assert "width:60%" in figure.get("style", "")
+
+
+def test_figure_align_left():
+    md = """
+{{Figure
+|align=left
+Content
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    style = figure.get("style", "")
+    assert "margin-left:auto" not in style
+    assert "margin-right:auto" not in style
+
+
+def test_figure_align_right():
+    md = """
+{{Figure
+|align=right
+Content
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    style = figure.get("style", "")
+    assert "margin-left:auto" in style
+    assert "margin-right:0" in style
+
+
+def test_figure_custom_style():
+    md = """
+{{Figure
+|style=border-color:red
+Content
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    assert "border-color:red" in figure.get("style", "")
+
+
+def test_figure_height():
+    md = """
+{{Figure
+|height=200px
+Line 1
+
+Line 2
+
+Line 3
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    assert figure is not None
+    content = figure.find("div", class_="figure-embedding-content")
+    style = content.get("style", "")
+    assert "max-height:200px" in style
+    assert "overflow-y:auto" in style
+
+
+def test_figure_no_height():
+    md = """
+{{Figure
+Content
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    figure = soup.find("div", class_="figure-embedding")
+    content = figure.find("div", class_="figure-embedding-content")
+    assert content.get("style") is None

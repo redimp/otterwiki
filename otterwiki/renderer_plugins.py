@@ -448,7 +448,7 @@ class mistunePluginFancyBlocks:
 
 class mistunePluginSpoiler:
     SPOILER_LEADING = re.compile(r'^ *\>\!', flags=re.MULTILINE)
-    SPOILER_BLOCK = re.compile(r'(?: {0,3}>![^\n]*(\n|$))+')
+    SPOILER_BLOCK = re.compile(r'^(?: {0,3}>![^\n]*(\n|$))+', re.MULTILINE)
 
     def parse_spoiler_block(self, block, m, state):
         text = m.group(0)
@@ -492,7 +492,7 @@ class mistunePluginSpoiler:
 
 class mistunePluginFold:
     FOLD_LEADING = re.compile(r'^ *\>\|', flags=re.MULTILINE)
-    FOLD_BLOCK = re.compile(r'(?: {0,3}>\|[^\n]*(\n|$))+')
+    FOLD_BLOCK = re.compile(r'^(?: {0,3}>\|[^\n]*(\n|$))+', re.MULTILINE)
 
     FOLD_BLOCK_HEADER = re.compile(r'^#{1,5}\s*(.*)\n+')
 
@@ -665,8 +665,10 @@ class mistunePluginAlerts:
         flags=re.I,
     )
     # Pattern for scanner registration: uses (?i:...) inline flag (no global re.I)
+    # ^ anchor (with re.M) ensures the pattern only matches at line boundaries,
+    # preventing mid-line matches inside HTML like <code>>[!NOTE]\n> body</code>
     _ALERT_BLOCK_SCANNER_PATTERN = (
-        r'(?: {0,3}>\s*\[!(?i:'
+        r'^(?: {0,3}>\s*\[!(?i:'
         + TYPES_WITH_PIPES
         + r')\][^\n]*(?:\n|$))(?P<_alert_rest> {0,3}>[^\n]*(?:\n|$))+'
     )

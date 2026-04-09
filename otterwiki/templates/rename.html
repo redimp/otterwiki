@@ -52,6 +52,7 @@
     </div>
 {% endif %}
 <form action="{{ url_for("rename", path=pagepath) }}" method="POST" class="form-inline">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="form-group">
     <label for="new_pagename" class="required w-150">New name</label>
     <input type="text" class="form-control" name="new_pagename" id="new_pagename" value="{{new_pagename if new_pagename else pagename}}" placeholder="{{pagename}}" autofocus="" onfocus="this.setSelectionRange(this.value.length,this.value.length);">

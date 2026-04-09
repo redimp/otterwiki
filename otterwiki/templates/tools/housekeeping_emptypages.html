@@ -1,4 +1,4 @@
-<form hx-post="{{ url_for("housekeeping") }}" hx-target="this" hx-indicator="#emptypages_indicator">
+<form hx-post="{{ url_for("housekeeping") }}" hx-target="this" hx-indicator="#emptypages_indicator" hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>
 <input type="hidden" name="task" value="emptypages">
 {% if stats and pages %}
 <div class="mb-20">

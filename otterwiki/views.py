@@ -40,6 +40,8 @@ from otterwiki.plugins import call_hook, collect_hook
 import otterwiki.pluginmgmt
 
 from flask_login import login_required
+from otterwiki.server import csrf
+from flask_wtf.csrf import CSRFError
 
 
 #
@@ -678,6 +680,7 @@ def dotgit():
 
 
 @app.route("/.git/info/refs", methods=["POST", "GET"])
+@csrf.exempt
 def git_info_refs():
     service = request.args.get("service")
     if service in ["git-upload-pack", "git-receive-pack"]:
@@ -687,16 +690,19 @@ def git_info_refs():
 
 
 @app.route("/.git/git-upload-pack", methods=["POST"])
+@csrf.exempt
 def git_upload_pack():
     return githttpserver.git_upload_pack(request.stream)
 
 
 @app.route("/.git/git-receive-pack", methods=["POST"])
+@csrf.exempt
 def git_receive_pack():
     return githttpserver.git_receive_pack(request.stream)
 
 
 @app.route("/-/api/v1/pull/<string:webhook_hash>", methods=["POST", "GET"])
+@csrf.exempt
 def pull_webhook(webhook_hash):
     """
     Webhook endpoint for triggering git pulls from remote repositories.
@@ -774,3 +780,22 @@ def plugin_static_css():
     response.mimetype = "text/css"
     response.headers['Cache-Control'] = "max-age=300"
     return response
+
+
+#
+# Error handling
+#
+
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    app.logger.warning(f"CSRF Error: {e.description} url: {request.url}")
+    return (
+        f"""<!doctype html>
+<html lang=en>
+<title>400 Bad Request</title>
+<h1>Bad Request</h1>
+<p>{e.description}</p>
+""",
+        400,
+    )

@@ -13,6 +13,7 @@
 {% if has_permission("UPLOAD") %}
 <div class="card m-0 p-1">
   <form action="{{ url_for("attachments" , pagepath=pagepath) }}" method="POST" class="form-inline" enctype=multipart/form-data>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="custom-file">
     <input name="file" type="file" id="file-upload" multiple="multiple">
     <label for="file-upload">Choose files to upload</label>

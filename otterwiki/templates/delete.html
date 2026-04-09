@@ -2,6 +2,7 @@
 {% extends "form.html" %}
 {% block formcontent %}
 <form action="{{url_for("delete", path=pagepath )}}" method="POST" class="form-inline">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="form-group">
     <label for="message" class="w-150">Commit message</label>
     <input type="text" class="form-control" name="message" id="message" placeholder="Deleted {{pagename}}." value="{{message}}">

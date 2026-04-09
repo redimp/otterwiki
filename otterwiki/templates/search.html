@@ -8,6 +8,7 @@
 <div class="card">
   <h2 class="card-title">Search</h2>
   <form action="{{url_for("search")}}" method="POST" class="form-inline">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="form-group">
     <input type="text" class="form-control" name="query" id="search-query" placeholder="Search term" value="{{query if query}}" autofocus onfocus="this.setSelectionRange(this.value.length,this.value.length);">
   </div>

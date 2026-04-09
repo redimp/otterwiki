@@ -6,6 +6,68 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.20.2](https://github.com/redimp/otterwiki/releases/tag/v2.20.2) - 2026-04-09
+
+<small>[Compare with v2.20.1](https://github.com/redimp/otterwiki/compare/v2.20.1...v2.20.2)</small>
+
+### Bug Fixes
+
+- Render alerts correctly after lists, see #450 ([6b02637](https://github.com/redimp/otterwiki/commit/6b02637)).
+- Redirect to `/` with toast when path sanitizes to empty pagename ([357deb8](https://github.com/redimp/otterwiki/commit/357deb8)).
+
+## [v2.20.1](https://github.com/redimp/otterwiki/releases/tag/v2.20.1) - 2026-04-04
+
+<small>[Compare with v2.20.0](https://github.com/redimp/otterwiki/compare/v2.20.0...v2.20.1)</small>
+
+### Features
+
+- New `{{Figure}}` embedding for wrapping content blocks ([7e72dc1](https://github.com/redimp/otterwiki/commit/7e72dc1)).
+- Added YouTube support to `{{Video}}` embedding ([b3bd208](https://github.com/redimp/otterwiki/commit/b3bd208a036280b17745a1a6dcdd8e2e84be9551), [89459a5](https://github.com/redimp/otterwiki/commit/89459a5c6e179318290e2830e8a2584621d3ac1b)).
+- Added `src=` option to `{{ImageFrame}}` for embedding image attachments ([f0dbe4c](https://github.com/redimp/otterwiki/commit/f0dbe4c952d212690c344d0dc86ee4148145d189)).
+- Support absolute `src=` paths in `{{DataTable}}` ([881c1f0](https://github.com/redimp/otterwiki/commit/881c1f093c486364d2ba0dcd37e68be928edc3b3)).
+
+### Bug Fixes
+
+- Fix inline markdown rendering in embeddings help ([c89ac59](https://github.com/redimp/otterwiki/commit/c89ac5969f5f82476527280779e070e868518d44)).
+- Anchor fold/spoiler blocks to line start ([a015195](https://github.com/redimp/otterwiki/commit/a015195602de26b1db941472b6ae83cffb50db81)).
+- Support parenthesis-delimited titles in link reference definitions ([1facd98](https://github.com/redimp/otterwiki/commit/1facd98af78bda78f3a48aa4703bb47a1d8c3c78)).
+
+### Refactoring
+
+- Move `{{InfoBox}}` and `{{ImageFrame}}` inline styles to `static_css()` classes ([5f71637](https://github.com/redimp/otterwiki/commit/5f71637d9d7a3414e49fc1369dbd6523cbe4f8cf))
+  and ([22ceb2e](https://github.com/redimp/otterwiki/commit/22ceb2e3ee3ab0b1b66efb1ed14f914dbbd9e562)).
+
+## [v2.20.0](https://github.com/redimp/otterwiki/releases/tag/v2.20.0) - 2026-04-01
+
+<small>[Compare with v2.19.0](https://github.com/redimp/otterwiki/compare/v2.19.0...v2.20.0)</small>
+
+### Security Fixes
+
+- Add CSRF protection via `SameSite=Lax` cookies and `Flask-WTF` tokens ([5bea252](https://github.com/redimp/otterwiki/commit/5bea25261d726415b45c54f0fa48dbb73378ad98) by @onovy).
+  This is controlled by `WTF_CSRF_ENABLED` which defaults to `True` and
+  `WTF_CSRF_TIME_LIMIT` which defaults to `86400`.
+- Make password reset tokens single-use, disable remember-me on reset ([75152f6](https://github.com/redimp/otterwiki/commit/75152f6ca4292b9c4209fefb24b5f7b7053545a5) by @onovy).
+- Escape mermaid code block content to prevent XSS ([1747d89](https://github.com/redimp/otterwiki/commit/1747d89013105773c8ac23db5d032a65049e55b4) by @onovy).
+- Add security response headers ([3682750](https://github.com/redimp/otterwiki/commit/3682750feff8d22dfbc76ecb04f4c04f1c7a3ec7) by @onovy).
+- Remove ambiguous `|safe` from commit message rendering in templates ([c60420f](https://github.com/redimp/otterwiki/commit/c60420f6862f2d89093d6aba484620faf9e43f15) by @onovy).
+- Prevent account enumeration via generic recovery messages ([7ded053](https://github.com/redimp/otterwiki/commit/7ded05380a3abde3118196f21e9c890d446d0403) by @onovy).
+
+### Features
+
+- Add configuration options for CSRF protection ([73e5516](https://github.com/redimp/otterwiki/commit/73e5516cec93a43c52da358dea2892adab968653)).
+- Make security response headers configurable ([62cebe6](https://github.com/redimp/otterwiki/commit/62cebe63724d121132005315e88a9fdf21acd885)).
+
+### Bug Fixes
+
+- Store `HOME_PAGE` in preferences on update, see #439 ([ccd1a54](https://github.com/redimp/otterwiki/commit/ccd1a54266fa13423f14738e4919ad9c2573c0a6)).
+- Fix font-size for `<pre>` and `<code>` elements ([c0086dd](https://github.com/redimp/otterwiki/commit/c0086dd6a1b67b5c2ff23e91dfdc328601b03ed4)).
+- Ensure empty `SERVER_NAME` is set to None ([2e2c793](https://github.com/redimp/otterwiki/commit/2e2c79324ed3aa10bf836c83353b259c14e1b890)).
+
+### Dependencies
+
+- Bump pygments from 2.18.0 to 2.20.0 ([f744ed8](https://github.com/redimp/otterwiki/commit/f744ed82a68a7e6751abb492b96287f315199bf7) by @onovy).
+- Bump pygments from 2.19.2 to 2.20.0 ([4ac8e38](https://github.com/redimp/otterwiki/commit/4ac8e382d3827529d637fe7dd5242b23a5a37d4a) by @dependabot).
+
 ## [v2.19.0](https://github.com/redimp/otterwiki/releases/tag/v2.19.0) - 2026-03-28
 
 <small>[Compare with v2.18.2](https://github.com/redimp/otterwiki/compare/v2.18.2...v2.19.0)</small>
@@ -13,7 +75,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Security Fixes
 
 - Prevent XSS via flash message toast ([f0f4da9](https://github.com/redimp/otterwiki/commit/f0f4da92f98f37c35ce37c13214f267d80af1d04) by @onovy).
-- Replace raw URL in unconfirmed-email toast with template variables ([e581cdb](https://github.com/redimp/otterwiki/commit/e581cdba9a15ea4379ec70a1a7bb5a4e2ef77350)).
 - Prevent ReDoS via user-supplied regex with timeout in search ([0c84d58](https://github.com/redimp/otterwiki/commit/0c84d582d065922d6b9d9ea30307eecf5c78880f) by @onovy).
 
 ### Bug Fixes

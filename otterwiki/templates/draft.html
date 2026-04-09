@@ -11,10 +11,12 @@
 
     <div class="d-flex">
         <form action="{{ url_for("edit", path=pagepath) }}" method="POST" class="mr-15">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="draft" value="edit" />
             <input class="btn btn-primary" type="submit" name="submit" value="Continue editing draft" />
         </form>
         <form action="{{ url_for("edit", path=pagepath) }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="draft" value="discard" />
             <input class="btn" type="submit" name="submit" value="Discard draft" />
         </form>

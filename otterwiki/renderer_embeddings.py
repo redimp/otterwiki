@@ -4,6 +4,8 @@
 import csv
 import fnmatch
 import io
+import re
+import urllib.parse
 
 from otterwiki.plugins import hookimpl, plugin_manager, EmbeddingArgs
 from bs4 import BeautifulSoup
@@ -37,16 +39,16 @@ class DatatableEmbedding:
             " <br/><span class=\"text-secondary-dm bg-secondary-lm\">"
             "Embeddings are an experimental feature and subject to"
             " change.</span>\n\n"
-            "<h4>Usage</h4>"
+            "<h4>Usage</h4>\n\n"
             "An embedding starts with <code>{{"
             "<em>EmbeddingName</em></code> and ends with"
             " <code>}}</code>. Between the opening and closing"
             " braces you can pass **options** and **args**.\n\n"
             "**Options** are key-value pairs separated by"
-            " <code>|</code> in the form"
-            " <code>|key=value</code>. "
-            "Each option starts with a <code>|</code> followed by"
-            " the key, an <code>=</code>, and the value.\n\n"
+            " `|` in the form"
+            " `|key=value`. "
+            "Each option starts with a `|` followed by"
+            " the key, an `=` and the value.\n\n"
             "**Args** are any remaining lines that are not options."
             " They form the body content of the embedding and can"
             " contain regular markdown.\n\n"
@@ -163,7 +165,7 @@ Options specific to CSV:
         """Build an HTML table string from a CSV page attachment."""
         from otterwiki.wiki import Attachment
 
-        src = args.options.get('src', None)
+        src = args.options_raw.get('src', None)
         if not src:
             return ''
 
@@ -178,11 +180,24 @@ Options specific to CSV:
         if delimiter == "\\t":
             delimiter = "\t"
 
-        page = getattr(self, 'page', None)
-        if page is None:
-            raise ValueError('no page context available.')
+        if src.startswith("/"):
+            # absolute: /pagepath/filename — attachment from another page
+            parts = src.lstrip("/").rsplit("/", 1)
+            if len(parts) != 2:
+                raise ValueError(
+                    f'datatable: invalid absolute src "{src}",'
+                    f' expected /pagepath/filename.'
+                )
+            att_pagepath, att_filename = parts
+        else:
+            # relative: attachment on the current page
+            page = getattr(self, 'page', None)
+            if page is None:
+                raise ValueError('no page context available.')
+            att_pagepath = page.pagepath
+            att_filename = src
 
-        attachment = Attachment(page.pagepath, src)
+        attachment = Attachment(att_pagepath, att_filename)
         if not attachment.exists():
             raise ValueError(f'csv attachment "{src}" not found.')
         with open(attachment.abspath, 'r', encoding='utf-8', newline='') as f:
@@ -383,11 +398,38 @@ Display images in frames on the wiki page.
 {{ImageFrame
 |caption=An Otter Wiki Logo
 |width=30%
-|position=right/left/center
+|position=right/left
 |float=right/left
 |text-align=center/left/right/justify
 |style=custom css
 [![](/static/img/otter.png)](/static/img/otter.png)
+}}
+```
+
+Use `|src=` to embed an attachment directly, with an optional `|alt=` text:
+
+```
+{{ImageFrame
+|caption=An Otter Wiki Logo
+|src=otter.png
+|alt=The Otter Wiki logo
+}}
+```
+
+Use an absolute path to embed an attachment from another page:
+
+```
+{{ImageFrame
+|src=/OtherPage/otter.png
+}}
+```
+
+External images can be embedded via a full URL:
+
+```
+{{ImageFrame
+|src=https://example.com/image.png
+|alt=Description
 }}
 ```
 
@@ -400,6 +442,43 @@ Display images in frames on the wiki page.
 [![](/static/img/otter.png)](/static/img/otter.png)
 }}
 </div></div>
+"""
+
+    @hookimpl
+    def page_render_context(self, page, preview: bool):
+        self.page = page
+
+    @hookimpl
+    def static_css(self):
+        return """
+div.imageframe-caption {
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    padding: .5rem;
+}
+div.imageframe-caption.imageframe-float-right {
+    float: right;
+    clear: right;
+    margin: .5rem 0 .5rem .5rem;
+}
+div.imageframe-caption.imageframe-float-left {
+    float: left;
+    clear: left;
+    margin: .5rem .5rem 0 .5rem;
+}
+div.imageframe {
+    text-align: center;
+    width: 100%;
+    font-weight: bold;
+}
+@media (max-width: 576px) {
+    div.imageframe-caption.imageframe-float-right,
+    div.imageframe-caption.imageframe-float-left {
+        float: none;
+        clear: both;
+        margin: .5rem 0;
+        width: 100% !important;
+    }
+}
 """
 
     @hookimpl
@@ -422,42 +501,70 @@ Display images in frames on the wiki page.
             "pos", "right"
         )
         floating = args.options.get("float", position)
-
-        if floating.lower() == "left":
-            margin = "margin: .5rem .5rem 0 .5rem"
-        else:
+        if floating.lower() != "left":
             floating = "right"
-            margin = "margin: .5rem 0 .5rem .5rem"
 
         userstyle = args.options_raw.get("style", "")
         width = args.options.get("width", "30%")
-        content += "\n".join(args.args)
 
-        styles = [
-            "border-width: 1px",
-            "border-style: solid",
-            "border-color: rgba(128, 128, 128, 0.3)",
-            "padding: .5rem",
-            margin,
-        ]
+        src = args.options_raw.get("src", None)
+        if src:
+            alt = mistune.escape(args.options.get("alt", ""))
+            if src.startswith("https://") or src.startswith("http://"):
+                # external URL — embed directly
+                img_url = src
+            else:
+                from otterwiki.wiki import Attachment
 
-        if floating.lower() in ["left", "right"]:
-            styles.append(f"float:{floating.lower()}")
-            styles.append(f"clear:{floating.lower()}")
+                if src.startswith("/"):
+                    # absolute: /pagepath/filename — attachment from another page
+                    parts = src.lstrip("/").rsplit("/", 1)
+                    if len(parts) != 2:
+                        raise ValueError(
+                            f'ImageFrame: invalid absolute src "{src}",'
+                            f' expected /pagepath/filename.'
+                        )
+                    att_pagepath, att_filename = parts
+                else:
+                    # relative: attachment on the current page
+                    page = getattr(self, 'page', None)
+                    if page is None:
+                        raise ValueError(
+                            "ImageFrame |src= requires a page context."
+                        )
+                    att_pagepath = page.pagepath
+                    att_filename = src
+                attachment = Attachment(att_pagepath, att_filename)
+                if not attachment.exists():
+                    raise ValueError(
+                        f'ImageFrame: attachment "{src}" not found.'
+                    )
+                alt = alt or mistune.escape(att_filename)
+                img_url = attachment.get_url()
+            content += (
+                f'<a href="{img_url}" target="_blank">'
+                f'<img src="{img_url}" alt="{alt}" style="width:100%">'
+                f'</a>'
+            )
+        else:
+            content += "\n".join(args.args)
 
+        # dynamic per-instance styles only; fixed styles live in static_css()
+        inline_styles = []
         if width:
-            styles.append(f"width:{width}")
-
+            inline_styles.append(f"width:{width}")
         if text_align:
-            styles.append(f"text-align:{text_align}")
-
-        style = ";".join(styles)
-        caption = (
-            f"<div class=\"imageframe\" style=\"text-align:center;width:100%;font-weight:bold;\">{caption}</div>"
-            if caption
-            else ""
+            inline_styles.append(f"text-align:{text_align}")
+        if userstyle:
+            inline_styles.append(userstyle)
+        style_attr = (
+            f' style="{";".join(inline_styles)}"' if inline_styles else ""
         )
-        return f"<div class=\"imageframe-caption\" style=\"{style};{userstyle}\">{content}{caption}</div>"
+
+        caption_html = (
+            f'<div class="imageframe">{caption}</div>' if caption else ""
+        )
+        return f'<div class="imageframe-caption imageframe-float-{floating}"{style_attr}>{content}{caption_html}</div>'
 
 
 class VideoEmbedding:
@@ -475,7 +582,8 @@ class VideoEmbedding:
             return None
 
         return """<div class="row mb-10">
-Embed a video player that supports video and audio playback in your document.
+Embed a video player that supports video and audio playback in your document,
+or embed a YouTube video by providing a YouTube URL.
 <div class="col-md-8 col-sm-12">
 
 ```
@@ -487,6 +595,19 @@ Embed a video player that supports video and audio playback in your document.
 |loop=false/true
 |src=/full/path/to/video.mp4
 /alternative/full/path/to/video.mp4
+}}
+```
+
+YouTube URLs (`youtube.com/watch?v=…` or `youtu.be/…`) are rendered as embedded iframes:
+
+```
+{{Video
+|width=100%
+|muted=false/true
+|controls=true/false
+|autoplay=false/true
+|loop=false/true
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
 }}
 ```
 
@@ -502,6 +623,23 @@ Embed a video player that supports video and audio playback in your document.
 
 </div></div>
 """
+
+    @staticmethod
+    def _get_youtube_id(url: str):
+        """Extract YouTube video ID from various URL formats, or return None."""
+        parsed = urllib.parse.urlparse(url)
+        host = re.sub(r'^(www|m)\.', '', parsed.netloc.lower())
+        if host == 'youtube.com' or host == 'youtube-nocookie.com':
+            if parsed.path.startswith('/embed/') or parsed.path.startswith(
+                '/e/'
+            ):
+                return parsed.path.split('/')[2]
+            qs = urllib.parse.parse_qs(parsed.query)
+            ids = qs.get('v', [])
+            return ids[0] if ids else None
+        if host == 'youtu.be':
+            return parsed.path.lstrip('/')
+        return None
 
     @hookimpl
     def embedding_render(
@@ -533,16 +671,60 @@ Embed a video player that supports video and audio playback in your document.
 
         if len(src) < 1:
             raise ValueError("No src given.")
-        sources = ""
-        for s in src:
-            t = ""
-            if s.endswith(".mp4"):
-                t = " type=\"video/mp4\""
-            if s.endswith(".ogg"):
-                t = "type=\"video/ogg\""
-            sources += f"""<source src="{s}"{t}>\n"""
 
-        return f"<video width=\"{width}\" {' '.join(flags)}>\n{sources}\nYour browser does not support the video tag.\n</video>"
+        yt_sources = [s for s in src if self._get_youtube_id(s)]
+        file_sources = [s for s in src if not self._get_youtube_id(s)]
+        if yt_sources and file_sources:
+            raise ValueError(
+                "Cannot mix YouTube links and file sources in the same Video embedding."
+            )
+
+        # Build YouTube embed query params from options
+        yt_params = {}
+        if not args.get_flag("controls", True):
+            yt_params['controls'] = '0'
+        if args.get_flag("autoplay", False):
+            yt_params['autoplay'] = '1'
+        if args.get_flag("muted", True):
+            yt_params['mute'] = '1'
+        # loop requires playlist=VIDEO_ID; added per-video below
+
+        html_parts = []
+        video_sources = ""
+        for s in src:
+            yt_id = self._get_youtube_id(s)
+            if yt_id:
+                params = dict(yt_params)
+                if args.get_flag("loop", True):
+                    params['loop'] = '1'
+                    params['playlist'] = yt_id
+                qs = ('?' + urllib.parse.urlencode(params)) if params else ''
+                html_parts.append(
+                    f'<iframe width="{width}" height="315"'
+                    f' src="https://www.youtube.com/embed/{yt_id}{qs}"'
+                    f' title="YouTube video player" frameborder="0"'
+                    f' allow="accelerometer; autoplay; clipboard-write;'
+                    f' encrypted-media; gyroscope; picture-in-picture; web-share"'
+                    f' referrerpolicy="strict-origin-when-cross-origin"'
+                    f' allowfullscreen></iframe>'
+                )
+            else:
+                t = ""
+                if s.endswith(".mp4"):
+                    t = " type=\"video/mp4\""
+                elif s.endswith(".ogg"):
+                    t = " type=\"video/ogg\""
+                video_sources += f'<source src="{s}"{t}>\n'
+
+        if video_sources:
+            html_parts.append(
+                f'<video width="{width}" {" ".join(flags)}>\n'
+                f'{video_sources}\n'
+                f'Your browser does not support the video tag.\n'
+                f'</video>'
+            )
+
+        return "\n".join(html_parts)
 
 
 class InfoBoxEmbedding:
@@ -569,9 +751,9 @@ An element for displaying structured data in a document.
 |caption=Some Caption
 |position=right/left
 |float=right/left
-|width=30%
+|width=35%
 |text-align=justify
-|style=custom css
+|style=additional inline css
 |Random Key=Value
 |Answer=42
 |Homepage=[otterwiki.com](https://otterwiki.com)
@@ -583,6 +765,9 @@ markdown=True
 ```
 }}
 ````
+
+Note: On small screens the box automatically expands to full width regardless of the `width` option.
+The optional `|style=` allows additional inline CSS overrides.
 
 </div><div class="col-md-4 col-sm-12" style="padding-top:5px;">
 
@@ -604,6 +789,52 @@ markdown=True
 """
 
     @hookimpl
+    def static_css(self):
+        return """
+div.infobox {
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    padding: .5rem;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+div.infobox.infobox-float-right {
+    float: right;
+    clear: right;
+    margin: .5rem 0 .5rem .5rem;
+}
+div.infobox.infobox-float-left {
+    float: left;
+    clear: left;
+    margin: .5rem .5rem 0 .5rem;
+}
+div.infobox-caption {
+    text-align: center;
+    width: 100%;
+    font-weight: bold;
+}
+table.infobox {
+    width: 100%;
+    border: none;
+    background: none;
+}
+table.infobox tr {
+    border: none;
+}
+table.infobox td {
+    border: none;
+    padding: .5rem;
+}
+@media (max-width: 576px) {
+    div.infobox.infobox-float-right,
+    div.infobox.infobox-float-left {
+        float: none;
+        clear: both;
+        margin: .5rem 0;
+        width: 100% !important;
+    }
+}
+"""
+
+    @hookimpl
     def embedding_render(
         self,
         embedding: str,
@@ -617,58 +848,56 @@ markdown=True
         text_align = args.options.get("text-align", None) or args.options.get(
             "align", ""
         )
-        width = args.options.get("width", "30%")
+        width = args.options.get("width", "35%")
 
         position = args.options.get("position", None) or args.options.get(
             "pos", "right"
         )
         floating = args.options.get("float", position)
-
-        if floating.lower() == "left":
-            margin = "margin: .5rem .5rem 0 .5rem"
-        else:
+        if floating.lower() != "left":
             floating = "right"
-            margin = "margin: .5rem 0 .5rem .5rem"
+
         userstyle = args.options_raw.get("style", "")
 
-        styles = [
-            "border-width: 1px",
-            "border-style: solid",
-            "border-color: rgba(128, 128, 128, 0.3)",
-            "padding: .5rem",
-            "background-color: rgba(0, 0, 0, 0.2)",
-            margin,
-        ]
-
+        # dynamic per-instance styles only; fixed styles live in static_css()
+        inline_styles = []
         if width:
-            styles.append(f"width:{width}")
-
-        if floating.lower() in ["left", "right"]:
-            styles.append(f"float:{floating.lower()}")
-            styles.append(f"clear:{floating.lower()}")
-
-        style = ";".join(styles)
-        # append custom style
-        style += userstyle
-
-        caption = (
-            f"<div class=\"infobox-caption\" style=\"text-align:center;width:100%;font-weight:bold;\">{caption}</div>"
-            if caption
-            else ""
+            inline_styles.append(f"width:{width}")
+        if userstyle:
+            inline_styles.append(userstyle)
+        style_attr = (
+            f' style="{";".join(inline_styles)}"' if inline_styles else ""
         )
 
-        table_html = "<table class=\"infobox\" style=\"width:100%;border: none;background:none;\">"
+        caption_html = (
+            f'<div class="infobox-caption">{caption}</div>' if caption else ""
+        )
+
+        table_html = '<table class="infobox">'
         if content:
-            table_html += f"<tr class=\"infobox-args\"><td style=\"border:none;text-align:{text_align}\" colspan=\"2\">{content}</td><tr>"
+            align_attr = (
+                f' style="text-align:{text_align}"' if text_align else ""
+            )
+            table_html += f'<tr class="infobox-args"><td{align_attr} colspan="2">{content}</td></tr>'
+        skip_keys = {
+            "caption",
+            "width",
+            "float",
+            "position",
+            "pos",
+            "text-align",
+            "align",
+            "style",
+        }
         for key, value in args.options.items():
-            if key in ["caption", "width", "float", "text-align"]:
+            if key in skip_keys:
                 continue
             if key.startswith("_"):
                 key = key[1:]
-            table_html += f"<tr class=\"infobox-key-value\" style=\"border:none;\"><td style=\"border: none;padding: .5rem;\"><strong>{key}</strong></td><td style=\"border: none;padding: .5rem;\">{value}</td></tr>"
+            table_html += f'<tr class="infobox-key-value"><td><strong>{key}</strong></td><td>{value}</td></tr>'
         table_html += "</table>"
 
-        return f"<div class=\"infobox\" style=\"{style};\">{caption}{table_html}</div>"
+        return f'<div class="infobox infobox-float-{floating}"{style_attr}>{caption_html}{table_html}</div>'
 
 
 class AttachmentListEmbedding:
@@ -937,6 +1166,130 @@ Options:
         )
 
 
+class FigureEmbedding:
+    @hookimpl
+    def info(self):
+        return (
+            "Figure",
+            "Wrap content in a figure with an optional caption.",
+            "Syntax/Embeddings",
+        )
+
+    @hookimpl
+    def help(self, plugin):
+        if plugin.lower() != "figure":
+            return None
+
+        return """
+<div class="row mb-10">
+A container for emphasizing content blocks (code, tables, images, etc.)
+with an optional caption — similar to a LaTeX figure.
+<div class="col">
+
+````
+{{Figure
+|caption=Figure 1: Example Python code
+|align=center/left/right
+|width=100%
+|height=300px
+|style=additional inline css
+```python
+#!/usr/bin/env python
+print("Hello, World!")
+```
+}}
+````
+</div></div>
+<div class="row mb-10">
+<div class="col">
+
+{{Figure
+|caption=Figure 1: Example Python code
+|width=100%
+```python
+#!/usr/bin/env python
+print("Hello, World!")
+```
+}}
+
+</div></div>
+"""
+
+    @hookimpl
+    def static_css(self):
+        return """
+div.figure-embedding {
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    padding: .5rem;
+    margin: 1rem auto;
+}
+div.figure-embedding-content {
+    width: 100%;
+}
+div.figure-embedding-content > :last-child {
+    margin-bottom: 0;
+}
+div.figure-embedding-caption {
+    text-align: center;
+    font-style: italic;
+}
+"""
+
+    @hookimpl
+    def embedding_render(
+        self,
+        embedding: str,
+        args: EmbeddingArgs,
+    ):
+        if embedding.lower() != "figure":
+            return None
+
+        content = "\n".join(args.args)
+        caption = args.options.get("caption", "")
+        align = args.options.get("align", "center")
+        width = args.options.get("width", "100%")
+        height = args.options.get("height", "")
+        userstyle = args.options_raw.get("style", "")
+
+        # dynamic per-instance styles only; fixed styles live in static_css()
+        inline_styles = []
+        if width:
+            inline_styles.append(f"width:{width}")
+        if align == "center":
+            inline_styles.append("margin-left:auto")
+            inline_styles.append("margin-right:auto")
+        elif align == "right":
+            inline_styles.append("margin-left:auto")
+            inline_styles.append("margin-right:0")
+        if userstyle:
+            inline_styles.append(userstyle)
+        style_attr = (
+            f' style="{";".join(inline_styles)}"' if inline_styles else ""
+        )
+
+        content_styles = []
+        if height:
+            content_styles.append(f"max-height:{height}")
+            content_styles.append("overflow-y:auto")
+        content_style_attr = (
+            f' style="{";".join(content_styles)}"' if content_styles else ""
+        )
+
+        caption_html = (
+            f'<div class="figure-embedding-caption">' f'{caption}</div>'
+            if caption
+            else ""
+        )
+
+        return (
+            f'<div class="figure-embedding"{style_attr}>'
+            f'<div class="figure-embedding-content"{content_style_attr}>{content}</div>'
+            f'{caption_html}'
+            f'</div>'
+        )
+
+
+plugin_manager.register(FigureEmbedding())
 plugin_manager.register(ImageFrameEmbedding())
 plugin_manager.register(InfoBoxEmbedding())
 plugin_manager.register(VideoEmbedding())

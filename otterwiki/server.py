@@ -9,6 +9,7 @@ import logging
 from flask import Flask, request
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf.csrf import CSRFProtect
 
 import otterwiki.gitstorage
 import otterwiki.util
@@ -73,7 +74,10 @@ app.config.update(
     HOME_PAGE="",
     RENDERER_HTML_ALLOWLIST="",
     ADMIN_USER_EMAIL="",
+    SESSION_COOKIE_SAMESITE="Lax",
     SECURITY_HEADERS=True,
+    WTF_CSRF_ENABLED=True,
+    WTF_CSRF_TIME_LIMIT=86400,
     PROXY_FIX_X_FOR=0,
     RATELIMIT_ENABLED=True,
     RATELIMIT_LOGIN="10/minute",
@@ -123,6 +127,9 @@ if (
     fatal_error(
         "Please configure a random SECRET_KEY with a length of at least 16 characters."
     )
+
+# enable CSRF protection globally
+csrf = CSRFProtect(app)
 
 # setup storage
 if app.config["REPOSITORY"] is None:

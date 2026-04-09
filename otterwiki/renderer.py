@@ -17,6 +17,7 @@ from pygments.util import ClassNotFound
 
 from otterwiki.plugins import chain_hooks
 from otterwiki.renderer_plugins import (
+    mistunePluginAlerts,
     plugin_alerts,
     plugin_fancy_blocks,
     plugin_fold,
@@ -44,6 +45,22 @@ mistune.plugins.table.NP_TABLE_PATTERN = (  # pyright: ignore
     r'^ {0,3}(?P<nptable_head>\S.*\|.*)\n'
     r' {0,3}(?P<nptable_align>[-:]+ *\|[-| :]*)\n'
     r'(?P<nptable_body>(?:.*\|.*(?:\n|$))*)\n{0,1}'
+)
+
+#
+# patch mistune helpers to support parenthesis-delimited link titles per CommonMark spec.
+# mistune 3.2.0 only recognises "title" and 'title' forms; adding (...) fixes link
+# reference definitions like: [modeline]: # ( vim: set ft=markdown: )
+#
+import string as _string
+
+_PUNCTUATION = r"[" + re.escape(_string.punctuation) + r"]"
+mistune.helpers.LINK_TITLE_RE = re.compile(  # pyright: ignore
+    r"[ \t\n]+("
+    r'"(?:\\' + _PUNCTUATION + r'|[^"\x00])*"|'  # "title"
+    r"'(?:\\" + _PUNCTUATION + r"|[^'\x00])*'|"  # 'title'
+    r"\((?:\\" + _PUNCTUATION + r"|[^()\x00])*\)"  # (title)
+    r")"
 )
 
 
@@ -417,8 +434,31 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
 class OtterwikiBlockParser(mistune.BlockParser):
     INDENT_CODE = re.compile(r'((?:\n*)(?:(?: {4}| *\t)[^\n]+\n*)+)\n')
 
+    # Pattern to detect alert syntax in the first line of a blockquote
+    _ALERT_DETECT = re.compile(
+        r'\s*\[!(?:' + mistunePluginAlerts.TYPES_WITH_PIPES + r')\]',
+        re.I,
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    def parse_block_quote(self, m, state):
+        """Override to detect alerts that were matched as blockquotes.
+
+        This handles the case where a blockquote-like pattern (e.g.
+        ``> [!TIP]``) is matched by mistune's list parser as a
+        ``block_quote`` break, bypassing the alert scanner.
+        """
+        if 'alert_block' in self._methods and self._ALERT_DETECT.match(
+            m.group('quote_1')
+        ):
+            # Re-match from cursor using the alert block scanner
+            alert_sc = self.compile_sc(['alert_block'])
+            m2 = alert_sc.match(state.src, m.start())
+            if m2:
+                return self._methods['alert_block'](m2, state)
+        return super().parse_block_quote(m, state)
 
     def parse_indent_code(self, m, state):
         """

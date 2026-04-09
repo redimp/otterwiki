@@ -11,6 +11,7 @@
     {% endif %}
   </h2>
     <form action="{{ url_for("user", uid=user.id) }}" method="POST" class="form-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
         <label for="name" class="required w-md-200">Name</label>
         <input type="text" class="form-control" name="name" id="name" placeholder="" value="{{user.name if user.name}}">
@@ -81,6 +82,7 @@
 <div class="card mx-auto m-lg-20">
     <h2 class="card-title">Delete User</h2>
     <form action="{{ url_for("user", uid=user.id) }}" method="POST" class="form-inline">{# class="w-400 mw-full" <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
         <div class="custom-checkbox">
           <input type="checkbox" id="agree-to-terms" name="delete" value="1">

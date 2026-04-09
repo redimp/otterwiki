@@ -1872,6 +1872,10 @@ class AutoRoute:
             revision = None
         # create page object
         p = Page(self.path, revision=revision)
+        # if the pagename is empty because it has been sanitized, redirect to /
+        if not empty(self.path) and empty(p.pagepath):
+            toast("Invalid pagename.", "error")
+            return redirect(url_for("index"))
         # if page md doesn't exist, but the folder exists, show index
         if not storage.exists(p.filename) and storage.exists(
             p.attachment_directoryname

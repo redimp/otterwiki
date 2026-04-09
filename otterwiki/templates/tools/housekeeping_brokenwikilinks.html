@@ -1,4 +1,4 @@
-<form hx-post="{{ url_for("housekeeping") }}" hx-target="this" hx-indicator="#brokenwikilinks_indicator">
+<form hx-post="{{ url_for("housekeeping") }}" hx-target="this" hx-indicator="#brokenwikilinks_indicator" hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>
 <input type="hidden" name="task" value="brokenwikilinks">
 {% if stats and (pages or most_wanted) %}
 <div class="mb-20">
