@@ -27,7 +27,7 @@ dependencies = [
     "pluggy==1.5.0",
     "regex==2026.2.28",
     "feedgen==1.0.0",
-    "Flask-Limiter>=3.12",
+    "Flask-Limiter==3.12",
     "flask-wtf==1.2.2",
 ]
 keywords = ["wiki", "git", "markdown"]
