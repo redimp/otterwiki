@@ -22,6 +22,7 @@ def create_app(tmpdir):
                 "SITE_NAME = 'TEST WIKI'\n",
                 "DEBUG = True\n",  # enable test and debug settings
                 "TESTING = True\n",
+                "RATELIMIT_ENABLED = False\n",
                 "MAIL_SUPPRESS_SEND = True\n",
                 "SECRET_KEY = 'Testing Testing Testing'\n",
             ]

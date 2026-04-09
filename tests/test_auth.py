@@ -1164,3 +1164,83 @@ def test_login_next_full_flow(app_with_user):
     # step 4: follow redirect to the original page
     rv = test_client.get(rv.headers["Location"])
     assert rv.status_code == 200
+
+
+#
+# rate limiting tests
+#
+@pytest.fixture
+def ratelimit_client(app_with_user):
+    """Test client with rate limiting enabled for testing rate limit behavior."""
+    from otterwiki.server import limiter
+
+    app_with_user.config["RATELIMIT_ENABLED"] = True
+    old_got_first_request = app_with_user._got_first_request
+    app_with_user._got_first_request = False
+    limiter.init_app(app_with_user)
+    app_with_user._got_first_request = old_got_first_request
+    limiter.reset()
+    client = app_with_user.test_client()
+    yield client
+    limiter.reset()
+    limiter.enabled = False
+    app_with_user.config["RATELIMIT_ENABLED"] = False
+    app_with_user.config["RATELIMIT_ENABLED"] = False
+
+
+def test_login_ratelimit(ratelimit_client):
+    """POST /-/login is rate limited to 10/minute; 11th request returns 429."""
+    for i in range(10):
+        result = ratelimit_client.post(
+            "/-/login",
+            data={"email": "mail@example.org", "password": "wrongpassword"},
+            follow_redirects=False,
+        )
+        assert result.status_code != 429, f"Request {i + 1} was rate limited"
+    result = ratelimit_client.post(
+        "/-/login",
+        data={"email": "mail@example.org", "password": "wrongpassword"},
+        follow_redirects=False,
+    )
+    assert result.status_code == 429
+
+
+def test_lost_password_ratelimit(ratelimit_client):
+    """POST /-/lost_password is rate limited to 5/minute; 6th request returns 429."""
+    for i in range(5):
+        result = ratelimit_client.post(
+            "/-/lost_password",
+            data={"email": "mail@example.org"},
+            follow_redirects=False,
+        )
+        assert result.status_code != 429, f"Request {i + 1} was rate limited"
+    result = ratelimit_client.post(
+        "/-/lost_password",
+        data={"email": "mail@example.org"},
+        follow_redirects=False,
+    )
+    assert result.status_code == 429
+
+
+def test_login_get_not_ratelimited(ratelimit_client):
+    """GET /-/login is never rate limited (only POST is)."""
+    for i in range(50):
+        result = ratelimit_client.get("/-/login")
+        assert result.status_code in (
+            200,
+            302,
+        ), f"GET request {i + 1} returned unexpected status {result.status_code}"
+
+
+def test_ratelimit_disabled_in_tests(app_with_user):
+    """With RATELIMIT_ENABLED=False (test default), rate limits are not enforced."""
+    client = app_with_user.test_client()
+    for i in range(20):
+        result = client.post(
+            "/-/login",
+            data={"email": "mail@example.org", "password": "wrongpassword"},
+            follow_redirects=False,
+        )
+        assert (
+            result.status_code != 429
+        ), f"Request {i + 1} was rate limited despite RATELIMIT_ENABLED=False"
