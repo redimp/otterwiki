@@ -6,7 +6,7 @@ import os
 import sys
 import logging
 
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 
@@ -240,6 +240,7 @@ limiter = Limiter(
 
 @app.errorhandler(429)
 def ratelimit_handler(e):
+    from flask import render_template
     from otterwiki.helper import toast
 
     app.logger.warning(
@@ -247,8 +248,11 @@ def ratelimit_handler(e):
     )
     toast("Too many attempts. Please try again later.", "error")
     if "lost_password" in request.path:
-        return redirect(url_for("lost_password")), 429
-    return redirect(url_for("login")), 429
+        return (
+            render_template("lost_password.html", title="Lost password"),
+            429,
+        )
+    return render_template("login.html", title="Login"), 429
 
 
 #

@@ -1189,7 +1189,7 @@ def ratelimit_client(app_with_user):
 
 
 def test_login_ratelimit(ratelimit_client):
-    """POST /-/login is rate limited to 10/minute; 11th request returns 429."""
+    """POST /-/login is rate limited to 10/minute; 11th request returns 429 with error message."""
     for i in range(10):
         result = ratelimit_client.post(
             "/-/login",
@@ -1203,10 +1203,11 @@ def test_login_ratelimit(ratelimit_client):
         follow_redirects=False,
     )
     assert result.status_code == 429
+    assert b"Too many attempts" in result.data
 
 
 def test_lost_password_ratelimit(ratelimit_client):
-    """POST /-/lost_password is rate limited to 5/minute; 6th request returns 429."""
+    """POST /-/lost_password is rate limited to 5/minute; 6th request returns 429 with error message."""
     for i in range(5):
         result = ratelimit_client.post(
             "/-/lost_password",
@@ -1220,6 +1221,7 @@ def test_lost_password_ratelimit(ratelimit_client):
         follow_redirects=False,
     )
     assert result.status_code == 429
+    assert b"Too many attempts" in result.data
 
 
 def test_login_get_not_ratelimited(ratelimit_client):
