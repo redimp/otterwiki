@@ -443,21 +443,48 @@ class OtterwikiBlockParser(mistune.BlockParser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    # Pattern to detect fold syntax (>|) in the first line of a blockquote
+    _FOLD_DETECT = re.compile(r'\|')
+
+    # Pattern to detect spoiler syntax (>!) in the first line of a blockquote
+    _SPOILER_DETECT = re.compile(r'!')
+
+    def _try_redirect(self, token_type, detect_re, m, state):
+        """Re-match a blockquote as a different block type.
+
+        When mistune's list parser matches a ``>``-prefixed line as a
+        ``block_quote`` break, custom block types (alerts, folds,
+        spoilers) are bypassed.  This helper checks whether the quoted
+        content actually matches *detect_re* and, if the corresponding
+        *token_type* parser is registered, re-scans from the match
+        start so the correct parser handles it.
+        """
+        if token_type not in self._methods:
+            return None
+        if not detect_re.match(m.group('quote_1')):
+            return None
+        sc = self.compile_sc([token_type])
+        m2 = sc.match(state.src, m.start())
+        if m2:
+            return self._methods[token_type](m2, state)
+        return None
+
     def parse_block_quote(self, m, state):
-        """Override to detect alerts that were matched as blockquotes.
+        """Override to detect alerts/folds/spoilers matched as blockquotes.
 
         This handles the case where a blockquote-like pattern (e.g.
-        ``> [!TIP]``) is matched by mistune's list parser as a
-        ``block_quote`` break, bypassing the alert scanner.
+        ``> [!TIP]``, ``>|``, ``>!``) is matched by mistune's list
+        parser as a ``block_quote`` break, bypassing the dedicated
+        scanner.
         """
-        if 'alert_block' in self._methods and self._ALERT_DETECT.match(
-            m.group('quote_1')
+        for token_type, detect_re in (
+            ('alert_block', self._ALERT_DETECT),
+            ('fold_block', self._FOLD_DETECT),
+            ('spoiler_block', self._SPOILER_DETECT),
         ):
-            # Re-match from cursor using the alert block scanner
-            alert_sc = self.compile_sc(['alert_block'])
-            m2 = alert_sc.match(state.src, m.start())
-            if m2:
-                return self._methods['alert_block'](m2, state)
+            result = self._try_redirect(token_type, detect_re, m, state)
+            if result is not None:
+                return result
         return super().parse_block_quote(m, state)
 
     def parse_indent_code(self, m, state):
