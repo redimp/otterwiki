@@ -927,6 +927,31 @@ def test_spoiler():
     assert 'spoiler-button' in html
 
 
+def test_spoiler_after_list():
+    md = """1. Test
+2. Test
+
+>! Spoiler content
+"""
+    html, _, _ = render.markdown(md)
+    assert 'spoiler' in html, "spoiler not rendered after list"
+    assert 'Spoiler content' in html
+
+
+def test_spoiler_after_list_with_paragraph():
+    md = """1. Test
+2. Test
+
+Another line
+
+>! Spoiler content
+"""
+    html, _, _ = render.markdown(md)
+    assert 'spoiler' in html, "spoiler not rendered after list with paragraph"
+    assert 'Spoiler content' in html
+    assert 'Another line' in html
+
+
 def test_fold():
     md = """>| # Headline is used as summary
 >| with the details folded."""
@@ -937,6 +962,37 @@ def test_fold():
     assert '>Headline is used as summary</summary>' in html
     # check fold
     assert "<p>with the details folded.</p>" in html
+
+
+def test_fold_after_list():
+    md = """1. Test
+2. Test
+
+>| # Summary
+>| Folded content
+"""
+    html, _, _ = render.markdown(md)
+    assert 'collapse-panel' in html, "fold not rendered after list"
+    assert 'Summary' in html
+    assert 'Folded content' in html
+
+
+def test_fold_after_list_with_paragraph():
+    md = """1. Test
+2. Test
+
+Another line
+
+>| # Summary
+>| Folded content
+"""
+    html, _, _ = render.markdown(md)
+    assert (
+        'collapse-panel' in html
+    ), "fold not rendered after list with paragraph"
+    assert 'Summary' in html
+    assert 'Folded content' in html
+    assert 'Another line' in html
 
 
 def test_all_alert_types():
