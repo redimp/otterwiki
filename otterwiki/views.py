@@ -91,6 +91,11 @@ def favicon():
     )
 
 
+@app.route("/.well-known/change-password")
+def well_known_change_password():
+    return redirect(url_for("settings"))
+
+
 @app.route("/-/healthz")
 def healthz():
     healthy, msgs = health_check()

@@ -28,3 +28,9 @@ def test_fatal_error():
         fatal_error("test_fatal_error")
     assert pytest_wrapped_e.type == SystemExit
     assert pytest_wrapped_e.value.code == 1
+
+
+def test_well_known_change_password(test_client):
+    response = test_client.get("/.well-known/change-password")
+    assert response.status_code == 302
+    assert "/-/settings" in response.headers["Location"]
