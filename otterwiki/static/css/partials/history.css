@@ -16,6 +16,7 @@ table.diff tr.removed,
 table.diff td.value,
 table.diff td.hunk {
     font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    white-space: pre-wrap;
 }
 tr.removed {
     color: rgba(0, 0, 0, 0.85);
