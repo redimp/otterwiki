@@ -131,7 +131,7 @@ const darkHighlightStyleDef = HighlightStyle.define([
   { tag: tags.quote, color: '#2b4' },
   { tag: tags.strong, fontWeight: 'bold' },
   { tag: tags.emphasis, fontStyle: 'italic' },
-  { tag: tags.processingInstruction, color: '#d8dee9' },
+  { tag: tags.processingInstruction },
   { tag: tags.special(tags.string), color: '#A3BE8C' },
 ]);
 
