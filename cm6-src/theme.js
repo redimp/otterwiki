@@ -110,7 +110,7 @@ const darkEditorTheme = EditorView.theme({
 
 const darkHighlightStyleDef = HighlightStyle.define([
   { tag: tags.comment, color: '#6BBAFF' },
-  { tag: tags.atom, color: '#b48ead' },
+  { tag: tags.atom, color: '#1890ff' },
   { tag: tags.number, color: '#b48ead' },
   { tag: [tags.propertyName, tags.attributeName], color: '#8FBCBB' },
   { tag: [tags.operator, tags.keyword], color: '#81A1C1' },
