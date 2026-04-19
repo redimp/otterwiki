@@ -1,7 +1,4 @@
 .cm-panel {
-  position: absolute;
-  left: 0; right: 0;
-  z-index: 15;
   padding: .1em .8em;
   overflow: hidden;
   background-color: #fff;
@@ -11,16 +8,6 @@
 .dark-mode .cm-panel {
   background: #25282c;
   color: #d8dee9;
-}
-
-.cm-panel {
-  border-bottom: 1px solid #eee;
-  top: 0;
-}
-
-.cm-panel {
-  border-top: 1px solid #eee;
-  bottom: 0;
 }
 
 .cm-panel input {
