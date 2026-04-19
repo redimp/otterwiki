@@ -1,5 +1,5 @@
 /**!
- * Sortable 1.15.3
+ * Sortable 1.15.7
  * @author	RubaXa   <trash@rubaxa.org>
  * @author	owenm    <owen23355@gmail.com>
  * @license MIT
@@ -10,131 +10,113 @@
   (global = global || self, global.Sortable = factory());
 }(this, (function () { 'use strict';
 
-  function ownKeys(object, enumerableOnly) {
-    var keys = Object.keys(object);
-    if (Object.getOwnPropertySymbols) {
-      var symbols = Object.getOwnPropertySymbols(object);
-      if (enumerableOnly) {
-        symbols = symbols.filter(function (sym) {
-          return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-        });
-      }
-      keys.push.apply(keys, symbols);
-    }
-    return keys;
+  function _arrayLikeToArray(r, a) {
+    (null == a || a > r.length) && (a = r.length);
+    for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+    return n;
   }
-  function _objectSpread2(target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i] != null ? arguments[i] : {};
-      if (i % 2) {
-        ownKeys(Object(source), true).forEach(function (key) {
-          _defineProperty(target, key, source[key]);
-        });
-      } else if (Object.getOwnPropertyDescriptors) {
-        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-      } else {
-        ownKeys(Object(source)).forEach(function (key) {
-          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-        });
-      }
-    }
-    return target;
+  function _arrayWithoutHoles(r) {
+    if (Array.isArray(r)) return _arrayLikeToArray(r);
   }
-  function _typeof(obj) {
-    "@babel/helpers - typeof";
-
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof = function (obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof = function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-    return _typeof(obj);
-  }
-  function _defineProperty(obj, key, value) {
-    if (key in obj) {
-      Object.defineProperty(obj, key, {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    } else {
-      obj[key] = value;
-    }
-    return obj;
+  function _defineProperty(e, r, t) {
+    return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+      value: t,
+      enumerable: !0,
+      configurable: !0,
+      writable: !0
+    }) : e[r] = t, e;
   }
   function _extends() {
-    _extends = Object.assign || function (target) {
-      for (var i = 1; i < arguments.length; i++) {
-        var source = arguments[i];
-        for (var key in source) {
-          if (Object.prototype.hasOwnProperty.call(source, key)) {
-            target[key] = source[key];
-          }
-        }
+    return _extends = Object.assign ? Object.assign.bind() : function (n) {
+      for (var e = 1; e < arguments.length; e++) {
+        var t = arguments[e];
+        for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]);
       }
-      return target;
-    };
-    return _extends.apply(this, arguments);
+      return n;
+    }, _extends.apply(null, arguments);
   }
-  function _objectWithoutPropertiesLoose(source, excluded) {
-    if (source == null) return {};
-    var target = {};
-    var sourceKeys = Object.keys(source);
-    var key, i;
-    for (i = 0; i < sourceKeys.length; i++) {
-      key = sourceKeys[i];
-      if (excluded.indexOf(key) >= 0) continue;
-      target[key] = source[key];
-    }
-    return target;
-  }
-  function _objectWithoutProperties(source, excluded) {
-    if (source == null) return {};
-    var target = _objectWithoutPropertiesLoose(source, excluded);
-    var key, i;
-    if (Object.getOwnPropertySymbols) {
-      var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
-      for (i = 0; i < sourceSymbolKeys.length; i++) {
-        key = sourceSymbolKeys[i];
-        if (excluded.indexOf(key) >= 0) continue;
-        if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
-        target[key] = source[key];
-      }
-    }
-    return target;
-  }
-  function _toConsumableArray(arr) {
-    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
-  }
-  function _arrayWithoutHoles(arr) {
-    if (Array.isArray(arr)) return _arrayLikeToArray(arr);
-  }
-  function _iterableToArray(iter) {
-    if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
-  }
-  function _unsupportedIterableToArray(o, minLen) {
-    if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-    var n = Object.prototype.toString.call(o).slice(8, -1);
-    if (n === "Object" && o.constructor) n = o.constructor.name;
-    if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-  }
-  function _arrayLikeToArray(arr, len) {
-    if (len == null || len > arr.length) len = arr.length;
-    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-    return arr2;
+  function _iterableToArray(r) {
+    if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r);
   }
   function _nonIterableSpread() {
     throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
+  function ownKeys(e, r) {
+    var t = Object.keys(e);
+    if (Object.getOwnPropertySymbols) {
+      var o = Object.getOwnPropertySymbols(e);
+      r && (o = o.filter(function (r) {
+        return Object.getOwnPropertyDescriptor(e, r).enumerable;
+      })), t.push.apply(t, o);
+    }
+    return t;
+  }
+  function _objectSpread2(e) {
+    for (var r = 1; r < arguments.length; r++) {
+      var t = null != arguments[r] ? arguments[r] : {};
+      r % 2 ? ownKeys(Object(t), !0).forEach(function (r) {
+        _defineProperty(e, r, t[r]);
+      }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) {
+        Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+      });
+    }
+    return e;
+  }
+  function _objectWithoutProperties(e, t) {
+    if (null == e) return {};
+    var o,
+      r,
+      i = _objectWithoutPropertiesLoose(e, t);
+    if (Object.getOwnPropertySymbols) {
+      var n = Object.getOwnPropertySymbols(e);
+      for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]);
+    }
+    return i;
+  }
+  function _objectWithoutPropertiesLoose(r, e) {
+    if (null == r) return {};
+    var t = {};
+    for (var n in r) if ({}.hasOwnProperty.call(r, n)) {
+      if (-1 !== e.indexOf(n)) continue;
+      t[n] = r[n];
+    }
+    return t;
+  }
+  function _toConsumableArray(r) {
+    return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread();
+  }
+  function _toPrimitive(t, r) {
+    if ("object" != typeof t || !t) return t;
+    var e = t[Symbol.toPrimitive];
+    if (void 0 !== e) {
+      var i = e.call(t, r || "default");
+      if ("object" != typeof i) return i;
+      throw new TypeError("@@toPrimitive must return a primitive value.");
+    }
+    return ("string" === r ? String : Number)(t);
+  }
+  function _toPropertyKey(t) {
+    var i = _toPrimitive(t, "string");
+    return "symbol" == typeof i ? i : i + "";
+  }
+  function _typeof(o) {
+    "@babel/helpers - typeof";
 
-  var version = "1.15.3";
+    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) {
+      return typeof o;
+    } : function (o) {
+      return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+    }, _typeof(o);
+  }
+  function _unsupportedIterableToArray(r, a) {
+    if (r) {
+      if ("string" == typeof r) return _arrayLikeToArray(r, a);
+      var t = {}.toString.call(r).slice(8, -1);
+      return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+    }
+  }
+
+  var version = "1.15.7";
 
   function userAgent(pattern) {
     if (typeof window !== 'undefined' && window.navigator) {
@@ -177,7 +159,7 @@
     return false;
   }
   function getParentOrHost(el) {
-    return el.host && el !== document && el.host.nodeType ? el.host : el.parentNode;
+    return el.host && el !== document && el.host.nodeType && el.host !== el ? el.host : el.parentNode;
   }
   function closest( /**HTMLElement*/el, /**String*/selector, /**HTMLElement*/ctx, includeCTX) {
     if (el) {
@@ -1127,7 +1109,8 @@
         x: 0,
         y: 0
       },
-      supportPointer: Sortable.supportPointer !== false && 'PointerEvent' in window && !Safari,
+      // Disabled on Safari: #1571; Enabled on Safari IOS: #2244
+      supportPointer: Sortable.supportPointer !== false && 'PointerEvent' in window && (!Safari || IOS),
       emptyInsertThreshold: 5
     };
     PluginManager.initializePlugins(this, el, defaults);
@@ -1238,7 +1221,7 @@
           pluginEvent('filter', _this, {
             evt: evt
           });
-          preventOnFilter && evt.cancelable && evt.preventDefault();
+          preventOnFilter && evt.preventDefault();
           return; // cancel dnd
         }
       } else if (filter) {
@@ -1260,7 +1243,7 @@
           }
         });
         if (filter) {
-          preventOnFilter && evt.cancelable && evt.preventDefault();
+          preventOnFilter && evt.preventDefault();
           return; // cancel dnd
         }
       }
@@ -1332,9 +1315,15 @@
         on(ownerDocument, 'dragover', nearestEmptyInsertDetectEvent);
         on(ownerDocument, 'mousemove', nearestEmptyInsertDetectEvent);
         on(ownerDocument, 'touchmove', nearestEmptyInsertDetectEvent);
-        on(ownerDocument, 'mouseup', _this._onDrop);
-        on(ownerDocument, 'touchend', _this._onDrop);
-        on(ownerDocument, 'touchcancel', _this._onDrop);
+        if (options.supportPointer) {
+          on(ownerDocument, 'pointerup', _this._onDrop);
+          // Native D&D triggers pointercancel
+          !this.nativeDraggable && on(ownerDocument, 'pointercancel', _this._onDrop);
+        } else {
+          on(ownerDocument, 'mouseup', _this._onDrop);
+          on(ownerDocument, 'touchend', _this._onDrop);
+          on(ownerDocument, 'touchcancel', _this._onDrop);
+        }
 
         // Make dragEl draggable (must be before delay for FireFox)
         if (FireFox && this.nativeDraggable) {
@@ -1354,9 +1343,14 @@
           // If the user moves the pointer or let go the click or touch
           // before the delay has been reached:
           // disable the delayed drag
-          on(ownerDocument, 'mouseup', _this._disableDelayedDrag);
-          on(ownerDocument, 'touchend', _this._disableDelayedDrag);
-          on(ownerDocument, 'touchcancel', _this._disableDelayedDrag);
+          if (options.supportPointer) {
+            on(ownerDocument, 'pointerup', _this._disableDelayedDrag);
+            on(ownerDocument, 'pointercancel', _this._disableDelayedDrag);
+          } else {
+            on(ownerDocument, 'mouseup', _this._disableDelayedDrag);
+            on(ownerDocument, 'touchend', _this._disableDelayedDrag);
+            on(ownerDocument, 'touchcancel', _this._disableDelayedDrag);
+          }
           on(ownerDocument, 'mousemove', _this._delayedDragTouchMoveHandler);
           on(ownerDocument, 'touchmove', _this._delayedDragTouchMoveHandler);
           options.supportPointer && on(ownerDocument, 'pointermove', _this._delayedDragTouchMoveHandler);
@@ -1382,6 +1376,8 @@
       off(ownerDocument, 'mouseup', this._disableDelayedDrag);
       off(ownerDocument, 'touchend', this._disableDelayedDrag);
       off(ownerDocument, 'touchcancel', this._disableDelayedDrag);
+      off(ownerDocument, 'pointerup', this._disableDelayedDrag);
+      off(ownerDocument, 'pointercancel', this._disableDelayedDrag);
       off(ownerDocument, 'mousemove', this._delayedDragTouchMoveHandler);
       off(ownerDocument, 'touchmove', this._delayedDragTouchMoveHandler);
       off(ownerDocument, 'pointermove', this._delayedDragTouchMoveHandler);
@@ -1402,7 +1398,6 @@
       }
       try {
         if (document.selection) {
-          // Timeout neccessary for IE9
           _nextTick(function () {
             document.selection.empty();
           });
@@ -1624,6 +1619,7 @@
       _this._dragStartId = _nextTick(_this._dragStarted.bind(_this, fallback, evt));
       on(document, 'selectstart', _this);
       moved = true;
+      window.getSelection().removeAllRanges();
       if (Safari) {
         css(document.body, 'user-select', 'none');
       }
@@ -1895,6 +1891,7 @@
       off(ownerDocument, 'mouseup', this._onDrop);
       off(ownerDocument, 'touchend', this._onDrop);
       off(ownerDocument, 'pointerup', this._onDrop);
+      off(ownerDocument, 'pointercancel', this._onDrop);
       off(ownerDocument, 'touchcancel', this._onDrop);
       off(document, 'selectstart', this);
     },
@@ -2046,8 +2043,11 @@
     _nulling: function _nulling() {
       pluginEvent('nulling', this);
       rootEl = dragEl = parentEl = ghostEl = nextEl = cloneEl = lastDownEl = cloneHidden = tapEvt = touchEvt = moved = newIndex = newDraggableIndex = oldIndex = oldDraggableIndex = lastTarget = lastDirection = putSortable = activeGroup = Sortable.dragged = Sortable.ghost = Sortable.clone = Sortable.active = null;
-      savedInputChecked.forEach(function (el) {
-        el.checked = true;
+      var el = this.el;
+      savedInputChecked.forEach(function (checkEl) {
+        if (el.contains(checkEl)) {
+          checkEl.checked = true;
+        }
       });
       savedInputChecked.length = lastDx = lastDy = 0;
     },
@@ -3085,28 +3085,38 @@
               var lastIndex = index(lastMultiDragSelect),
                 currentIndex = index(dragEl$1);
               if (~lastIndex && ~currentIndex && lastIndex !== currentIndex) {
-                // Must include lastMultiDragSelect (select it), in case modified selection from no selection
-                // (but previous selection existed)
-                var n, i;
-                if (currentIndex > lastIndex) {
-                  i = lastIndex;
-                  n = currentIndex;
-                } else {
-                  i = currentIndex;
-                  n = lastIndex + 1;
-                }
-                for (; i < n; i++) {
-                  if (~multiDragElements.indexOf(children[i])) continue;
-                  toggleClass(children[i], options.selectedClass, true);
-                  multiDragElements.push(children[i]);
-                  dispatchEvent({
-                    sortable: sortable,
-                    rootEl: rootEl,
-                    name: 'select',
-                    targetEl: children[i],
-                    originalEvent: evt
-                  });
-                }
+                (function () {
+                  // Must include lastMultiDragSelect (select it), in case modified selection from no selection
+                  // (but previous selection existed)
+                  var n, i;
+                  if (currentIndex > lastIndex) {
+                    i = lastIndex;
+                    n = currentIndex;
+                  } else {
+                    i = currentIndex;
+                    n = lastIndex + 1;
+                  }
+                  var filter = options.filter;
+                  for (; i < n; i++) {
+                    if (~multiDragElements.indexOf(children[i])) continue;
+                    // Check if element is draggable
+                    if (!closest(children[i], options.draggable, parentEl, false)) continue;
+                    // Check if element is filtered
+                    var filtered = filter && (typeof filter === 'function' ? filter.call(sortable, evt, children[i], sortable) : filter.split(',').some(function (criteria) {
+                      return closest(children[i], criteria.trim(), parentEl, false);
+                    }));
+                    if (filtered) continue;
+                    toggleClass(children[i], options.selectedClass, true);
+                    multiDragElements.push(children[i]);
+                    dispatchEvent({
+                      sortable: sortable,
+                      rootEl: rootEl,
+                      name: 'select',
+                      targetEl: children[i],
+                      originalEvent: evt
+                    });
+                  }
+                })();
               }
             } else {
               lastMultiDragSelect = dragEl$1;
