@@ -42,167 +42,167 @@ export const codeLanguages = [
   LanguageDescription.of({
     name: 'JavaScript',
     alias: ['javascript', 'js'],
-    support: javascript()
+    load() { return Promise.resolve(javascript()); }
   }),
   LanguageDescription.of({
     name: 'TypeScript',
     alias: ['typescript', 'ts'],
-    support: javascript({ typescript: true })
+    load() { return Promise.resolve(javascript({ typescript: true })); }
   }),
   LanguageDescription.of({
     name: 'Python',
     alias: ['python', 'py'],
-    support: python()
+    load() { return Promise.resolve(python()); }
   }),
   LanguageDescription.of({
     name: 'XML',
     alias: ['xml'],
-    support: xml()
+    load() { return Promise.resolve(xml()); }
   }),
   LanguageDescription.of({
     name: 'HTML',
     alias: ['html'],
-    support: html()
+    load() { return Promise.resolve(html()); }
   }),
   LanguageDescription.of({
     name: 'CSS',
     alias: ['css'],
-    support: css()
+    load() { return Promise.resolve(css()); }
   }),
   LanguageDescription.of({
     name: 'JSON',
     alias: ['json'],
-    support: json()
+    load() { return Promise.resolve(json()); }
   }),
   LanguageDescription.of({
     name: 'Markdown',
     alias: ['markdown', 'md'],
-    support: markdown()
+    load() { return Promise.resolve(markdown()); }
   }),
   LanguageDescription.of({
     name: 'YAML',
     alias: ['yaml', 'yml'],
-    support: yaml()
+    load() { return Promise.resolve(yaml()); }
   }),
   LanguageDescription.of({
     name: 'PHP',
     alias: ['php'],
-    support: php()
+    load() { return Promise.resolve(php()); }
   }),
   LanguageDescription.of({
     name: 'SQL',
     alias: ['sql'],
-    support: sql()
+    load() { return Promise.resolve(sql()); }
   }),
   LanguageDescription.of({
     name: 'Go',
     alias: ['go'],
-    support: go()
+    load() { return Promise.resolve(go()); }
   }),
   LanguageDescription.of({
     name: 'Rust',
     alias: ['rust'],
-    support: rust()
+    load() { return Promise.resolve(rust()); }
   }),
   LanguageDescription.of({
     name: 'Shell',
     alias: ['shell', 'bash', 'sh'],
-    support: StreamLanguage.define(shell)
+    load() { return Promise.resolve(StreamLanguage.define(shell)); }
   }),
   LanguageDescription.of({
     name: 'C',
     alias: ['c'],
-    support: StreamLanguage.define(c)
+    load() { return Promise.resolve(StreamLanguage.define(c)); }
   }),
   LanguageDescription.of({
     name: 'C++',
     alias: ['cpp', 'c++'],
-    support: StreamLanguage.define(cpp)
+    load() { return Promise.resolve(StreamLanguage.define(cpp)); }
   }),
   LanguageDescription.of({
     name: 'Java',
     alias: ['java'],
-    support: StreamLanguage.define(java)
+    load() { return Promise.resolve(StreamLanguage.define(java)); }
   }),
   LanguageDescription.of({
     name: 'C#',
     alias: ['csharp', 'cs'],
-    support: StreamLanguage.define(csharp)
+    load() { return Promise.resolve(StreamLanguage.define(csharp)); }
   }),
   LanguageDescription.of({
     name: 'Scala',
     alias: ['scala'],
-    support: StreamLanguage.define(scala)
+    load() { return Promise.resolve(StreamLanguage.define(scala)); }
   }),
   LanguageDescription.of({
     name: 'Kotlin',
     alias: ['kotlin'],
-    support: StreamLanguage.define(kotlin)
+    load() { return Promise.resolve(StreamLanguage.define(kotlin)); }
   }),
   LanguageDescription.of({
     name: 'TOML',
     alias: ['toml'],
-    support: StreamLanguage.define(toml)
+    load() { return Promise.resolve(StreamLanguage.define(toml)); }
   }),
   LanguageDescription.of({
     name: 'CMake',
     alias: ['cmake'],
-    support: StreamLanguage.define(cmake)
+    load() { return Promise.resolve(StreamLanguage.define(cmake)); }
   }),
   LanguageDescription.of({
     name: 'Perl',
     alias: ['perl'],
-    support: StreamLanguage.define(perl)
+    load() { return Promise.resolve(StreamLanguage.define(perl)); }
   }),
   LanguageDescription.of({
     name: 'HTTP',
     alias: ['http'],
-    support: StreamLanguage.define(http)
+    load() { return Promise.resolve(StreamLanguage.define(http)); }
   }),
   LanguageDescription.of({
     name: 'Dockerfile',
     alias: ['dockerfile'],
-    support: StreamLanguage.define(dockerFile)
+    load() { return Promise.resolve(StreamLanguage.define(dockerFile)); }
   }),
   LanguageDescription.of({
     name: 'PowerShell',
     alias: ['powershell', 'ps1'],
-    support: StreamLanguage.define(powerShell)
+    load() { return Promise.resolve(StreamLanguage.define(powerShell)); }
   }),
   LanguageDescription.of({
     name: 'Properties',
     alias: ['properties'],
-    support: StreamLanguage.define(properties)
+    load() { return Promise.resolve(StreamLanguage.define(properties)); }
   }),
   LanguageDescription.of({
     name: 'LaTeX',
     alias: ['latex', 'tex', 'stex'],
-    support: StreamLanguage.define(stex)
+    load() { return Promise.resolve(StreamLanguage.define(stex)); }
   }),
   LanguageDescription.of({
     name: 'Nginx',
     alias: ['nginx'],
-    support: StreamLanguage.define(nginx)
+    load() { return Promise.resolve(StreamLanguage.define(nginx)); }
   }),
   LanguageDescription.of({
     name: 'Haskell',
     alias: ['haskell'],
-    support: StreamLanguage.define(haskell)
+    load() { return Promise.resolve(StreamLanguage.define(haskell)); }
   }),
   LanguageDescription.of({
     name: 'Lua',
     alias: ['lua'],
-    support: StreamLanguage.define(lua)
+    load() { return Promise.resolve(StreamLanguage.define(lua)); }
   }),
   LanguageDescription.of({
     name: 'Jinja2',
     alias: ['jinja2', 'jinja'],
-    support: StreamLanguage.define(jinja2)
+    load() { return Promise.resolve(StreamLanguage.define(jinja2)); }
   }),
   LanguageDescription.of({
     name: 'Ruby',
     alias: ['ruby', 'rb'],
-    support: StreamLanguage.define(ruby)
+    load() { return Promise.resolve(StreamLanguage.define(ruby)); }
   })
 ];
 
