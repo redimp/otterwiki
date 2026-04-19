@@ -1,5 +1,5 @@
-import { EditorView } from '@codemirror/view';
-import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
+import { EditorView, ViewPlugin, Decoration } from '@codemirror/view';
+import { HighlightStyle, syntaxHighlighting, syntaxTree } from '@codemirror/language';
 import { Compartment } from '@codemirror/state';
 import { tags } from '@lezer/highlight';
 
@@ -9,28 +9,34 @@ const lightEditorTheme = EditorView.theme({
   '&': {
     height: 'calc(100vh - 8rem)',
     minHeight: 'calc(100vh - 8rem)',
+  },
+  '.cm-scroller': {
     fontFamily: 'Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif',
   },
   '.cm-activeLine': {
-    backgroundColor: '#FFFAE3',
+    backgroundColor: 'rgba(255, 250, 227, 0.4)',
   },
   '&.cm-focused .cm-matchingBracket': {
     outline: '1px solid grey',
     color: 'black',
   },
   '.cm-gutters': {
-    backgroundColor: 'transparent',
+    backgroundColor: '#f7f7f7',
     borderRight: '1px solid #ddd',
+  },
+  '.cm-lineNumbers .cm-gutterElement': {
+    color: '#999',
   },
   '.cm-list-1': { color: '#a074c4' },
   '.cm-list-2': { color: '#b11' },
   '.cm-list-3': { color: '#000080' },
+  '.cm-inline-code': { color: '#808080' },
 }, { dark: false });
 
 const lightHighlightStyleDef = HighlightStyle.define([
   { tag: tags.meta, color: '#808000' },
   { tag: tags.number, color: '#0000FF' },
-  { tag: tags.heading, fontWeight: 'bold', color: '#000080' },
+  { tag: tags.heading, fontWeight: 'bold', color: '#000080', textDecoration: 'none' },
   { tag: tags.keyword, fontWeight: 'bold', color: '#000080' },
   { tag: tags.atom, fontWeight: 'bold', color: '#000080' },
   { tag: tags.definition(tags.variableName), color: '#000000' },
@@ -47,8 +53,11 @@ const lightHighlightStyleDef = HighlightStyle.define([
   { tag: tags.attributeName, color: '#0000FF' },
   { tag: tags.tagName, color: '#000080' },
   { tag: tags.quote, color: '#2b4' },
-  { tag: tags.url, color: '#f99b15' },
   { tag: tags.link, color: '#1890ff', textDecoration: 'none' },
+  { tag: tags.url, color: '#f99b15' },
+  { tag: tags.strong, fontWeight: 'bold' },
+  { tag: tags.emphasis, fontStyle: 'italic' },
+  { tag: tags.processingInstruction, color: 'black' },
   { tag: tags.standard(tags.variableName), color: '#30a' },  // builtin
   { tag: tags.bracket, color: '#cc7' },
 ]);
@@ -57,9 +66,11 @@ const darkEditorTheme = EditorView.theme({
   '&': {
     height: 'calc(100vh - 8rem)',
     minHeight: 'calc(100vh - 8rem)',
-    fontFamily: 'Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif',
     backgroundColor: '#25282c',
     color: '#d8dee9',
+  },
+  '.cm-scroller': {
+    fontFamily: 'Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif',
   },
   '.cm-content': {
     caretColor: '#f8f8f0',
@@ -71,7 +82,7 @@ const darkEditorTheme = EditorView.theme({
     backgroundColor: '#434c5e',
   },
   '.cm-activeLine': {
-    backgroundColor: '#3b4252',
+    backgroundColor: 'rgba(59, 66, 82, 0.5)',
   },
   '.cm-gutters': {
     backgroundColor: '#25282c',
@@ -94,6 +105,7 @@ const darkEditorTheme = EditorView.theme({
   '.cm-list-1': { color: '#bf616a' },
   '.cm-list-2': { color: '#b48ead' },
   '.cm-list-3': { color: '#81A1C1' },
+  '.cm-inline-code': { color: '#6BBAFF' },
 }, { dark: true });
 
 const darkHighlightStyleDef = HighlightStyle.define([
@@ -110,18 +122,59 @@ const darkHighlightStyleDef = HighlightStyle.define([
   { tag: tags.definition(tags.variableName), color: '#8FBCBB' },
   { tag: tags.bracket, color: '#81A1C1' },
   { tag: tags.tagName, color: '#bf616a' },
-  { tag: tags.heading, color: '#b48ead' },
+  { tag: tags.heading, color: '#b48ead', textDecoration: 'none' },
+  { tag: tags.link, color: '#1890ff', textDecoration: 'none' },
   { tag: tags.url, color: '#A3BE8C' },
-  { tag: tags.link, color: '#1890ff' },
   { tag: tags.invalid, color: '#f8f8f0', backgroundColor: '#bf616a' },
   { tag: tags.meta, color: '#88C0D0' },
   { tag: tags.modifier, color: '#81A1C1' },
   { tag: tags.quote, color: '#2b4' },
+  { tag: tags.strong, fontWeight: 'bold' },
+  { tag: tags.emphasis, fontStyle: 'italic' },
+  { tag: tags.processingInstruction, color: '#d8dee9' },
   { tag: tags.special(tags.string), color: '#A3BE8C' },
 ]);
 
 export const lightTheme = [lightEditorTheme, syntaxHighlighting(lightHighlightStyleDef)];
 export const darkTheme = [darkEditorTheme, syntaxHighlighting(darkHighlightStyleDef)];
+
+// ViewPlugin that decorates CodeText inside InlineCode with .cm-inline-code
+// so inline code gets grey color without leaking into fenced code blocks.
+export const inlineCodeHighlighter = ViewPlugin.fromClass(class {
+  constructor(view) {
+    this.decorations = this.buildDecorations(view);
+  }
+
+  update(update) {
+    if (update.docChanged || update.viewportChanged) {
+      this.decorations = this.buildDecorations(update.view);
+    }
+  }
+
+  buildDecorations(view) {
+    const marks = [];
+    let inInlineCode = false;
+    for (const { from, to } of view.visibleRanges) {
+      syntaxTree(view.state).iterate({
+        from,
+        to,
+        enter(node) {
+          if (node.name === 'InlineCode') {
+            inInlineCode = true;
+          } else if (node.name === 'CodeText' && inInlineCode) {
+            marks.push(Decoration.mark({ class: 'cm-inline-code' }).range(node.from, node.to));
+          }
+        },
+        leave(node) {
+          if (node.name === 'InlineCode') {
+            inInlineCode = false;
+          }
+        },
+      });
+    }
+    return Decoration.set(marks, true);
+  }
+}, { decorations: v => v.decorations });
 
 export function getActiveTheme() {
   return document.body.classList.contains('dark-mode') ? darkTheme : lightTheme;

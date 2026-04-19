@@ -7,7 +7,6 @@ import {
   highlightSpecialChars,
   highlightActiveLine,
   dropCursor,
-  showPanel,
 } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
@@ -22,7 +21,7 @@ import { search, searchKeymap, openSearchPanel } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
 import { codeLanguages } from './languages.js';
-import { lightTheme, darkTheme, themeCompartment } from './theme.js';
+import { lightTheme, darkTheme, themeCompartment, inlineCodeHighlighter } from './theme.js';
 import { setView, getCursor, getValue, posToOffset } from './helpers.js';
 import { getState } from './state-detection.js';
 import * as formatting from './editor-formatting.js';
@@ -75,8 +74,9 @@ function initEditor() {
       bracketMatching(),
       closeBrackets(),
       markdown({ codeLanguages }),
-      syntaxHighlighting(defaultHighlightStyle),
+      syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       themeCompartment.of(isDarkMode ? darkTheme : lightTheme),
+      inlineCodeHighlighter,
       listDepthHighlighter,
       search({ top: false }),
       EditorView.lineWrapping,
@@ -98,19 +98,14 @@ function initEditor() {
         });
         view.dom.dispatchEvent(changeEvent);
       }),
-      showPanel.of(() => {
-        const dom = document.getElementById('editor-bottom-panel');
-        if (!dom) {
-          return null;
-        }
-        dom.style.display = 'block';
-        return { dom, top: false };
-      }),
     ],
   });
 
   textarea.style.display = 'none';
   setView(view);
+
+  const bottomPanel = document.getElementById('editor-bottom-panel');
+  if (bottomPanel) bottomPanel.style.display = 'block';
 
   const config = window.otterwikiEditorConfig || {};
   const cursorLine = config.cursorLine || 0;
