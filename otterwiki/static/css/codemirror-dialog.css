@@ -1,4 +1,4 @@
-.CodeMirror-dialog {
+.cm-panel {
   position: absolute;
   left: 0; right: 0;
   z-index: 15;
@@ -8,22 +8,22 @@
   color: #000;
 }
 
-.dark-mode .CodeMirror-dialog {
+.dark-mode .cm-panel {
   background: #25282c;
   color: #d8dee9;
 }
 
-.CodeMirror-dialog-top {
+.cm-panel {
   border-bottom: 1px solid #eee;
   top: 0;
 }
 
-.CodeMirror-dialog-bottom {
+.cm-panel {
   border-top: 1px solid #eee;
   bottom: 0;
 }
 
-.CodeMirror-dialog input {
+.cm-panel input {
   border: none;
   outline: none;
   background-color: inherit;
@@ -32,13 +32,13 @@
   font-family: monospace;
 }
 
-.CodeMirror-dialog button {
+.cm-panel button {
   font-size: 70%;
   color: var(--lm-button-text-color);
   background-color: var(--lm-button-bg-color);
 }
 
-.dark-mode .CodeMirror-dialog button {
+.dark-mode .cm-panel button {
   font-size: 70%;
   color: var(--dm-button-text-color);
   background-color: var(--dm-button-bg-color);
