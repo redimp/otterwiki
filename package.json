@@ -24,6 +24,7 @@
     "@codemirror/legacy-modes": "^6.0.0",
     "@codemirror/search": "^6.0.0",
     "@codemirror/autocomplete": "^6.0.0",
+    "@codemirror/lint": "^6.9.5",
     "@lezer/common": "^1.0.0",
     "@lezer/highlight": "^1.0.0",
     "@lezer/markdown": "^1.0.0"

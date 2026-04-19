@@ -1,3 +1,5 @@
+import { EditorView } from '@codemirror/view';
+
 class CodeMirror6Editor {
   constructor(view) {
     this.view = view;
@@ -36,6 +38,37 @@ class CodeMirror6Editor {
       },
     });
   }
+}
+
+export function inlineAttachmentExtension(options = {}) {
+  return EditorView.domEventHandlers({
+    paste(event, view) {
+      const InlineAttachmentCtor = globalThis.inlineAttachment;
+      if (typeof InlineAttachmentCtor === 'undefined') {
+        return false;
+      }
+
+      const editor = new CodeMirror6Editor(view);
+      const inlineattach = new InlineAttachmentCtor(options, editor);
+      inlineattach.onPaste(event);
+      return false;
+    },
+    drop(event, view) {
+      const InlineAttachmentCtor = globalThis.inlineAttachment;
+      if (typeof InlineAttachmentCtor === 'undefined') {
+        return false;
+      }
+
+      const editor = new CodeMirror6Editor(view);
+      const inlineattach = new InlineAttachmentCtor(options, editor);
+      if (inlineattach.onDrop(event)) {
+        event.stopPropagation();
+        event.preventDefault();
+        return true;
+      }
+      return false;
+    },
+  });
 }
 
 export function attachInlineUpload(view, options = {}) {
