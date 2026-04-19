@@ -16,7 +16,7 @@ import {
   bracketMatching,
   defaultHighlightStyle,
 } from '@codemirror/language';
-import { markdown, insertNewlineContinueMarkup } from '@codemirror/lang-markdown';
+import { markdown, markdownLanguage, insertNewlineContinueMarkup } from '@codemirror/lang-markdown';
 import { search, searchKeymap, openSearchPanel } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
@@ -73,7 +73,7 @@ function initEditor() {
       indentOnInput(),
       bracketMatching(),
       closeBrackets(),
-      markdown({ codeLanguages }),
+      markdown({ codeLanguages, base: markdownLanguage }),
       syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       themeCompartment.of(isDarkMode ? darkTheme : lightTheme),
       inlineCodeHighlighter,
