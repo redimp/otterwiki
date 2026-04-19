@@ -233,11 +233,3 @@ export const codeLanguages = [
     support: rubySupport,
   }),
 ];
-
-export function getLanguage(name) {
-  if (!name) return null;
-
-  const lower = name.toLowerCase();
-  const desc = codeLanguages.find(d => d.alias.includes(lower));
-  return desc ? desc.support : null;
-}

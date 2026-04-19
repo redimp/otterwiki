@@ -10,7 +10,6 @@ import {
   replaceSelection,
   replaceRange,
   focus,
-  somethingSelected,
 } from './helpers.js';
 import { getState } from './state-detection.js';
 
@@ -209,8 +208,6 @@ export function _toggleMultilineBlock(syntaxStartChars, headerRegex = null, synt
 
       if (blockEndLine !== -1) {
         _setLine(blockEndLine, '');
-      } else {
-        console.log('ERROR: No block end found! Remove manually.');
       }
     }
   } else {
@@ -356,4 +353,3 @@ export function _findNextOccurenceLine(lineContent) {
 }
 
 void getState;
-void somethingSelected;

@@ -9,12 +9,7 @@ import {
   replaceSelection,
   focus,
 } from './helpers.js';
-
-function _getSelectedLines() {
-  const start = getCursor('start').line;
-  const end = getCursor('end').line;
-  return [...Array(end - start + 1).keys()].map((i) => i + start);
-}
+import { _getSelectedLines } from './editor-formatting.js';
 
 export function _findBlock(selectBlock = false) {
   let block_start = Number.MAX_SAFE_INTEGER;

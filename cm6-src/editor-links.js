@@ -8,7 +8,6 @@ import {
   getSelection,
   replaceSelection,
   focus,
-  somethingSelected,
   undo,
   redo,
 } from './helpers.js';
@@ -272,5 +271,3 @@ export function on_paste(e) {
 }
 
 export { undo, redo };
-
-void somethingSelected;
