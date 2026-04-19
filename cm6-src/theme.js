@@ -138,8 +138,8 @@ const darkHighlightStyleDef = HighlightStyle.define([
 export const lightTheme = [lightEditorTheme, syntaxHighlighting(lightHighlightStyleDef)];
 export const darkTheme = [darkEditorTheme, syntaxHighlighting(darkHighlightStyleDef)];
 
-// ViewPlugin that decorates CodeText inside InlineCode with .cm-inline-code
-// so inline code gets grey color without leaking into fenced code blocks.
+// ViewPlugin that decorates InlineCode and FencedCode nodes (marks + content)
+// with .cm-inline-code so they get grey color.
 export const inlineCodeHighlighter = ViewPlugin.fromClass(class {
   constructor(view) {
     this.decorations = this.buildDecorations(view);
@@ -153,21 +153,14 @@ export const inlineCodeHighlighter = ViewPlugin.fromClass(class {
 
   buildDecorations(view) {
     const marks = [];
-    let inInlineCode = false;
     for (const { from, to } of view.visibleRanges) {
       syntaxTree(view.state).iterate({
         from,
         to,
         enter(node) {
-          if (node.name === 'InlineCode') {
-            inInlineCode = true;
-          } else if (node.name === 'CodeText' && inInlineCode) {
+          if (node.name === 'InlineCode' || node.name === 'FencedCode') {
             marks.push(Decoration.mark({ class: 'cm-inline-code' }).range(node.from, node.to));
-          }
-        },
-        leave(node) {
-          if (node.name === 'InlineCode') {
-            inInlineCode = false;
+            return false; // don't recurse, whole node gets the class
           }
         },
       });
