@@ -2,11 +2,14 @@
 
 .cm-editor {
   height: calc(100vh - 8rem);
+}
+
+.cm-scroller {
   font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
 }
 
 .cm-activeLine {
-  background: #FFFAE3;
+  background: rgba(255, 250, 227, 0.4);
 }
 
 .cm-matchingBracket {
@@ -52,7 +55,7 @@
 }
 
 .dark-mode .cm-activeLine {
-  background: #3b4252;
+  background: rgba(59, 66, 82, 0.5);
 }
 
 .dark-mode .cm-matchingBracket {
