@@ -38,7 +38,7 @@ const lightHighlightStyleDef = HighlightStyle.define([
   { tag: tags.number, color: '#0000FF' },
   { tag: tags.heading, fontWeight: 'bold', color: '#000080', textDecoration: 'none' },
   { tag: tags.keyword, fontWeight: 'bold', color: '#000080' },
-  { tag: tags.atom, fontWeight: 'bold', color: '#000080' },
+  { tag: tags.atom, color: '#1890ff' },
   { tag: tags.definition(tags.variableName), color: '#000000' },
   { tag: tags.variableName, color: '#730' },
   { tag: tags.special(tags.variableName), color: '#a074c4' },  // variable-2
