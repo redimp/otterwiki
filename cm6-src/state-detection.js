@@ -21,9 +21,13 @@ export function getState(offset) {
     heading: false,
     ol: false,
     ul: false,
+    linkHref: null,
+    linkText: null,
+    linkTitle: null,
   };
 
   let node = tree.resolveInner(offset, -1);
+  let linkNode = null;
   while (node) {
     const name = node.name;
     if (name === 'StrongEmphasis') {
@@ -38,6 +42,7 @@ export function getState(offset) {
       result.strikethrough = true;
     } else if (name === 'Link') {
       result.link = true;
+      linkNode = node;
     } else if (name === 'Image') {
       result.image = true;
       result.img = true;
@@ -51,6 +56,23 @@ export function getState(offset) {
       result.ol = true;
     }
     node = node.parent;
+  }
+
+  // Extract link properties if cursor is in a link
+  if (linkNode) {
+    let child = linkNode.firstChild;
+    while (child) {
+      if (child.name === 'LinkText') {
+        const linkTextStart = child.from;
+        const linkTextEnd = child.to;
+        result.linkText = view.state.doc.sliceString(linkTextStart, linkTextEnd);
+      } else if (child.name === 'URL') {
+        const urlStart = child.from;
+        const urlEnd = child.to;
+        result.linkHref = view.state.doc.sliceString(urlStart, urlEnd);
+      }
+      child = child.nextSibling;
+    }
   }
 
   return result;
