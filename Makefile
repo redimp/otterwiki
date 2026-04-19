@@ -16,7 +16,7 @@ HELM_VERSION := $(shell grep ^version helm/Chart.yaml | awk '{print $$2}')
 
 all: run
 
-.PHONY: clean coverage run debug cli shell sdist docker-build docker-test
+.PHONY: clean coverage run debug cli shell sdist docker-build docker-test cm6
 ARGS ?=
 
 clean:
@@ -88,6 +88,9 @@ otterwiki/static/js/cm-modes.min.js: Makefile tmp/codemirror-5.65.15
 			>> otterwiki/static/js/cm-modes.js; \
 	done
 	./venv/bin/python -m rjsmin -p < otterwiki/static/js/cm-modes.js > otterwiki/static/js/cm-modes.min.js
+
+cm6:
+	npm install --include=dev && node esbuild.config.mjs
 
 docker-test:
 	# make sure the image is rebuild
