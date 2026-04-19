@@ -30,6 +30,7 @@ import * as tables from './editor-tables.js';
 import * as lists from './editor-lists.js';
 import * as links from './editor-links.js';
 import { attachInlineUpload } from './inline-attachment.js';
+import { listDepthHighlighter } from './list-depth.js';
 
 function initEditor() {
   const textarea = document.getElementById('content_editor');
@@ -76,6 +77,7 @@ function initEditor() {
       markdown({ codeLanguages }),
       syntaxHighlighting(defaultHighlightStyle),
       themeCompartment.of(isDarkMode ? darkTheme : lightTheme),
+      listDepthHighlighter,
       search({ top: false }),
       EditorView.lineWrapping,
       EditorState.tabSize.of(4),
