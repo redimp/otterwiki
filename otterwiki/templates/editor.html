@@ -435,50 +435,48 @@
 {% include 'snippets/renderer_js.html' %}
 {# load the codemirror stuff #}
 <script src="{{ url_for("static", filename="js/inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
-<script>
-  window.otterwikiEditorConfig = {
-    cursorLine: {{cursor_line or 0}},
-    cursorCh: {{cursor_ch or 0}},
-    inlineAttachmentOptions: {
-      uploadUrl: {{ url_for('inline_attachment', pagepath=pagepath) | tojson }},
-      extraHeaders: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
-      allowedTypes: ['*'],
-      urlText: function(filename, result) {
-        var imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff'];
-        var isImage = false;
-        for (var i = 0; i < imageExtensions.length; i++) {
-          if (filename.toLowerCase().endsWith(imageExtensions[i])) { isImage = true; break; }
-        }
-        var displayName = filename.replace(/^\.\//, '');
-        if (isImage) { return "![" + displayName + "](" + filename + ")"; }
-        else { return "[" + displayName + "](" + filename + ")"; }
-      },
-      onFilenamePrompt: function(suggestedFilename, file) {
-        return prompt("Enter filename for the attachment:", suggestedFilename);
-      },
-      onFileUploadResponse: function(xhr) {
-        var result = JSON.parse(xhr.responseText),
-            filename = result[this.settings.jsonFieldName];
-        if (result && filename) {
-          var newValue;
-          if (typeof this.settings.urlText === 'function') {
-            newValue = this.settings.urlText.call(this, filename, result);
-          } else {
-            newValue = this.settings.urlText.replace(this.filenameTag, filename);
-          }
-          var text = this.editor.getValue().replace(this.lastValue, newValue);
-          this.editor.setValue(text);
-          this.settings.onFileUploaded.call(this, filename);
-          var uploadedFilename = filename.replace(/^\.\//, '');
-          if (result.attachments) { refreshAttachmentsDropdown(result.attachments, uploadedFilename); }
-        }
-        return false;
-      }
-    }
-  };
-</script>
 <script src="{{ url_for("static", filename="js/cm6-bundle.min.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
+    window.otterwikiEditorConfig = {
+        cursorLine: {{cursor_line or 0}},
+        cursorCh: {{cursor_ch or 0}},
+        inlineAttachmentOptions: {
+            uploadUrl: {{ url_for('inline_attachment', pagepath=pagepath) | tojson }},
+            extraHeaders: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
+            allowedTypes: ['*'],
+            urlText: function(filename, result) {
+                var imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff'];
+                var isImage = false;
+                for (var i = 0; i < imageExtensions.length; i++) {
+                    if (filename.toLowerCase().endsWith(imageExtensions[i])) { isImage = true; break; }
+                }
+                var displayName = filename.replace(/^\.\//, '');
+                if (isImage) { return "![" + displayName + "](" + filename + ")"; }
+                else { return "[" + displayName + "](" + filename + ")"; }
+            },
+            onFilenamePrompt: function(suggestedFilename, file) {
+                return prompt("Enter filename for the attachment:", suggestedFilename);
+            },
+            onFileUploadResponse: function(xhr) {
+                var result = JSON.parse(xhr.responseText),
+                    filename = result[this.settings.jsonFieldName];
+                if (result && filename) {
+                    var newValue;
+                    if (typeof this.settings.urlText === 'function') {
+                        newValue = this.settings.urlText.call(this, filename, result);
+                    } else {
+                        newValue = this.settings.urlText.replace(this.filenameTag, filename);
+                    }
+                    var text = this.editor.getValue().replace(this.lastValue, newValue);
+                    this.editor.setValue(text);
+                    this.settings.onFileUploaded.call(this, filename);
+                    var uploadedFilename = filename.replace(/^\.\//, '');
+                    if (result.attachments) { refreshAttachmentsDropdown(result.attachments, uploadedFilename); }
+                }
+                return false;
+            }
+        }
+    };
     function refreshAttachmentsDropdown(attachments, selectFilename) {
         var attachmentSelect = document.getElementById('attachment-filename');
         if (!attachmentSelect) return;
