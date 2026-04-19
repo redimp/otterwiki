@@ -1,23 +1,22 @@
 // CodeMirror 6 Language Modes Registry
-// Supports all languages from CM5 Makefile (lines 84-86)
+// All languages use legacy StreamLanguage modes for CM5-consistent token mapping.
+// Only PHP and Markdown use dedicated packages (no legacy mode available / needed for main editor).
 
-import { LanguageDescription, StreamLanguage } from '@codemirror/language';
+import { LanguageDescription, LanguageSupport, StreamLanguage } from '@codemirror/language';
 
-// Dedicated language packages
-import { javascript } from '@codemirror/lang-javascript';
-import { python } from '@codemirror/lang-python';
-import { xml } from '@codemirror/lang-xml';
-import { markdown } from '@codemirror/lang-markdown';
+// Dedicated packages (no legacy mode available)
 import { php } from '@codemirror/lang-php';
-import { sql } from '@codemirror/lang-sql';
-import { go } from '@codemirror/lang-go';
-import { rust } from '@codemirror/lang-rust';
-import { yaml } from '@codemirror/lang-yaml';
-import { html } from '@codemirror/lang-html';
-import { css } from '@codemirror/lang-css';
-import { json } from '@codemirror/lang-json';
+import { markdown } from '@codemirror/lang-markdown';
 
 // Legacy StreamLanguage modes
+import { javascript as jsMode, json as jsonMode, typescript as tsMode } from '@codemirror/legacy-modes/mode/javascript';
+import { python as pyMode } from '@codemirror/legacy-modes/mode/python';
+import { xml as xmlMode, html as htmlMode } from '@codemirror/legacy-modes/mode/xml';
+import { css as cssMode } from '@codemirror/legacy-modes/mode/css';
+import { standardSQL } from '@codemirror/legacy-modes/mode/sql';
+import { go as goMode } from '@codemirror/legacy-modes/mode/go';
+import { rust as rustMode } from '@codemirror/legacy-modes/mode/rust';
+import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 import { shell } from '@codemirror/legacy-modes/mode/shell';
 import { c, cpp, java, csharp, scala, kotlin } from '@codemirror/legacy-modes/mode/clike';
 import { toml } from '@codemirror/legacy-modes/mode/toml';
@@ -34,190 +33,211 @@ import { lua } from '@codemirror/legacy-modes/mode/lua';
 import { jinja2 } from '@codemirror/legacy-modes/mode/jinja2';
 import { ruby } from '@codemirror/legacy-modes/mode/ruby';
 
-/**
- * Language registry for CodeMirror 6
- * Covers all languages from CM5 Makefile: shell, clike, xml, python, javascript, markdown, yaml, php, sql, toml, cmake, perl, http, go, rust, dockerfile, powershell, properties, stex, nginx, haskell, lua, jinja2, ruby
- */
+// Pre-build LanguageSupport instances for all legacy StreamLanguage modes
+const jsSupport = new LanguageSupport(StreamLanguage.define(jsMode));
+const tsSupport = new LanguageSupport(StreamLanguage.define(tsMode));
+const pySupport = new LanguageSupport(StreamLanguage.define(pyMode));
+const xmlSupport = new LanguageSupport(StreamLanguage.define(xmlMode));
+const htmlSupport = new LanguageSupport(StreamLanguage.define(htmlMode));
+const cssSupport = new LanguageSupport(StreamLanguage.define(cssMode));
+const jsonSupport = new LanguageSupport(StreamLanguage.define(jsonMode));
+const sqlSupport = new LanguageSupport(StreamLanguage.define(standardSQL));
+const goSupport = new LanguageSupport(StreamLanguage.define(goMode));
+const rustSupport = new LanguageSupport(StreamLanguage.define(rustMode));
+const shellSupport = new LanguageSupport(StreamLanguage.define(shell));
+const yamlSupport = new LanguageSupport(StreamLanguage.define(yaml));
+const cSupport = new LanguageSupport(StreamLanguage.define(c));
+const cppSupport = new LanguageSupport(StreamLanguage.define(cpp));
+const javaSupport = new LanguageSupport(StreamLanguage.define(java));
+const csharpSupport = new LanguageSupport(StreamLanguage.define(csharp));
+const scalaSupport = new LanguageSupport(StreamLanguage.define(scala));
+const kotlinSupport = new LanguageSupport(StreamLanguage.define(kotlin));
+const tomlSupport = new LanguageSupport(StreamLanguage.define(toml));
+const cmakeSupport = new LanguageSupport(StreamLanguage.define(cmake));
+const perlSupport = new LanguageSupport(StreamLanguage.define(perl));
+const httpSupport = new LanguageSupport(StreamLanguage.define(http));
+const dockerFileSupport = new LanguageSupport(StreamLanguage.define(dockerFile));
+const powerShellSupport = new LanguageSupport(StreamLanguage.define(powerShell));
+const propertiesSupport = new LanguageSupport(StreamLanguage.define(properties));
+const stexSupport = new LanguageSupport(StreamLanguage.define(stex));
+const nginxSupport = new LanguageSupport(StreamLanguage.define(nginx));
+const haskellSupport = new LanguageSupport(StreamLanguage.define(haskell));
+const luaSupport = new LanguageSupport(StreamLanguage.define(lua));
+const jinja2Support = new LanguageSupport(StreamLanguage.define(jinja2));
+const rubySupport = new LanguageSupport(StreamLanguage.define(ruby));
+
 export const codeLanguages = [
   LanguageDescription.of({
     name: 'JavaScript',
     alias: ['javascript', 'js'],
-    load() { return Promise.resolve(javascript()); }
+    support: jsSupport,
   }),
   LanguageDescription.of({
     name: 'TypeScript',
     alias: ['typescript', 'ts'],
-    load() { return Promise.resolve(javascript({ typescript: true })); }
+    support: tsSupport,
   }),
   LanguageDescription.of({
     name: 'Python',
     alias: ['python', 'py'],
-    load() { return Promise.resolve(python()); }
+    support: pySupport,
   }),
   LanguageDescription.of({
     name: 'XML',
     alias: ['xml'],
-    load() { return Promise.resolve(xml()); }
+    support: xmlSupport,
   }),
   LanguageDescription.of({
     name: 'HTML',
     alias: ['html'],
-    load() { return Promise.resolve(html()); }
+    support: htmlSupport,
   }),
   LanguageDescription.of({
     name: 'CSS',
     alias: ['css'],
-    load() { return Promise.resolve(css()); }
+    support: cssSupport,
   }),
   LanguageDescription.of({
     name: 'JSON',
     alias: ['json'],
-    load() { return Promise.resolve(json()); }
+    support: jsonSupport,
   }),
   LanguageDescription.of({
     name: 'Markdown',
     alias: ['markdown', 'md'],
-    load() { return Promise.resolve(markdown()); }
+    support: markdown(),
   }),
   LanguageDescription.of({
     name: 'YAML',
     alias: ['yaml', 'yml'],
-    load() { return Promise.resolve(yaml()); }
+    support: yamlSupport,
   }),
   LanguageDescription.of({
     name: 'PHP',
     alias: ['php'],
-    load() { return Promise.resolve(php()); }
+    support: php(),
   }),
   LanguageDescription.of({
     name: 'SQL',
     alias: ['sql'],
-    load() { return Promise.resolve(sql()); }
+    support: sqlSupport,
   }),
   LanguageDescription.of({
     name: 'Go',
     alias: ['go'],
-    load() { return Promise.resolve(go()); }
+    support: goSupport,
   }),
   LanguageDescription.of({
     name: 'Rust',
     alias: ['rust'],
-    load() { return Promise.resolve(rust()); }
+    support: rustSupport,
   }),
   LanguageDescription.of({
     name: 'Shell',
     alias: ['shell', 'bash', 'sh'],
-    load() { return Promise.resolve(StreamLanguage.define(shell)); }
+    support: shellSupport,
   }),
   LanguageDescription.of({
     name: 'C',
     alias: ['c'],
-    load() { return Promise.resolve(StreamLanguage.define(c)); }
+    support: cSupport,
   }),
   LanguageDescription.of({
     name: 'C++',
     alias: ['cpp', 'c++'],
-    load() { return Promise.resolve(StreamLanguage.define(cpp)); }
+    support: cppSupport,
   }),
   LanguageDescription.of({
     name: 'Java',
     alias: ['java'],
-    load() { return Promise.resolve(StreamLanguage.define(java)); }
+    support: javaSupport,
   }),
   LanguageDescription.of({
     name: 'C#',
     alias: ['csharp', 'cs'],
-    load() { return Promise.resolve(StreamLanguage.define(csharp)); }
+    support: csharpSupport,
   }),
   LanguageDescription.of({
     name: 'Scala',
     alias: ['scala'],
-    load() { return Promise.resolve(StreamLanguage.define(scala)); }
+    support: scalaSupport,
   }),
   LanguageDescription.of({
     name: 'Kotlin',
     alias: ['kotlin'],
-    load() { return Promise.resolve(StreamLanguage.define(kotlin)); }
+    support: kotlinSupport,
   }),
   LanguageDescription.of({
     name: 'TOML',
     alias: ['toml'],
-    load() { return Promise.resolve(StreamLanguage.define(toml)); }
+    support: tomlSupport,
   }),
   LanguageDescription.of({
     name: 'CMake',
     alias: ['cmake'],
-    load() { return Promise.resolve(StreamLanguage.define(cmake)); }
+    support: cmakeSupport,
   }),
   LanguageDescription.of({
     name: 'Perl',
     alias: ['perl'],
-    load() { return Promise.resolve(StreamLanguage.define(perl)); }
+    support: perlSupport,
   }),
   LanguageDescription.of({
     name: 'HTTP',
     alias: ['http'],
-    load() { return Promise.resolve(StreamLanguage.define(http)); }
+    support: httpSupport,
   }),
   LanguageDescription.of({
     name: 'Dockerfile',
     alias: ['dockerfile'],
-    load() { return Promise.resolve(StreamLanguage.define(dockerFile)); }
+    support: dockerFileSupport,
   }),
   LanguageDescription.of({
     name: 'PowerShell',
     alias: ['powershell', 'ps1'],
-    load() { return Promise.resolve(StreamLanguage.define(powerShell)); }
+    support: powerShellSupport,
   }),
   LanguageDescription.of({
     name: 'Properties',
     alias: ['properties'],
-    load() { return Promise.resolve(StreamLanguage.define(properties)); }
+    support: propertiesSupport,
   }),
   LanguageDescription.of({
     name: 'LaTeX',
     alias: ['latex', 'tex', 'stex'],
-    load() { return Promise.resolve(StreamLanguage.define(stex)); }
+    support: stexSupport,
   }),
   LanguageDescription.of({
     name: 'Nginx',
     alias: ['nginx'],
-    load() { return Promise.resolve(StreamLanguage.define(nginx)); }
+    support: nginxSupport,
   }),
   LanguageDescription.of({
     name: 'Haskell',
     alias: ['haskell'],
-    load() { return Promise.resolve(StreamLanguage.define(haskell)); }
+    support: haskellSupport,
   }),
   LanguageDescription.of({
     name: 'Lua',
     alias: ['lua'],
-    load() { return Promise.resolve(StreamLanguage.define(lua)); }
+    support: luaSupport,
   }),
   LanguageDescription.of({
     name: 'Jinja2',
     alias: ['jinja2', 'jinja'],
-    load() { return Promise.resolve(StreamLanguage.define(jinja2)); }
+    support: jinja2Support,
   }),
   LanguageDescription.of({
     name: 'Ruby',
     alias: ['ruby', 'rb'],
-    load() { return Promise.resolve(StreamLanguage.define(ruby)); }
-  })
+    support: rubySupport,
+  }),
 ];
 
-/**
- * Get language support by name (case-insensitive)
- * Supports all aliases defined in codeLanguages
- * @param {string} name - Language name or alias
- * @returns {LanguageSupport|null} Language support or null if not found
- */
 export function getLanguage(name) {
   if (!name) return null;
 
   const lower = name.toLowerCase();
-
-  // Find language by alias
   const desc = codeLanguages.find(d => d.alias.includes(lower));
   return desc ? desc.support : null;
 }

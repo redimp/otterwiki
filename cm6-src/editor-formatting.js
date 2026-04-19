@@ -235,6 +235,7 @@ export function _toggleLines(line_prefix, line_re, token) {
   if (!(line_re instanceof Array)) {
     line_re = [line_re];
   }
+  const cursor = getCursor();
   const linenumbers = _getSelectedLines();
   let count = 1;
   for (const ln of linenumbers) {
@@ -243,32 +244,45 @@ export function _toggleLines(line_prefix, line_re, token) {
       let updated_line = line.replace(re, '');
       if (updated_line == line) {
         if (line_prefix == '\\d') {
-          updated_line = count + '. ' + line;
+          const prefix = count + '. ';
+          updated_line = prefix + line;
+          if (ln === cursor.line) { cursor.ch += prefix.length; }
         } else {
           updated_line = line_prefix + line;
+          if (ln === cursor.line) { cursor.ch += line_prefix.length; }
         }
+      } else {
+        if (ln === cursor.line) { cursor.ch = Math.max(0, cursor.ch - (line.length - updated_line.length)); }
       }
       _setLine(ln, updated_line);
     }
     count += 1;
   }
+  setCursor(cursor);
   focus();
 }
 
 export function _toggleLinesMultiLevel(indentChar, maxLevel = maxMultiLevels) {
   if (!getView()) { return; }
+  const cursor = getCursor();
   for (const i of _getSelectedLines()) {
     const line = getLine(i);
     let lineHLevel = line.search('[^' + indentChar + ']');
     if (lineHLevel < 0) { lineHLevel = line.length; }
     if (lineHLevel == 0) {
       _setLine(i, indentChar + ' ' + line);
+      if (i === cursor.line) { cursor.ch += indentChar.length + 1; }
     } else if (lineHLevel / indentChar.length < maxLevel) {
       _setLine(i, indentChar + line);
+      if (i === cursor.line) { cursor.ch += indentChar.length; }
     } else {
-      _setLine(i, line.replace(new RegExp('^(?:' + indentChar + ')+\\s*'), ''));
+      const oldLen = line.length;
+      const newLine = line.replace(new RegExp('^(?:' + indentChar + ')+\\s*'), '');
+      _setLine(i, newLine);
+      if (i === cursor.line) { cursor.ch = Math.max(0, cursor.ch - (oldLen - newLine.length)); }
     }
   }
+  setCursor(cursor);
   focus();
 }
 
