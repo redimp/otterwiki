@@ -72,23 +72,6 @@ settings.cfg:
 	@echo ""
 	@false
 
-tmp/codemirror-5.65.15:
-	mkdir -p tmp && \
-	cd tmp && \
-	test -f codemirror.zip || wget https://codemirror.net/5/codemirror.zip && \
-	unzip codemirror.zip
-
-otterwiki/static/js/cm-modes.min.js: Makefile tmp/codemirror-5.65.15
-	cat tmp/codemirror-5.65.15/addon/mode/simple.js > otterwiki/static/js/cm-modes.js
-	cat tmp/codemirror-5.65.15/mode/meta.js >> otterwiki/static/js/cm-modes.js
-	for MODE in shell clike xml python javascript markdown yaml php sql \
-		toml cmake perl http go rust dockerfile powershell properties \
-		stex nginx haskell lua jinja2 ruby; do \
-		cat tmp/codemirror-5.65.15/mode/$$MODE/$$MODE.js \
-			>> otterwiki/static/js/cm-modes.js; \
-	done
-	./venv/bin/python -m rjsmin -p < otterwiki/static/js/cm-modes.js > otterwiki/static/js/cm-modes.min.js
-
 cm6:
 	npm install --include=dev && node esbuild.config.mjs
 
