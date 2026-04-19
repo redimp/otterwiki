@@ -39,7 +39,7 @@ const lightHighlightStyleDef = HighlightStyle.define([
   { tag: tags.comment, color: '#808080' },
   { tag: tags.string, color: '#f99b15' },
   { tag: tags.special(tags.string), color: '#008000' },  // string-2
-  { tag: tags.qualifier, color: '#555' },
+  { tag: tags.modifier, color: '#555' },
   { tag: tags.invalid, color: '#FF0000' },
   { tag: tags.attributeName, color: '#0000FF' },
   { tag: tags.tagName, color: '#000080' },
@@ -109,7 +109,7 @@ const darkHighlightStyleDef = HighlightStyle.define([
   { tag: tags.link, color: '#1890ff' },
   { tag: tags.invalid, color: '#f8f8f0', backgroundColor: '#bf616a' },
   { tag: tags.meta, color: '#88C0D0' },
-  { tag: tags.qualifier, color: '#81A1C1' },
+  { tag: tags.modifier, color: '#81A1C1' },
   { tag: tags.quote, color: '#2b4' },
   { tag: tags.special(tags.string), color: '#A3BE8C' },
 ]);
