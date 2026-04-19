@@ -175,7 +175,3 @@ export const inlineCodeHighlighter = ViewPlugin.fromClass(class {
     return Decoration.set(marks, true);
   }
 }, { decorations: v => v.decorations });
-
-export function getActiveTheme() {
-  return document.body.classList.contains('dark-mode') ? darkTheme : lightTheme;
-}

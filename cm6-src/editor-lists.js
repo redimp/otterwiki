@@ -1,4 +1,4 @@
-import { getLine, lineCount, getCursor, setSelection, focus } from './helpers.js';
+import { getLine, setSelection } from './helpers.js';
 import {
   _toggleLines,
   _toggleMultilineBlock,
@@ -186,7 +186,3 @@ export function alertWarning() {
 export function alertCaution() {
   _toggleAlert('caution', ['Content']);
 }
-
-void lineCount;
-void getCursor;
-void focus;
