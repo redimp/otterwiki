@@ -57,7 +57,7 @@ const lightHighlightStyleDef = HighlightStyle.define([
   { tag: tags.url, color: '#f99b15' },
   { tag: tags.strong, fontWeight: 'bold' },
   { tag: tags.emphasis, fontStyle: 'italic' },
-  { tag: tags.processingInstruction, color: 'black' },
+  { tag: tags.processingInstruction },
   { tag: tags.standard(tags.variableName), color: '#30a' },  // builtin
   { tag: tags.bracket, color: '#cc7' },
 ]);
