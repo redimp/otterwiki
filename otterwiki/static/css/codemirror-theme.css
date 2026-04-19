@@ -1,106 +1,61 @@
 /* Otterwiki Theme */
 
-div.CodeMirror.cm-s-otterwiki.CodeMirror-wrap,
-div.CodeMirror.cm-s-otterwiki.CodeMirror-wrap.CodeMirror.focused {
-height:calc(100vh - 8rem);
+.cm-editor {
+  height: calc(100vh - 8rem);
+  font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
 }
 
-/* based upon idea.css */
-.cm-s-otterwiki span.cm-meta { color: #808000; }
-.cm-s-otterwiki span.cm-number { color: #0000FF; }
-.cm-s-otterwiki span.cm-header,
-.cm-s-otterwiki span.cm-keyword { line-height: 1em; font-weight: bold; color: #000080; }
-.cm-s-otterwiki span.cm-atom { font-weight: bold; color: #000080; }
-.cm-s-otterwiki span.cm-def { color: #000000; }
-.cm-s-otterwiki span.cm-variable { color: #730; }
-.cm-s-otterwiki span.cm-variable-2 { color: #a074c4; }
-.cm-s-otterwiki span.cm-variable-3,
-.cm-s-otterwiki span.cm-type { color: #b11; }
-.cm-s-otterwiki span.cm-property { color: black; }
-.cm-s-otterwiki span.cm-operator { color: black; }
-.cm-s-otterwiki span.cm-comment { color: #808080; }
-.cm-s-otterwiki span.cm-string { color: #f99b15; }
-.cm-s-otterwiki span.cm-string-2 { color: #008000; }
-.cm-s-otterwiki span.cm-qualifier { color: #555; }
-.cm-s-otterwiki span.cm-error { color: #FF0000; }
-.cm-s-otterwiki span.cm-attribute { color: #0000FF; }
-.cm-s-otterwiki span.cm-tag { color: #000080; }
-.cm-s-otterwiki span.cm-quote { color: #2b4; }
-.cm-s-otterwiki span.cm-url { color: #f99b15; }
-.cm-s-otterwiki span.cm-link { color: #1890ff; text-decoration: none; }
-.cm-s-otterwiki .CodeMirror-activeline-background { background: #FFFAE3; }
-
-.cm-s-otterwiki span.cm-builtin { color: #30a; }
-.cm-s-otterwiki span.cm-bracket { color: #cc7; }
-.cm-s-otterwiki  { font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;}
-
-
-.cm-s-otterwiki .CodeMirror-matchingbracket { outline:1px solid grey; color:black !important; }
-
-.CodeMirror-hints.otterwiki {
-  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
-  color: #616569;
-  background-color: #ebf3fd !important;
+.cm-activeLine {
+  background: #FFFAE3;
 }
 
-.CodeMirror-hints.otterwiki .CodeMirror-hint-active {
-  background-color: #a2b8c9 !important;
-  color: #5c6065 !important;
+.cm-matchingBracket {
+  outline: 1px solid grey;
+  color: black !important;
 }
 
 /* Based on arcticicestudio's Nord theme */
 /* https://github.com/arcticicestudio/nord */
 
-.dark-mode .cm-s-otterwiki.CodeMirror { background: #25282c; /*#2e3440;*/ color: #d8dee9; }
-.dark-mode .cm-s-otterwiki div.CodeMirror-selected { background: #434c5e; }
-.dark-mode .cm-s-otterwiki .CodeMirror-line::selection,
-.dark-mode .cm-s-otterwiki .CodeMirror-line > span::selection,
-.dark-mode .cm-s-otterwiki .CodeMirror-line > span > span::selection { background: #3b4252; }
-.dark-mode .cm-s-otterwiki .CodeMirror-line::-moz-selection,
-.dark-mode .cm-s-otterwiki .CodeMirror-line > span::-moz-selection,
-.dark-mode .cm-s-otterwiki .CodeMirror-line > span > span::-moz-selection { background: #3b4252; }
-.dark-mode .cm-s-otterwiki .CodeMirror-gutters { background: #25282c; /*#2e3440;*/ border-right: 1px solid #4c566a; }
-.dark-mode .cm-s-otterwiki .CodeMirror-guttermarker { color: #4c566a; }
-.dark-mode .cm-s-otterwiki .CodeMirror-guttermarker-subtle { color: #4c566a; }
-.dark-mode .cm-s-otterwiki .CodeMirror-linenumber { color: #4c566a; }
-.dark-mode .cm-s-otterwiki .CodeMirror-cursor { border-left: 1px solid #f8f8f0; }
-
-.dark-mode .cm-s-otterwiki span.cm-comment { color: #6BBAFF; }
-.dark-mode .cm-s-otterwiki span.cm-atom { color: #b48ead; }
-.dark-mode .cm-s-otterwiki span.cm-number { color: #b48ead; }
-
-.dark-mode .cm-s-otterwiki span.cm-comment.cm-attribute { color: #97b757; }
-.dark-mode .cm-s-otterwiki span.cm-comment.cm-def { color: #bc9262; }
-.dark-mode .cm-s-otterwiki span.cm-comment.cm-tag { color: #bc6283; }
-.dark-mode .cm-s-otterwiki span.cm-comment.cm-type { color: #5998a6; }
-
-.dark-mode .cm-s-otterwiki span.cm-property, .cm-s-otterwiki span.cm-attribute { color: #8FBCBB; }
-.dark-mode .cm-s-otterwiki span.cm-operator,
-.dark-mode .cm-s-otterwiki span.cm-keyword { color: #81A1C1; }
-.dark-mode .cm-s-otterwiki span.cm-builtin { color: #81A1C1; }
-.dark-mode .cm-s-otterwiki span.cm-string { color: #A3BE8C; }
-
-.dark-mode .cm-s-otterwiki span.cm-variable { color: #d8dee9; }
-.dark-mode .cm-s-otterwiki span.cm-variable-2 { color: #bf616a; }
-.dark-mode .cm-s-otterwiki span.cm-variable-3,
-.dark-mode .cm-s-otterwiki span.cm-type { color: #d8dee9; }
-.dark-mode .cm-s-otterwiki span.cm-def { color: #8FBCBB; }
-.dark-mode .cm-s-otterwiki span.cm-bracket { color: #81A1C1; }
-.dark-mode .cm-s-otterwiki span.cm-tag { color: #bf616a; }
-.dark-mode .cm-s-otterwiki span.cm-header { color: #b48ead; }
-.dark-mode .cm-s-otterwiki span.cm-url { color: #A3BE8C; }
-.dark-mode .cm-s-otterwiki span.cm-link { color: #1890ff; }
-.dark-mode .cm-s-otterwiki span.cm-error { background: #bf616a; color: #f8f8f0; }
-
-.dark-mode .cm-s-otterwiki .CodeMirror-activeline-background { background: #3b4252; }
-.dark-mode .cm-s-otterwiki .CodeMirror-matchingbracket {
-  text-decoration: underline;
-  color: white !important;
+.dark-mode .cm-editor {
+  background: #25282c;
+  color: #d8dee9;
 }
 
-/* fix fore resizing the window while editing/previewing */
-div.CodeMirror.cm-s-otterwiki.CodeMirror-wrap,
-div.CodeMirror.cm-s-otterwiki.CodeMirror-wrap.CodeMirror.focused {
-  height: calc(100vh - 8rem);
-  min-height: calc(100vh - 8rem);
+.dark-mode .cm-selectionBackground {
+  background: #434c5e;
+}
+
+.dark-mode .cm-line::selection,
+.dark-mode .cm-line > span::selection,
+.dark-mode .cm-line > span > span::selection {
+  background: #3b4252;
+}
+
+.dark-mode .cm-line::-moz-selection,
+.dark-mode .cm-line > span::-moz-selection,
+.dark-mode .cm-line > span > span::-moz-selection {
+  background: #3b4252;
+}
+
+.dark-mode .cm-gutters {
+  background: #25282c;
+  border-right: 1px solid #4c566a;
+}
+
+.dark-mode .cm-lineNumbers .cm-gutterElement {
+  color: #4c566a;
+}
+
+.dark-mode .cm-cursor {
+  border-left: 1px solid #f8f8f0;
+}
+
+.dark-mode .cm-activeLine {
+  background: #3b4252;
+}
+
+.dark-mode .cm-matchingBracket {
+  text-decoration: underline;
+  color: white !important;
 }
