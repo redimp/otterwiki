@@ -78,7 +78,7 @@ const darkEditorTheme = EditorView.theme({
   '&.cm-focused .cm-cursor': {
     borderLeftColor: '#f8f8f0',
   },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': {
+  '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
     backgroundColor: '#434c5e',
   },
   '.cm-activeLine': {
