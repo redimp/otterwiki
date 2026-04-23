@@ -430,10 +430,9 @@
     Javascript
 #}
 {% block js %}
-{{ super() }}
 {# force load libraries in editor for preview functionality #}
 {% set force_load_libraries = true %}
-{% include 'snippets/renderer_js.html' %}
+{{ super() }}
 {# load the codemirror stuff #}
 <script src="{{ url_for("static", filename="js/codemirror.min.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/cm-continuelist.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
