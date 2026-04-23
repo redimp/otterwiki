@@ -689,8 +689,10 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
             .then(function () {
                 cursor = document.getElementById("otterwiki_cursor");
                 // update MathJax if loaded
-                if (typeof MathJax !== 'undefined') {
-                    MathJax.typeset();
+                if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+                    var preview = document.getElementById('preview_block');
+                    MathJax.typesetClear([preview]);
+                    MathJax.typesetPromise([preview]);
                 }
                 // update Mermaid if loaded
                 if (typeof mermaid !== 'undefined') {
