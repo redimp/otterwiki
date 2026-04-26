@@ -169,6 +169,9 @@ def test_titleSs():
     )
     assert "\"Foobarß\"" == titleSs("\"foobarß\"")
     assert "Foobarß" == titleSs("foobarß")
+    assert "Page's Title" == titleSs("page's title")
+    assert "Don't Stop" == titleSs("don't stop")
+    assert "It's Foobarß" == titleSs("it's foobarß")
 
 
 def test_patchset2filedict():

@@ -116,16 +116,27 @@ def split_path(path: str) -> List[str]:
 
 def titleSs(s):
     """
-    This function is a workaround for str.title() not knowing uppercase 'ß'.
+    This function is a workaround for str.title() not knowing uppercase 'ß'
+    and treating the apostrophe as a word boundary.
     """
-    if 'ß' not in s:
-        return s.title()
-    _magicword = 'M🙉A🙈G🙊I🐤C🐣W🐥O🦆R🐔D'
-    while _magicword in s:
-        _magicword = 2 * _magicword
-    s = s.replace('ß', _magicword)
+    _eszett = ''
+    if 'ß' in s:
+        _eszett = 'E🙉S🙈Z🙊E🐤T🐣T'
+        while _eszett in s:
+            _eszett = 2 * _eszett
+        s = s.replace('ß', _eszett)
+    _apostrophe = ''
+    if "'" in s:
+        _apostrophe = 'A🙉P🙈O🙊S🐤T🐣R🐥O🦆P🐔H🦜E'
+        while _apostrophe in s:
+            _apostrophe = 2 * _apostrophe
+        s = s.replace("'", _apostrophe)
     s = s.title()
-    return re.sub(re.escape(_magicword), 'ß', s, flags=re.IGNORECASE)
+    if _eszett:
+        s = re.sub(re.escape(_eszett), 'ß', s, flags=re.IGNORECASE)
+    if _apostrophe:
+        s = re.sub(re.escape(_apostrophe), "'", s, flags=re.IGNORECASE)
+    return s
 
 
 def get_pagepath(pagename):
