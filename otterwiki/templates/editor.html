@@ -12,7 +12,6 @@
     width: 120px;
 }
 </style>
-<link href="{{ url_for("static", filename="css/codemirror.css") | debug_unixtime }}" rel="stylesheet" />
 <link href="{{ url_for("static", filename="css/codemirror-theme.css") | debug_unixtime }}" rel="stylesheet" />
 <link href="{{ url_for("static", filename="css/codemirror-dialog.css") | debug_unixtime }}" rel="stylesheet" />
 {% endblock %}
@@ -26,8 +25,8 @@
 <button onclick="otterwiki_editor.undo()" class="btn btn-editor btn-xs ml-10" title="Undo"><i class="fas fa-undo"></i></button>
 <button onclick="otterwiki_editor.redo()" class="btn btn-editor btn-xs" style="margin-left: 0.1rem;" title="Redo"><i class="fas fa-redo"></i></button>
 {##}
-<button onclick="CodeMirror.commands.find(cm_editor)" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Search"><i class="fas fa-search"></i></button>
-<button onclick="CodeMirror.commands.replace(cm_editor)" class="btn btn-editor btn-xs mr-5 hidden-sm-and-down" title="Search and Replace"><i class="fas fa-search fa-flip-both"></i></button>
+<button onclick="cmOpenSearch()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Search"><i class="fas fa-search"></i></button>
+<button onclick="cmOpenReplace()" class="btn btn-editor btn-xs mr-5 hidden-sm-and-down" title="Search and Replace"><i class="fas fa-search fa-flip-both"></i></button>
 {##}
 <button onclick="otterwiki_editor.bold()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Bold"><i class="fa fa-bold"></i></button>
 <button onclick="otterwiki_editor.italic()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Italic"><i class="fa fa-italic"></i></button>
@@ -435,52 +434,49 @@
 {% set force_load_libraries = true %}
 {% include 'snippets/renderer_js.html' %}
 {# load the codemirror stuff #}
-<script src="{{ url_for("static", filename="js/codemirror.min.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
-<script src="{{ url_for("static", filename="js/cm-continuelist.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
-<script src="{{ url_for("static", filename="js/cm-panel.js") }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for("static", filename="js/inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
-<script src="{{ url_for("static", filename="js/codemirror-4.inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
-<script src="{{ url_for("static", filename="js/cm-modes.min.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
-<script src="{{ url_for("static", filename="js/cm-search.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
-<script src="{{ url_for("static", filename="js/cm-searchcursor.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
-<script src="{{ url_for("static", filename="js/cm-dialog.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for("static", filename="js/cm6-bundle.min.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
-    const cm_editor = CodeMirror.fromTextArea(document.getElementById("content_editor"), {
-        mode: 'markdown',
-        lineNumbers: true,
-        theme: "otterwiki",
-        lineWrapping: true,
-        indentWithTabs: false,
-        spellcheck: true,
-        inputStyle: 'contenteditable',
-        indentUnit: 4,
-        autofocus: true,
-        fencedCodeBlockHighlighting: true,
-        fencedCodeBlockDefaultMode: "bash",
-        extraKeys: {
-            "Enter": "newlineAndIndentContinueMarkdownList",
-            'Cmd-S': function () {
-                return false
-            },
-            'Ctrl-S': function () {
-                return false
-            },
-            "Shift-Tab": "indentLess",
-            // Better Tab
-            "Tab": (cm) => {
-                if (cm.somethingSelected()) {
-                    cm.execCommand('indentMore');
-                } else {
-                    cm.execCommand('insertSoftTab');
+    window.otterwikiEditorConfig = {
+        cursorLine: {{cursor_line or 0}},
+        cursorCh: {{cursor_ch or 0}},
+        inlineAttachmentOptions: {
+            uploadUrl: {{ url_for('inline_attachment', pagepath=pagepath) | tojson }},
+            extraHeaders: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
+            allowedTypes: ['*'],
+            urlText: function(filename, result) {
+                var imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff'];
+                var isImage = false;
+                for (var i = 0; i < imageExtensions.length; i++) {
+                    if (filename.toLowerCase().endsWith(imageExtensions[i])) { isImage = true; break; }
                 }
+                var displayName = filename.replace(/^\.\//, '');
+                if (isImage) { return "![" + displayName + "](" + filename + ")"; }
+                else { return "[" + displayName + "](" + filename + ")"; }
+            },
+            onFilenamePrompt: function(suggestedFilename, file) {
+                return prompt("Enter filename for the attachment:", suggestedFilename);
+            },
+            onFileUploadResponse: function(xhr) {
+                var result = JSON.parse(xhr.responseText),
+                    filename = result[this.settings.jsonFieldName];
+                if (result && filename) {
+                    var newValue;
+                    if (typeof this.settings.urlText === 'function') {
+                        newValue = this.settings.urlText.call(this, filename, result);
+                    } else {
+                        newValue = this.settings.urlText.replace(this.filenameTag, filename);
+                    }
+                    var text = this.editor.getValue().replace(this.lastValue, newValue);
+                    this.editor.setValue(text);
+                    this.settings.onFileUploaded.call(this, filename);
+                    var uploadedFilename = filename.replace(/^\.\//, '');
+                    if (result.attachments) { refreshAttachmentsDropdown(result.attachments, uploadedFilename); }
+                }
+                return false;
             }
-        },
-      });
-    cm_editor.setCursor({ line: {{cursor_line or 0}}, ch: {{cursor_ch or 0}} } );
-    const bottom_panel = document.getElementById('editor-bottom-panel');
-    bottom_panel.style.display = 'block';
-    cm_editor.addPanel(bottom_panel, {position: "bottom", stable: true});
-
+        }
+    };
     function refreshAttachmentsDropdown(attachments, selectFilename) {
         var attachmentSelect = document.getElementById('attachment-filename');
         if (!attachmentSelect) return;
@@ -512,68 +508,6 @@
         }
     }
 
-{#
-thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuecomment-227075500
-#}
-    inlineAttachment.editors.codemirror4.attach(cm_editor, {
-        uploadUrl: {{ url_for('inline_attachment', pagepath=pagepath) | tojson }},
-        extraHeaders: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
-        allowedTypes: ['*'],
-        urlText: function(filename, result) {
-            var imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff'];
-            var isImage = false;
-
-            for (var i = 0; i < imageExtensions.length; i++) {
-                if (filename.toLowerCase().endsWith(imageExtensions[i])) {
-                    isImage = true;
-                    break;
-                }
-            }
-
-            var displayName = filename.replace(/^\.\//, '');
-
-            if (isImage) {
-                return "![" + displayName + "](" + filename + ")";
-            } else {
-                return "[" + displayName + "](" + filename + ")";
-            }
-        },
-        onFilenamePrompt: function(suggestedFilename, file) {
-            // Prompt user to confirm or change the filename
-            var userFilename = prompt("Enter filename for the attachment:", suggestedFilename);
-            return userFilename;
-        },
-        onFileUploadResponse: function(xhr) {
-            var result = JSON.parse(xhr.responseText),
-            filename = result[this.settings.jsonFieldName];
-
-            if (result && filename) {
-                var newValue;
-                if (typeof this.settings.urlText === 'function') {
-                    newValue = this.settings.urlText.call(this, filename, result);
-                } else {
-                    newValue = this.settings.urlText.replace(this.filenameTag, filename);
-                }
-                var text = this.editor.getValue().replace(this.lastValue, newValue);
-                this.editor.setValue(text);
-                this.settings.onFileUploaded.call(this, filename);
-
-                // Refresh dropdown with attachments from response and select the uploaded file
-                var uploadedFilename = filename.replace(/^\.\//, '');
-                if (result.attachments) {
-                    refreshAttachmentsDropdown(result.attachments, uploadedFilename);
-                }
-            }
-            return false;
-        }
-    });
-
-
-    var cm_wrapper_el = cm_editor.getWrapperElement();
-    cm_wrapper_el.addEventListener('paste', function(e) {
-      otterwiki_editor.on_paste(e);
-    }, true);
-
     /* document elements */
     const content_wrapper = document.querySelector("#content-wrapper")
     const preview_btn = document.querySelector("#preview_btn");
@@ -581,10 +515,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
     const sidebar_toc = document.querySelector("#sidebar-toc");
     const extranav_toc = document.querySelector("#extranav-toc");
     const extranav_attachments = document.querySelector("#extranav-attachments");
-    const editor_blocks = [
-        cm_editor.display.wrapper,
-        bottom_panel,
-        ]; // document.querySelector("#editor_block");
+    let editor_blocks = [];
     const preview_block = document.querySelector("#preview_block");
     var cm_last_change = 0;
     var cm_save_timer = null;
@@ -596,9 +527,11 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
             cm_save_timer = null;
         }
         const formData = new FormData();
-        formData.append("content", cm_editor.getValue());
-        formData.append("cursor_line", cm_editor.getCursor().line);
-        formData.append("cursor_ch", cm_editor.getCursor().ch);
+        formData.append("content", cm_editor.state.doc.toString());
+        const sel = cm_editor.state.selection.main;
+        const lineAt = cm_editor.state.doc.lineAt(sel.head);
+        formData.append("cursor_line", lineAt.number - 1);
+        formData.append("cursor_ch", sel.head - lineAt.from);
         formData.append("revision", "{{revision}}");
         fetch({{ url_for('draft', path=pagepath) | tojson }}, {
             method: 'POST',
@@ -613,7 +546,7 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
             });
     }
     const handleUnload = (event) => {
-        if (cm_editor != null && !cm_editor.doc.isClean()) {
+        if (cm_editor != null && !cmIsClean()) {
             event.preventDefault();
             // No browser actually displays this message anymore.
             // But Chrome requires it to be defined else the popup won't show.
@@ -623,11 +556,15 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
     };
 
     window.addEventListener('load', function () {
+        editor_blocks = [
+            document.getElementById('editor_block'),
+            document.getElementById('editor-bottom-panel'),
+        ];
         /*
             prevent user leaving with unsaved changes
             Known Issue: this doesn't work reliable in Safari
         */
-        cm_editor.on('change', () => {
+        cm_editor.dom.addEventListener('cm6change', () => {
             window.removeEventListener('beforeunload', handleUnload);
             window.addEventListener('beforeunload', handleUnload);
             if (cm_save_timer == null) {
@@ -638,12 +575,12 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
 
     /* save */
     document.getElementById('saveform').onsubmit = function() {
-        const content_editor = cm_editor.getValue();
-        const cm_cursor = cm_editor.getCursor();
-        document.getElementById('save_content').value = content_editor;
-        document.getElementById('save_cursor_line').value = cm_cursor.line;
-        document.getElementById('save_cursor_ch').value = cm_cursor.ch;
-        cm_editor.doc.markClean();
+        document.getElementById('save_content').value = cm_editor.state.doc.toString();
+        const sel = cm_editor.state.selection.main;
+        const lineAt = cm_editor.state.doc.lineAt(sel.head);
+        document.getElementById('save_cursor_line').value = lineAt.number - 1;
+        document.getElementById('save_cursor_ch').value = sel.head - lineAt.from;
+        cmMarkClean();
     };
     /* preview */
     preview_btn.onclick = function() {
@@ -658,9 +595,11 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
         content_wrapper.classList.add("preview-background");
 
         const formData = new FormData();
-        formData.append("content", cm_editor.getValue());
-        formData.append("cursor_line", cm_editor.getCursor().line);
-        formData.append("cursor_ch", cm_editor.getCursor().ch);
+        formData.append("content", cm_editor.state.doc.toString());
+        const previewSel = cm_editor.state.selection.main;
+        const previewLineAt = cm_editor.state.doc.lineAt(previewSel.head);
+        formData.append("cursor_line", previewLineAt.number - 1);
+        formData.append("cursor_ch", previewSel.head - previewLineAt.from);
 
         /* FIXME: display loader */
         fetch({{ url_for('preview', path=pagepath) | tojson }}, {
