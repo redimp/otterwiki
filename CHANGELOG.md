@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.20.3](https://github.com/redimp/otterwiki/releases/tag/v2.20.3) - 2026-04-26
+
+<small>[Compare with v2.20.2](https://github.com/redimp/otterwiki/compare/v2.20.2...v2.20.3)</small>
+
+### Features
+
+- Add `/.well-known/change-password` redirect to settings, implementing the W3C well-known change password URL spec ([591ea25](https://github.com/redimp/otterwiki/commit/591ea25) by @onovy).
+
+### Bug Fixes
+
+- Render fold and spoiler blocks correctly after lists, related to #450 ([be08160](https://github.com/redimp/otterwiki/commit/be08160)).
+- Make spoiler example functional in help/syntax page, see #463 ([87e1282](https://github.com/redimp/otterwiki/commit/87e1282)).
+- Preserve indentation in commit diff view ([e8dbab9](https://github.com/redimp/otterwiki/commit/e8dbab9) by @onovy).
+
+### Dependencies
+
+- Bump gitpython from 3.1.44 to 3.1.47 ([fbb5cf2](https://github.com/redimp/otterwiki/commit/fbb5cf2) by @dependabot).
+- Bump pillow from 12.1.1 to 12.2.0 ([3869aa6](https://github.com/redimp/otterwiki/commit/3869aa6) by @dependabot).
+- Upgrade mermaid 11.12.3 to 11.14.0 ([57b72f9](https://github.com/redimp/otterwiki/commit/57b72f9) by @fidergo-stephane-gourichon).
+- Upgrade MathJax 3.2.0 to 4.1.1 ([34f8e18](https://github.com/redimp/otterwiki/commit/34f8e18) by @fidergo-stephane-gourichon).
+- Upgrade sortablejs 1.15.3 to 1.15.7 ([2b74c6c](https://github.com/redimp/otterwiki/commit/2b74c6c) by @fidergo-stephane-gourichon).
+- Upgrade htmx 2.0.6 to 2.0.8 ([49a4309](https://github.com/redimp/otterwiki/commit/49a4309) by @fidergo-stephane-gourichon).
+
+### Misc
+
+- Helm chart: use `Recreate` as deployment strategy ([ac4d351](https://github.com/redimp/otterwiki/commit/ac4d351)).
+
 ## [v2.20.2](https://github.com/redimp/otterwiki/releases/tag/v2.20.2) - 2026-04-09
 
 <small>[Compare with v2.20.1](https://github.com/redimp/otterwiki/compare/v2.20.1...v2.20.2)</small>
