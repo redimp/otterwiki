@@ -583,7 +583,15 @@ class mistunePluginMath:
         )
         return m.end()
 
-    def render_html_block(self, text):
+    def _mark_required(self, md_renderer):
+        # Mark mathjax as required on the OtterwikiRenderer wrapper, which
+        # OtterwikiMdRenderer exposes as `.renderer`.
+        parent = getattr(md_renderer, 'renderer', None)
+        if parent is not None:
+            parent.requires_mathjax = True
+
+    def render_html_block(self, md_renderer, text):
+        self._mark_required(md_renderer)
         return f'''\n\\[{text}\\]\n'''
 
     def parse_inline(self, inline, m, state):
@@ -596,7 +604,8 @@ class mistunePluginMath:
         state.append_token({'type': 'math_inline', 'raw': text})
         return m.end()
 
-    def render_html_inline(self, text):
+    def render_html_inline(self, md_renderer, text):
+        self._mark_required(md_renderer)
         return '\\(' + text + '\\)'
 
     def parse_display_inline(self, inline, m, state):
@@ -614,7 +623,8 @@ class mistunePluginMath:
         )
         return m.end()
 
-    def render_html_display_inline(self, text):
+    def render_html_display_inline(self, md_renderer, text):
+        self._mark_required(md_renderer)
         return '\\[' + text + '\\]'
 
     def __call__(self, md):
@@ -637,12 +647,14 @@ class mistunePluginMath:
         )
 
         if md.renderer.NAME == "html":
-            md.renderer.register("math_block", _rm(self.render_html_block))
+            # Render methods receive the renderer as their first arg so they
+            # can mark MathJax as required on the OtterwikiRenderer wrapper.
+            md.renderer.register("math_block", self.render_html_block)
             md.renderer.register(
                 'math_display_inline',
-                _rm(self.render_html_display_inline),
+                self.render_html_display_inline,
             )
-            md.renderer.register('math_inline', _rm(self.render_html_inline))
+            md.renderer.register('math_inline', self.render_html_inline)
 
 
 class mistunePluginAlerts:

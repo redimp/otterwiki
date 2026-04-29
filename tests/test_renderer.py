@@ -1245,6 +1245,33 @@ def test_library_requirements_mathjax_inline():
     assert "\\(a^2+b^2=c^2\\)" in html
 
 
+def test_library_requirements_mathjax_inline_dollar():
+    md = "Some text $a=b$ more text."
+    html, toc, library_requirements = render.markdown(md)
+    assert library_requirements['requires_mathjax'] is True
+    assert "\\(a=b\\)" in html
+
+
+def test_library_requirements_mathjax_display_inline():
+    md = "Inline display: $$x+y=z$$ end."
+    html, toc, library_requirements = render.markdown(md)
+    assert library_requirements['requires_mathjax'] is True
+    assert "\\[x+y=z\\]" in html
+
+
+def test_library_requirements_mathjax_display_block():
+    md = """Some intro text.
+
+$$
+a^2 + b^2 = c^2
+$$
+
+End text."""
+    html, toc, library_requirements = render.markdown(md)
+    assert library_requirements['requires_mathjax'] is True
+    assert "\\[" in html and "\\]" in html
+
+
 def test_library_requirements_mathjax_block():
     md = """# Math Example
 
