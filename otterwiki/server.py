@@ -6,7 +6,7 @@ import os
 import sys
 import logging
 
-from flask import Flask
+from flask import Flask, request
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
@@ -78,6 +78,10 @@ app.config.update(
     SECURITY_HEADERS=True,
     WTF_CSRF_ENABLED=True,
     WTF_CSRF_TIME_LIMIT=86400,
+    PROXY_FIX_X_FOR=0,
+    RATELIMIT_ENABLED=True,
+    RATELIMIT_LOGIN="10/minute",
+    RATELIMIT_LOST_PASSWORD="5/minute",
 )
 app.config.from_envvar("OTTERWIKI_SETTINGS", silent=True)
 
@@ -99,6 +103,14 @@ for key in app.config:
             ]
         else:
             app.config[key] = os.environ[key]
+
+# ProxyFix for reverse proxy deployments
+proxy_fix_x_for = int(app.config.get("PROXY_FIX_X_FOR", 0))
+if proxy_fix_x_for > 0:
+    from werkzeug.middleware.proxy_fix import ProxyFix
+
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=proxy_fix_x_for)
+    app.logger.info(f"server: ProxyFix enabled with x_for={proxy_fix_x_for}")
 
 # configure logging
 app.logger.setLevel(app.config["LOG_LEVEL"])
@@ -221,6 +233,33 @@ def update_app_config():
 with app.app_context():
     db.create_all()
 update_app_config()
+
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    storage_uri="memory://",
+    enabled=app.config.get("RATELIMIT_ENABLED", True),
+)
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    from flask import render_template
+    from otterwiki.helper import toast
+
+    app.logger.warning(
+        f"Rate limit exceeded: {request.remote_addr} on {request.path}"
+    )
+    toast("Too many attempts. Please try again later.", "error")
+    if "lost_password" in request.path:
+        return (
+            render_template("lost_password.html", title="Lost password"),
+            429,
+        )
+    return render_template("login.html", title="Login"), 429
 
 
 #
