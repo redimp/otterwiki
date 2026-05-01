@@ -130,18 +130,24 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     padding-left : calc(2 * var(--spacing) - var(--radius) + 0.5rem);
     color: rgba(0,0,0,.7);
     padding-top: 0.5rem;
-    word-break: break-word;
+    overflow-wrap: anywhere;
     box-sizing: border-box;
 }
 
 .sidebarmenu li > div.summary-details {
     box-sizing: inherit;
-    word-break: break-word;
+    overflow-wrap: anywhere;
     list-style: none;
 }
 
 .sidebarmenu li > div.summary-details > a {
-    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.sidebarmenu li > details > summary > a {
+    overflow-wrap: anywhere;
+    min-width: 0;
+    flex: 1;
 }
 
 .parent-sidebar-menu > li {
@@ -154,6 +160,8 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 
 .sidebarmenu details > summary {
     list-style: none;
+    display: flex;
+    align-items: baseline;
 }
 
 .sidebarmenu details > summary::-webkit-details-marker {
@@ -162,13 +170,13 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 
 .sidebarmenu details > summary::before {
     width: 1.3rem;
-    display: inline-block;
+    flex-shrink: 0;
     content: '▹ ';
 }
 
 .sidebarmenu details[open] > summary::before {
     width: 1.3rem;
-    display: inline-block;
+    flex-shrink: 0;
     content: '▿ ';
 }
 
