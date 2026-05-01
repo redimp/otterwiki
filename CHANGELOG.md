@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.20.4](https://github.com/redimp/otterwiki/releases/tag/v2.20.4) - 2026-05-01
+
+<small>[Compare with v2.20.3](https://github.com/redimp/otterwiki/compare/v2.20.3...v2.20.4)</small>
+
+### Bug Fixes
+
+- Fix improper text wrapping in sidebar ([e2fa225](https://github.com/redimp/otterwiki/commit/e2fa225) by @jr-krandino).
+- Keep sidebar tree indicator inline with long pagenames ([125cb86](https://github.com/redimp/otterwiki/commit/125cb86)).
+- Load MathJax for plain `$...$` and `$$...$$` math, see #474 ([76898f6](https://github.com/redimp/otterwiki/commit/76898f6)).
+- `titleSs()` handles apostrophes correctly, see #453 ([257fbc9](https://github.com/redimp/otterwiki/commit/257fbc9)).
+
 ## [v2.20.3](https://github.com/redimp/otterwiki/releases/tag/v2.20.3) - 2026-04-26
 
 <small>[Compare with v2.20.2](https://github.com/redimp/otterwiki/compare/v2.20.2...v2.20.3)</small>
