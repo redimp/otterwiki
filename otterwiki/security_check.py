@@ -21,19 +21,28 @@ from otterwiki.util import empty
 
 
 class SecurityCheckResult:
-    """Represents a single security check finding."""
+    """Represents a single security check result.
 
-    def __init__(self, issue, description, severity):
+    `passed=False` results are issues to display in the issues table
+    (severity is required). `passed=True` results are reported under
+    the "checks passed" table; severity is ignored there.
+    """
+
+    def __init__(self, issue, description, severity=None, passed=False):
         self.issue = issue
         self.description = description
         self.severity = severity
+        self.passed = passed
 
     def to_dict(self):
-        return {
+        d = {
             "issue": self.issue,
             "description": self.description,
-            "severity": self.severity,
+            "passed": self.passed,
         }
+        if not self.passed:
+            d["severity"] = self.severity
+        return d
 
 
 # registry of backend check functions
@@ -47,21 +56,26 @@ def register_backend_check(func):
 
 
 def run_backend_checks():
-    """Run all registered backend security checks and return results as a list of dicts."""
-    results = []
+    """Run all registered backend security checks.
+
+    Returns a dict ``{"issues": [...], "passed": [...]}`` where each
+    entry is the dict produced by :py:meth:`SecurityCheckResult.to_dict`.
+    """
+    issues = []
+    passed = []
     for check_func in _backend_checks:
         try:
             result = check_func()
-            if result is not None:
-                if isinstance(result, list):
-                    results.extend(r.to_dict() for r in result)
-                else:
-                    results.append(result.to_dict())
+            if result is None:
+                continue
+            results = result if isinstance(result, list) else [result]
+            for r in results:
+                (passed if r.passed else issues).append(r.to_dict())
         except Exception as e:
             app.logger.warning(
                 f"Security check '{check_func.__name__}' failed: {e}"
             )
-    return results
+    return {"issues": issues, "passed": passed}
 
 
 #
@@ -130,7 +144,11 @@ def check_anonymous_write_access():
             ),
             severity="CRITICAL",
         )
-    return None
+    return SecurityCheckResult(
+        issue="Anonymous write access is disabled",
+        description="Write access requires an authenticated account.",
+        passed=True,
+    )
 
 
 @register_backend_check
@@ -148,7 +166,11 @@ def check_anonymous_upload_access():
             ),
             severity="CRITICAL",
         )
-    return None
+    return SecurityCheckResult(
+        issue="Anonymous upload access is disabled",
+        description="Attachment uploads require an authenticated account.",
+        passed=True,
+    )
 
 
 @register_backend_check
@@ -167,7 +189,11 @@ def check_server_name_not_set():
             ),
             severity="NOTICE",
         )
-    return None
+    return SecurityCheckResult(
+        issue="Server name is configured",
+        description="The <code>SERVER_NAME</code> configuration variable is set.",
+        passed=True,
+    )
 
 
 @register_backend_check
@@ -190,7 +216,14 @@ def check_open_registrations():
             ),
             severity="HIGH",
         )
-    return None
+    return SecurityCheckResult(
+        issue="Registrations are restricted",
+        description=(
+            "New registrations are disabled or require email confirmation "
+            "or manual approval."
+        ),
+        passed=True,
+    )
 
 
 @register_backend_check
@@ -425,4 +458,10 @@ def check_reverse_proxy():
             severity=severity,
         )
 
-    return None
+    return SecurityCheckResult(
+        issue="Reverse proxy looks correctly configured",
+        description=(
+            "Proxy headers and <code>REAL_IP_FROM</code> appear consistent."
+        ),
+        passed=True,
+    )

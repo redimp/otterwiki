@@ -219,8 +219,7 @@ def security_check():
     if not has_permission("ADMIN"):
         abort(403)
 
-    results = run_backend_checks()
-    return jsonify(results=results)
+    return jsonify(run_backend_checks())
 
 
 @app.route(

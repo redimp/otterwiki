@@ -111,6 +111,21 @@
 <div id="security-check-error" style="display:none;">
 <p class="text-danger"><em>An error occurred while running the security check.</em></p>
 </div>
+<div id="security-check-passed-wrapper" class="mt-10" style="display:none;">
+    <button class="btn btn-secondary btn-sm" id="security-check-passed-toggle" type="button" onclick="otterwiki.toggle_security_check_passed()">Show passed checks (<span id="security-check-passed-count">0</span>)</button>
+    <div id="security-check-passed" style="display:none;" class="mt-10">
+    <table class="table compact" style="table-layout: fixed; width: 100%;">
+        <thead>
+            <tr>
+                <th style="width: 200px;"><strong>Check</strong></th>
+                <th><strong>Description</strong></th>
+            </tr>
+        </thead>
+        <tbody id="security-check-passed-tbody">
+        </tbody>
+    </table>
+    </div>
+</div>
 <div class="mt-10">
     <button class="btn btn-primary" id="security-check-btn" onclick="otterwiki.run_security_check()">Perform security check</button>
 </div>
@@ -122,6 +137,7 @@
 {% block js %}
 {{ super() }}
 <script src="{{ url_for("static", filename="js/htmx.2.0.8.min.js") }}" type="text/javascript" charset="utf-8"></script>
+{% if has_permission("ADMIN") %}
 <script type="text/javascript">
 // otterwiki security check frontend checks and display logic
 (function() {
@@ -139,13 +155,13 @@
         return '<span class="badge badge-pill ' + cls + '">' + severity + '</span>';
     }
 
-    function renderResults(results) {
+    function renderIssues(issues) {
         var tbody = document.getElementById('security-check-tbody');
         tbody.innerHTML = '';
         var resultsDiv = document.getElementById('security-check-results');
         var emptyDiv = document.getElementById('security-check-empty');
 
-        if (results.length === 0) {
+        if (issues.length === 0) {
             resultsDiv.style.display = 'none';
             emptyDiv.style.display = '';
             return;
@@ -155,7 +171,7 @@
         resultsDiv.style.display = '';
 
         var severityLevels = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'NOTICE'];
-        results.sort(function(a, b) {
+        issues.sort(function(a, b) {
             var aIdx = severityLevels.indexOf(a.severity);
             var bIdx = severityLevels.indexOf(b.severity);
             if (aIdx < 0) aIdx = 99;
@@ -163,8 +179,8 @@
             return aIdx - bIdx;
         });
 
-        for (var i = 0; i < results.length; i++) {
-            var r = results[i];
+        for (var i = 0; i < issues.length; i++) {
+            var r = issues[i];
             var tr = document.createElement('tr');
             tr.innerHTML =
                 '<td style="overflow-wrap: break-word; word-wrap: break-word;"><strong>' + r.issue + '</strong></td>' +
@@ -174,16 +190,68 @@
         }
     }
 
-    // Frontend security checks (runs alongside backend checks)
-    function runFrontendChecks(backendResponse) {
-        var results = [];
+    function renderPassed(passed) {
+        var wrapper = document.getElementById('security-check-passed-wrapper');
+        var tbody = document.getElementById('security-check-passed-tbody');
+        var countSpan = document.getElementById('security-check-passed-count');
+        var panel = document.getElementById('security-check-passed');
+        var toggle = document.getElementById('security-check-passed-toggle');
 
-        // HTTPS not enabled
+        tbody.innerHTML = '';
+        // collapse on each new run
+        panel.style.display = 'none';
+        toggle.textContent = '';
+
+        if (passed.length === 0) {
+            wrapper.style.display = 'none';
+            return;
+        }
+
+        wrapper.style.display = '';
+        countSpan.textContent = passed.length;
+        toggle.appendChild(document.createTextNode('Show passed checks ('));
+        toggle.appendChild(countSpan);
+        toggle.appendChild(document.createTextNode(')'));
+
+        for (var i = 0; i < passed.length; i++) {
+            var r = passed[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td style="overflow-wrap: break-word; word-wrap: break-word;"><strong>' + r.issue + '</strong></td>' +
+                '<td style="overflow-wrap: break-word; word-wrap: break-word;">' + r.description + '</td>';
+            tbody.appendChild(tr);
+        }
+    }
+
+    otterwiki.toggle_security_check_passed = function() {
+        var panel = document.getElementById('security-check-passed');
+        var toggle = document.getElementById('security-check-passed-toggle');
+        var countSpan = document.getElementById('security-check-passed-count');
+        var visible = panel.style.display !== 'none';
+        panel.style.display = visible ? 'none' : '';
+        toggle.textContent = '';
+        toggle.appendChild(document.createTextNode((visible ? 'Show' : 'Hide') + ' passed checks ('));
+        toggle.appendChild(countSpan);
+        toggle.appendChild(document.createTextNode(')'));
+    };
+
+    // Frontend security checks (runs alongside backend checks).
+    // Returns {issues: [...], passed: [...]}.
+    function runFrontendChecks(backendResponse) {
+        var issues = [];
+        var passed = [];
+
+        // HTTPS
         if (window.location.protocol !== 'https:') {
-            results.push({
+            issues.push({
                 issue: 'HTTPS not enabled',
                 description: 'SSL is not enabled for your wiki. Unless you are using the wiki in a local environment only, this is a major security risk. The easiest way to add SSL is via a reverse proxy, see <a href="https://otterwiki.com/Installation#reverse-proxy">the documentation</a>.',
                 severity: 'CRITICAL'
+            });
+        } else {
+            passed.push({
+                issue: 'HTTPS is enabled',
+                description: 'The wiki was loaded over an encrypted connection.'
             });
         }
 
@@ -193,15 +261,20 @@
         if (backendResponse) {
             var csp = backendResponse.headers.get('Content-Security-Policy');
             if (!csp) {
-                results.push({
+                issues.push({
                     issue: 'CSP header missing',
                     description: 'The Content Security Policy header is not set, which means resources could be loaded from any origin. This makes the wiki more vulnerable to cross-site scripting attacks. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP">Learn more about CSP</a>.',
                     severity: 'LOW'
                 });
+            } else {
+                passed.push({
+                    issue: 'CSP header is set',
+                    description: 'A Content Security Policy header was returned by the server.'
+                });
             }
         }
 
-        return results;
+        return {issues: issues, passed: passed};
     }
 
     // Main entry point
@@ -213,20 +286,21 @@
         btn.disabled = true;
         btn.textContent = 'Running security check\u2026';
 
-        // Run backend checks and also use the response for CSP header check
         fetch('/-/housekeeping/security-check', {
             method: 'GET',
             credentials: 'same-origin'
         }).then(function(response) {
             if (!response.ok) throw new Error('Backend check failed');
-            // Run frontend checks using this response for header inspection
-            var frontendResults = runFrontendChecks(response);
+            var frontend = runFrontendChecks(response);
             return response.json().then(function(data) {
-                var backendResults = data.results || [];
-                return backendResults.concat(frontendResults);
+                return {
+                    issues: (data.issues || []).concat(frontend.issues),
+                    passed: (data.passed || []).concat(frontend.passed)
+                };
             });
-        }).then(function(allResults) {
-            renderResults(allResults);
+        }).then(function(combined) {
+            renderIssues(combined.issues);
+            renderPassed(combined.passed);
         }).catch(function(err) {
             console.error('Security check error:', err);
             errorDiv.style.display = '';
@@ -237,4 +311,5 @@
     };
 })();
 </script>
+{% endif %}
 {% endblock js %}
