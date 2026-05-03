@@ -210,6 +210,18 @@ def housekeeping():
         return otterwiki.tools.handle_housekeeping(request.form)
 
 
+@app.route("/-/housekeeping/security-check", methods=["GET"])
+@login_required
+def security_check():
+    from otterwiki.auth import has_permission
+    from otterwiki.security_check import run_backend_checks
+
+    if not has_permission("ADMIN"):
+        abort(403)
+
+    return jsonify(run_backend_checks())
+
+
 @app.route(
     "/-/admin/user_management", methods=["POST", "GET"]
 )  # pyright: ignore -- false positive

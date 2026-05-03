@@ -545,3 +545,25 @@ mark {
     /* override halfmoon's form control font size to prevent mobile zoom */
     font-size: 16px;
 }
+
+/* additional badge variants (halfmoon ships only primary/success/secondary/danger) */
+.badge.badge-warning {
+    color: var(--text-color-on-orange-color-bg);
+    background-color: var(--orange-color);
+    border-color: var(--orange-color);
+}
+.dark-mode .badge.badge-warning {
+    color: var(--text-color-on-orange-color-bg);
+    background-color: var(--orange-color);
+    border-color: var(--orange-color);
+}
+.badge.badge-notice {
+    color: #ffffff;
+    background-color: var(--gray-color-very-dark);
+    border-color: var(--gray-color-very-dark);
+}
+.dark-mode .badge.badge-notice {
+    color: rgba(0, 0, 0, 0.85);
+    background-color: var(--gray-color);
+    border-color: var(--gray-color);
+}

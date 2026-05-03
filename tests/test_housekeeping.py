@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import json
 import pytest
 
 
@@ -586,6 +587,90 @@ Link to [[Parent Sub/Child Sub]] and [[Parent Sub/Missing Sub]].
         html = rv.data.decode()
 
         assert "Missing" in html or "../Missing" in html
+
+
+class TestHousekeepingSecurityCheck:
+    """Tests for the security check functionality."""
+
+    def test_security_check_endpoint_returns_json(
+        self, app_with_user, admin_client
+    ):
+        """Test that the security check endpoint returns valid JSON with issues and passed lists."""
+        rv = admin_client.get("/-/housekeeping/security-check")
+        assert rv.status_code == 200
+        data = json.loads(rv.data)
+        assert "issues" in data
+        assert "passed" in data
+        assert isinstance(data["issues"], list)
+        assert isinstance(data["passed"], list)
+
+    def test_security_check_results_have_expected_fields(
+        self, app_with_user, admin_client
+    ):
+        """Test that each security check result has the required fields."""
+        rv = admin_client.get("/-/housekeeping/security-check")
+        assert rv.status_code == 200
+        data = json.loads(rv.data)
+        for issue in data["issues"]:
+            assert "issue" in issue
+            assert "description" in issue
+            assert issue.get("passed") is False
+            assert "severity" in issue
+            assert issue["severity"] in [
+                "NOTICE",
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL",
+            ]
+        for ok in data["passed"]:
+            assert "issue" in ok
+            assert "description" in ok
+            assert ok.get("passed") is True
+
+    def test_security_check_requires_login(self, app_with_user, test_client):
+        """Test that the security check endpoint requires authentication."""
+        rv = test_client.get(
+            "/-/housekeeping/security-check", follow_redirects=False
+        )
+        assert rv.status_code == 302
+        assert "/-/login" in rv.headers.get("Location", "")
+
+    def test_security_check_requires_admin(self, app_with_user, other_client):
+        """Test that non-admin users get 403 from the security check endpoint."""
+        rv = other_client.get("/-/housekeeping/security-check")
+        assert rv.status_code == 403
+
+    def test_housekeeping_page_contains_security_check_section(
+        self, app_with_user, admin_client
+    ):
+        """Test that the housekeeping page includes the security check UI."""
+        rv = admin_client.get("/-/housekeeping")
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        assert "Security Check" in html
+        assert "Perform security check" in html
+        assert "security-check-btn" in html
+
+    def test_housekeeping_page_hides_security_check_for_non_admin(
+        self, app_with_user, other_client
+    ):
+        """Non-admin users should not see the security check panel."""
+        rv = other_client.get("/-/housekeeping")
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        assert "security-check-btn" not in html
+
+    def test_backend_checks_runnable(self, app_with_user, req_ctx):
+        """Test that backend security checks can be run directly."""
+        from otterwiki.security_check import run_backend_checks
+
+        results = run_backend_checks()
+        assert isinstance(results, dict)
+        assert "issues" in results and "passed" in results
+        # In test config, we expect at least some findings
+        # (e.g., SERVER_NAME not set, anonymous write access)
+        assert len(results["issues"]) > 0
 
 
 class TestHousekeepingGeneral:
