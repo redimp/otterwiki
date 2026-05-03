@@ -125,18 +125,18 @@
 <script type="text/javascript">
 // otterwiki security check frontend checks and display logic
 (function() {
-    // Severity level colors for badge styling
-    var severityStyles = {
-        CRITICAL: { bg: '#dc3545', color: '#fff' },
-        HIGH:     { bg: '#e67e22', color: '#fff' },
-        MEDIUM:   { bg: '#f0ad4e', color: '#fff' },
-        LOW:      { bg: '#5bc0de', color: '#fff' },
-        NOTICE:   { bg: '#6c757d', color: '#fff' },
+    // Severity level to halfmoon/otterwiki badge class
+    var severityBadgeClass = {
+        CRITICAL: 'badge-danger',
+        HIGH:     'badge-warning',
+        MEDIUM:   'badge-secondary',
+        LOW:      'badge-primary',
+        NOTICE:   'badge-notice',
     };
 
     function severityBadge(severity) {
-        var style = severityStyles[severity] || severityStyles.NOTICE;
-        return '<span class="badge badge-pill" style="background-color:' + style.bg + ';color:' + style.color + ';font-weight:bold;">' + severity + '</span>';
+        var cls = severityBadgeClass[severity] || severityBadgeClass.NOTICE;
+        return '<span class="badge badge-pill ' + cls + '">' + severity + '</span>';
     }
 
     function renderResults(results) {
