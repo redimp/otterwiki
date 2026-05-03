@@ -13,6 +13,7 @@ import os
 import re
 import ipaddress
 
+from bs4 import BeautifulSoup
 from flask import request
 from otterwiki.server import app
 from otterwiki.plugins import plugin_manager
@@ -96,9 +97,8 @@ def _has_js_code(content):
 
 def _has_html_content(content):
     """Check if HTML content has actual content beyond comments and whitespace."""
-    content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL)
-    content = content.strip()
-    return bool(content)
+    soup = BeautifulSoup(content, "html.parser")
+    return bool(soup.get_text(strip=True)) or soup.find() is not None
 
 
 def _is_private_ip(ip_str):
