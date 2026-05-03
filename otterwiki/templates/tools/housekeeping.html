@@ -111,10 +111,9 @@
 <div id="security-check-error" style="display:none;">
 <p class="text-danger"><em>An error occurred while running the security check.</em></p>
 </div>
-<div id="security-check-passed-wrapper" class="mt-10" style="display:none;">
-    <button class="btn btn-secondary btn-sm" id="security-check-passed-toggle" type="button" onclick="otterwiki.toggle_security_check_passed()">Show passed checks (<span id="security-check-passed-count">0</span>)</button>
-    <div id="security-check-passed" style="display:none;" class="mt-10">
-    <table class="table compact" style="table-layout: fixed; width: 100%;">
+<details id="security-check-passed-wrapper" class="mt-10" style="display:none;">
+    <summary>Passed checks (<span id="security-check-passed-count">0</span>)</summary>
+    <table class="table compact mt-10" style="table-layout: fixed; width: 100%;">
         <thead>
             <tr>
                 <th style="width: 200px;"><strong>Check</strong></th>
@@ -124,8 +123,7 @@
         <tbody id="security-check-passed-tbody">
         </tbody>
     </table>
-    </div>
-</div>
+</details>
 <div class="mt-10">
     <button class="btn btn-primary" id="security-check-btn" onclick="otterwiki.run_security_check()">Perform security check</button>
 </div>
@@ -194,13 +192,10 @@
         var wrapper = document.getElementById('security-check-passed-wrapper');
         var tbody = document.getElementById('security-check-passed-tbody');
         var countSpan = document.getElementById('security-check-passed-count');
-        var panel = document.getElementById('security-check-passed');
-        var toggle = document.getElementById('security-check-passed-toggle');
 
         tbody.innerHTML = '';
         // collapse on each new run
-        panel.style.display = 'none';
-        toggle.textContent = '';
+        wrapper.open = false;
 
         if (passed.length === 0) {
             wrapper.style.display = 'none';
@@ -209,9 +204,6 @@
 
         wrapper.style.display = '';
         countSpan.textContent = passed.length;
-        toggle.appendChild(document.createTextNode('Show passed checks ('));
-        toggle.appendChild(countSpan);
-        toggle.appendChild(document.createTextNode(')'));
 
         for (var i = 0; i < passed.length; i++) {
             var r = passed[i];
@@ -222,18 +214,6 @@
             tbody.appendChild(tr);
         }
     }
-
-    otterwiki.toggle_security_check_passed = function() {
-        var panel = document.getElementById('security-check-passed');
-        var toggle = document.getElementById('security-check-passed-toggle');
-        var countSpan = document.getElementById('security-check-passed-count');
-        var visible = panel.style.display !== 'none';
-        panel.style.display = visible ? 'none' : '';
-        toggle.textContent = '';
-        toggle.appendChild(document.createTextNode((visible ? 'Show' : 'Hide') + ' passed checks ('));
-        toggle.appendChild(countSpan);
-        toggle.appendChild(document.createTextNode(')'));
-    };
 
     // Frontend security checks (runs alongside backend checks).
     // Returns {issues: [...], passed: [...]}.

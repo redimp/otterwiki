@@ -362,12 +362,8 @@ def check_reverse_proxy():
 
     Triggers in these cases:
     - Request from a non-private IP with no proxy headers > likely no reverse proxy at all
-    - REAL_IP_FROM is configured but proxy headers are missing > misconfigured proxy
-    - Proxy headers are present but REAL_IP_FROM is not configured > incomplete proxy setup
+    - X-Forwarded-For present but X-Forwarded-Proto missing > incomplete proxy setup
     """
-    real_ip_from_configured = not empty(
-        str(app.config.get("REAL_IP_FROM", ""))
-    )
     has_real_ip = bool(request.headers.get("X-Real-IP"))
     has_forwarded_for = bool(request.headers.get("X-Forwarded-For"))
     has_forwarded_proto = bool(request.headers.get("X-Forwarded-Proto"))
@@ -375,40 +371,21 @@ def check_reverse_proxy():
     remote_addr = request.remote_addr
     is_private = _is_private_ip(remote_addr)
 
-    # direct local access without any proxy config/headers is likely fine
-    if is_private and not real_ip_from_configured and not has_proxy_headers:
+    # direct local access without any proxy headers is likely fine
+    if is_private and not has_proxy_headers:
         return None
 
     issues = []
     issue_title = "Misconfigured reverse proxy"
 
     # non-private IP with no proxy headers
-    if (
-        not is_private
-        and not has_proxy_headers
-        and not real_ip_from_configured
-    ):
+    if not is_private and not has_proxy_headers:
         issue_title = "Missing or misconfigured reverse proxy"
         issues.append(
             "Your wiki is directly accessible from the internet without a "
-            "reverse proxy or the reverse proxy is misconfigured."
+            "reverse proxy or the reverse proxy is misconfigured. "
             "This is not recommended as it exposes the "
             "application server directly."
-        )
-
-    # REAL_IP_FROM configured but no proxy headers arriving
-    if real_ip_from_configured and not has_real_ip and not has_forwarded_for:
-        issues.append(
-            "<code>REAL_IP_FROM</code> is configured but no "
-            "<code>X-Real-IP</code> or <code>X-Forwarded-For</code> "
-            "header is being sent by your reverse proxy."
-        )
-
-    # proxy headers present but REAL_IP_FROM not configured
-    if has_proxy_headers and not real_ip_from_configured:
-        issues.append(
-            "Proxy headers are present but <code>REAL_IP_FROM</code> is "
-            "not configured, so the wiki cannot determine the real client IP."
         )
 
     # X-Forwarded-For present but X-Forwarded-Proto missing
@@ -419,24 +396,11 @@ def check_reverse_proxy():
             "determine the original protocol."
         )
 
-    # REAL_IP_FROM configured but X-Forwarded-Proto missing
-    if real_ip_from_configured and not has_forwarded_proto:
-        issues.append(
-            "No <code>X-Forwarded-Proto</code> header is being sent, "
-            "so the wiki cannot determine the original protocol."
-        )
-
     if issues:
         # HIGH severity if we suspect no reverse proxy exists at all
-        suspected_no_proxy = (
-            not is_private
-            and not has_proxy_headers
-            and not real_ip_from_configured
-        )
+        suspected_no_proxy = not is_private and not has_proxy_headers
         # HIGH severity if there is a proxy but X-Forwarded-Proto is missing
-        proxy_without_proto = (
-            has_proxy_headers or real_ip_from_configured
-        ) and not has_forwarded_proto
+        proxy_without_proto = has_proxy_headers and not has_forwarded_proto
 
         severity = (
             "HIGH" if (suspected_no_proxy or proxy_without_proto) else "MEDIUM"
@@ -460,8 +424,6 @@ def check_reverse_proxy():
 
     return SecurityCheckResult(
         issue="Reverse proxy looks correctly configured",
-        description=(
-            "Proxy headers and <code>REAL_IP_FROM</code> appear consistent."
-        ),
+        description="Proxy headers appear consistent.",
         passed=True,
     )
