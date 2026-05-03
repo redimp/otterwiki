@@ -7,46 +7,56 @@ from flask import url_for
 
 
 @pytest.fixture
-def app_with_attachments(create_app):
+def app_with_attachments(app_with_user):
     # create test page
     message = "Test.md commit"
     filename = "test.md"
     author = ("Example Author", "mail@example.com")
     # create attachment
-    create_app.storage.store(
+    app_with_user.storage.store(
         filename,
         content="# Test\nAttachment Test.",
         author=author,
         message=message,
     )
-    assert True == create_app.storage.exists(filename)
+    assert True == app_with_user.storage.exists(filename)
     # create txt attachment
     message = "Test/attachment0.txt attach0-commit"
-    create_app.storage.store(
+    app_with_user.storage.store(
         "test/attachment0.txt",
         content="attachment0-content0",
         author=author,
         message=message,
     )
-    assert True == create_app.storage.exists("test/attachment0.txt")
+    assert True == app_with_user.storage.exists("test/attachment0.txt")
     # create gif attachment
     message = "Test/attachment1.gif attach1-commit"
     content_b64 = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-    create_app.storage.store(
+    app_with_user.storage.store(
         "test/attachment1.gif",
         content=base64.b64decode(content_b64),
         author=author,
         message=message,
         mode="wb",
     )
-    assert True == create_app.storage.exists("test/attachment1.gif")
-    yield create_app
+    assert True == app_with_user.storage.exists("test/attachment1.gif")
+    yield app_with_user
 
 
 @pytest.fixture
 def test_client(app_with_attachments):
     client = app_with_attachments.test_client()
     client._app = app_with_attachments
+    # Log in as approved user for write/attachment access
+    result = client.post(
+        "/-/login",
+        data={
+            "email": "another@user.org",
+            "password": "password4567",
+        },
+        follow_redirects=True,
+    )
+    assert "You logged in successfully." in result.data.decode()
     yield client
 
 
