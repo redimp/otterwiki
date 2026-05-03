@@ -215,6 +215,16 @@
         }
     }
 
+    function isLoopbackHost() {
+        var h = window.location.hostname || '';
+        if (h === 'localhost') return true;
+        if (/^127\./.test(h)) return true;
+        if (h === '::1' || h === '[::1]') return true;
+        return false;
+    }
+
+    var loopbackNote = ' <em>Severity reduced because the wiki was accessed via a loopback host; if this server is reachable from elsewhere, treat this as critical.</em>';
+
     // Frontend security checks (runs alongside backend checks).
     // Returns {issues: [...], passed: [...]}.
     function runFrontendChecks(backendResponse) {
@@ -223,10 +233,13 @@
 
         // HTTPS
         if (window.location.protocol !== 'https:') {
+            var loopback = isLoopbackHost();
+            var description = 'SSL is not enabled for your wiki. Unless you are using the wiki in a local environment only, this is a major security risk. The easiest way to add SSL is via a reverse proxy, see <a href="https://otterwiki.com/Installation#reverse-proxy">the documentation</a>.';
+            if (loopback) description += loopbackNote;
             issues.push({
                 issue: 'HTTPS not enabled',
-                description: 'SSL is not enabled for your wiki. Unless you are using the wiki in a local environment only, this is a major security risk. The easiest way to add SSL is via a reverse proxy, see <a href="https://otterwiki.com/Installation#reverse-proxy">the documentation</a>.',
-                severity: 'CRITICAL'
+                description: description,
+                severity: loopback ? 'MEDIUM' : 'CRITICAL'
             });
         } else {
             passed.push({

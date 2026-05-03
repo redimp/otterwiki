@@ -124,6 +124,37 @@ def _is_private_ip(ip_str):
         return False
 
 
+def _is_loopback_host():
+    """Return True if the request's Host header points at loopback.
+
+    Used to downgrade severity on local/dev access; the wiki may still be
+    reachable via tunnel or port forward, so the downgrade is communicated
+    in the description.
+    """
+    try:
+        host = request.host or ""
+    except RuntimeError:
+        return False
+    # strip port
+    if host.startswith("[") and "]" in host:
+        host = host[1 : host.index("]")]
+    elif ":" in host:
+        host = host.rsplit(":", 1)[0]
+    if host == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
+
+
+_LOOPBACK_NOTE = (
+    " <em>Severity reduced because the wiki was accessed via a loopback "
+    "host; if this server is reachable from elsewhere, treat this as "
+    "critical.</em>"
+)
+
+
 #
 # backend security checks
 #
@@ -133,16 +164,20 @@ def _is_private_ip(ip_str):
 def check_anonymous_write_access():
     """Check if anonymous users can edit the wiki."""
     if app.config.get("WRITE_ACCESS", "").upper() == "ANONYMOUS":
+        loopback = _is_loopback_host()
+        description = (
+            "Anonymous users have write access to your wiki, allowing anyone "
+            "to create or edit pages without logging in. Unless this is "
+            "intentional, it is a significant security risk. "
+            'This can be changed on the <a href="/-/admin/permissions_and_registration">'
+            "Permissions and Registration</a> page."
+        )
+        if loopback:
+            description += _LOOPBACK_NOTE
         return SecurityCheckResult(
             issue="Anonymous users can edit the wiki",
-            description=(
-                "Anonymous users have write access to your wiki, allowing anyone "
-                "to create or edit pages without logging in. Unless this is "
-                "intentional, it is a significant security risk. "
-                'This can be changed on the <a href="/-/admin/permissions_and_registration">'
-                "Permissions and Registration</a> page."
-            ),
-            severity="CRITICAL",
+            description=description,
+            severity="MEDIUM" if loopback else "CRITICAL",
         )
     return SecurityCheckResult(
         issue="Anonymous write access is disabled",
@@ -155,16 +190,20 @@ def check_anonymous_write_access():
 def check_anonymous_upload_access():
     """Check if anonymous users can upload files."""
     if app.config.get("ATTACHMENT_ACCESS", "").upper() == "ANONYMOUS":
+        loopback = _is_loopback_host()
+        description = (
+            "Anonymous users have file upload access to your wiki, allowing "
+            "anyone to upload files without logging in. Unless this is "
+            "intentional, it is a significant security risk. "
+            'This can be changed on the <a href="/-/admin/permissions_and_registration">'
+            "Permissions and Registration</a> page."
+        )
+        if loopback:
+            description += _LOOPBACK_NOTE
         return SecurityCheckResult(
             issue="Anonymous users can upload files",
-            description=(
-                "Anonymous users have file upload access to your wiki, allowing "
-                "anyone to upload files without logging in. Unless this is "
-                "intentional, it is a significant security risk. "
-                'This can be changed on the <a href="/-/admin/permissions_and_registration">'
-                "Permissions and Registration</a> page."
-            ),
-            severity="CRITICAL",
+            description=description,
+            severity="MEDIUM" if loopback else "CRITICAL",
         )
     return SecurityCheckResult(
         issue="Anonymous upload access is disabled",
