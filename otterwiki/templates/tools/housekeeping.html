@@ -87,8 +87,152 @@
 </div>
 {% endif %}
 {#-#}
+<div class="card m-auto m-lg-20">
+<div class="mw-full">
+<h3 class="card-title">Security Check</h3>
+<p class="text-muted">The security check provides an overview of your wiki's security, highlighting potentially problematic issues. It is purely informational and safe to run in any environment at any time.</p>
+<div id="security-check-results" style="display:none;">
+<table class="table compact" style="table-layout: fixed; width: 100%;">
+    <thead>
+        <tr>
+            <th style="width: 200px;"><strong>Issue</strong></th>
+            <th style="width: 110px; text-align: center;"><strong>Severity</strong></th>
+            <th><strong>Description</strong></th>
+        </tr>
+    </thead>
+    <tbody id="security-check-tbody">
+    </tbody>
+</table>
+</div>
+<div id="security-check-empty" style="display:none;">
+<p class="text-muted"><em>No security issues found. Your wiki looks good!</em></p>
+</div>
+<div id="security-check-error" style="display:none;">
+<p class="text-danger"><em>An error occurred while running the security check.</em></p>
+</div>
+<div class="mt-10">
+    <button class="btn btn-primary" id="security-check-btn" onclick="otterwiki.run_security_check()">Perform security check</button>
+</div>
+</div>
+</div>
+{#-#}
 {% endblock %}{# content #}
 {% block js %}
 {{ super() }}
 <script src="{{ url_for("static", filename="js/htmx.2.0.8.min.js") }}" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+// otterwiki security check frontend checks and display logic
+(function() {
+    // Severity level colors for badge styling
+    var severityStyles = {
+        CRITICAL: { bg: '#dc3545', color: '#fff' },
+        HIGH:     { bg: '#e67e22', color: '#fff' },
+        MEDIUM:   { bg: '#f0ad4e', color: '#fff' },
+        LOW:      { bg: '#5bc0de', color: '#fff' },
+        NOTICE:   { bg: '#6c757d', color: '#fff' },
+    };
+
+    function severityBadge(severity) {
+        var style = severityStyles[severity] || severityStyles.NOTICE;
+        return '<span class="badge badge-pill" style="background-color:' + style.bg + ';color:' + style.color + ';font-weight:bold;">' + severity + '</span>';
+    }
+
+    function renderResults(results) {
+        var tbody = document.getElementById('security-check-tbody');
+        tbody.innerHTML = '';
+        var resultsDiv = document.getElementById('security-check-results');
+        var emptyDiv = document.getElementById('security-check-empty');
+
+        if (results.length === 0) {
+            resultsDiv.style.display = 'none';
+            emptyDiv.style.display = '';
+            return;
+        }
+
+        emptyDiv.style.display = 'none';
+        resultsDiv.style.display = '';
+
+        var severityLevels = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'NOTICE'];
+        results.sort(function(a, b) {
+            var aIdx = severityLevels.indexOf(a.severity);
+            var bIdx = severityLevels.indexOf(b.severity);
+            if (aIdx < 0) aIdx = 99;
+            if (bIdx < 0) bIdx = 99;
+            return aIdx - bIdx;
+        });
+
+        for (var i = 0; i < results.length; i++) {
+            var r = results[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td style="overflow-wrap: break-word; word-wrap: break-word;"><strong>' + r.issue + '</strong></td>' +
+                '<td style="text-align: center;">' + severityBadge(r.severity) + '</td>' +
+                '<td style="overflow-wrap: break-word; word-wrap: break-word;">' + r.description + '</td>';
+            tbody.appendChild(tr);
+        }
+    }
+
+    // Frontend security checks (runs alongside backend checks)
+    function runFrontendChecks(backendResponse) {
+        var results = [];
+
+        // HTTPS not enabled
+        if (window.location.protocol !== 'https:') {
+            results.push({
+                issue: 'HTTPS not enabled',
+                description: 'SSL is not enabled for your wiki. Unless you are using the wiki in a local environment only, this is a major security risk. The easiest way to add SSL is via a reverse proxy, see <a href="https://otterwiki.com/Installation#reverse-proxy">the documentation</a>.',
+                severity: 'CRITICAL'
+            });
+        }
+
+        // CSP check: inspect the backend response headers instead of
+        // making a separate HEAD request (which would hit /-/housekeeping
+        // and cause "Unknown task" toasts)
+        if (backendResponse) {
+            var csp = backendResponse.headers.get('Content-Security-Policy');
+            if (!csp) {
+                results.push({
+                    issue: 'CSP header missing',
+                    description: 'The Content Security Policy header is not set, which means resources could be loaded from any origin. This makes the wiki more vulnerable to cross-site scripting attacks. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP">Learn more about CSP</a>.',
+                    severity: 'LOW'
+                });
+            }
+        }
+
+        return results;
+    }
+
+    // Main entry point
+    otterwiki.run_security_check = function() {
+        var btn = document.getElementById('security-check-btn');
+        var errorDiv = document.getElementById('security-check-error');
+        errorDiv.style.display = 'none';
+
+        btn.disabled = true;
+        btn.textContent = 'Running security check\u2026';
+
+        // Run backend checks and also use the response for CSP header check
+        fetch('/-/housekeeping/security-check', {
+            method: 'GET',
+            credentials: 'same-origin'
+        }).then(function(response) {
+            if (!response.ok) throw new Error('Backend check failed');
+            // Run frontend checks using this response for header inspection
+            var frontendResults = runFrontendChecks(response);
+            return response.json().then(function(data) {
+                var backendResults = data.results || [];
+                return backendResults.concat(frontendResults);
+            });
+        }).then(function(allResults) {
+            renderResults(allResults);
+        }).catch(function(err) {
+            console.error('Security check error:', err);
+            errorDiv.style.display = '';
+        }).finally(function() {
+            btn.disabled = false;
+            btn.textContent = 'Perform security check';
+        });
+    };
+})();
+</script>
 {% endblock js %}

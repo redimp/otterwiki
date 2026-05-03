@@ -1,0 +1,428 @@
+#!/usr/bin/env python
+# vim: set et ts=8 sts=4 sw=4 ai:
+
+"""
+otterwiki.security_check
+
+Extensible security check framework for Otterwiki.
+Each check is a function registered via the @register_backend_check decorator
+that returns a SecurityCheckResult (or a list of) if an issue is found, None otherwise.
+"""
+
+import os
+import re
+import ipaddress
+
+from flask import request
+from otterwiki.server import app
+from otterwiki.plugins import plugin_manager
+from otterwiki.util import empty
+
+
+class SecurityCheckResult:
+    """Represents a single security check finding."""
+
+    def __init__(self, issue, description, severity):
+        self.issue = issue
+        self.description = description
+        self.severity = severity
+
+    def to_dict(self):
+        return {
+            "issue": self.issue,
+            "description": self.description,
+            "severity": self.severity,
+        }
+
+
+# registry of backend check functions
+_backend_checks = []
+
+
+def register_backend_check(func):
+    """Decorator to register a backend security check function."""
+    _backend_checks.append(func)
+    return func
+
+
+def run_backend_checks():
+    """Run all registered backend security checks and return results as a list of dicts."""
+    results = []
+    for check_func in _backend_checks:
+        try:
+            result = check_func()
+            if result is not None:
+                if isinstance(result, list):
+                    results.extend(r.to_dict() for r in result)
+                else:
+                    results.append(result.to_dict())
+        except Exception as e:
+            app.logger.warning(
+                f"Security check '{check_func.__name__}' failed: {e}"
+            )
+    return results
+
+
+#
+# helper functions
+#
+
+
+def _get_custom_dir():
+    """Get the custom files directory path, respecting USE_STATIC_PATH env var."""
+    return os.path.join(
+        os.getenv(
+            "USE_STATIC_PATH",
+            os.path.join(app.root_path, "static"),
+        ),
+        "custom",
+    )
+
+
+def _has_css_rules(content):
+    """Check if CSS content has actual rules beyond comments and whitespace."""
+    content = re.sub(r"/\*.*?\*/", "", content, flags=re.DOTALL)
+    content = content.strip()
+    return bool(content)
+
+
+def _has_js_code(content):
+    """Check if JS content has actual code beyond comments and whitespace."""
+    content = re.sub(r"/\*.*?\*/", "", content, flags=re.DOTALL)
+    content = re.sub(r"//.*$", "", content, flags=re.MULTILINE)
+    content = content.strip()
+    return bool(content)
+
+
+def _has_html_content(content):
+    """Check if HTML content has actual content beyond comments and whitespace."""
+    content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL)
+    content = content.strip()
+    return bool(content)
+
+
+def _is_private_ip(ip_str):
+    """Check if an IP address is private or loopback."""
+    try:
+        ip = ipaddress.ip_address(ip_str)
+        return ip.is_private or ip.is_loopback
+    except ValueError:
+        return False
+
+
+#
+# backend security checks
+#
+
+
+@register_backend_check
+def check_anonymous_write_access():
+    """Check if anonymous users can edit the wiki."""
+    if app.config.get("WRITE_ACCESS", "").upper() == "ANONYMOUS":
+        return SecurityCheckResult(
+            issue="Anonymous users can edit the wiki",
+            description=(
+                "Anonymous users have write access to your wiki, allowing anyone "
+                "to create or edit pages without logging in. Unless this is "
+                "intentional, it is a significant security risk. "
+                'This can be changed on the <a href="/-/admin/permissions_and_registration">'
+                "Permissions and Registration</a> page."
+            ),
+            severity="CRITICAL",
+        )
+    return None
+
+
+@register_backend_check
+def check_anonymous_upload_access():
+    """Check if anonymous users can upload files."""
+    if app.config.get("ATTACHMENT_ACCESS", "").upper() == "ANONYMOUS":
+        return SecurityCheckResult(
+            issue="Anonymous users can upload files",
+            description=(
+                "Anonymous users have file upload access to your wiki, allowing "
+                "anyone to upload files without logging in. Unless this is "
+                "intentional, it is a significant security risk. "
+                'This can be changed on the <a href="/-/admin/permissions_and_registration">'
+                "Permissions and Registration</a> page."
+            ),
+            severity="CRITICAL",
+        )
+    return None
+
+
+@register_backend_check
+def check_server_name_not_set():
+    """Check if SERVER_NAME is configured."""
+    if not app.config.get("SERVER_NAME"):
+        return SecurityCheckResult(
+            issue="Server name not configured",
+            description=(
+                "The <code>SERVER_NAME</code> configuration variable is not set. "
+                "This may lead to issues depending on your reverse proxy configuration. "
+                'See <a href="https://flask.palletsprojects.com/en/stable/config/#SERVER_NAME">'
+                "Flask documentation</a> for details. "
+                'This can be changed on the <a href="/-/admin">'
+                "Application Preferences</a> page."
+            ),
+            severity="NOTICE",
+        )
+    return None
+
+
+@register_backend_check
+def check_open_registrations():
+    """Check if registrations are fully open without any restrictions."""
+    if (
+        not app.config.get("DISABLE_REGISTRATION", False)
+        and not app.config.get("EMAIL_NEEDS_CONFIRMATION", True)
+        and app.config.get("AUTO_APPROVAL", True)
+    ):
+        return SecurityCheckResult(
+            issue="Fully open registrations",
+            description=(
+                "Your wiki allows unlimited registrations without requiring "
+                "email confirmation or manual approval. This means anyone can "
+                "create accounts without restrictions, potentially flooding the "
+                "wiki with spam users. "
+                'This can be changed on the <a href="/-/admin/permissions_and_registration">'
+                "Permissions and Registration</a> page."
+            ),
+            severity="HIGH",
+        )
+    return None
+
+
+@register_backend_check
+def check_plugins_active():
+    """Check if plugins are active."""
+    plugin_info = plugin_manager.list_plugin_distinfo()
+    if plugin_info:
+        plugin_names = [dist.project_name for _, dist in plugin_info]
+        return SecurityCheckResult(
+            issue="Plugins are active",
+            description=(
+                "You are using wiki plugins. Note that there are "
+                "little to no restrictions on what a plugin can do, and "
+                "third-party plugins are not reviewed for security by an Otterwiki "
+                "developers. Your active plugins: "
+                f"<strong>{', '.join(plugin_names)}</strong>."
+            ),
+            severity="NOTICE",
+        )
+    return None
+
+
+@register_backend_check
+def check_custom_css():
+    """Check if custom CSS rules are defined."""
+    custom_dir = _get_custom_dir()
+    css_path = os.path.join(custom_dir, "custom.css")
+    try:
+        if os.path.exists(css_path):
+            with open(css_path, "r") as f:
+                content = f.read()
+            if _has_css_rules(content):
+                return SecurityCheckResult(
+                    issue="Custom CSS is being used",
+                    description=(
+                        "You have custom CSS rules defined in "
+                        "<code>custom.css</code>. If this is intentional, "
+                        "this notice can be ignored."
+                    ),
+                    severity="NOTICE",
+                )
+    except Exception:
+        pass
+    return None
+
+
+@register_backend_check
+def check_custom_js():
+    """Check if custom JavaScript code is defined."""
+    custom_dir = _get_custom_dir()
+    js_path = os.path.join(custom_dir, "custom.js")
+    try:
+        if os.path.exists(js_path):
+            with open(js_path, "r") as f:
+                content = f.read()
+            if _has_js_code(content):
+                return SecurityCheckResult(
+                    issue="Custom JavaScript is being used",
+                    description=(
+                        "You have custom JavaScript code defined in "
+                        "<code>custom.js</code>. If this is intentional, "
+                        "this notice can be ignored."
+                    ),
+                    severity="NOTICE",
+                )
+    except Exception:
+        pass
+    return None
+
+
+@register_backend_check
+def check_custom_html():
+    """Check if custom HTML content is being used."""
+    findings = []
+    custom_dir = _get_custom_dir()
+
+    head_path = os.path.join(custom_dir, "customHead.html")
+    try:
+        if os.path.exists(head_path):
+            with open(head_path, "r") as f:
+                content = f.read()
+            if _has_html_content(content):
+                findings.append("customHead.html")
+    except Exception:
+        pass
+
+    body_path = os.path.join(custom_dir, "customBody.html")
+    try:
+        if os.path.exists(body_path):
+            with open(body_path, "r") as f:
+                content = f.read()
+            if _has_html_content(content):
+                findings.append("customBody.html")
+    except Exception:
+        pass
+
+    if not empty(app.config.get("HTML_EXTRA_HEAD", "")):
+        findings.append("HTML_EXTRA_HEAD")
+
+    if not empty(app.config.get("HTML_EXTRA_BODY", "")):
+        findings.append("HTML_EXTRA_BODY")
+
+    if findings:
+        return SecurityCheckResult(
+            issue="Custom HTML is being used",
+            description=(
+                "You have custom HTML defined in: <strong>"
+                + ", ".join(findings)
+                + "</strong>. If this is intentional, this notice can be ignored."
+            ),
+            severity="NOTICE",
+        )
+    return None
+
+
+@register_backend_check
+def check_html_whitelist():
+    """Check if RENDERER_HTML_ALLOWLIST is configured."""
+    if not empty(app.config.get("RENDERER_HTML_ALLOWLIST", "")):
+        return SecurityCheckResult(
+            issue="Custom HTML allowlist is configured",
+            description=(
+                "Your <code>RENDERER_HTML_ALLOWLIST</code> is not empty, which "
+                "allows potentially unsafe additional HTML tags and attributes "
+                "in wiki content. If this is intentional, this notice can be "
+                "ignored."
+            ),
+            severity="NOTICE",
+        )
+    return None
+
+
+@register_backend_check
+def check_reverse_proxy():
+    """Check for missing or misconfigured reverse proxy.
+
+    Triggers in these cases:
+    - Request from a non-private IP with no proxy headers > likely no reverse proxy at all
+    - REAL_IP_FROM is configured but proxy headers are missing > misconfigured proxy
+    - Proxy headers are present but REAL_IP_FROM is not configured > incomplete proxy setup
+    """
+    real_ip_from_configured = not empty(
+        str(app.config.get("REAL_IP_FROM", ""))
+    )
+    has_real_ip = bool(request.headers.get("X-Real-IP"))
+    has_forwarded_for = bool(request.headers.get("X-Forwarded-For"))
+    has_forwarded_proto = bool(request.headers.get("X-Forwarded-Proto"))
+    has_proxy_headers = has_real_ip or has_forwarded_for or has_forwarded_proto
+    remote_addr = request.remote_addr
+    is_private = _is_private_ip(remote_addr)
+
+    # direct local access without any proxy config/headers is likely fine
+    if is_private and not real_ip_from_configured and not has_proxy_headers:
+        return None
+
+    issues = []
+    issue_title = "Misconfigured reverse proxy"
+
+    # non-private IP with no proxy headers
+    if (
+        not is_private
+        and not has_proxy_headers
+        and not real_ip_from_configured
+    ):
+        issue_title = "Missing or misconfigured reverse proxy"
+        issues.append(
+            "Your wiki is directly accessible from the internet without a "
+            "reverse proxy or the reverse proxy is misconfigured."
+            "This is not recommended as it exposes the "
+            "application server directly."
+        )
+
+    # REAL_IP_FROM configured but no proxy headers arriving
+    if real_ip_from_configured and not has_real_ip and not has_forwarded_for:
+        issues.append(
+            "<code>REAL_IP_FROM</code> is configured but no "
+            "<code>X-Real-IP</code> or <code>X-Forwarded-For</code> "
+            "header is being sent by your reverse proxy."
+        )
+
+    # proxy headers present but REAL_IP_FROM not configured
+    if has_proxy_headers and not real_ip_from_configured:
+        issues.append(
+            "Proxy headers are present but <code>REAL_IP_FROM</code> is "
+            "not configured, so the wiki cannot determine the real client IP."
+        )
+
+    # X-Forwarded-For present but X-Forwarded-Proto missing
+    if has_forwarded_for and not has_forwarded_proto:
+        issues.append(
+            "<code>X-Forwarded-For</code> is present but "
+            "<code>X-Forwarded-Proto</code> is not, so the wiki cannot "
+            "determine the original protocol."
+        )
+
+    # REAL_IP_FROM configured but X-Forwarded-Proto missing
+    if real_ip_from_configured and not has_forwarded_proto:
+        issues.append(
+            "No <code>X-Forwarded-Proto</code> header is being sent, "
+            "so the wiki cannot determine the original protocol."
+        )
+
+    if issues:
+        # HIGH severity if we suspect no reverse proxy exists at all
+        suspected_no_proxy = (
+            not is_private
+            and not has_proxy_headers
+            and not real_ip_from_configured
+        )
+        # HIGH severity if there is a proxy but X-Forwarded-Proto is missing
+        proxy_without_proto = (
+            has_proxy_headers or real_ip_from_configured
+        ) and not has_forwarded_proto
+
+        severity = (
+            "HIGH" if (suspected_no_proxy or proxy_without_proto) else "MEDIUM"
+        )
+
+        issues_list = "".join(f"<li>{issue}</li>" for issue in issues)
+        return SecurityCheckResult(
+            issue=issue_title,
+            description=(
+                "Your wiki does not appear to be running behind a properly "
+                "configured reverse proxy:"
+                f"<ul>{issues_list}</ul>"
+                "Please consult the documentation for "
+                '<a href="https://otterwiki.com/Installation#reverse-proxy">'
+                "example reverse proxy configurations</a> and "
+                '<a href="https://otterwiki.com/Configuration#reverse-proxy-and-ips">'
+                "required wiki parameters</a>."
+            ),
+            severity=severity,
+        )
+
+    return None
