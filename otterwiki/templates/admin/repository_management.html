@@ -92,10 +92,25 @@
               </div>
           </div>
 
+          {% if not config.GIT_REMOTE_PULL_URL_SECURE and config.GIT_REMOTE_PULL_URL %}
           <div class="form-group">
+              <div class="alert alert-secondary" role="alert">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  Your webhook URL uses a legacy hash that can be derived from the remote URL.
+                  Check the box below and save preferences to generate a secure webhook URL.
+                  <strong>Note:</strong> the webhook URL will change and any existing webhook configurations will need to be updated.
+              </div>
+              <div class="custom-checkbox">
+                  <input type="checkbox" id="git_remote_pull_regenerate_webhook" name="git_remote_pull_regenerate_webhook" value="True">
+                  <label for="git_remote_pull_regenerate_webhook">Regenerate secure webhook URL</label>
+              </div>
+          </div>
+          {% endif %}
+
+          <div class="form-group" id="webhook_url_group">
               <label for="git_remote_pull_webhook_url">Pull webhook URL</label>
               <div class="input-group">
-                  <input type="text" class="form-control" id="git_remote_pull_webhook_url" readonly>
+                  <input type="text" class="form-control" id="git_remote_pull_webhook_url" readonly value="{{ webhook_url }}">
                   <div class="input-group-append">
                       <button class="btn btn-outline-secondary" type="button" id="copy_webhook_url" title="Copy webhook URL">
                           <i class="fas fa-copy"></i>
@@ -104,6 +119,14 @@
               </div>
               <div class="form-text">
                   Use this URL to trigger pulls from external services (e.g., GitHub webhooks).
+              </div>
+          </div>
+
+          <div class="form-group" id="webhook_url_save_note" style="display: none;">
+              <label>Pull webhook URL</label>
+              <div class="alert alert-secondary" role="alert">
+                  <i class="fas fa-info-circle"></i>
+                  The remote URL has been changed. <strong>Save preferences</strong> to generate the new webhook URL.
               </div>
           </div>
       </div>
@@ -162,44 +185,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const pullCheckbox = document.getElementById('git_remote_pull_enabled');
     const pullParams = document.getElementById('git_remote_pull_params');
     const pullUrlInput = document.getElementById('git_remote_pull_url');
+    const pullRegenerateWebookCheckbox = document.getElementById('git_remote_pull_regenerate_webhook');
     const webhookUrlInput = document.getElementById('git_remote_pull_webhook_url');
     const copyButton = document.getElementById('copy_webhook_url');
 
-    async function generateWebhookHash(url) {
-        if (!url) return '';
-        // generate SHA-256 hash to match backend expectation
-        const str = url + 'otterwiki';
-        const encoder = new TextEncoder();
-        const data = encoder.encode(str);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
-    }
-
     async function updateWebhookUrl() {
         const remoteUrl = pullUrlInput.value.trim();
-        if (remoteUrl) {
-            const hash = await generateWebhookHash(remoteUrl);
-            const webhookUrl = window.location.origin + '/-/api/v1/pull/' + hash;
-            webhookUrlInput.value = webhookUrl;
-        } else {
-            webhookUrlInput.value = '';
-        }
+        const webhookGroup = document.getElementById('webhook_url_group');
+        const webhookNote = document.getElementById('webhook_url_save_note');
+
+        if (webhookGroup) webhookGroup.style.display = 'none';
+        if (webhookNote) webhookNote.style.display = 'block';
     }
 
     function togglePullFields() {
         if (pullCheckbox.checked) {
             pullParams.style.display = 'block';
-            updateWebhookUrl();
         } else {
             pullParams.style.display = 'none';
         }
     }
 
     togglePullFields();
+
     pullCheckbox.addEventListener('change', togglePullFields);
     pullUrlInput.addEventListener('input', updateWebhookUrl);
+    pullRegenerateWebookCheckbox.addEventListener('change', updateWebhookUrl);
 
     copyButton.addEventListener('click', function() {
         webhookUrlInput.select();

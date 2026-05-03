@@ -2,7 +2,6 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
-import hashlib
 from timeit import default_timer as timer
 
 from flask import (
@@ -35,7 +34,11 @@ from otterwiki.helper import (
     get_pagename_prefixes,
 )
 from otterwiki.version import __version__
-from otterwiki.util import sanitize_pagename
+from otterwiki.util import (
+    sanitize_pagename,
+    compute_webhook_hash,
+    compute_webhook_hash_legacy,
+)
 from otterwiki.plugins import call_hook, collect_hook
 import otterwiki.pluginmgmt
 
@@ -685,7 +688,7 @@ def git_receive_pack():
 def pull_webhook(webhook_hash):
     """
     Webhook endpoint for triggering git pulls from remote repositories.
-    The webhook_hash should match the SHA-256 hash generated from remote_url + 'otterwiki'.
+    The webhook_hash should match the HMAC-SHA256 hash generated from remote_url using SECRET_KEY.
     """
     from otterwiki.repomgmt import get_repo_manager
 
@@ -696,9 +699,12 @@ def pull_webhook(webhook_hash):
     if not remote_url:
         abort(404)
 
-    expected_hash = hashlib.sha256(
-        (remote_url + 'otterwiki').encode()
-    ).hexdigest()
+    if app.config.get('GIT_REMOTE_PULL_URL_SECURE'):
+        expected_hash = compute_webhook_hash(
+            app.config['SECRET_KEY'], remote_url
+        )
+    else:
+        expected_hash = compute_webhook_hash_legacy(remote_url)
 
     if webhook_hash != expected_hash:
         abort(404)
