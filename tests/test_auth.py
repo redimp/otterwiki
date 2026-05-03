@@ -162,8 +162,8 @@ def test_logout(test_client):
     assert "You logged out successfully." in html
 
 
-def test_login_required(test_client):
-    html = test_client.get(
+def test_login_required(anonymous_client):
+    html = anonymous_client.get(
         "/-/settings",
         follow_redirects=True,
     ).data.decode()
@@ -184,11 +184,11 @@ def test_settins_minimal(app_with_user, test_client):
 # test permissions
 #
 @pytest.fixture
-def app_with_permissions(app_with_user, test_client):
+def app_with_permissions(app_with_user, anonymous_client):
     app_with_user.config["READ_ACCESS"] = "ANONYMOUS"
     app_with_user.config["WRITE_ACCESS"] = "ANONYMOUS"
     # create a Home
-    html = test_client.post(
+    html = anonymous_client.post(
         "/Home/save",
         data={
             "content": "There is no place like Home.",
@@ -196,25 +196,25 @@ def app_with_permissions(app_with_user, test_client):
         },
         follow_redirects=True,
     ).data.decode()
-    html = test_client.get("/Home").data.decode()
+    html = anonymous_client.get("/Home").data.decode()
     assert "There is no place like Home." in html
     # update permissions
     app_with_user.config["READ_ACCESS"] = "REGISTERED"
     # and fetch again
-    html = test_client.get("/Home").data.decode()
+    html = anonymous_client.get("/Home").data.decode()
     assert "There is no place like Home." not in html
 
     with app_with_user.test_request_context() as ctx:
         yield app_with_user
 
 
-def test_page_view_permissions(app_with_permissions, test_client):
+def test_page_view_permissions(app_with_permissions, anonymous_client):
     fun = "view"
     app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
-    rv = test_client.get(url_for(fun, path="Home"))
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert "There is no place like Home." in rv.data.decode()
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
-    rv = test_client.get(url_for(fun, path="Home"), follow_redirects=True)
+    rv = anonymous_client.get(url_for(fun, path="Home"), follow_redirects=True)
     assert "There is no place like Home." not in rv.data.decode()
     # check for the toast
     assert "lack the permissions to access" in rv.data.decode()
@@ -222,83 +222,83 @@ def test_page_view_permissions(app_with_permissions, test_client):
     assert url_for("login") in rv.data.decode()
     assert 'name="password"' in rv.data.decode()
     assert rv.status_code == 200
-    login(test_client)
-    rv = test_client.get(url_for(fun, path="Home"))
+    login(anonymous_client)
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert "There is no place like Home." in rv.data.decode()
     assert rv.status_code == 200
 
 
-def test_page_blame_permissions(app_with_permissions, test_client):
+def test_page_blame_permissions(app_with_permissions, anonymous_client):
     fun = "blame"
     app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
-    rv = test_client.get(url_for(fun, path="Home"))
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert rv.status_code == 200
     assert "There is no place like Home." in rv.data.decode()
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
-    rv = test_client.get(url_for(fun, path="Home"))
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert rv.status_code == 302
     assert "/-/login" in rv.location
-    login(test_client)
-    rv = test_client.get(url_for(fun, path="Home"))
+    login(anonymous_client)
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert "There is no place like Home." in rv.data.decode()
 
 
-def test_page_history_permissions(app_with_permissions, test_client):
+def test_page_history_permissions(app_with_permissions, anonymous_client):
     fun = "history"
     app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
-    rv = test_client.get(url_for(fun, path="Home"))
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert rv.status_code == 200
     assert "initial test commit" in rv.data.decode()
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
-    rv = test_client.get(url_for(fun, path="Home"))
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert rv.status_code == 302
     assert "/-/login" in rv.location
-    login(test_client)
-    rv = test_client.get(url_for(fun, path="Home"))
+    login(anonymous_client)
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert rv.status_code == 200
     assert "initial test commit" in rv.data.decode()
 
 
-def test_page_index_permissions(app_with_permissions, test_client):
+def test_page_index_permissions(app_with_permissions, anonymous_client):
     fun = "pageindex"
     app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
-    rv = test_client.get(url_for(fun))
+    rv = anonymous_client.get(url_for(fun))
     assert rv.status_code == 200
     assert "Page Index" in rv.data.decode()
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
-    rv = test_client.get(url_for(fun))
+    rv = anonymous_client.get(url_for(fun))
     assert rv.status_code == 302
     assert "/-/login" in rv.location
-    login(test_client)
-    rv = test_client.get(url_for(fun))
+    login(anonymous_client)
+    rv = anonymous_client.get(url_for(fun))
     assert rv.status_code == 200
     assert "Page Index" in rv.data.decode()
 
 
-def test_page_changelog_permissions(app_with_permissions, test_client):
+def test_page_changelog_permissions(app_with_permissions, anonymous_client):
     fun = "changelog"
     app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
-    rv = test_client.get(url_for(fun, path="Home"))
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert rv.status_code == 200
     assert "initial test commit" in rv.data.decode()
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
-    rv = test_client.get(url_for(fun, path="Home"))
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert rv.status_code == 302
     assert "/-/login" in rv.location
-    login(test_client)
-    rv = test_client.get(url_for(fun, path="Home"))
+    login(anonymous_client)
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert rv.status_code == 200
     assert "initial test commit" in rv.data.decode()
 
 
-def test_page_edit_permissions(app_with_permissions, test_client):
+def test_page_edit_permissions(app_with_permissions, anonymous_client):
     # update permissions
     app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
     app_with_permissions.config["WRITE_ACCESS"] = "ANONYMOUS"
     # helper
     pagename = "RandomEdit"
     # try to edit anonymous
-    rv = test_client.get(url_for("edit", path=pagename))
+    rv = anonymous_client.get(url_for("edit", path=pagename))
     assert rv.status_code == 200
     html = rv.data.decode()
     # check that there is an editor in the html
@@ -307,21 +307,21 @@ def test_page_edit_permissions(app_with_permissions, test_client):
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
     app_with_permissions.config["WRITE_ACCESS"] = "REGISTERED"
     # try edit
-    rv = test_client.get(url_for("edit", path=pagename))
+    rv = anonymous_client.get(url_for("edit", path=pagename))
     html = rv.data.decode()
     # check that there is an editor in the html
     assert rv.status_code == 403
     assert "<textarea" not in html
     # login
-    login(test_client)
+    login(anonymous_client)
     # try edit
-    rv = test_client.get(url_for("edit", path=pagename))
+    rv = anonymous_client.get(url_for("edit", path=pagename))
     html = rv.data.decode()
     assert rv.status_code == 200
     assert "<textarea" in html
 
 
-def test_page_save_permissions(app_with_permissions, test_client):
+def test_page_save_permissions(app_with_permissions, anonymous_client):
     # update permissions
     app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
     app_with_permissions.config["WRITE_ACCESS"] = "ANONYMOUS"
@@ -329,7 +329,7 @@ def test_page_save_permissions(app_with_permissions, test_client):
     pagename = "RandomSaveTest"
     content = "Random Content"
     # try to edit anonymous
-    rv = test_client.post(
+    rv = anonymous_client.post(
         url_for("save", path=pagename),
         data={
             "content": content,
@@ -343,7 +343,7 @@ def test_page_save_permissions(app_with_permissions, test_client):
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
     app_with_permissions.config["WRITE_ACCESS"] = "REGISTERED"
     # try to edit anonymous (and fail)
-    rv = test_client.post(
+    rv = anonymous_client.post(
         url_for("save", path=pagename),
         data={
             "content": content,
@@ -353,11 +353,11 @@ def test_page_save_permissions(app_with_permissions, test_client):
     )
     assert rv.status_code == 403
     # try to create (and fail)
-    rv = test_client.post("/-/create", data={"pagename": "example"})
+    rv = anonymous_client.post("/-/create", data={"pagename": "example"})
     assert rv.status_code == 403
 
 
-def test_page_revert_permissions(app_with_permissions, test_client):
+def test_page_revert_permissions(app_with_permissions, anonymous_client):
     # update permissions
     app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
     app_with_permissions.config["WRITE_ACCESS"] = "ANONYMOUS"
@@ -365,7 +365,7 @@ def test_page_revert_permissions(app_with_permissions, test_client):
     pagename = "Random Revert Test 0"
     old_content = "Random Content 0"
     # try to edit anonymous
-    rv = test_client.post(
+    rv = anonymous_client.post(
         url_for("save", path=pagename),
         data={
             "content": old_content,
@@ -376,11 +376,11 @@ def test_page_revert_permissions(app_with_permissions, test_client):
     assert rv.status_code == 200
     assert old_content in rv.data.decode()
     # test view
-    html = test_client.get("/{}/view".format(pagename)).data.decode()
+    html = anonymous_client.get("/{}/view".format(pagename)).data.decode()
     assert old_content in html
     # update content
     content = "Random Content 1"
-    rv = test_client.post(
+    rv = anonymous_client.post(
         url_for("save", path=pagename),
         data={
             "content": content,
@@ -392,7 +392,7 @@ def test_page_revert_permissions(app_with_permissions, test_client):
     assert content in rv.data.decode()
 
     # find revision
-    rv = test_client.get("/{}/history".format(pagename))
+    rv = anonymous_client.get("/{}/history".format(pagename))
     html = rv.data.decode()
     revisions = re.findall(
         r"class=\"btn revision-small\">([A-z0-9]+)</a>", html
@@ -405,14 +405,14 @@ def test_page_revert_permissions(app_with_permissions, test_client):
     app_with_permissions.config["WRITE_ACCESS"] = "REGISTERED"
 
     # try to revert non existing commit
-    rv = test_client.get("/-/revert/{}".format(0000000))
+    rv = anonymous_client.get("/-/revert/{}".format(0000000))
     assert rv.status_code == 403
 
     # try revert form
-    rv = test_client.get("/-/revert/{}".format(latest_revision))
+    rv = anonymous_client.get("/-/revert/{}".format(latest_revision))
     assert rv.status_code == 403
     # try to revert latest commit
-    rv = test_client.post("/-/revert/{}".format(latest_revision))
+    rv = anonymous_client.post("/-/revert/{}".format(latest_revision))
     assert rv.status_code == 403
 
     # change permissions again
@@ -420,36 +420,36 @@ def test_page_revert_permissions(app_with_permissions, test_client):
     app_with_permissions.config["WRITE_ACCESS"] = "ANONYMOUS"
 
     # check revert form
-    rv = test_client.get("/-/revert/{}".format(latest_revision))
+    rv = anonymous_client.get("/-/revert/{}".format(latest_revision))
     html = rv.data.decode()
     assert rv.status_code == 200
     assert "Revert commit [{}]".format(latest_revision) in html
 
     # try to revert latest commit
-    rv = test_client.post(
+    rv = anonymous_client.post(
         "/-/revert/{}".format(latest_revision), follow_redirects=True
     )
     assert rv.status_code == 200
 
     # check if content changed
-    html = test_client.get("/{}/view".format(pagename)).data.decode()
+    html = anonymous_client.get("/{}/view".format(pagename)).data.decode()
     assert old_content in html
 
 
-def test_permissions_per_user(app_with_permissions, test_client):
+def test_permissions_per_user(app_with_permissions, anonymous_client):
     fun = "view"
     app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
-    rv = test_client.get(url_for(fun, path="Home"))
+    rv = anonymous_client.get(url_for(fun, path="Home"))
     assert "There is no place like Home." in rv.data.decode()
     app_with_permissions.config["READ_ACCESS"] = "ADMIN"
     app_with_permissions.config["WRITE_ACCESS"] = "ADMIN"
     app_with_permissions.config["ATTACHMENT_ACCESS"] = "ADMIN"
-    rv = test_client.get(url_for(fun, path="Home"), follow_redirects=True)
+    rv = anonymous_client.get(url_for(fun, path="Home"), follow_redirects=True)
     assert "There is no place like Home." not in rv.data.decode()
     # check for the toast
     assert "lack the permissions to access" in rv.data.decode()
 
-    rv = test_client.post(
+    rv = anonymous_client.post(
         "/-/login",
         data={
             "email": "another@user.org",
@@ -470,10 +470,10 @@ def test_permissions_per_user(app_with_permissions, test_client):
     db.session.add(user)
     db.session.commit()
     # check if the read_access works
-    rv = test_client.get(url_for(fun, path="Home"), follow_redirects=True)
+    rv = anonymous_client.get(url_for(fun, path="Home"), follow_redirects=True)
     assert "There is no place like Home." in rv.data.decode()
     # try to save
-    rv = test_client.post(
+    rv = anonymous_client.post(
         url_for("save", path="SaveTest"),
         data={
             "content": "Another save test",
@@ -488,7 +488,7 @@ def test_permissions_per_user(app_with_permissions, test_client):
     db.session.add(user)
     db.session.commit()
     # try to save
-    rv = test_client.post(
+    rv = anonymous_client.post(
         url_for("save", path="SaveTest"),
         data={
             "content": "Another save test",

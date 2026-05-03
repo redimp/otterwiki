@@ -602,9 +602,11 @@ class TestHousekeepingGeneral:
         html = rv.data.decode()
         assert "Unkown task" in html or "Unknown task" in html
 
-    def test_housekeeping_requires_login(self, app_with_user, test_client):
+    def test_housekeeping_requires_login(
+        self, app_with_user, anonymous_client
+    ):
         """Test that housekeeping requires login."""
-        rv = test_client.get("/-/housekeeping", follow_redirects=False)
+        rv = anonymous_client.get("/-/housekeeping", follow_redirects=False)
         # Should redirect to login
         assert rv.status_code == 302
         assert "login" in rv.location
