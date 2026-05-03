@@ -213,7 +213,11 @@ def housekeeping():
 @app.route("/-/housekeeping/security-check", methods=["GET"])
 @login_required
 def security_check():
+    from otterwiki.auth import has_permission
     from otterwiki.security_check import run_backend_checks
+
+    if not has_permission("ADMIN"):
+        abort(403)
 
     results = run_backend_checks()
     return jsonify(results=results)

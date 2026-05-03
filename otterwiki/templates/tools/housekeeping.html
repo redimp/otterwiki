@@ -87,6 +87,7 @@
 </div>
 {% endif %}
 {#-#}
+{% if has_permission("ADMIN") %}
 <div class="card m-auto m-lg-20">
 <div class="mw-full">
 <h3 class="card-title">Security Check</h3>
@@ -115,6 +116,7 @@
 </div>
 </div>
 </div>
+{% endif %}
 {#-#}
 {% endblock %}{# content #}
 {% block js %}
