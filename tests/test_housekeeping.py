@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import json
 import pytest
 
 
@@ -586,6 +587,68 @@ Link to [[Parent Sub/Child Sub]] and [[Parent Sub/Missing Sub]].
         html = rv.data.decode()
 
         assert "Missing" in html or "../Missing" in html
+
+
+class TestHousekeepingSecurityCheck:
+    """Tests for the security check functionality."""
+
+    def test_security_check_endpoint_returns_json(
+        self, app_with_user, admin_client
+    ):
+        """Test that the security check endpoint returns valid JSON with results."""
+        rv = admin_client.get("/-/housekeeping/security-check")
+        assert rv.status_code == 200
+        data = json.loads(rv.data)
+        assert "results" in data
+        assert isinstance(data["results"], list)
+
+    def test_security_check_results_have_expected_fields(
+        self, app_with_user, admin_client
+    ):
+        """Test that each security check result has the required fields."""
+        rv = admin_client.get("/-/housekeeping/security-check")
+        assert rv.status_code == 200
+        data = json.loads(rv.data)
+        for result in data["results"]:
+            assert "issue" in result
+            assert "description" in result
+            assert "severity" in result
+            assert result["severity"] in [
+                "NOTICE",
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL",
+            ]
+
+    def test_security_check_requires_login(self, app_with_user, test_client):
+        """Test that the security check endpoint requires authentication."""
+        rv = test_client.get(
+            "/-/housekeeping/security-check", follow_redirects=False
+        )
+        assert rv.status_code == 302
+        assert "/-/login" in rv.headers.get("Location", "")
+
+    def test_housekeeping_page_contains_security_check_section(
+        self, app_with_user, admin_client
+    ):
+        """Test that the housekeeping page includes the security check UI."""
+        rv = admin_client.get("/-/housekeeping")
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        assert "Security Check" in html
+        assert "Perform security check" in html
+        assert "security-check-btn" in html
+
+    def test_backend_checks_runnable(self, app_with_user, req_ctx):
+        """Test that backend security checks can be run directly."""
+        from otterwiki.security_check import run_backend_checks
+
+        results = run_backend_checks()
+        assert isinstance(results, list)
+        # In test config, we expect at least some findings
+        # (e.g., SERVER_NAME not set, anonymous write access)
+        assert len(results) > 0
 
 
 class TestHousekeepingGeneral:
