@@ -442,6 +442,7 @@
     window.otterwikiEditorConfig = {
         cursorLine: {{cursor_line or 0}},
         cursorCh: {{cursor_ch or 0}},
+        isMobile: /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent),
         inlineAttachmentOptions: {
             uploadUrl: {{ url_for('inline_attachment', pagepath=pagepath) | tojson }},
             extraHeaders: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},

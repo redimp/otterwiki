@@ -46,6 +46,11 @@ function initEditor() {
     document.body.classList.contains('dark-mode')
     || document.documentElement.classList.contains('dark-mode');
 
+  const config = window.otterwikiEditorConfig || {};
+  const contentAttrs = config.isMobile
+    ? { spellcheck: 'true', autocorrect: 'on', autocapitalize: 'on' }
+    : { spellcheck: 'true' };
+
   let cleanGeneration = 0;
   let currentGeneration = 0;
 
@@ -81,7 +86,7 @@ function initEditor() {
       search({ top: false }),
       EditorView.lineWrapping,
       EditorState.tabSize.of(4),
-      EditorView.contentAttributes.of({ spellcheck: 'true' }),
+      EditorView.contentAttributes.of(contentAttrs),
       EditorView.updateListener.of((update) => {
         if (!update.docChanged) {
           return;
@@ -107,7 +112,6 @@ function initEditor() {
   const bottomPanel = document.getElementById('editor-bottom-panel');
   if (bottomPanel) bottomPanel.style.display = 'block';
 
-  const config = window.otterwikiEditorConfig || {};
   const cursorLine = config.cursorLine || 0;
   const cursorCh = config.cursorCh || 0;
   view.dispatch({ selection: { anchor: posToOffset(cursorLine, cursorCh) } });
