@@ -31,6 +31,9 @@ const lightEditorTheme = EditorView.theme({
   '.cm-list-2': { color: '#b11' },
   '.cm-list-3': { color: '#000080' },
   '.cm-inline-code': { color: '#808080' },
+  '.cm-trailingSpace': {
+    backgroundColor: 'rgba(255, 0, 0, 0.15)',
+  },
 }, { dark: false });
 
 const lightHighlightStyleDef = HighlightStyle.define([
@@ -106,6 +109,9 @@ const darkEditorTheme = EditorView.theme({
   '.cm-list-2': { color: '#b48ead' },
   '.cm-list-3': { color: '#81A1C1' },
   '.cm-inline-code': { color: '#6BBAFF' },
+  '.cm-trailingSpace': {
+    backgroundColor: 'rgba(191, 97, 106, 0.25)',
+  },
 }, { dark: true });
 
 const darkHighlightStyleDef = HighlightStyle.define([

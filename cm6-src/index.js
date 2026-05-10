@@ -6,6 +6,7 @@ import {
   rectangularSelection,
   highlightSpecialChars,
   highlightActiveLine,
+  highlightTrailingWhitespace,
   dropCursor,
 } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
@@ -75,6 +76,7 @@ function initEditor() {
       rectangularSelection(),
       highlightSpecialChars(),
       highlightActiveLine(),
+      highlightTrailingWhitespace(),
       dropCursor(),
       indentOnInput(),
       bracketMatching(),
