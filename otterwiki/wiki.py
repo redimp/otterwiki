@@ -512,7 +512,7 @@ class Page:
                 toast(
                     "You lack the permissions to access this wiki. Please login."
                 )
-            return redirect(url_for("login"))
+            return redirect(url_for("login", next="/"+self.pagename_full))
         # handle case that page doesn't exists
         self.exists_or_404()
 
