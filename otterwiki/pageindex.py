@@ -9,6 +9,7 @@ from flask import (
     abort,
     redirect,
     render_template,
+    request,
     url_for,
 )
 
@@ -219,7 +220,7 @@ class PageIndex:
     def render(self):
         if not has_permission("READ"):
             if not current_user.is_authenticated:
-                return redirect(url_for("login"))
+                return redirect(url_for("login", next=request.full_path))
             abort(403)
         menutree = SidebarPageIndex(self.path)
 
