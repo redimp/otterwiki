@@ -16,20 +16,6 @@ class CodeMirror6Editor {
   }
 
   setValue(val) {
-    const currentVal = this.view.state.doc.toString();
-    const from = this.lastValue ? currentVal.indexOf(this.lastValue) : -1;
-
-    if (from !== -1 && this.lastValue) {
-      this.view.dispatch({
-        changes: {
-          from,
-          to: from + this.lastValue.length,
-          insert: val,
-        },
-      });
-      return;
-    }
-
     this.view.dispatch({
       changes: {
         from: 0,
