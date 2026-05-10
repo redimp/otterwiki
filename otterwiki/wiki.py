@@ -19,6 +19,7 @@ from flask import (
     make_response,
     redirect,
     render_template,
+    request,
     send_file,
     url_for,
 )
@@ -512,7 +513,7 @@ class Page:
                 toast(
                     "You lack the permissions to access this wiki. Please login."
                 )
-            return redirect(url_for("login", next="/"+self.pagename_full))
+            return redirect(url_for("login", next=request.full_path))
         # handle case that page doesn't exists
         self.exists_or_404()
 
