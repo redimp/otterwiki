@@ -228,6 +228,41 @@ def test_page_view_permissions(app_with_permissions, test_client):
     assert rv.status_code == 200
 
 
+def test_page_view_login_next_redirect(app_with_permissions, test_client):
+    # READ_ACCESS=REGISTERED: anonymous request to a page must redirect to
+    # login with a ?next= pointing back to that page, and logging in must
+    # forward the user back there.
+    app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
+    rv = test_client.get(url_for("view", path="Home"))
+    assert rv.status_code == 302
+    assert "/-/login" in rv.location
+    assert "next=" in rv.location
+    assert "Home" in rv.location
+    # login with the next parameter as the login form would submit it
+    rv = test_client.post(
+        "/-/login",
+        data={
+            "email": "mail@example.org",
+            "password": "password1234",
+            "next": "/Home",
+        },
+    )
+    assert rv.status_code == 302
+    assert rv.location.endswith("/Home")
+    # rejects external next as open-redirect protection
+    rv = test_client.get("/-/logout", follow_redirects=True)
+    rv = test_client.post(
+        "/-/login",
+        data={
+            "email": "mail@example.org",
+            "password": "password1234",
+            "next": "//evil.example.com/",
+        },
+    )
+    assert rv.status_code == 302
+    assert "evil.example.com" not in rv.location
+
+
 def test_page_blame_permissions(app_with_permissions, test_client):
     fun = "blame"
     app_with_permissions.config["READ_ACCESS"] = "ANONYMOUS"
