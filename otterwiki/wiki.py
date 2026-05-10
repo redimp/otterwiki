@@ -776,6 +776,7 @@ class Page:
 
         return render_template(
             "editor.html",
+            title="{} - edit".format(self.pagename),
             pagename=self.pagename,
             pagepath=self.pagepath,
             content_editor=content,
