@@ -13,6 +13,7 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirro
 import {
   syntaxHighlighting,
   indentOnInput,
+  indentUnit,
   bracketMatching,
   defaultHighlightStyle,
 } from '@codemirror/language';
@@ -86,6 +87,7 @@ function initEditor() {
       search({ top: false }),
       EditorView.lineWrapping,
       EditorState.tabSize.of(4),
+      indentUnit.of('    '),
       EditorView.contentAttributes.of(contentAttrs),
       EditorView.updateListener.of((update) => {
         if (!update.docChanged) {
