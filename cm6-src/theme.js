@@ -58,9 +58,11 @@ const lightHighlightStyleDef = HighlightStyle.define([
   { tag: tags.quote, color: '#2b4' },
   { tag: tags.link, color: '#1890ff', textDecoration: 'none' },
   { tag: tags.url, color: '#f99b15' },
+  { tag: tags.labelName, color: '#a074c4' },
+  { tag: tags.punctuation, color: '#999' },
   { tag: tags.strong, fontWeight: 'bold' },
   { tag: tags.emphasis, fontStyle: 'italic' },
-  { tag: tags.processingInstruction },
+  { tag: tags.processingInstruction, color: '#a074c4' },
   { tag: tags.standard(tags.variableName), color: '#30a' },  // builtin
   { tag: tags.bracket, color: '#cc7' },
 ]);
@@ -131,13 +133,15 @@ const darkHighlightStyleDef = HighlightStyle.define([
   { tag: tags.heading, color: '#b48ead', textDecoration: 'none' },
   { tag: tags.link, color: '#1890ff', textDecoration: 'none' },
   { tag: tags.url, color: '#A3BE8C' },
+  { tag: tags.labelName, color: '#b48ead' },
+  { tag: tags.punctuation, color: '#6BBAFF' },
   { tag: tags.invalid, color: '#f8f8f0', backgroundColor: '#bf616a' },
   { tag: tags.meta, color: '#88C0D0' },
   { tag: tags.modifier, color: '#81A1C1' },
   { tag: tags.quote, color: '#2b4' },
   { tag: tags.strong, fontWeight: 'bold' },
   { tag: tags.emphasis, fontStyle: 'italic' },
-  { tag: tags.processingInstruction },
+  { tag: tags.processingInstruction, color: '#b48ead' },
   { tag: tags.special(tags.string), color: '#A3BE8C' },
 ]);
 
