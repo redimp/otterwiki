@@ -1,82 +1,76 @@
-import { tags as t } from '@lezer/highlight';
+import { Decoration, ViewPlugin } from '@codemirror/view';
+import { syntaxTree } from '@codemirror/language';
 
 // Syntax: {{Name args...}}
-// The closing }} must appear at the end of a line. The name is one or more
-// letters/spaces ([A-Za-z ]+). Embeddings may span multiple lines.
+// Name is one or more letters/spaces ([A-Za-z ]+). Embeddings may span
+// multiple lines; the closing }} must appear at the end of a line.
 // Mirrors EMBEDDING_RE in otterwiki/renderer_plugins.py (mistunePluginEmbeddings).
-const OPEN_RE = /^([ \t]*)\{\{([A-Za-z ]+)(.*)$/;
+//
+// Implemented as a ViewPlugin (rather than a Lezer block parser) so we can
+// require a matching closing }} before applying any decorations. The
+// lines inside the embedding are left untouched, so normal markdown
+// parsing (lists, links, wikilinks, ...) still highlights their content.
+const EMBEDDING_RE = /^[ \t]*\{\{([A-Za-z ]+)[\s\S]*?\}\}[ \t]*$/gm;
 
-function lineEndsWithClose(text) {
-  const trimmed = text.replace(/\s+$/, '');
-  return trimmed.length >= 2 && trimmed.endsWith('}}');
+const markDeco = Decoration.mark({ class: 'cm-embedding-mark' });
+const nameDeco = Decoration.mark({ class: 'cm-embedding-name' });
+
+function collectCodeRanges(view) {
+  const ranges = [];
+  syntaxTree(view.state).iterate({
+    enter(node) {
+      if (node.name === 'InlineCode' || node.name === 'FencedCode') {
+        ranges.push([node.from, node.to]);
+        return false;
+      }
+    },
+  });
+  return ranges;
 }
 
-export const Embedding = {
-  defineNodes: [
-    { name: 'EmbeddingBlock', block: true },
-    { name: 'EmbeddingMark', style: t.processingInstruction },
-    { name: 'EmbeddingName', style: t.keyword },
-  ],
-  parseBlock: [
-    {
-      name: 'EmbeddingBlock',
-      before: 'LinkReference',
-      parse(cx, line) {
-        const m = OPEN_RE.exec(line.text);
-        if (!m) return false;
+function posInRanges(pos, ranges) {
+  for (let i = 0; i < ranges.length; i += 1) {
+    if (pos >= ranges[i][0] && pos < ranges[i][1]) return true;
+  }
+  return false;
+}
 
-        const indent = m[1].length;
-        const name = m[2];
-        const rest = m[3];
-        const startLineStart = cx.lineStart;
-        const openFrom = startLineStart + indent;
-        const openTo = openFrom + 2;
-        const nameFrom = openTo;
-        const nameTo = nameFrom + name.length;
+export const embeddingHighlighter = ViewPlugin.fromClass(class {
+  constructor(view) {
+    this.decorations = this.buildDecorations(view);
+  }
 
-        const children = [
-          cx.elt('EmbeddingMark', openFrom, openTo),
-          cx.elt('EmbeddingName', nameFrom, nameTo),
-        ];
+  update(update) {
+    if (update.docChanged || update.viewportChanged) {
+      this.decorations = this.buildDecorations(update.view);
+    }
+  }
 
-        // Single-line: closing }} on the same line.
-        if (lineEndsWithClose(rest)) {
-          const closeIdx = line.text.lastIndexOf('}}');
-          const closeFrom = startLineStart + closeIdx;
-          const closeTo = closeFrom + 2;
-          const blockEnd = startLineStart + line.text.length;
-          children.push(cx.elt('EmbeddingMark', closeFrom, closeTo));
-          cx.addElement(
-            cx.elt('EmbeddingBlock', openFrom, blockEnd, children),
-          );
-          cx.nextLine();
-          return true;
-        }
+  buildDecorations(view) {
+    const marks = [];
+    const text = view.state.doc.toString();
+    const codeRanges = collectCodeRanges(view);
 
-        // Multi-line: scan forward until a line ends with }}.
-        while (cx.nextLine()) {
-          if (lineEndsWithClose(line.text)) {
-            const closeIdx = line.text.lastIndexOf('}}');
-            const closeFrom = cx.lineStart + closeIdx;
-            const closeTo = closeFrom + 2;
-            const blockEnd = cx.lineStart + line.text.length;
-            children.push(cx.elt('EmbeddingMark', closeFrom, closeTo));
-            cx.addElement(
-              cx.elt('EmbeddingBlock', openFrom, blockEnd, children),
-            );
-            cx.nextLine();
-            return true;
-          }
-        }
+    EMBEDDING_RE.lastIndex = 0;
+    let m;
+    while ((m = EMBEDDING_RE.exec(text)) !== null) {
+      const matched = m[0];
+      const name = m[1];
+      const openOffset = matched.indexOf('{{');
+      const openFrom = m.index + openOffset;
+      const openTo = openFrom + 2;
+      const nameFrom = openTo;
+      const nameTo = nameFrom + name.length;
+      const closeFrom = m.index + matched.lastIndexOf('}}');
+      const closeTo = closeFrom + 2;
 
-        // EOF reached without a closing marker. Emit what we have so the
-        // opening {{ and name still get highlighted while typing.
-        const blockEnd = cx.lineStart + line.text.length;
-        cx.addElement(
-          cx.elt('EmbeddingBlock', openFrom, blockEnd, children),
-        );
-        return true;
-      },
-    },
-  ],
-};
+      if (posInRanges(openFrom, codeRanges)) continue;
+
+      marks.push(markDeco.range(openFrom, openTo));
+      marks.push(nameDeco.range(nameFrom, nameTo));
+      marks.push(markDeco.range(closeFrom, closeTo));
+    }
+
+    return Decoration.set(marks, true);
+  }
+}, { decorations: v => v.decorations });

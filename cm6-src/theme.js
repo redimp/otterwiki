@@ -31,6 +31,8 @@ const lightEditorTheme = EditorView.theme({
   '.cm-list-2': { color: '#b11' },
   '.cm-list-3': { color: '#000080' },
   '.cm-inline-code': { color: '#808080' },
+  '.cm-embedding-mark': { color: '#a074c4' },
+  '.cm-embedding-name': { color: '#000080', fontWeight: 'bold' },
   '.cm-trailingSpace': {
     backgroundColor: 'rgba(255, 0, 0, 0.15)',
   },
@@ -111,6 +113,8 @@ const darkEditorTheme = EditorView.theme({
   '.cm-list-2': { color: '#b48ead' },
   '.cm-list-3': { color: '#81A1C1' },
   '.cm-inline-code': { color: '#6BBAFF' },
+  '.cm-embedding-mark': { color: '#b48ead' },
+  '.cm-embedding-name': { color: '#81A1C1', fontWeight: 'bold' },
   '.cm-trailingSpace': {
     backgroundColor: 'rgba(191, 97, 106, 0.25)',
   },
