@@ -16,11 +16,34 @@ class CodeMirror6Editor {
   }
 
   setValue(val) {
+    const oldVal = this.view.state.doc.toString();
+    if (oldVal === val) return;
+
+    // Compute the minimal diff range so CodeMirror can map the cursor
+    // through the transaction naturally — a full-document replace would
+    // discard the user's caret position (and any text they typed while
+    // the upload was in flight).
+    let start = 0;
+    const minLen = Math.min(oldVal.length, val.length);
+    while (start < minLen && oldVal.charCodeAt(start) === val.charCodeAt(start)) {
+      start++;
+    }
+    let oldEnd = oldVal.length;
+    let newEnd = val.length;
+    while (
+      oldEnd > start &&
+      newEnd > start &&
+      oldVal.charCodeAt(oldEnd - 1) === val.charCodeAt(newEnd - 1)
+    ) {
+      oldEnd--;
+      newEnd--;
+    }
+
     this.view.dispatch({
       changes: {
-        from: 0,
-        to: this.view.state.doc.length,
-        insert: val,
+        from: start,
+        to: oldEnd,
+        insert: val.slice(start, newEnd),
       },
     });
   }
