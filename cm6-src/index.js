@@ -33,7 +33,7 @@ import * as links from './editor-links.js';
 import { attachInlineUpload } from './inline-attachment.js';
 import { listDepthHighlighter } from './list-depth.js';
 import { WikiLink } from './syntax_wikilink.js';
-import { Embedding } from './syntax_embedding.js';
+import { embeddingHighlighter } from './syntax_embedding.js';
 
 function initEditor() {
   const textarea = document.getElementById('content_editor');
@@ -83,10 +83,11 @@ function initEditor() {
       indentOnInput(),
       bracketMatching(),
       closeBrackets(),
-      markdown({ codeLanguages, base: markdownLanguage, extensions: [WikiLink, Embedding] }),
+      markdown({ codeLanguages, base: markdownLanguage, extensions: [WikiLink] }),
       syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       themeCompartment.of(isDarkMode ? darkTheme : lightTheme),
       inlineCodeHighlighter,
+      embeddingHighlighter,
       listDepthHighlighter,
       search({ top: false }),
       EditorView.lineWrapping,
