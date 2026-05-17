@@ -228,18 +228,18 @@ def test_page_view_permissions(app_with_permissions, anonymous_client):
     assert rv.status_code == 200
 
 
-def test_page_view_login_next_redirect(app_with_permissions, test_client):
+def test_page_view_login_next_redirect(app_with_permissions, anonymous_client):
     # READ_ACCESS=REGISTERED: anonymous request to a page must redirect to
     # login with a ?next= pointing back to that page, and logging in must
     # forward the user back there.
     app_with_permissions.config["READ_ACCESS"] = "REGISTERED"
-    rv = test_client.get(url_for("view", path="Home"))
+    rv = anonymous_client.get(url_for("view", path="Home"))
     assert rv.status_code == 302
     assert "/-/login" in rv.location
     assert "next=" in rv.location
     assert "Home" in rv.location
     # login with the next parameter as the login form would submit it
-    rv = test_client.post(
+    rv = anonymous_client.post(
         "/-/login",
         data={
             "email": "mail@example.org",
@@ -250,8 +250,8 @@ def test_page_view_login_next_redirect(app_with_permissions, test_client):
     assert rv.status_code == 302
     assert rv.location.endswith("/Home")
     # rejects external next as open-redirect protection
-    rv = test_client.get("/-/logout", follow_redirects=True)
-    rv = test_client.post(
+    rv = anonymous_client.get("/-/logout", follow_redirects=True)
+    rv = anonymous_client.post(
         "/-/login",
         data={
             "email": "mail@example.org",

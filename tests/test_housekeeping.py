@@ -628,9 +628,11 @@ class TestHousekeepingSecurityCheck:
             assert "description" in ok
             assert ok.get("passed") is True
 
-    def test_security_check_requires_login(self, app_with_user, test_client):
+    def test_security_check_requires_login(
+        self, app_with_user, anonymous_client
+    ):
         """Test that the security check endpoint requires authentication."""
-        rv = test_client.get(
+        rv = anonymous_client.get(
             "/-/housekeeping/security-check", follow_redirects=False
         )
         assert rv.status_code == 302
