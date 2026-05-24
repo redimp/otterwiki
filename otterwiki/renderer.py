@@ -605,6 +605,13 @@ class OtterwikiRenderer:
             env=self.env,
         )
         self.lastword = re.compile(r"([a-zA-Z\-0-9\.]+)$")
+        # lines that end with renderable content but no trailing word to
+        # attach the cursor to (e.g. pasted images or links in a list);
+        # the cursor is appended at the end of such lines
+        self.contentlines = [
+            re.compile(r"!\[[^\]]*\]\([^)]*\)\s*$"),  # image
+            re.compile(r"\[[^\]]*\]\([^)]*\)\s*$"),  # link
+        ]
         self.htmlcursor = " <span id=\"otterwiki_cursor\"></span> "
         # thanks to https://github.com/lepture/mistune/issues/158#issuecomment-830481284
         # we can enable tables in lists
@@ -631,17 +638,29 @@ class OtterwikiRenderer:
                 line = 0
             # find a line to place the cursor
             while line > 0 and (
-                not len(self.lastword.findall(text_arr[line])) > 0
+                (
+                    not len(self.lastword.findall(text_arr[line])) > 0
+                    and not any(
+                        p.search(text_arr[line]) for p in self.contentlines
+                    )
+                )
                 or text_arr[line].startswith(
                     "---"
                 )  # --- (hr) needs extra space
             ):
                 line -= 1
             if line > 0:
-                # add empty span at the beginning of the edited line
-                text_arr[line] = self.lastword.sub(
-                    r"\1{}".format(cursormagicword), text_arr[line], count=1
-                )
+                if len(self.lastword.findall(text_arr[line])) > 0:
+                    # add empty span after the last word of the edited line
+                    text_arr[line] = self.lastword.sub(
+                        r"\1{}".format(cursormagicword),
+                        text_arr[line],
+                        count=1,
+                    )
+                else:
+                    # no trailing word (e.g. a line ending with an image
+                    # or link), append the cursor right after it
+                    text_arr[line] = text_arr[line] + cursormagicword
                 text = "\n".join(text_arr)
         else:
             line = 0

@@ -178,3 +178,57 @@ HTML and CSS are essential web technologies.
     assert soup and soup.text
     # the "   " are an artifact from the html cursor and expected
     assert "HTML and   CSS are essential web technologies." in soup.text
+
+
+def test_preview_cursor_in_images(create_app, req_ctx):
+    from otterwiki.wiki import Page
+
+    p = Page("test")
+    # pasting a bunch of images: the lines end with ')' and have no
+    # trailing word, the cursor must still land in the image block and
+    # not jump to the top of the document
+    content = """# Header
+
+Some intro paragraph.
+
+![img1](/a/image1.png)
+![img2](/a/image2.png)
+![img3](/a/image3.png)
+"""
+    data = p.preview(content=content, cursor_line=6)
+    assert data and data['preview_content']
+    assert render.htmlcursor in data['preview_content']
+    # the cursor must be placed in the paragraph holding the images,
+    # not prepended at the top of the document
+    soup = bs4.BeautifulSoup(str(data['preview_content']), "html.parser")
+    cursor = soup.find("span", {"id": "otterwiki_cursor"})
+    assert cursor
+    parent = cursor.find_parent("p")
+    assert parent and parent.find("img")
+
+
+def test_preview_cursor_in_links(create_app, req_ctx):
+    from otterwiki.wiki import Page
+
+    p = Page("test")
+    # pasting links in a list: the lines end with ')' and have no
+    # trailing word, the cursor must still land in the list and not jump
+    # to the top of the document
+    content = """# Header
+
+Some intro paragraph.
+
+- [link1](http://example.com/one)
+- [link2](http://example.com/two)
+- [link3](http://example.com/three)
+"""
+    data = p.preview(content=content, cursor_line=6)
+    assert data and data['preview_content']
+    assert render.htmlcursor in data['preview_content']
+    # the cursor must be placed in the list item holding the link,
+    # not prepended at the top of the document
+    soup = bs4.BeautifulSoup(str(data['preview_content']), "html.parser")
+    cursor = soup.find("span", {"id": "otterwiki_cursor"})
+    assert cursor
+    parent = cursor.find_parent("li")
+    assert parent and parent.find("a")
