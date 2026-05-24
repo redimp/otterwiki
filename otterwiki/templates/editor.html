@@ -8,6 +8,9 @@
 .preview-background {
     background-image: url('{{ url_for("static", filename="img/preview.png") | debug_unixtime }}');
 }
+#preview_block:focus {
+    outline: none;
+}
 #thumbnail-size {
     width: 120px;
 }
@@ -389,7 +392,7 @@
 <textarea id="content_editor" name="content_editor">{{ content_editor }}</textarea>
 </form>
 <div id="editor_block" style="display: block;"></div>
-<div id="preview_block" style="display: none;"></div>
+<div id="preview_block" tabindex="-1" style="display: none;"></div>
 <div id="editor-bottom-panel" class="editor-bottom-panel" style="display:none;">
     <a href="#" onclick="otterwiki.toggleMarkdownHelp()" class="btn btn-xsm"><i class="fab fa-markdown"></i> Markdown Syntax</a>
     <div id="editor-help-markdown" class="content card border rounded-top p-5" style="display: none;">
@@ -705,6 +708,10 @@ thx to https://github.com/sparksuite/simplemde-markdown-editor/issues/328#issuec
                         inline: 'nearest',
                     });
                 }
+                // move focus to the preview so the reader can scroll it
+                // with page up/down (preventScroll keeps the position we
+                // just scrolled to)
+                preview_block.focus({preventScroll: true});
             })
             .catch(function () {
                 console.log('Error fetching preview ...');
