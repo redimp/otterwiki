@@ -14,8 +14,11 @@
 
 {% block menu %}
 {{ super() }}
-{% if not pagepath and menutree %}
+{% if not pagepath %}
+{% include 'snippets/menu.html' %}
+{% if menutree %}
 {% include 'snippets/menutree.html' %}
+{% endif %}
 {% endif %}
 {% endblock %}
 

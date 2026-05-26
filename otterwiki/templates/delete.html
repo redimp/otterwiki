@@ -1,5 +1,10 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "form.html" %}
+{% block menu %}
+{{ super() }}
+{% include 'snippets/menu.html' %}
+{% include 'snippets/menutree.html' %}
+{% endblock %}
 {% block formcontent %}
 <form action="{{url_for("delete", path=pagepath )}}" method="POST" class="form-inline">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

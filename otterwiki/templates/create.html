@@ -1,5 +1,10 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "form.html" %}
+{% block menu %}
+{{ super() }}
+{% include 'snippets/menu.html' %}
+{% include 'snippets/menutree.html' %}
+{% endblock %}
 {% block formcontent %}
 <form action="{{url_for("create")}}" method="POST" class="form-inline">{# class="w-400 mw-full" <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% --> #}
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

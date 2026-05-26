@@ -1125,11 +1125,14 @@ class Page:
             )
         else:
             title = "Delete {} ?".format(self.pagename)
+        menutree = SidebarPageIndex(self.pagepath)
         return render_template(
             "delete.html",
             title=title,
             pagepath=self.pagepath,
             pagename=self.pagename,
+            menutree=menutree.query(),
+            custom_menu=SidebarMenu().query(),
         )
 
     def _attachments(self, maximum=None, exclude_extensions=None):
@@ -1158,6 +1161,7 @@ class Page:
         self.exists_or_404()
         # get all attachments with metadata
         files = self._attachments_list()
+        menutree = SidebarPageIndex(self.pagepath)
         return render_template(
             "attachments.html",
             title="{} - Attachments".format(self.pagename),
@@ -1165,6 +1169,8 @@ class Page:
             pagename=self.pagename,
             files=files,
             breadcrumbs=self.breadcrumbs(),
+            menutree=menutree.query(),
+            custom_menu=SidebarMenu().query(),
         )
 
     def upload_attachments(

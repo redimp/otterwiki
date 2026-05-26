@@ -25,6 +25,7 @@ from otterwiki.wiki import (
 )
 from otterwiki.sitemap import sitemap as generate_sitemap
 from otterwiki.pageindex import PageIndex
+from otterwiki.sidebar import SidebarPageIndex, SidebarMenu
 import otterwiki.auth
 import otterwiki.preferences
 import otterwiki.tools
@@ -359,6 +360,8 @@ def create():
             "create.html",
             title="Create Page",
             pagename_prefixes=get_pagename_prefixes(),
+            menutree=SidebarPageIndex("/").query(),
+            custom_menu=SidebarMenu().query(),
         )
     elif pagename != pagename_sanitized:
         if pagename is not None and pagename != pagename_sanitized:
@@ -368,6 +371,8 @@ def create():
             title="Create Page",
             pagename=pagename_sanitized,
             pagename_prefixes=get_pagename_prefixes(),
+            menutree=SidebarPageIndex("/").query(),
+            custom_menu=SidebarMenu().query(),
         )
     else:
         # this is the creation of a new page
