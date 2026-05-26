@@ -239,9 +239,19 @@ def get_pagename_prefixes(filter=[]):
             if len(crumb) == 0 or crumb.lower() == "home":
                 continue
             crumb_parent = join_path(split_path(crumb)[:-1])
-            if len(crumb_parent) > 0 and crumb_parent not in pagename_prefixes:
+            if (
+                len(crumb_parent) > 0
+                and crumb_parent not in pagename_prefixes
+                and storage.isdir(crumb_parent)
+            ):
                 pagename_prefixes.append(crumb_parent)
-            if crumb not in pagename_prefixes and crumb not in filter:
+            if (
+                crumb not in pagename_prefixes
+                and crumb not in filter
+                and (
+                    storage.isdir(crumb) or storage.exists(get_filename(crumb))
+                )
+            ):
                 pagename_prefixes.append(crumb)
             if len(pagename_prefixes) > 3:
                 break
