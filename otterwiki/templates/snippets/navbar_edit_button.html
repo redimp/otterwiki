@@ -1,0 +1,6 @@
+{#- vim: set et ts=8 sts=4 sw=4 ai: -#}
+{%- if has_permission('WRITE') %}
+<a href="{{ url_for('edit', path=pagepath) }}" id="edit-page-btn" class="btn btn-primary" role="button" title="Edit Page (e)"><i class="fas fa-pencil-alt"></i></a>
+{%- elif not current_user.is_authenticated %}
+<a href="{{ url_for('login') }}" class="btn" role="button"><i class="fas fa-sign-in-alt" title="Login"></i></a>
+{%- endif %}

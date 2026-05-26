@@ -5,6 +5,13 @@
 {% include 'snippets/menu.html' %}
 {% include 'snippets/menutree.html' %}
 {% endblock %}
+{%- block navbardropdown %}
+{%- include 'snippets/navbardropdown_page_tools.html' %}
+{{ super() }}
+{%- endblock %}
+{%- block navbar %}
+{%- include 'snippets/navbar_edit_button.html' %}
+{%- endblock %}
 {% block formcontent %}
 {% if olddrafts or newdrafts %}
 {% set temp = namespace(ownold=false, ownnew=false, others=false) %}
