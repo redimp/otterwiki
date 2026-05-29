@@ -223,11 +223,12 @@ class ReferencingPages:
                 referencing_pages, key=lambda x: referencing_pages[x][0]
             ):
                 # Create a display name (use the last part of the path)
+                pagename = referencing_pages[pagepath][0]
                 pagename_full = referencing_pages[pagepath][1]
                 # URL encode the page path
                 url_path = urllib.parse.quote(pagename_full)
 
-                html += f'            <a href="/{url_path}" class="sidebar-link" title="{pagename_full}">{pagename_full}</a>\n'
+                html += f'            <a href="/{url_path}" class="sidebar-link" title="{pagename_full}">{pagename}</a>\n'
 
             html += '''        </div>
     </details>
