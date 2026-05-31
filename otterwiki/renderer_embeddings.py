@@ -6,6 +6,7 @@ import fnmatch
 import io
 import re
 import urllib.parse
+import json
 
 from otterwiki.plugins import hookimpl, plugin_manager, EmbeddingArgs
 from bs4 import BeautifulSoup
@@ -354,8 +355,9 @@ Options specific to CSV:
                     jsoptions.append(f"{bool_option}: {value}")
             for str_option in self.str_options:
                 if options.get(str_option.lower(), None):
+                    val = mistune.escape(options.get(str_option.lower()))
                     jsoptions.append(
-                        f"{str_option}: \"{mistune.escape(options.get(str_option))}\""
+                        f"{str_option}: {json.dumps(val)}"
                     )
             for int_option in self.int_options:
                 if options.get(int_option.lower(), None):
