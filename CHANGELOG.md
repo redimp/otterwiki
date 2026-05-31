@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.20.6](https://github.com/redimp/otterwiki/releases/tag/v2.20.6) - 2026-05-31
+
+<small>[Compare with v2.20.5](https://github.com/redimp/otterwiki/compare/v2.20.5...v2.20.6)</small>
+
+### Features
+
+- Use a dedicated og:image meta image ([0f40bfe](https://github.com/redimp/otterwiki/commit/0f40bfe)).
+- Add `style` option to `PageIndexEmbedding` ([1c0b51a](https://github.com/redimp/otterwiki/commit/1c0b51a)).
+
+### Bug Fixes
+
+- Add apple-touch-icon and web manifest for Safari/iOS, see #501 ([08f509e](https://github.com/redimp/otterwiki/commit/08f509e), [2d07352](https://github.com/redimp/otterwiki/commit/2d07352)).
+- Filter non-existing prefixes in create page form, see #491 ([09fffb7](https://github.com/redimp/otterwiki/commit/09fffb7)).
+- Keep Tools menu and Edit button on Rename/Delete forms, see #494 ([02a1d77](https://github.com/redimp/otterwiki/commit/02a1d77)).
+- Show Custom Menu and Page Index consistently in sidebar, see #493 ([4fc19b4](https://github.com/redimp/otterwiki/commit/4fc19b4)).
+- Focus preview so it can be scrolled with page up/down ([7c2e68e](https://github.com/redimp/otterwiki/commit/7c2e68e)).
+- Place preview cursor on lines ending with images or links ([c7c69fa](https://github.com/redimp/otterwiki/commit/c7c69fa)).
+
+### Dependencies
+
+- Upgrade Debian in Docker, see #488 ([7747a8c](https://github.com/redimp/otterwiki/commit/7747a8c) by @onovy).
+
 ## [v2.20.5](https://github.com/redimp/otterwiki/releases/tag/v2.20.5) - 2026-05-17
 
 <small>[Compare with v2.20.4](https://github.com/redimp/otterwiki/compare/v2.20.4...v2.20.5)</small>
