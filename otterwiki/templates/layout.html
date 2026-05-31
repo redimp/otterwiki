@@ -43,8 +43,11 @@
 {#- Favicon and title #}
 {%- if config.SITE_ICON %}
     <link rel="icon" href="{{ config.SITE_ICON }}">
+    <link rel="apple-touch-icon" href="{{ config.SITE_ICON }}">
 {%- else %}
-    <link rel="icon" href="{{ url_for("static", filename="img/otter-favicon2.png") }}">
+    <link rel="icon" sizes="32x32" href="{{ url_for("static", filename="img/otter-favicon.png") }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for("static", filename="img/otterhead-up-180.png") }}">
+    <link rel="manifest" href="{{ url_for("webmanifest") }}">
 {%- endif %}
 {%- block title %}
     <title>{%if title%}{{title}} &ndash; {%endif%}{%if config.SITE_NAME %}{{config.SITE_NAME}}{%else%}An Otter Wiki{%endif%}</title>

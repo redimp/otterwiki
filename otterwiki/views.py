@@ -87,8 +87,51 @@ def sitemap():
 def favicon():
     return send_from_directory(
         os.path.join(app.root_path, "static/img"),
-        "otter-favicon2.ico",
+        "otter-favicon.ico",
         mimetype="image/vnd.microsoft.icon",
+    )
+
+
+@app.route("/manifest.webmanifest")
+def webmanifest():
+    return jsonify(
+        {
+            "name": (
+                app.config['SITE_NAME']
+                if app.config['SITE_NAME']
+                else "An Otter Wiki"
+            ),
+            "icons": [
+                {
+                    "src": url_for(
+                        "static",
+                        filename="img/otterhead-up-192.png",
+                        _external=True,
+                    ),
+                    "type": "image/png",
+                    "sizes": "192x192",
+                },
+                {
+                    "src": url_for(
+                        "static",
+                        filename="img/otterhead-up-512.png",
+                        _external=True,
+                    ),
+                    "type": "image/png",
+                    "sizes": "512x512",
+                },
+                {
+                    "src": url_for(
+                        "static",
+                        filename="img/otterhead-up-512-maskable.png",
+                        _external=True,
+                    ),
+                    "type": "image/png",
+                    "sizes": "512x512",
+                    "purpose": "maskable",
+                },
+            ],
+        }
     )
 
 
