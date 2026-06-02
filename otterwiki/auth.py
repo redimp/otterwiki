@@ -2,6 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import hmac
+import re
 from datetime import datetime
 from uuid import uuid4
 
@@ -166,12 +167,15 @@ class SimpleAuth:
             # login
             login_user(user, remember=remember is not None)
             # set next_page
-            if (
-                not next_page
-                or not next_page.startswith('/')
-                or next_page.startswith('//')
-            ):
+            if next_page:
+                # strip control characters that browsers may ignore but that
+                # can be used to bypass open-redirect checks (e.g. /\t//evil.com)
+                next_page = re.sub(r"[\t\n\r]", "", next_page)
+            else:
                 next_page = url_for("index")
+            # prepend the host URL so that the redirect always targets the
+            # host the request was made to
+            next_page = request.host_url + next_page.lstrip('/')
             # check if the users password_hash is going to be deprecated
             if user.password_hash.startswith("sha256$"):
                 app.logger.warning(
