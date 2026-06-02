@@ -4,6 +4,7 @@
 import pytest
 import re
 from flask import url_for
+from urllib.parse import urlparse
 
 
 def test_create_app_with_user(app_with_user):
@@ -260,7 +261,8 @@ def test_page_view_login_next_redirect(app_with_permissions, test_client):
         },
     )
     assert rv.status_code == 302
-    assert "evil.example.com" not in rv.location
+    parsed = urlparse(rv.location)
+    assert parsed.netloc == "localhost"
 
 
 def test_page_blame_permissions(app_with_permissions, test_client):
@@ -1133,7 +1135,42 @@ def test_login_next_ignores_external_url(app_with_user):
     assert rv.status_code == 302
     location = rv.headers["Location"]
     # must not redirect to the external URL
-    assert "evil.example.com" not in location
+    parsed = urlparse(location)
+    assert parsed.netloc == "localhost"
+
+
+def test_login_next_whitespace_bypass(app_with_user):
+    """Test that control-character bypasses like /\\t//evil.com are neutralised.
+
+    Browsers may strip control characters (tab, newline, carriage return)
+    from URLs, turning /\\t//evil.com into //evil.com (a protocol-relative
+    external redirect).
+    """
+    test_client = app_with_user.test_client()
+    for malicious_next in [
+        "/\t//evil.com",
+        "/\n//evil.com",
+        "/\r//evil.com",
+        "//evil.com",
+    ]:
+        rv = test_client.get("/-/logout", follow_redirects=True)
+        rv = test_client.post(
+            "/-/login",
+            data={
+                "email": "mail@example.org",
+                "password": "password1234",
+                "next": malicious_next,
+            },
+            follow_redirects=False,
+        )
+        assert (
+            rv.status_code == 302
+        ), f"expected 302 for next={repr(malicious_next)}"
+        parsed = urlparse(rv.headers["Location"])
+        assert parsed.netloc == "localhost", (
+            f"redirect netloc should be localhost for next={repr(malicious_next)}, "
+            f"got {parsed.netloc!r}"
+        )
 
 
 def test_login_next_empty_redirects_to_index(app_with_user):
