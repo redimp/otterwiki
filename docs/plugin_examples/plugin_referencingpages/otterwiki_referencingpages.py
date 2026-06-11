@@ -39,6 +39,8 @@ class ReferencingPages:
         self.app = app
         self.storage = storage
 
+        self.WIKILINK_STYLE = app.config.get("WIKILINK_STYLE", "")
+
         self._build_reference_index()
 
     def _build_reference_index(self):
@@ -81,8 +83,13 @@ class ReferencingPages:
             self._remove_file_from_index(filepath)
 
             # Find all WikiLinks in the content
-            # WikiLink patterns: [[Page Name]] or [[Page Name|Display Text]]
-            wikilink_pattern = r'\[\[([^\]|]+)(?:\|[^\]]+)?\]\]'
+            # WikiLink patterns: [[Page Name]] or [[Page Name|Title]]
+            # or:                [[Page Name]] or [[Title|Page Name]]
+            wikilink_pattern = (
+                r'\[\[([^\]|]+)(?:\|[^\]]+)?\]\]'
+                if self.WIKILINK_STYLE.upper() == "LINKTITLE"
+                else r'\[\[(?:[^|\]]+\|)?([^\]]+)\]\]'
+            )
             matches = re.findall(wikilink_pattern, content)
 
             # Get the source page path (remove .md extension)

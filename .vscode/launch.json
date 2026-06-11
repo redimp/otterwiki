@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flask: Run OtterWiki",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "flask",
+            "args": [
+                "run",
+                "--port",
+                "8080",
+                "--no-reload"
+            ],
+            "env": {
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "True",
+                "FLASK_APP": "otterwiki.server",
+                "OTTERWIKI_SETTINGS": "../settings.cfg"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "serverReadyAction": {
+                "pattern": "Running on http://127.0.0.1:8080",
+                "uriFormat": "http://localhost:8080",
+                "action": "openExternally"
+            }
+        }
+    ]
+}
