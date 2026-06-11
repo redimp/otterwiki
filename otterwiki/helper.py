@@ -234,6 +234,9 @@ def get_pagename_for_title(
 def get_pagename_prefixes(filter=[]):
     pagename_prefixes = []
 
+    def _on_disk(path):
+        return path if app.config["RETAIN_PAGE_NAME_CASE"] else path.lower()
+
     if "pagecrumbs" in session:
         for crumb in session["pagecrumbs"][::-1]:
             if len(crumb) == 0 or crumb.lower() == "home":
@@ -242,14 +245,15 @@ def get_pagename_prefixes(filter=[]):
             if (
                 len(crumb_parent) > 0
                 and crumb_parent not in pagename_prefixes
-                and storage.isdir(crumb_parent)
+                and storage.isdir(_on_disk(crumb_parent))
             ):
                 pagename_prefixes.append(crumb_parent)
             if (
                 crumb not in pagename_prefixes
                 and crumb not in filter
                 and (
-                    storage.isdir(crumb) or storage.exists(get_filename(crumb))
+                    storage.isdir(_on_disk(crumb))
+                    or storage.exists(get_filename(crumb))
                 )
             ):
                 pagename_prefixes.append(crumb)
