@@ -95,8 +95,7 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
     <div class="form-group">
         <label for="sidebar_menutree_focus">Page Index Focus</label>
         <select class="form-control w-md-400" id="sidebar_menutree_focus" name="sidebar_menutree_focus">
-SUBTREE OFF
-{% for mode in [("SUBTREE", "Focus on current subtree"),("OFF","Always display all pages")] %}
+{% for mode in [("SUBTREE", "Focus on current subtree"),("TOP","Always display all top folders and pages"),("OFF","Always display all pages, unfolded")] %}
             <option value="{{mode[0]}}"{%if config.SIDEBAR_MENUTREE_FOCUS == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
 {% endfor %}
         </select>

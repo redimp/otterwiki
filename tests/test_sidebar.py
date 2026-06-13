@@ -260,3 +260,122 @@ def test_sidebar_menutree_with_invalid_utf8(create_app, req_ctx):
     assert valid_headers["AnotherPage"] == "Another Page"
     # broken page header could not be read, falls back to None
     assert valid_headers["BrokenPage"] is None
+
+
+def _populate_menutree_fixture(storage):
+    """Create a small folder tree used by the focus-option tests."""
+    storage.store(
+        "Alpha/PageA.md",
+        "# Page A",
+        author=("Test", "test@example.org"),
+    )
+    storage.store(
+        "Beta/PageB.md",
+        "# Page B",
+        author=("Test", "test@example.org"),
+    )
+    storage.store(
+        "Beta/Sub/PageBB.md",
+        "# Page BB",
+        author=("Test", "test@example.org"),
+    )
+    storage.store(
+        "TopLevel.md",
+        "# Top Level",
+        author=("Test", "test@example.org"),
+    )
+
+
+def test_sidebar_menutree_focus_subtree(create_app, req_ctx):
+    """SUBTREE only loads parents and siblings of the current page."""
+    from otterwiki.sidebar import SidebarPageIndex
+
+    create_app.config["RETAIN_PAGE_NAME_CASE"] = True
+    _populate_menutree_fixture(create_app.storage)
+    create_app.config["SIDEBAR_MENUTREE_FOCUS"] = "SUBTREE"
+
+    # viewing a page under Alpha must not load the Beta subtree
+    tree = SidebarPageIndex(path="Alpha/PageA").query()
+    assert "Alpha" in tree
+    assert "Beta" not in tree
+
+
+def test_sidebar_menutree_focus_top_loads_all(create_app, req_ctx):
+    """TOP loads every page, just like OFF (only template behavior differs)."""
+    from otterwiki.sidebar import SidebarPageIndex
+
+    create_app.config["RETAIN_PAGE_NAME_CASE"] = True
+    _populate_menutree_fixture(create_app.storage)
+    create_app.config["SIDEBAR_MENUTREE_FOCUS"] = "TOP"
+
+    tree = SidebarPageIndex(path="Alpha/PageA").query()
+    assert "Alpha" in tree
+    assert "Beta" in tree
+    assert "TopLevel" in tree
+
+
+def test_sidebar_menutree_focus_off_loads_all(create_app, req_ctx):
+    from otterwiki.sidebar import SidebarPageIndex
+
+    create_app.config["RETAIN_PAGE_NAME_CASE"] = True
+    _populate_menutree_fixture(create_app.storage)
+    create_app.config["SIDEBAR_MENUTREE_FOCUS"] = "OFF"
+
+    tree = SidebarPageIndex(path="Alpha/PageA").query()
+    assert "Alpha" in tree
+    assert "Beta" in tree
+    assert "TopLevel" in tree
+
+
+def _menutree_details(html):
+    """Return the <details> elements inside the rendered sidebar page index."""
+    soup = BeautifulSoup(html, "html.parser")
+    panels = soup.find_all("details", class_="collapse-panel")
+    # the page index panel contains a <summary> "Page Index"
+    for panel in panels:
+        summary = panel.find("summary")
+        if summary and "Page Index" in summary.get_text():
+            return panel.find_all("details")
+    return []
+
+
+def test_sidebar_menutree_focus_top_folders_stay_folded(
+    create_app, test_client
+):
+    """With TOP, folders not on the current path render closed."""
+    create_app.config["RETAIN_PAGE_NAME_CASE"] = True
+    _populate_menutree_fixture(create_app.storage)
+    create_app.config["SIDEBAR_MENUTREE_FOCUS"] = "TOP"
+
+    rv = test_client.get("/Alpha/PageA")
+    assert rv.status_code == 200
+    details = _menutree_details(rv.data.decode())
+
+    folder_state = {
+        d.find("summary").find("a").get_text().strip(): d.has_attr("open")
+        for d in details
+    }
+    # current path open, others folded
+    assert folder_state.get("Alpha") is True
+    assert folder_state.get("Beta") is False
+    assert folder_state.get("Sub") is False
+
+
+def test_sidebar_menutree_focus_off_unfolds_everything(
+    create_app, test_client
+):
+    """With OFF, every folder in the index renders open."""
+    create_app.config["RETAIN_PAGE_NAME_CASE"] = True
+    _populate_menutree_fixture(create_app.storage)
+    create_app.config["SIDEBAR_MENUTREE_FOCUS"] = "OFF"
+
+    rv = test_client.get("/Alpha/PageA")
+    assert rv.status_code == 200
+    details = _menutree_details(rv.data.decode())
+
+    # every folder rendered must be open
+    assert details
+    for d in details:
+        assert d.has_attr(
+            "open"
+        ), f"folder {d.find('summary').get_text(strip=True)!r} should be open"

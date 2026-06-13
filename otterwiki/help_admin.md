@@ -74,6 +74,18 @@ The Sidebar can be configured to display the Page Index in different modes.
 You can display pages and directories either alphabetical, or with directories first,
 or only the directories. Alternatively you choose to not display the Page Index at all.
 
+The <code>Page Index Focus</code> setting controls which pages
+and folders are shown alongside the current page:
+
+- <code>Focus on current subtree</code> (default): only the parents and siblings of
+  the current page are listed. Other folders are hidden until you navigate into
+  them.
+- <code>Always display all top folders and pages</code>: every top level folder
+  and page is listed, but folders stay folded unless they are on the path to the
+  current page.
+- <code>Always display all pages, unfolded</code>: the complete page tree is
+  listed and every folder is expanded.
+
 ### Content and Editing Preferences
 
 #### Commit Messages
