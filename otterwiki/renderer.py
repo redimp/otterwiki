@@ -348,6 +348,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             attrs.append('title="{}"'.format(mistune.escape(title)))
 
         if open_in_new_tab and not link.startswith('/'):
+            attrs.append('class=external')
             attrs.append('target=_blank')
 
         link_html = '<a {}>{}</a>'.format(' '.join(attrs), text)
