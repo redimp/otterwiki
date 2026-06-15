@@ -332,15 +332,25 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
     def link(self, text, url=None, title=None):
         if empty(text):
             text = url
-        # escape url, title
+
+        # escape url
         link = mistune.escape_url(self.safe_url(url))
 
+        open_in_new_tab = self.env.get("config", {}).get(
+            "OPEN_LINKS_IN_NEW_TAB", ""
+        )
+
+        attrs = []
+
+        attrs.append('href="{}"'.format(link))
+
         if title:
-            link_html = '<a href="{}" title="{}">{}</a>'.format(
-                link, mistune.escape(title), text
-            )
-        else:
-            link_html = '<a href="{}">{}</a>'.format(link, text)
+            attrs.append('title="{}"'.format(mistune.escape(title)))
+
+        if open_in_new_tab and not link.startswith('/'):
+            attrs.append('target=_blank')
+
+        link_html = '<a {}>{}</a>'.format(' '.join(attrs), text)
 
         processed_html = chain_hooks(
             "renderer_process_link",

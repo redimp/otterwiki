@@ -96,6 +96,16 @@
     </div>
   </div>
 {##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.OPEN_LINKS_IN_NEW_TAB %}checked{% endif %} type="checkbox" id="open_links_in_new_tab" name="open_links_in_new_tab" value="True">
+      <label for="open_links_in_new_tab">Open external links in a new tab.</label>
+    </div>
+    <div class="form-text">
+        External links open in new browser tab.
+    </div>
+  </div>
+{##}
   <div class="mt-10">
     <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
   </div>

@@ -180,6 +180,7 @@ def handle_app_preferences(form):
         _update_preference(name.upper(), form.get(name, ""))
     for checkbox in [
         "hide_logo",
+        "open_links_in_new_tab",
     ]:
         _update_preference(checkbox.upper(), form.get(checkbox, "False"))
 

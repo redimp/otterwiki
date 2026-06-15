@@ -32,6 +32,7 @@ app.config.update(
     SITE_ICON=None,
     SITE_LANG="en",
     HIDE_LOGO=False,
+    OPEN_LINKS_IN_NEW_TAB=False,
     AUTH_METHOD="",
     AUTH_HEADERS_USERNAME="x-otterwiki-name",
     AUTH_HEADERS_EMAIL="x-otterwiki-email",
@@ -200,6 +201,7 @@ def update_app_config():
                 "GIT_REMOTE_PUSH_ENABLED",
                 "GIT_REMOTE_PULL_ENABLED",
                 "HIDE_LOGO",
+                "OPEN_LINKS_IN_NEW_TAB",
                 "TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES",
             ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
                 item.value = item.value.lower() in ["true", "yes"]
