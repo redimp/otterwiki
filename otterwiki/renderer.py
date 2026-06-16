@@ -3,6 +3,7 @@
 
 import re
 import mistune
+import urllib.parse
 from bs4 import BeautifulSoup
 from markupsafe import Markup, escape
 from mistune.plugins.formatting import strikethrough as plugin_strikethrough
@@ -347,7 +348,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         if title:
             attrs.append('title="{}"'.format(mistune.escape(title)))
 
-        if open_in_new_tab and not link.startswith('/'):
+        if open_in_new_tab and self.is_external_link(link):
             attrs.append('class=external')
             attrs.append('target=_blank')
 
@@ -362,6 +363,11 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             self.env.get('page'),
         )
         return processed_html
+
+    def is_external_link(self, link):
+        parsed_link = urllib.parse.urlparse(link)
+
+        return parsed_link.scheme in ('http', 'https')
 
     def codespan(self, text):
         if len(text) >= 3 and text.startswith("$") and text.endswith("$"):
