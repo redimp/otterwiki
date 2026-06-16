@@ -99,8 +99,14 @@ class ReferencingPages:
 
             # Process each WikiLink
             for match in matches:
-                # Clean up the page name
-                target_page = match.strip()
+                # Clean up the page name: drop any #anchor and a leading
+                # slash so the target matches the page path used for lookup
+                # (e.g. [[Page#section]] and [[/Page]] both point to "Page").
+                target_page = match.split('#', 1)[0].strip().lstrip('/')
+
+                # Skip pure anchor links like [[#section]]
+                if not target_page:
+                    continue
 
                 # Normalize the page path (handle case sensitivity)
                 if not self.app.config.get("RETAIN_PAGE_NAME_CASE", False):
