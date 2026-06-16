@@ -338,7 +338,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
         link = mistune.escape_url(self.safe_url(url))
 
         open_in_new_tab = self.env.get("config", {}).get(
-            "OPEN_LINKS_IN_NEW_TAB", ""
+            "OPEN_LINKS_IN_NEW_TAB", False
         )
 
         attrs = []
