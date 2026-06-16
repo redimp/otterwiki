@@ -425,6 +425,32 @@ def test_datatable_option_caption():
     assert 'caption: "My Table"' in js
 
 
+def test_datatable_option_caption_backslash():
+    # Regression: a caption value containing a backslash must be emitted as a
+    # valid JS string literal. The previous hand-rolled quoting only ran
+    # mistune.escape on the value, which left backslashes untouched and
+    # produced caption: "foo\bar" - a string where \b is the backspace
+    # escape (corrupting the displayed value), and which becomes an outright
+    # syntax error if the value ends in a backslash.
+    import json
+    import re as re_mod
+    from otterwiki.plugins import collect_hook
+
+    md = """\
+{{datatable
+|caption=foo\\bar
+| A | B |
+| - | - |
+| 1 | 2 |
+}}
+"""
+    render.markdown(md)
+    js = "".join(collect_hook("renderer_javascript"))
+    match = re_mod.search(r'caption: ("(?:[^"\\]|\\.)*")', js)
+    assert match is not None, f"caption option not found in: {js!r}"
+    assert json.loads(match.group(1)) == "foo\\bar"
+
+
 def test_datatable_multiple_tables():
     from otterwiki.plugins import collect_hook
 
