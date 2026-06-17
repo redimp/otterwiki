@@ -1507,6 +1507,29 @@ window.addEventListener("keydown", function(event) {
 });
 
 
+document.addEventListener("DOMContentLoaded", () => {
+  if (document.body.dataset.pageIndexRetainUserExpandedNodes === 'False') return;
+
+  const detailsList = document.querySelectorAll("details");
+
+  detailsList.forEach((d, i) => {
+    const summary = d.querySelector("summary");
+    const link = summary?.querySelector("a");
+    const key = "otterwiki/summary/node" + (link?.pathname?.toLowerCase() || i);
+
+    // Restore state from sessionStorage
+    const saved = sessionStorage.getItem(key);
+    if (saved === "open") d.setAttribute("open", "");
+    if (saved === "closed") d.removeAttribute("open");
+
+    // Save state on toggle
+    d.addEventListener("toggle", () => {
+      sessionStorage.setItem(key, d.open ? "open" : "closed");
+    });
+  });
+});
+
+
 let sidebar_links = document.querySelectorAll('a.sidebar-link');
 let header_anchors = document.querySelectorAll('div.page > h1, div.page > h2, div.page > h3, div.page > h4, div.page > h5, div.page > h6');
 
