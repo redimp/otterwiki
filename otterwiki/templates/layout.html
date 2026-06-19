@@ -98,6 +98,7 @@
   {%- else -%}
   class="with-custom-webkit-scrollbars with-custom-css-scrollbars" data-set-preferred-mode-onload="true"
   {%- endif %}
+  data-page-index-retain-user-expanded-nodes="{{config.SIDEBAR_MENUTREE_FOCUS == 'TOP'}}"
   {% block body_attrs %}{% endblock %}
 >
 
@@ -267,8 +268,6 @@
 {#
     Flashes
 #}
-<body data-page-index-retain-user-expanded-nodes="{{config.SIDEBAR_MENUTREE_FOCUS == 'TOP'}}">
-
 <script type="text/javascript">
 {% with messages = get_flashed_messages(with_categories=true) %}
   {%- for category, message in messages %}
