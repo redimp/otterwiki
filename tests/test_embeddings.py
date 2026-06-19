@@ -166,6 +166,23 @@ def test_imageframe_custom_style():
     assert "opacity:0.8" in frame.get("style", "")
 
 
+def test_embedding_style_no_xss():
+    """The |style= option must not allow breaking out of the attribute."""
+    payload = 'x"></div><script>alert(\'xss\')</script><div style="x'
+    for name in ("InfoBox", "ImageFrame", "Figure"):
+        md = f"""
+{{{{{name}
+|style={payload}
+|caption=Test
+Content
+}}}}
+"""
+        html, _, _ = render.markdown(md)
+        # the attribute breakout must be escaped, no script tag injected
+        assert "<script>" not in html
+        assert "&quot;" in html
+
+
 def test_imageframe_alias():
     md = """
 {{Image Frame

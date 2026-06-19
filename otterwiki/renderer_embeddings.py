@@ -19,6 +19,21 @@ being part of An Otter Wikis core.
 """
 
 
+def _style_attr(styles):
+    """Build a safe ` style="..."` attribute from CSS fragments.
+
+    The joined value is HTML-escaped so user supplied input (e.g. the
+    `|style=` option) cannot break out of the attribute and inject
+    arbitrary markup or scripts. Escaped quotes are still interpreted as
+    quotes inside a CSS value by the browser, so legitimate CSS keeps
+    working.
+    """
+    styles = [s for s in styles if s]
+    if not styles:
+        return ""
+    return f' style="{mistune.escape(";".join(styles))}"'
+
+
 class DatatableEmbedding:
     @hookimpl
     def info(self):
@@ -356,9 +371,7 @@ Options specific to CSV:
             for str_option in self.str_options:
                 if options.get(str_option.lower(), None):
                     val = mistune.escape(options.get(str_option.lower()))
-                    jsoptions.append(
-                        f"{str_option}: {json.dumps(val)}"
-                    )
+                    jsoptions.append(f"{str_option}: {json.dumps(val)}")
             for int_option in self.int_options:
                 if options.get(int_option.lower(), None):
                     try:
@@ -559,9 +572,7 @@ div.imageframe {
             inline_styles.append(f"text-align:{text_align}")
         if userstyle:
             inline_styles.append(userstyle)
-        style_attr = (
-            f' style="{";".join(inline_styles)}"' if inline_styles else ""
-        )
+        style_attr = _style_attr(inline_styles)
 
         caption_html = (
             f'<div class="imageframe">{caption}</div>' if caption else ""
@@ -867,9 +878,7 @@ table.infobox td {
             inline_styles.append(f"width:{width}")
         if userstyle:
             inline_styles.append(userstyle)
-        style_attr = (
-            f' style="{";".join(inline_styles)}"' if inline_styles else ""
-        )
+        style_attr = _style_attr(inline_styles)
 
         caption_html = (
             f'<div class="infobox-caption">{caption}</div>' if caption else ""
@@ -878,7 +887,7 @@ table.infobox td {
         table_html = '<table class="infobox">'
         if content:
             align_attr = (
-                f' style="text-align:{text_align}"' if text_align else ""
+                _style_attr([f"text-align:{text_align}"]) if text_align else ""
             )
             table_html += f'<tr class="infobox-args"><td{align_attr} colspan="2">{content}</td></tr>'
         skip_keys = {
@@ -1287,17 +1296,13 @@ div.figure-embedding-caption {
             inline_styles.append("margin-right:0")
         if userstyle:
             inline_styles.append(userstyle)
-        style_attr = (
-            f' style="{";".join(inline_styles)}"' if inline_styles else ""
-        )
+        style_attr = _style_attr(inline_styles)
 
         content_styles = []
         if height:
             content_styles.append(f"max-height:{height}")
             content_styles.append("overflow-y:auto")
-        content_style_attr = (
-            f' style="{";".join(content_styles)}"' if content_styles else ""
-        )
+        content_style_attr = _style_attr(content_styles)
 
         caption_html = (
             f'<div class="figure-embedding-caption">' f'{caption}</div>'
