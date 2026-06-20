@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const pullCheckbox = document.getElementById('git_remote_pull_enabled');
     const pullParams = document.getElementById('git_remote_pull_params');
     const pullUrlInput = document.getElementById('git_remote_pull_url');
-    const pullRegenerateWebookCheckbox = document.getElementById('git_remote_pull_regenerate_webhook');
+    const pullRegenerateWebhookCheckbox = document.getElementById('git_remote_pull_regenerate_webhook');
     const webhookUrlInput = document.getElementById('git_remote_pull_webhook_url');
     const copyButton = document.getElementById('copy_webhook_url');
 
@@ -210,7 +210,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     pullCheckbox.addEventListener('change', togglePullFields);
     pullUrlInput.addEventListener('input', updateWebhookUrl);
-    pullRegenerateWebookCheckbox.addEventListener('change', updateWebhookUrl);
+    if (pullRegenerateWebhookCheckbox) {
+        pullRegenerateWebhookCheckbox.addEventListener('change', updateWebhookUrl);
+    }
 
     copyButton.addEventListener('click', function() {
         webhookUrlInput.select();
