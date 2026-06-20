@@ -1517,15 +1517,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const link = summary?.querySelector("a");
     const key = "otterwiki/summary/node" + (link?.pathname?.toLowerCase() || i);
 
-    // Restore state from sessionStorage
+    // Restore state
     const saved = sessionStorage.getItem(key);
     if (saved === "open") d.setAttribute("open", "");
     if (saved === "closed") d.removeAttribute("open");
 
-    // Save state on toggle
-    d.addEventListener("toggle", () => {
-      sessionStorage.setItem(key, d.open ? "open" : "closed");
-    });
+    // Save state
+    const saveState = () => {
+      queueMicrotask(() => {
+        sessionStorage.setItem(key, d.open ? "open" : "closed");
+      });
+    };
+
+    d.addEventListener("toggle", saveState);
+    summary.addEventListener("click", saveState);
   });
 });
 
