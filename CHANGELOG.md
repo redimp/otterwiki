@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.20.7](https://github.com/redimp/otterwiki/releases/tag/v2.20.7) - 2026-06-20
+
+<small>[Compare with v2.20.6](https://github.com/redimp/otterwiki/compare/v2.20.6...v2.20.7)</small>
+
+### Security Fixes
+
+- Use HMAC with `SECRET_KEY` for the webhook hash, generate the webhook URL server-side,
+  and add `GIT_REMOTE_PULL_URL_SECURE` for backward-compatible hashes, see #443 ([bc77b7d](https://github.com/redimp/otterwiki/commit/bc77b7d) by @onovy).
+- Prevent style attribute XSS in InfoBox, ImageFrame and Figure embeddings ([8c5d311](https://github.com/redimp/otterwiki/commit/8c5d311)).
+- Deny any possibility for malicious redirects, see #504 ([15f5a86](https://github.com/redimp/otterwiki/commit/15f5a86) by @deseven).
+  Thanks to @Fushuling for reaching out and bringing this potential security risk to our attention.
+
+### Features
+
+- Open external links in a new tab with an icon, see #215 #507 ([e18304f](https://github.com/redimp/otterwiki/commit/e18304f) by @ribbal).
+- Allow multiple sub-tree items to be unfolded in the page index, see #512 ([df49a45](https://github.com/redimp/otterwiki/commit/df49a45) by @ribbal).
+
+### Bug Fixes
+
+- Add a TOP focus option and unfold all folders when focus is OFF, see #506 ([0bc25d8](https://github.com/redimp/otterwiki/commit/0bc25d8)).
+- Safely encode DataTable caption using `json.dumps`, see #502 ([8911f1a](https://github.com/redimp/otterwiki/commit/8911f1a) by @turfin-logic).
+- Lowercase crumb paths for `isdir` checks on case-sensitive filesystems ([d5b1bdc](https://github.com/redimp/otterwiki/commit/d5b1bdc)).
+- Fix referencing pages plugin, see #498 ([473ec48](https://github.com/redimp/otterwiki/commit/473ec48) by @ribbal).
+
 ## [v2.20.6](https://github.com/redimp/otterwiki/releases/tag/v2.20.6) - 2026-05-31
 
 <small>[Compare with v2.20.5](https://github.com/redimp/otterwiki/compare/v2.20.5...v2.20.6)</small>
