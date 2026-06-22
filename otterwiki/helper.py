@@ -26,6 +26,7 @@ from otterwiki.util import (
     titleSs,
     ttl_lru_cache,
     sha256sum,
+    get_header,
 )
 from otterwiki.models import Cache
 
@@ -269,12 +270,24 @@ def get_breadcrumbs(pagepath):
     pagepath = pagepath.rstrip("/")
     parents = []
     crumbs = []
+    # When RETAIN_PAGE_NAME_CASE is set the on-disk name is used as-is and
+    # the page header is irrelevant, so skip the extra storage reads.
+    resolve_header = not app.config["RETAIN_PAGE_NAME_CASE"]
     for e in split_path(pagepath):
         parents.append(e)
+        crumbpath = join_path(parents)
+        # Resolve the component's own first header so the breadcrumb uses
+        # the same capitalization as the page title/sidebar/index (#516).
+        header = None
+        if resolve_header:
+            try:
+                header = get_header(storage.load(get_filename(crumbpath)))
+            except StorageError:
+                pass
         crumbs.append(
             (
-                get_pagename_for_title(e),
-                join_path(parents),
+                get_pagename_for_title(e, header=header),
+                crumbpath,
             )
         )
     return crumbs

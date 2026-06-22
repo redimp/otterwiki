@@ -193,6 +193,35 @@ def test_get_pagename(create_app, req_ctx):
     )
 
 
+def test_get_breadcrumbs_uses_header(test_client):
+    # see issue #516: breadcrumbs must use the page header capitalization,
+    # like the page title/sidebar/index do, when RETAIN_PAGE_NAME_CASE is off
+    from otterwiki.helper import get_breadcrumbs
+    from test_otterwiki import save_shortcut
+
+    save_shortcut(
+        test_client,
+        "Subdir/HP Color LaserJet MFP M477FDW",
+        "# HP Color LaserJet MFP M477FDW",
+        "added page",
+    )
+    save_shortcut(test_client, "Subdir", "# SubDir", "added subdir")
+
+    crumbs = get_breadcrumbs("subdir/hp color laserjet mfp m477fdw")
+    assert crumbs == [
+        ("SubDir", "subdir"),
+        (
+            "HP Color LaserJet MFP M477FDW",
+            "subdir/hp color laserjet mfp m477fdw",
+        ),
+    ]
+
+    # a segment without a page falls back to title-case
+    assert get_breadcrumbs("no such page") == [
+        ("No Such Page", "no such page")
+    ]
+
+
 def test_get_pagename_raw(create_app_raw_filenames, req_ctx):
     assert req_ctx
     assert create_app_raw_filenames
