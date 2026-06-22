@@ -724,15 +724,14 @@ class Page:
             # join path with hardcoded filename for default frontmatter
             frontmatter_path = os.path.join(custom_dir, "default_frontmatter.md") 
             try:
-                # join frontmatter with pagename for new pages
-                if os.path.exists(frontmatter_path):
-                    with open(frontmatter_path, "r") as f:
-                        content = f.read()
-                        content += f"\n\n# {self.pagename}\n\n"
-                else:
-                    content = f"# {self.pagename}\n\n"
+                # use frontmatter for new pages
+                with open(frontmatter_path, "r") as f:
+                    content = f.read()
+                    while not content.endswith(("\n\n", "\r\n\r\n")):
+                        content += "\n"
             except OSError:
-                content = f"# {self.pagename}\n\n"
+                pass
+            content += f"# {self.pagename}\n\n"
             # Place the cursor after the header line of the new document
             cursor_line = content.count("\n")
             cursor_ch = 0
