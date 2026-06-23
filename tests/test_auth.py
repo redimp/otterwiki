@@ -261,8 +261,10 @@ def test_page_view_login_next_redirect(app_with_permissions, test_client):
         },
     )
     assert rv.status_code == 302
+    # redirect stays local (relative path to the index), never to the external host
     parsed = urlparse(rv.location)
-    assert parsed.netloc == "localhost"
+    assert parsed.netloc in ("", "localhost")
+    assert "evil.example.com" not in rv.location
 
 
 def test_page_blame_permissions(app_with_permissions, test_client):
@@ -1136,7 +1138,8 @@ def test_login_next_ignores_external_url(app_with_user):
     location = rv.headers["Location"]
     # must not redirect to the external URL
     parsed = urlparse(location)
-    assert parsed.netloc == "localhost"
+    assert parsed.netloc in ("", "localhost")
+    assert "evil.example.com" not in location
 
 
 def test_login_next_whitespace_bypass(app_with_user):
@@ -1166,11 +1169,50 @@ def test_login_next_whitespace_bypass(app_with_user):
         assert (
             rv.status_code == 302
         ), f"expected 302 for next={repr(malicious_next)}"
-        parsed = urlparse(rv.headers["Location"])
-        assert parsed.netloc == "localhost", (
-            f"redirect netloc should be localhost for next={repr(malicious_next)}, "
+        location = rv.headers["Location"]
+        parsed = urlparse(location)
+        assert parsed.netloc in ("", "localhost"), (
+            f"redirect netloc should be local for next={repr(malicious_next)}, "
             f"got {parsed.netloc!r}"
         )
+        assert "evil.com" not in location, (
+            f"redirect must not target evil.com for next={repr(malicious_next)}, "
+            f"got {location!r}"
+        )
+
+
+def test_login_next_redirect_is_relative(app_with_user):
+    """Regression test for #517.
+
+    The login redirect must be a relative path so the browser resolves it
+    against the host and port the request was made to. Prepending an absolute
+    host URL broke logins behind a reverse proxy or on a non-standard port
+    (e.g. the user ended up on localhost:80 instead of localhost:9091).
+    """
+    test_client = app_with_user.test_client()
+    for next_page in ["/Home", "/-/settings", ""]:
+        rv = test_client.get("/-/logout", follow_redirects=True)
+        rv = test_client.post(
+            "/-/login",
+            data={
+                "email": "mail@example.org",
+                "password": "password1234",
+                "next": next_page,
+            },
+            follow_redirects=False,
+        )
+        assert rv.status_code == 302
+        location = rv.headers["Location"]
+        # the Location header must be a relative path, not an absolute URL with
+        # a hardcoded scheme/host
+        parsed = urlparse(location)
+        assert (
+            parsed.scheme == ""
+        ), f"redirect must be relative, got {location!r}"
+        assert (
+            parsed.netloc == ""
+        ), f"redirect must be relative, got {location!r}"
+        assert location.startswith("/")
 
 
 def test_login_next_empty_redirects_to_index(app_with_user):
