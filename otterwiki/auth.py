@@ -171,11 +171,17 @@ class SimpleAuth:
                 # strip control characters that browsers may ignore but that
                 # can be used to bypass open-redirect checks (e.g. /\t//evil.com)
                 next_page = re.sub(r"[\t\n\r]", "", next_page)
-            else:
+            # only allow redirects to a local path; reject anything that is not
+            # a single-slash relative path (protocol-relative "//evil.com" or
+            # absolute "http://evil.com" urls) to prevent open redirects. keep
+            # next_page relative so the redirect targets the host the request
+            # was made to, even behind a reverse proxy or on a non-standard port
+            if (
+                not next_page
+                or not next_page.startswith('/')
+                or next_page.startswith('//')
+            ):
                 next_page = url_for("index")
-            # prepend the host URL so that the redirect always targets the
-            # host the request was made to
-            next_page = request.host_url + next_page.lstrip('/')
             # check if the users password_hash is going to be deprecated
             if user.password_hash.startswith("sha256$"):
                 app.logger.warning(
