@@ -13,6 +13,9 @@ VERSION_MAJOR := $(shell python3 -c "with open('otterwiki/version.py') as f: exe
 PLATFORM ?= "linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6"
 PLATFORM_QUICK ?= "linux/arm64,linux/amd64"
 HELM_VERSION := $(shell grep ^version helm/Chart.yaml | awk '{print $$2}')
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+# sanitize the branch name into a valid docker tag (replace invalid chars with -)
+BRANCH_TAG := $(shell git rev-parse --abbrev-ref HEAD | sed 's/[^a-zA-Z0-9_.-]/-/g')
 
 all: run
 
@@ -112,7 +115,7 @@ else
 endif
 
 docker-push-slim: test
-ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
+ifeq ($(strip $(BRANCH)),main)
 # check if git is clean
 ifneq ($(strip $(shell git status --porcelain)),)
 	$(error Error: Uncommitted changes in found)
@@ -131,17 +134,17 @@ else
 	@echo ""
 	docker buildx build --platform $(PLATFORM_QUICK) \
 		-f docker/Dockerfile.slim \
-		-t redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD)-slim \
-		--build-arg GIT_TAG="$(shell git describe --long)_$(shell git rev-parse --abbrev-ref HEAD)" \
+		-t redimp/otterwiki:dev-$(BRANCH_TAG)-slim \
+		--build-arg GIT_TAG="$(shell git describe --long)_$(BRANCH)" \
 		--push .
 	@echo ""
-	@echo "-- Done dev-image: redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD)-slim"
+	@echo "-- Done dev-image: redimp/otterwiki:dev-$(BRANCH_TAG)-slim"
 	@echo ""
 endif
 
 docker-push: test
 # check if we are in the main branch (to avoid accidentally pushing a feature branch
-ifeq ($(strip $(shell git rev-parse --abbrev-ref HEAD)),main)
+ifeq ($(strip $(BRANCH)),main)
 # check if git is clean
 ifneq ($(strip $(shell git status --porcelain)),)
 	$(error Error: Uncommitted changes in found)
@@ -158,11 +161,11 @@ else
 	@echo "-- Building dev image"
 	@echo ""
 	docker buildx build --platform $(PLATFORM_QUICK) \
-		-t redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD) \
-		--build-arg GIT_TAG="$(shell git describe --long)_$(shell git rev-parse --abbrev-ref HEAD)" \
+		-t redimp/otterwiki:dev-$(BRANCH_TAG) \
+		--build-arg GIT_TAG="$(shell git describe --long)_$(BRANCH)" \
 		--push .
 	@echo ""
-	@echo "-- Done dev-image: redimp/otterwiki:dev-$(shell git rev-parse --abbrev-ref HEAD)"
+	@echo "-- Done dev-image: redimp/otterwiki:dev-$(BRANCH_TAG)"
 	@echo ""
 endif
 
