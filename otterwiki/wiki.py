@@ -715,10 +715,25 @@ class Page:
             cursor_line = 0
             cursor_ch = 0
         else:
-            content = f"# {self.pagename}\n\n"
-            # Place the cursor in the beginning of the first (empty) line of the\
-            # new document
-            cursor_line = 2
+            content = ""
+            # mimics _get_custom_dir(): from security_check.py
+            custom_dir = os.path.join(
+                os.getenv("USE_STATIC_PATH", os.path.join(app.root_path, "static")),
+                    "custom",
+            )
+            # join path with hardcoded filename for default frontmatter
+            frontmatter_path = os.path.join(custom_dir, "default_frontmatter.md") 
+            try:
+                # use frontmatter for new pages
+                with open(frontmatter_path, "r") as f:
+                    content = f.read()
+                    while not content.endswith(("\n\n", "\r\n\r\n")):
+                        content += "\n"
+            except OSError:
+                pass
+            content += f"# {self.pagename}\n\n"
+            # Place the cursor after the header line of the new document
+            cursor_line = content.count("\n")
             cursor_ch = 0
 
         # check Drafts
