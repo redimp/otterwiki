@@ -172,14 +172,16 @@ class SimpleAuth:
                 # can be used to bypass open-redirect checks (e.g. /\t//evil.com)
                 next_page = re.sub(r"[\t\n\r]", "", next_page)
             # only allow redirects to a local path; reject anything that is not
-            # a single-slash relative path (protocol-relative "//evil.com" or
-            # absolute "http://evil.com" urls) to prevent open redirects. keep
+            # a single-slash relative path to prevent open redirects. keep
             # next_page relative so the redirect targets the host the request
-            # was made to, even behind a reverse proxy or on a non-standard port
+            # was made to, even behind a reverse proxy or on a non-standard
+            # port. reject protocol-relative ("//evil.com") and absolute
+            # ("http://evil.com") urls, as well as backslash variants
+            # ("/\evil.com") that browsers normalise to "//evil.com"
             if (
                 not next_page
                 or not next_page.startswith('/')
-                or next_page.startswith('//')
+                or next_page[1:2] in ('/', '\\')
             ):
                 next_page = url_for("index")
             # check if the users password_hash is going to be deprecated

@@ -1147,7 +1147,9 @@ def test_login_next_whitespace_bypass(app_with_user):
 
     Browsers may strip control characters (tab, newline, carriage return)
     from URLs, turning /\\t//evil.com into //evil.com (a protocol-relative
-    external redirect).
+    external redirect). Backslash variants like /\\evil.com are also rejected
+    because browsers normalise the backslash to a forward slash, turning them
+    into protocol-relative //evil.com redirects too.
     """
     test_client = app_with_user.test_client()
     for malicious_next in [
@@ -1155,6 +1157,9 @@ def test_login_next_whitespace_bypass(app_with_user):
         "/\n//evil.com",
         "/\r//evil.com",
         "//evil.com",
+        "/\\evil.com",
+        "/\\/evil.com",
+        "/\t/\\evil.com",
     ]:
         rv = test_client.get("/-/logout", follow_redirects=True)
         rv = test_client.post(
