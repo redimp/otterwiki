@@ -281,7 +281,9 @@ def get_breadcrumbs(pagepath):
         header = None
         if resolve_header:
             try:
-                header = get_header(storage.load(get_filename(crumbpath)))
+                header = get_header(
+                    storage.load(get_filename(crumbpath), size=512)
+                )
             except StorageError:
                 pass
         crumbs.append(
