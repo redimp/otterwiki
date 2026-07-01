@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.20.8](https://github.com/redimp/otterwiki/releases/tag/v2.20.8) - 2026-07-01
+
+<small>[Compare with v2.20.7](https://github.com/redimp/otterwiki/compare/v2.20.7...v2.20.8)</small>
+
+### Security Fixes
+
+- Reject backslash open-redirect bypass in the login redirect ([7681e4f](https://github.com/redimp/otterwiki/commit/7681e4f)).
+
+### Features
+
+- Add column0 option for 0-based CSV column selection, see #519 ([da90ae8](https://github.com/redimp/otterwiki/commit/da90ae8)).
+
+### Bug Fixes
+
+- Prevent InfoBox overflow on narrow viewports, see #515 ([17ba350](https://github.com/redimp/otterwiki/commit/17ba350)).
+- Use page header capitalization in breadcrumbs, see #516 ([8e36f83](https://github.com/redimp/otterwiki/commit/8e36f83)).
+- Keep post-login redirect relative, see #517 ([f871fef](https://github.com/redimp/otterwiki/commit/f871fef)).
+- Fix saving the page index session state in Safari, see #514 ([9537cf9](https://github.com/redimp/otterwiki/commit/9537cf9) by @ribbal).
+
+### Refactoring
+
+- Limit breadcrumb header read to 512 bytes ([eebf9d2](https://github.com/redimp/otterwiki/commit/eebf9d2)).
+
 ## [v2.20.7](https://github.com/redimp/otterwiki/releases/tag/v2.20.7) - 2026-06-20
 
 <small>[Compare with v2.20.6](https://github.com/redimp/otterwiki/compare/v2.20.6...v2.20.7)</small>
