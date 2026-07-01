@@ -818,6 +818,8 @@ div.infobox {
     border: 1px solid rgba(128, 128, 128, 0.3);
     padding: .5rem;
     background-color: rgba(0, 0, 0, 0.2);
+    min-width: 200px;
+    max-width: 100%;
 }
 div.infobox.infobox-float-right {
     float: right;
@@ -845,8 +847,9 @@ table.infobox tr {
 table.infobox td {
     border: none;
     padding: .5rem;
+    overflow-wrap: anywhere;
 }
-@media (max-width: 576px) {
+@media (max-width: 768px) {
     div.infobox.infobox-float-right,
     div.infobox.infobox-float-left {
         float: none;
