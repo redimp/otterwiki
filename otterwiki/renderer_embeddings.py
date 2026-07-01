@@ -157,7 +157,8 @@ Options specific to CSV:
 - `delimiter` field delimiter, default `;`
 - `quotechar` character used to quote fields, default `"`
 - `header` use first row as column headers (default `true`)
-- `columns` comma-separated list of 1-based column indices or header names to include
+- `columns` comma-separated list of columns to include, given as 1-based indices (`1` = first column) or header names
+- `column0` same as `columns`, but using 0-based indices (`0` = first column); ignored if `columns` is set
 - `headers` comma-separated list of column header labels (overrides CSV headers)
 
 </div></div>
@@ -192,6 +193,7 @@ Options specific to CSV:
         quotechar = args.options_raw.get('quotechar', '"')
         use_header = args.get_flag('header', True)
         columns_opt = args.options.get('columns', None)
+        column0_opt = args.options.get('column0', None)
         headers_opt = args.options.get('headers', None)
         if delimiter == "\\t":
             delimiter = "\t"
@@ -242,11 +244,19 @@ Options specific to CSV:
         )
         all_indices = list(range(n_cols))
 
-        if columns_opt:
-            col_specs = [c.strip() for c in columns_opt.split(',')]
+        # `columns` uses 1-based indices, `column0` uses 0-based indices;
+        # `columns` takes precedence if both are set.
+        if columns_opt is not None:
+            col_spec_str, index_offset = columns_opt, 1
+        elif column0_opt is not None:
+            col_spec_str, index_offset = column0_opt, 0
+        else:
+            col_spec_str, index_offset = None, 1
+
+        if col_spec_str:
+            col_specs = [c.strip() for c in col_spec_str.split(',')]
             try:
-                # 1-based integer indices
-                col_indices = [int(c) - 1 for c in col_specs]
+                col_indices = [int(c) - index_offset for c in col_specs]
             except ValueError:
                 # column names — requires a header row
                 if header_row is not None:

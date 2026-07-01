@@ -598,6 +598,36 @@ def test_datatable_csv_column_selection_by_index(create_app):
     assert "Date" not in table.decode_contents()
 
 
+def test_datatable_csv_column_selection_by_index0(create_app):
+    author = ("Test Author", "test@example.com")
+    csv_content = "Name;Score;Date\nAlice;42;2024-01-01\nBob;7;2024-02-01\n"
+    create_app.storage.store(
+        "csvpage_cols0.md",
+        content="# CSV Test\n{{datatable\n|src=data.csv\n|column0=0,1\n}}\n",
+        author=author,
+        message="csv page",
+    )
+    create_app.storage.store(
+        "csvpage_cols0/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvpage_cols0/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find(
+        "table", id=lambda v: v and v.startswith("s-dt-")  # pyright: ignore
+    )  # pyright: ignore
+    assert table is not None
+    assert "Alice" in html
+    assert "Name" in html
+    assert "Score" in html
+    assert "Date" not in table.decode_contents()
+
+
 def test_datatable_csv_column_selection_by_name(create_app):
     author = ("Test Author", "test@example.com")
     csv_content = "Name;Score;Date\nAlice;42;2024-01-01\nBob;7;2024-02-01\n"
