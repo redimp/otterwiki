@@ -35,6 +35,33 @@ You can use backslash escapes to generate literal characters that are used for f
 </div>
 </div>
 
+{{ heading("Paragraphs and Line Breaks") }}
+To create paragraphs, use a blank line to separate one or more lines of text.
+A single newline does <em>not</em> render as a line break: consecutive lines
+are joined into one paragraph. To force a line break, end a line with two or
+more spaces or with a backslash <code>\</code>.
+<div class="row">
+<div class="col-md-6 col-sm-12">
+<pre class="block-compact">A single newline
+is joined into one paragraph.
+
+Two trailing spaces&nbsp;&nbsp;
+force a line break.
+
+A trailing backslash\
+forces a line break, too.</pre>
+</div>
+<div class="col-md-6 col-sm-12 pl-5">
+<p>A single newline is joined into one paragraph.</p>
+<p>Two trailing spaces<br/>force a line break.</p>
+<p>A trailing backslash<br/>forces a line break, too.</p>
+</div>
+</div>
+<p class="mt-0 pt-0"><em>Note: Trailing spaces are invisible in the editor,
+so the trailing backslash is often the more practical choice. See the
+<a href="https://www.markdownguide.org/basic-syntax/#line-breaks">Markdown
+Guide</a> for details.</em></p>
+
 {{ heading("Headings") }}
 
 <div class="row align-bottom my-5">
