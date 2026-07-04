@@ -7,6 +7,12 @@
 @import "partials/documentation.css";
 @import "partials/history.css";
 
+/* Native widgets (e.g. select popups) follow the page color scheme,
+ * which must be declared on the root element, not just on body. */
+:root:has(body.dark-mode) {
+    color-scheme: dark;
+}
+
 .navbar {
     background: #d2d2d2;
 }

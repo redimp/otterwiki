@@ -32,7 +32,16 @@
 }
 
 .dark-mode .datatable-selector {
+	color-scheme: dark;
 	color: rgba(192,192,192,0.8);
+	background-color: #2a2d30;
+	border: none;
+}
+
+.dark-mode .datatable-selector option {
+	background-color: #25282c;
+	color: rgba(255,255,255,0.8);
+	border: none;
 }
 
 .dark-mode input.datatable-input {
