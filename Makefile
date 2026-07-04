@@ -16,7 +16,7 @@ HELM_VERSION := $(shell grep ^version helm/Chart.yaml | awk '{print $$2}')
 
 all: run
 
-.PHONY: clean coverage run debug cli shell sdist docker-build docker-test cm6
+.PHONY: clean coverage run debug cli shell sdist docker-build docker-test frontend
 ARGS ?=
 
 clean:
@@ -72,8 +72,8 @@ settings.cfg:
 	@echo ""
 	@false
 
-cm6:
-	npm install --include=dev && node esbuild.config.mjs
+frontend:
+	cd frontend && npm install --include=dev && node esbuild.config.mjs
 
 docker-test:
 	# make sure the image is rebuild
