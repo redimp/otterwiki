@@ -29,7 +29,6 @@ var otterwiki = {
     },
     toggleMarkdownHelp: function() {
         var ehm = document.getElementById("editor-help-markdown");
-        currDisplay = ehm.style.display;
         if (ehm.style.display === "none")
         {
             ehm.style.display = "block";
@@ -52,7 +51,7 @@ var otterwiki = {
         }
     },
     toggle_pagename_prefix: function(element, p) {
-        pagename = document.getElementById(element);
+        const pagename = document.getElementById(element);
 
         pagename.focus();
         if (pagename.value.startsWith(p + "/")) {
