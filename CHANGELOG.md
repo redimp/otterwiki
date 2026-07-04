@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.21.0](https://github.com/redimp/otterwiki/releases/tag/v2.21.0) - 2026-07-04
+
+<small>[Compare with v2.20.8](https://github.com/redimp/otterwiki/compare/v2.20.8...v2.21.0)</small>
+
+### Features: CodeMirror 6
+
+Finally CodeMirror 6 is here. The majority of work has been done by @onovy in #464.
+
+- Migrate the editor from CodeMirror 5 to CodeMirror 6: the vendored CM5 files are replaced
+  by a single bundle built from source with esbuild, all editor features (markdown formatting
+  helpers, table editing, list continuation and indentation, link handling, search dialog,
+  inline attachment upload and preview toggle) have been ported, and GFM support (task lists,
+  strikethrough, tables) is enabled, see #464 #520
+  ([1c76bd9](https://github.com/redimp/otterwiki/commit/1c76bd9), [cd08166](https://github.com/redimp/otterwiki/commit/cd08166), [b8492a4](https://github.com/redimp/otterwiki/commit/b8492a4), [cea3dab](https://github.com/redimp/otterwiki/commit/cea3dab), [aa87116](https://github.com/redimp/otterwiki/commit/aa87116), [13d75bb](https://github.com/redimp/otterwiki/commit/13d75bb), [d1283db](https://github.com/redimp/otterwiki/commit/d1283db) by @onovy).
+- Add syntax highlighting for wikilinks and embeddings in the editor, see #520 ([e1fbc03](https://github.com/redimp/otterwiki/commit/e1fbc03), [403cfce](https://github.com/redimp/otterwiki/commit/403cfce), [c6011e6](https://github.com/redimp/otterwiki/commit/c6011e6)).
+- Highlight trailing whitespace in the editor, see #520 ([2d53b93](https://github.com/redimp/otterwiki/commit/2d53b93)).
+- Use a 4-space indent unit in the editor to match the wiki's markdown conventions, see #520 ([2825582](https://github.com/redimp/otterwiki/commit/2825582)).
+- Enable autocorrect and autocapitalize in the editor on mobile, see #520 ([f852d2d](https://github.com/redimp/otterwiki/commit/f852d2d)).
+
+### Bug Fixes
+
+- Restore visual parity with the CM5 editor in both light and dark themes: nested list depth
+  coloring, grey inline and fenced code, and the checkbox color, see #520
+  ([3b7c05f](https://github.com/redimp/otterwiki/commit/3b7c05f), [c26a8c4](https://github.com/redimp/otterwiki/commit/c26a8c4), [6e8419a](https://github.com/redimp/otterwiki/commit/6e8419a), [0a01cac](https://github.com/redimp/otterwiki/commit/0a01cac), [28a515f](https://github.com/redimp/otterwiki/commit/28a515f), [ff0d7aa](https://github.com/redimp/otterwiki/commit/ff0d7aa), [a422d02](https://github.com/redimp/otterwiki/commit/a422d02) by @onovy).
+- Fix the invisible editor selection in dark mode caused by a CSS specificity issue, see #520 ([8d6d144](https://github.com/redimp/otterwiki/commit/8d6d144) by @onovy).
+- Prevent content duplication when pasting an image in the editor, see #520 ([b0a8acd](https://github.com/redimp/otterwiki/commit/b0a8acd)).
+- Preserve the cursor position when an inline attachment upload completes, see #520 ([764514a](https://github.com/redimp/otterwiki/commit/764514a)).
+- Fix dark mode colors of the DataTable selector dropdown, see #519 ([484211a](https://github.com/redimp/otterwiki/commit/484211a)).
+- Remove accidental globals in otterwiki.js ([5786c57](https://github.com/redimp/otterwiki/commit/5786c57)).
+- Match article headings for the sidebar table of contents highlight ([8629caa](https://github.com/redimp/otterwiki/commit/8629caa)).
+- Use per-platform pip caches in docker builds ([bfc5e73](https://github.com/redimp/otterwiki/commit/bfc5e73)).
+
+### Refactoring
+
+- Move the frontend sources and npm tooling into `frontend/`, see #520 ([483ccdf](https://github.com/redimp/otterwiki/commit/483ccdf)).
+
+### Dependencies
+
+- Bump esbuild from 0.19.12 to 0.28.1 and rebuild the editor bundle, see #521 ([33b5313](https://github.com/redimp/otterwiki/commit/33b5313) by @dependabot, [5fa9962](https://github.com/redimp/otterwiki/commit/5fa9962)).
+
 ## [v2.20.8](https://github.com/redimp/otterwiki/releases/tag/v2.20.8) - 2026-07-01
 
 <small>[Compare with v2.20.7](https://github.com/redimp/otterwiki/compare/v2.20.7...v2.20.8)</small>
