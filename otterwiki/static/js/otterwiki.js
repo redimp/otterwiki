@@ -298,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 let sidebar_links = document.querySelectorAll('a.sidebar-link');
-let header_anchors = document.querySelectorAll('div.page > h1, div.page > h2, div.page > h3, div.page > h4, div.page > h5, div.page > h6');
+let header_anchors = document.querySelectorAll('.page > h1, .page > h2, .page > h3, .page > h4, .page > h5, .page > h6');
 
 document.querySelector('#content-wrapper').addEventListener('scroll', (event) => {
   if (typeof(header_anchors) != 'undefined' && header_anchors != null && typeof(sidebar_links) != 'undefined' && sidebar_links != null) {
