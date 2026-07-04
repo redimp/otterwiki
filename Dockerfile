@@ -2,31 +2,33 @@
 # compile stage
 #
 FROM debian:12.14-slim AS compile-stage
+# platform for namespacing the pip cache: emulated 32-bit arm platforms all
+# report armv7l, wheels built for armel/armhf would poison each others cache
+ARG TARGETPLATFORM
 # install python environment
 RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
     rm /etc/apt/apt.conf.d/docker-clean && \
     apt-get update -y && \
     apt-get upgrade -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3.11 python3.11-venv \
-    python3-pip libjpeg-dev zlib1g-dev build-essential python3-dev libxml2-dev libxslt-dev
+    libjpeg-dev zlib1g-dev build-essential python3-dev libxml2-dev libxslt-dev
 # prepare environment
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 # upgrade pip and install requirements not in otterwiki
-RUN --mount=type=cache,target=/root/.cache \
-    pip install -U pip wheel toml
+RUN --mount=type=cache,target=/root/.cache,id=pip-$TARGETPLATFORM \
+    pip install -U pip wheel
 # copy src files
 COPY pyproject.toml MANIFEST.in README.md LICENSE /src/
 WORKDIR /src
 
 # install requirements
-RUN --mount=type=cache,target=/root/.cache \
-    python -c 'import toml; print("\n".join(toml.load("./pyproject.toml")["project"]["dependencies"]));' > requirements.txt && \
+RUN --mount=type=cache,target=/root/.cache,id=pip-$TARGETPLATFORM \
+    python -c 'import tomllib; print("\n".join(tomllib.load(open("./pyproject.toml", "rb"))["project"]["dependencies"]));' > requirements.txt && \
     pip install -r requirements.txt
 
-# copy otterwiki source and tests
+# copy otterwiki source
 COPY otterwiki /src/otterwiki
-COPY tests /src/tests
 
 # install the otterwiki
 RUN pip install .
@@ -34,13 +36,16 @@ RUN pip install .
 # test stage
 #
 FROM compile-stage AS test-stage
+ARG TARGETPLATFORM
 # install git (not needed for compiling)
 RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     apt-get update -y && apt-get install -y --no-install-recommends git
+# copy the tests
+COPY tests /src/tests
 # install the dev environment
-RUN --mount=type=cache,target=/root/.cache \
+RUN --mount=type=cache,target=/root/.cache,id=pip-$TARGETPLATFORM \
     pip install '.[dev]'
-RUN --mount=type=cache,target=/root/.cache \
+RUN --mount=type=cache,target=/root/.cache,id=pip-$TARGETPLATFORM \
     tox
 # configure tox as default command when the test-stage is executed
 CMD ["tox"]
@@ -65,7 +70,7 @@ RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
     apt-get upgrade -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     nginx supervisor git openssh-client \
-    python3.11 python3-wheel python3-venv libpython3.11 \
+    python3.11 \
     uwsgi uwsgi-plugin-python3 curl \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
