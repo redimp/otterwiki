@@ -1304,7 +1304,7 @@ div.figure-embedding-caption {
         if align == "left":
             inline_styles.append("margin-left:0")
             inline_styles.append("margin-right:auto")
-        if align == "center":
+        elif align == "center":
             inline_styles.append("margin-left:auto")
             inline_styles.append("margin-right:auto")
         elif align == "right":
