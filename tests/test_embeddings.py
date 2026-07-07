@@ -1915,8 +1915,8 @@ Content
     soup = BeautifulSoup(html, "html.parser")
     figure = soup.find("div", class_="figure-embedding")
     style = figure.get("style", "")
-    assert "margin-left:auto" not in style
-    assert "margin-right:auto" not in style
+    assert "margin-left:0" in style
+    assert "margin-right:auto" in style
 
 
 def test_figure_align_right():
