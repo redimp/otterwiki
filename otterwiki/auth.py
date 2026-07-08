@@ -624,10 +624,8 @@ class SimpleAuth:
 
 
 class ProxyHeaderAuth:
-    # if logout_link is not provided, hide the logout button
     def __init__(
         self,
-        logout_link: str,
         username_header: str,
         email_header: str,
         roles_header: str,
@@ -639,7 +637,6 @@ class ProxyHeaderAuth:
         self._username_header = username_header
         self._email_header = email_header
         self._roles_header = roles_header
-        self.logout_link = logout_link
         self._read_roles = self._parse_roles(read_roles)
         self._write_roles = self._parse_roles(write_roles)
         self._upload_roles = self._parse_roles(upload_roles)
