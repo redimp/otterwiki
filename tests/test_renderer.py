@@ -272,6 +272,49 @@ def test_table_align():
     assert '<td style="text-align:right">right td</td>' in html
 
 
+def test_table_pipe_in_code_span():
+    """Regular table examples from issue #500, case 1 (pipe).
+
+    An unescaped pipe inside a code span is treated as a cell
+    delimiter. The row then has more cells than the header and
+    mistune rejects the whole table. Note that this deviates from
+    GFM, which would truncate the extra cell and render the table.
+    """
+    text = """| a | b | c |
+|---|---|---|
+| a | b | `|` |
+"""
+    html, _, _ = render.markdown(text)
+    assert '<table>' not in html
+
+
+def test_table_escaped_pipe_in_code_span():
+    """Regular table examples from issue #500, case 1 (pipe).
+
+    With the pipe escaped the table renders and the backslash is
+    stripped from the cell content as GFM does, so the cell renders
+    as <code>|</code>. See mistunePluginTableGfmPipes.
+    """
+    text = """| a | b | c |
+|---|---|---|
+| a | b | `\\|` |
+"""
+    html, _, _ = render.markdown(text)
+    assert '<table>' in html
+    assert '<td><code>|</code></td>' in html
+
+
+def test_table_equal_sign_in_code_span():
+    """Regular table examples from issue #500, case 2 (equal)."""
+    text = """| a | b | c |
+|---|---|---|
+| a | b | `=` |
+"""
+    html, _, _ = render.markdown(text)
+    assert '<table>' in html
+    assert '<td><code>=</code></td>' in html
+
+
 def test_clean_html_nested_xss():
     """Test that XSS via nested elements inside allowed wrapper tags is blocked.
     Regression test for clean_html() only checking top-level elements.

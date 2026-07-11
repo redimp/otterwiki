@@ -1117,6 +1117,27 @@ class mistunePluginEmbeddings:
             )
 
 
+class mistunePluginTableGfmPipes:
+    """Replace \\| with | in table cell content before inline parsing,
+    as GFM does, so that escaped pipes work inside code spans. Mistunes
+    table plugin splits the cells on unescaped pipes, but keeps the
+    backslash in the cell text, where the inline parser will not
+    unescape it inside code spans."""
+
+    def _unescape_pipes(self, tokens):
+        for tok in tokens:
+            if tok.get("type") == "table_cell":
+                tok["text"] = tok["text"].replace("\\|", "|")
+            if "children" in tok:
+                self._unescape_pipes(tok["children"])
+
+    def __call__(self, md):
+        def hook(md, state):
+            self._unescape_pipes(state.tokens)
+
+        md.before_render_hooks.append(hook)
+
+
 plugin_task_lists = mistunePluginTaskLists()
 plugin_footnotes = mistunePluginFootnotes()
 plugin_mark = mistunePluginMark()
@@ -1129,3 +1150,4 @@ plugin_wikilink = mistunePluginWikiLink()
 plugin_frontmatter = mistunePluginFrontmatter()
 plugin_frontmatter_title = mistunePluginFrontmatterTitle()
 plugin_embeddings = mistunePluginEmbeddings()
+plugin_table_gfm_pipes = mistunePluginTableGfmPipes()

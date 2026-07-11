@@ -31,6 +31,7 @@ from otterwiki.renderer_plugins import (
     plugin_frontmatter,
     plugin_frontmatter_title,
     plugin_embeddings,
+    plugin_table_gfm_pipes,
 )
 from otterwiki.util import empty, slugify, cursormagicword
 
@@ -589,6 +590,7 @@ class OtterwikiRenderer:
             block=self.block_parser,
             plugins=[
                 plugin_table,
+                plugin_table_gfm_pipes,
                 plugin_url,
                 plugin_strikethrough,
                 plugin_task_lists,
