@@ -985,34 +985,43 @@ class mistunePluginEmbeddings:
         # check if the embedding is a one liner
         embedding_in_one_line = "\n" not in embedding_args.strip()
 
-        # find all options
+        # find all options: only lines that consist entirely of
+        # |key=value pairs are parsed as options, all other lines are
+        # content, so that markdown content like table rows containing
+        # = or | is not mangled, see #500
         re_option = re.compile(
-            r"((?<!\\)\|((?:\\\||\\=|[^=\|\n])+)=((?:\\\||[^\|\n])+)\n?)",
+            r"(?<!\\)\|((?:\\\||\\=|[^=\|\n])+)=((?:\\\||[^\|\n])+)",
             flags=re.UNICODE,
         )
-        match = re_option.search(embedding_args)
-        while match is not None:
-            # key and value found
-            key = match.group(2).replace(r'\=', '=').replace(r'\|', '|')
-            value = match.group(3).replace(r'\|', '|')
-            # store raw value
-            args.options_raw[key.lower()] = value
-            # parse options and args out of embedding_block and add them as children
-            # this makes it possible to get the markdown parsed that may be used in the options
-            opt_child = state.child_state(value)
-            block.parse(opt_child)
-            # store children
-            children.append(
-                {
-                    "type": "embedding_option",
-                    "children": opt_child.tokens,
-                    "attrs": {"key": key, "raw_value": value},
-                }
-            )
-            # remove this option from the block
-            embedding_args = embedding_args.replace(match.group(0), "")
-            # check for more options
-            match = re_option.search(embedding_args)
+        re_option_line = re.compile(
+            r"[ \t]*(?:(?<!\\)\|(?:\\\||\\=|[^=\|\n])+=(?:\\\||[^\|\n])+)+[ \t]*",
+            flags=re.UNICODE,
+        )
+        content_lines = []
+        for line in embedding_args.split("\n"):
+            if not re_option_line.fullmatch(line):
+                content_lines.append(line)
+                continue
+            for match in re_option.finditer(line):
+                # key and value found
+                key = match.group(1).replace(r'\=', '=').replace(r'\|', '|')
+                value = match.group(2).replace(r'\|', '|')
+                # store raw value
+                args.options_raw[key.lower()] = value
+                # parse the option values and add them as children, this
+                # makes it possible to get the markdown parsed that may
+                # be used in the options
+                opt_child = state.child_state(value)
+                block.parse(opt_child)
+                # store children
+                children.append(
+                    {
+                        "type": "embedding_option",
+                        "children": opt_child.tokens,
+                        "attrs": {"key": key, "raw_value": value},
+                    }
+                )
+        embedding_args = "\n".join(content_lines)
         # strip syntax artefact if one-line syntax is used
         # FIXME: not completely happy with this
         if (
@@ -1022,9 +1031,9 @@ class mistunePluginEmbeddings:
         ):
             embedding_args = embedding_args[1:]
 
-        # what is left over in embedding_block is what we consider as embedding_args
-        # unescape \| in the remaining args
-        embedding_args = embedding_args.replace(r'\|', '|')
+        # what is left over in embedding_block is what we consider as
+        # embedding_args, \| and \= escapes in the content are handled
+        # by the markdown parser and the table plugins
         args.args_raw = [embedding_args]
 
         # parse the args, so that all markdown syntax can be used
@@ -1117,6 +1126,49 @@ class mistunePluginEmbeddings:
             )
 
 
+class mistunePluginStrictTables:
+    """mistune 3.3 does not validate the delimiter row of a table: any
+    two consecutive lines with a matching number of unescaped pipes are
+    parsed as a table. Re-register the table and nptable rules with a
+    check that the second line is a valid delimiter row like
+    |---|:---:| before handing over to mistunes parse functions, as
+    GFM requires."""
+
+    DELIMITER_ROW_RE = re.compile(r' *:?-+:? *(?:\| *:?-+:? *)*')
+
+    def __call__(self, md):
+        from mistune.plugins.table import (
+            TABLE_PATTERN,
+            NP_TABLE_PATTERN,
+            parse_table,
+            parse_nptable,
+        )
+
+        def parse_table_strict(block, m, state):
+            row = state.get_line(m.end()).strip()
+            if not (row.startswith('|') and row.endswith('|')):
+                return None
+            if not self.DELIMITER_ROW_RE.fullmatch(row[1:-1]):
+                return None
+            return parse_table(block, m, state)
+
+        def parse_nptable_strict(block, m, state):
+            row = state.get_line(m.end()).strip()
+            if not self.DELIMITER_ROW_RE.fullmatch(row):
+                return None
+            return parse_nptable(block, m, state)
+
+        md.block.register(
+            'table', TABLE_PATTERN, parse_table_strict, before='paragraph'
+        )
+        md.block.register(
+            'nptable',
+            NP_TABLE_PATTERN,
+            parse_nptable_strict,
+            before='paragraph',
+        )
+
+
 class mistunePluginTableGfmPipes:
     """Replace \\| with | in table cell content before inline parsing,
     as GFM does, so that escaped pipes work inside code spans. Mistunes
@@ -1150,4 +1202,5 @@ plugin_wikilink = mistunePluginWikiLink()
 plugin_frontmatter = mistunePluginFrontmatter()
 plugin_frontmatter_title = mistunePluginFrontmatterTitle()
 plugin_embeddings = mistunePluginEmbeddings()
+plugin_strict_tables = mistunePluginStrictTables()
 plugin_table_gfm_pipes = mistunePluginTableGfmPipes()

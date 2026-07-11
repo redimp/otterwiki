@@ -514,10 +514,6 @@ def test_datatable_pipe_in_code_span():
     assert '<table' not in html
 
 
-@pytest.mark.xfail(
-    reason="issue #500: embedding parser mangles escaped pipes",
-    strict=True,
-)
 def test_datatable_escaped_pipe_in_code_span():
     """DataTable examples from issue #500, case 1 (pipe).
 
@@ -538,10 +534,6 @@ def test_datatable_escaped_pipe_in_code_span():
     assert '<td><code>|</code></td>' in html
 
 
-@pytest.mark.xfail(
-    reason="issue #500: embedding parser eats table rows containing =",
-    strict=True,
-)
 def test_datatable_equal_sign_in_code_span():
     """DataTable examples from issue #500, case 2 (equal).
 
