@@ -35,20 +35,6 @@ from otterwiki.renderer_plugins import (
 from otterwiki.util import empty, slugify, cursormagicword
 
 #
-# patch mistune table_plugin so that not all the newlines at the end of a table are removed
-#
-mistune.plugins.table.TABLE_PATTERN = (  # pyright: ignore
-    r'^ {0,3}\|(?P<table_head>.+)\|[ \t]*\n'
-    r' {0,3}\|(?P<table_align> *[-:]+[-| :]*)\|[ \t]*\n'
-    r'(?P<table_body>(?: {0,3}\|.*\|[ \t]*(?:\n|$))*)\n{0,1}'
-)
-mistune.plugins.table.NP_TABLE_PATTERN = (  # pyright: ignore
-    r'^ {0,3}(?P<nptable_head>\S.*\|.*)\n'
-    r' {0,3}(?P<nptable_align>[-:]+ *\|[-| :]*)\n'
-    r'(?P<nptable_body>(?:.*\|.*(?:\n|$))*)\n{0,1}'
-)
-
-#
 # patch mistune helpers to support parenthesis-delimited link titles per CommonMark spec.
 # mistune 3.2.0 only recognises "title" and 'title' forms; adding (...) fixes link
 # reference definitions like: [modeline]: # ( vim: set ft=markdown: )
