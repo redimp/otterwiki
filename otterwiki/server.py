@@ -95,7 +95,10 @@ print(
     file=sys.stderr,
 )
 
-# check if any config option exists as environment variable
+# check if any config option exists as environment variable, remember
+# which options were set via the environment, so that overrides by
+# database preferences can be warned about in update_app_config()
+config_from_environment = {}
 for key in app.config:
     if key in os.environ:
         if type(app.config[key]) == bool:
@@ -107,6 +110,7 @@ for key in app.config:
             ]
         else:
             app.config[key] = os.environ[key]
+        config_from_environment[key] = app.config[key]
 
 # configure logging
 app.logger.setLevel(app.config["LOG_LEVEL"])
@@ -222,6 +226,16 @@ def update_app_config():
                             item.name, item.value
                         )
                     )
+            # warn if a database preference overrides a value that was
+            # set via an environment variable
+            if item.name in config_from_environment and str(item.value) != str(
+                config_from_environment[item.name]
+            ):
+                app.logger.warning(
+                    "server: app.config[\"{}\"] set via environment"
+                    " variable is overridden by the database"
+                    " preference".format(item.name)
+                )
             # update app settings
             app.config[item.name] = item.value
         # setup flask_mail
