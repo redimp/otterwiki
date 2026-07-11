@@ -3,17 +3,21 @@
 """
 Referencing Pages Plugin for An Otter Wiki
 
-This plugin demonstrates the template_html_sidebar_right_inject and repository_changed hooks.
+This plugin demonstrates:
+- template_html_sidebar_left_inject
+- template_html_sidebar_right_inject
+- repository_changed hooks
 
 Features:
 - Builds an in-memory index of page references (which pages link to which)
 - Updates the index when repository changes are detected
-- Displays a "This page is referenced by" block in the right sidebar
+- Displays a "Referencing pages" block in the sidebar
   showing pages that have WikiLinks pointing to the current page
 
 This plugin demonstrates:
 1. setup() - Initialize the plugin and build the initial reference index
 2. repository_changed() - Update the index when files change
+3. template_html_sidebar_left_inject() - Add content to the left sidebar
 3. template_html_sidebar_right_inject() - Add content to the right sidebar
 """
 
@@ -179,9 +183,22 @@ class ReferencingPages:
                 pass
 
     @hookimpl
+    def template_html_sidebar_left_inject(self, page):
+        """
+        Inject the "Referencing pages" block into the left sidebar.
+        """
+        return self.generate_sidebar_html(page, True)
+
+    @hookimpl
     def template_html_sidebar_right_inject(self, page):
         """
         Inject the "Referencing pages" block into the right sidebar.
+        """
+        return self.generate_sidebar_html(page, False)
+
+    def generate_sidebar_html(self, page, is_left_sidebar):
+        """
+        Generate the "Referencing pages" html block.
         """
         from otterwiki.helper import get_pagename
 
@@ -211,11 +228,12 @@ class ReferencingPages:
             )
             # Build the HTML for the sidebar block
             # Using the same structure as the "On this page" block
-            html = '''
-    <details class="collapse-panel" open>
-        <summary class="collapse-header">Referencing pages</summary>
+            html = f'''
+    <div id="extranav-toc" {' class="sidebar-toc d-xl-none"' if is_left_sidebar else ''}>
+        <details class="collapse-panel" open>
+            <summary class="collapse-header">Referencing pages</summary>
 
-        <div class="collapse-content">
+            <div class="collapse-content">
 '''
 
             # Add links to each referencing page, sorted by the displayed pagename
@@ -228,10 +246,11 @@ class ReferencingPages:
                 # URL encode the page path
                 url_path = urllib.parse.quote(pagename_full)
 
-                html += f'            <a href="/{url_path}" class="sidebar-link" title="{pagename_full}">{pagename}</a>\n'
+                html += f'                <a href="/{url_path}" class="sidebar-link sidebar-toc-1 sidebar-active" title="{pagename_full}">{pagename}</a>\n'
 
-            html += '''        </div>
-    </details>
+            html += '''            </div>
+        </details>
+    </div>
 '''
 
             return html
