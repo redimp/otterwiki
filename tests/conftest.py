@@ -74,8 +74,24 @@ def create_app(tmpdir):
 
 
 @pytest.fixture
-def test_client(create_app):
-    client = create_app.test_client()
+def test_client(app_with_user):
+    client = app_with_user.test_client()
+    result = client.post(
+        "/-/login",
+        data={
+            "email": "another@user.org",
+            "password": "password4567",
+        },
+        follow_redirects=True,
+    )
+    html = result.data.decode()
+    assert "You logged in successfully." in html
+    return client
+
+
+@pytest.fixture
+def anonymous_client(app_with_user):
+    client = app_with_user.test_client()
     return client
 
 
@@ -83,6 +99,17 @@ def test_client(create_app):
 def req_ctx(create_app):
     with create_app.test_request_context() as ctx:
         yield ctx
+
+
+@pytest.fixture
+def anonymous_write_access(create_app):
+    """Temporarily set WRITE_ACCESS to ANONYMOUS for tests that don't
+    use authenticated users (e.g. rendering/preview unit tests).
+    Automatically restores the original value after the test."""
+    original = create_app.config["WRITE_ACCESS"]
+    create_app.config["WRITE_ACCESS"] = "ANONYMOUS"
+    yield
+    create_app.config["WRITE_ACCESS"] = original
 
 
 @pytest.fixture
