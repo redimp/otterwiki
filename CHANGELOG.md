@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v2.21.1](https://github.com/redimp/otterwiki/releases/tag/v2.21.1) - 2026-07-12
+
+<small>[Compare with v2.21.0](https://github.com/redimp/otterwiki/compare/v2.21.0...v2.21.1)</small>
+
+### Bug Fixes
+
+- Unescape pipes in table cells like GFM, see #500 ([1af90ef](https://github.com/redimp/otterwiki/commit/1af90ef)).
+- Allow repository management configuration via environment variables, see #522 ([3e3a8df](https://github.com/redimp/otterwiki/commit/3e3a8df)).
+- Fix alignment on the figure embedding, see #523 ([860f0a7](https://github.com/redimp/otterwiki/commit/860f0a7) by @ribbal).
+- Do not create preferences that shadow the environment configuration ([0fd5373](https://github.com/redimp/otterwiki/commit/0fd5373)).
+
+### Dependencies
+
+- Update mistune to 3.3.3 ([dd6909a](https://github.com/redimp/otterwiki/commit/dd6909a)).
+
 ## [v2.21.0](https://github.com/redimp/otterwiki/releases/tag/v2.21.0) - 2026-07-04
 
 <small>[Compare with v2.20.8](https://github.com/redimp/otterwiki/compare/v2.20.8...v2.21.0)</small>
