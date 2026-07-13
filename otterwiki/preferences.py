@@ -205,6 +205,7 @@ def handle_app_preferences(form):
     for checkbox in [
         "hide_logo",
         "open_links_in_new_tab",
+        "update_links_on_rename",
     ]:
         _update_preference(checkbox.upper(), form.get(checkbox, "False"))
 
