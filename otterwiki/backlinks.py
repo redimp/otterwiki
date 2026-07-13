@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-When a page is renamed this plugin rewrites all links
+When a page is renamed this module rewrites all links
 in the wiki that point to the old page so that they point
 to the new page name instead.
 """
