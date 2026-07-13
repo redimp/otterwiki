@@ -684,9 +684,7 @@ class ProxyHeaderAuth:
             app.logger.error(f"Missing header: {self._email_header}")
             return None
         if self._roles_header in req.headers:
-            roles = (
-                req.headers[self._roles_header].upper().split(',')
-            )
+            roles = self._parse_roles(req.headers[self._roles_header])
         else:
             app.logger.warning(f"Missing header: {self._roles_header}")
             roles = []
