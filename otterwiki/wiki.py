@@ -73,6 +73,8 @@ from otterwiki.util import (
     int_or_None,
 )
 
+from .backlinks import rename_backlinks
+
 # global timeout used in regexps
 _REGEX_TIMEOUT = 5
 
@@ -996,6 +998,10 @@ class Page:
         if not self.exists and (len(files) + len(directories)) == 0:
             self.exists_or_404()
 
+        pages_updated = rename_backlinks(self.filename, new_pagename)
+        assert pages_updated is not None
+        files_updated = list(pages_updated.keys())
+
         if (len(files) + len(directories)) > 0:
             # rename attachment directory
             new_attachment_directoryname = get_attachment_directoryname(
@@ -1010,11 +1016,25 @@ class Page:
                 # if self.exists, do not commit yet, commit will follow below, when the md file is renamed
                 # if not self.exists, do commit, since no md file will be renamed
                 no_commit=self.exists,
+                files_updated=files_updated,
             )
         # rename page
         if self.exists:
             storage.rename(
-                self.filename, new_filename, message=message, author=author
+                self.filename,
+                new_filename,
+                message=message,
+                author=author,
+                files_updated=files_updated,
+            )
+
+        # notify plugins of backlink pages updated
+        for pagepath, content in pages_updated.items():
+            plugin_manager.hook.page_saved(
+                pagepath=pagepath,
+                content=content,
+                author=author,
+                message=message,
             )
 
     def handle_rename(self, new_pagename, message, author):
