@@ -345,16 +345,12 @@ class GitStorage(object):
         # build and return logfile
         return [self._get_metadata_of_commit(commit) for commit in commits]
 
-    def store(
+    def update(
         self,
         filename,
         content,
-        message: str | None = "",
-        author=("", ""),
         mode="w",
     ):
-        if message is None:
-            message = ""
         dirname = os.path.dirname(filename)
         if dirname != "":
             os.makedirs(
@@ -367,6 +363,22 @@ class GitStorage(object):
         diff = self.repo.index.diff(None, paths=filename)
         if len(diff) == 0 and filename not in self.repo.untracked_files:
             return False
+
+        return True
+
+    def store(
+        self,
+        filename,
+        content,
+        message: str | None = "",
+        author=("", ""),
+        mode="w",
+    ):
+        if not self.update(filename, content, mode):
+            return False
+
+        if message is None:
+            message = ""
         # add and commit to git
         index = self.repo.index
         index.add([filename])
@@ -476,6 +488,7 @@ class GitStorage(object):
         message=None,
         author=None,
         no_commit=False,
+        files_updated=[],
     ):
         if self.exists(new_filename):
             raise StorageError(
@@ -498,7 +511,8 @@ class GitStorage(object):
         if message is None:
             message = "{} renamed to {}.".format(old_filename, new_filename)
         if not no_commit:
-            self.commit([new_filename], message, author, no_add=True)
+            files_updated.append(new_filename)
+            self.commit(files_updated, message, author, no_add=True)
 
     def list(self, p=None, depth=None, exclude=[]):
         excludes = [".git"] + exclude
