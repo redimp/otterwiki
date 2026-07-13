@@ -637,26 +637,24 @@ class ProxyHeaderAuth:
         self._username_header = username_header
         self._email_header = email_header
         self._roles_header = roles_header
-        self._read_roles = self._parse_roles(read_roles)
-        self._write_roles = self._parse_roles(write_roles)
-        self._upload_roles = self._parse_roles(upload_roles)
-        self._admin_roles = self._parse_roles(admin_roles)
+        self._role_map = {
+            'READ': self._parse_roles(read_roles),
+            'WRITE': self._parse_roles(write_roles),
+            'UPLOAD': self._parse_roles(upload_roles),
+            'ADMIN': self._parse_roles(admin_roles),
+        }
 
     @staticmethod
     def _parse_roles(roles_str):
-        return [r.strip().upper() for r in roles_str.split(',') if r.strip()]
+        return {r.strip().upper() for r in roles_str.split(',') if r.strip()}
 
     def _map_roles_to_permissions(self, header_roles):
-        permissions = set()
-        if any(role in header_roles for role in self._read_roles):
-            permissions.add('READ')
-        if any(role in header_roles for role in self._write_roles):
-            permissions.add('WRITE')
-        if any(role in header_roles for role in self._upload_roles):
-            permissions.add('UPLOAD')
-        if any(role in header_roles for role in self._admin_roles):
-            permissions.add('ADMIN')
-        return permissions
+        header_roles = set(header_roles)
+        return {
+            permission
+            for permission, allowed_roles in self._role_map.items()
+            if header_roles & allowed_roles
+        }
 
     class User(UserMixin):
         def __init__(self, name, email, permissions):
@@ -687,7 +685,7 @@ class ProxyHeaderAuth:
             roles = self._parse_roles(req.headers[self._roles_header])
         else:
             app.logger.warning(f"Missing header: {self._roles_header}")
-            roles = []
+            roles = set()
         name = req.headers.get(self._username_header, "")
         email = req.headers.get(self._email_header, "")
 
