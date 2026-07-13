@@ -37,7 +37,7 @@ app.config.update(
     AUTH_HEADERS_USERNAME="x-otterwiki-name",
     AUTH_HEADERS_EMAIL="x-otterwiki-email",
     AUTH_HEADERS_PERMISSIONS="x-otterwiki-permissions",
-    AUTH_ROLES_READ="READ", 
+    AUTH_ROLES_READ="READ",
     AUTH_ROLES_WRITE="WRITE", 
     AUTH_ROLES_UPLOAD="UPLOAD", 
     AUTH_ROLES_ADMIN="ADMIN",
