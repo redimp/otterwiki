@@ -185,7 +185,6 @@ def handle_app_preferences(form):
     for checkbox in [
         "hide_logo",
         "open_links_in_new_tab",
-        "update_links_on_rename",
     ]:
         _update_preference(checkbox.upper(), form.get(checkbox, "False"))
 
@@ -224,6 +223,7 @@ def handle_content_and_editing(form):
     for checkbox in [
         "retain_page_name_case",
         "treat_underscore_as_space_for_titles",
+        "update_links_on_rename",
     ]:
         _update_preference(checkbox.upper(), form.get(checkbox, "False"))
     # commit changes to the database

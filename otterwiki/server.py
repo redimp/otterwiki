@@ -33,7 +33,6 @@ app.config.update(
     SITE_LANG="en",
     HIDE_LOGO=False,
     OPEN_LINKS_IN_NEW_TAB=False,
-    UPDATE_LINKS_ON_RENAME=True,
     AUTH_METHOD="",
     AUTH_HEADERS_USERNAME="x-otterwiki-name",
     AUTH_HEADERS_EMAIL="x-otterwiki-email",
@@ -74,6 +73,7 @@ app.config.update(
     HTML_EXTRA_BODY="",
     LOG_LEVEL_WERKZEUG="INFO",
     TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES=False,
+    UPDATE_LINKS_ON_RENAME=True,
     HOME_PAGE="",
     RENDERER_HTML_ALLOWLIST="",
     ADMIN_USER_EMAIL="",
@@ -205,8 +205,8 @@ def update_app_config():
                 "GIT_REMOTE_PULL_URL_SECURE",
                 "HIDE_LOGO",
                 "OPEN_LINKS_IN_NEW_TAB",
-                "UPDATE_LINKS_ON_RENAME",
                 "TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES",
+                "UPDATE_LINKS_ON_RENAME",
             ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
                 item.value = item.value.lower() in ["true", "yes"]
             if item.name.upper() in ["MAIL_PORT"]:
