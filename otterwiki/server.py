@@ -33,6 +33,7 @@ app.config.update(
     SITE_LANG="en",
     HIDE_LOGO=False,
     OPEN_LINKS_IN_NEW_TAB=False,
+    UPDATE_LINKS_ON_RENAME=True,
     AUTH_METHOD="",
     AUTH_HEADERS_USERNAME="x-otterwiki-name",
     AUTH_HEADERS_EMAIL="x-otterwiki-email",
@@ -204,6 +205,7 @@ def update_app_config():
                 "GIT_REMOTE_PULL_URL_SECURE",
                 "HIDE_LOGO",
                 "OPEN_LINKS_IN_NEW_TAB",
+                "UPDATE_LINKS_ON_RENAME",
                 "TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES",
             ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
                 item.value = item.value.lower() in ["true", "yes"]
