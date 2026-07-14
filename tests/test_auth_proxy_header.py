@@ -30,7 +30,11 @@ def proxy_auth_app(create_app):
     proxy_auth = ProxyHeaderAuth(
         username_header=app.config["AUTH_HEADERS_USERNAME"],
         email_header=app.config["AUTH_HEADERS_EMAIL"],
-        permissions_header=app.config["AUTH_HEADERS_PERMISSIONS"],
+        roles_header=app.config["AUTH_HEADERS_PERMISSIONS"],
+        read_roles=app.config.get("AUTH_ROLES_READ"),
+        write_roles=app.config.get("AUTH_ROLES_WRITE"),
+        upload_roles=app.config.get("AUTH_ROLES_UPLOAD"),
+        admin_roles=app.config.get("AUTH_ROLES_ADMIN"),
     )
     otterwiki.auth.auth_manager = proxy_auth
     login_manager.request_loader(proxy_auth.request_loader)
@@ -198,7 +202,11 @@ def test_request_loader_custom_headers(proxy_auth_app):
     custom_auth = ProxyHeaderAuth(
         username_header="x-remote-name",
         email_header="x-remote-email",
-        permissions_header="x-remote-permissions",
+        roles_header="x-remote-permissions",
+        read_roles="READ",
+        write_roles="WRITE",
+        upload_roles="UPLOAD",
+        admin_roles="ADMIN",
     )
     with proxy_auth_app.test_request_context(
         "/",
