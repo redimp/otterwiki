@@ -227,6 +227,12 @@ pre.mermaid {
     height: 2rem;
 }
 
+.dropdown-menu {
+    margin-top: 0.25rem;
+    bottom: auto !important;
+    transform: none !important;
+}
+
 .dropdown-icon {
     display: -ms-flexbox;
     display: flex;
@@ -266,6 +272,7 @@ pre.mermaid {
     border: 0.4rem solid transparent;
     color: rgba(0, 0, 0, 0.85);
     border-color: transparent;
+    transition: none !important;
 }
 
 .dark-mode .dropdown-item-with-icon {
