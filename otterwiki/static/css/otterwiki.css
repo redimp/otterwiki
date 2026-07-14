@@ -344,6 +344,10 @@ pre.mermaid {
     font-weight: bold;
 }
 
+.btn {
+    box-shadow: none;
+}
+
 .btn-xsm {
     height: 2.2rem;
     line-height: 2.2rem;
