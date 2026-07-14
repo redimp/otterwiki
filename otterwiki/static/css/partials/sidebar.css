@@ -148,6 +148,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     overflow-wrap: anywhere;
     min-width: 0;
     flex: 1;
+    gap: 0.35rem
 }
 
 .parent-sidebar-menu > li {
@@ -162,6 +163,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     list-style: none;
     display: flex;
     align-items: baseline;
+    gap: 0.35rem
 }
 
 .sidebarmenu details > summary::-webkit-details-marker {
@@ -171,23 +173,23 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 .sidebarmenu details > summary::before {
     width: 1.3rem;
     flex-shrink: 0;
-    content: '▹ ';
+    content: '▹';
 }
 
 .sidebarmenu details[open] > summary::before {
     width: 1.3rem;
     flex-shrink: 0;
-    content: '▿ ';
+    content: '▿';
 }
 
 .sidebar-menu .summary-details::before {
     width: 1.3rem;
     display: inline-block;
-    content: '□ ';
-    font-size: 0.5rem;
+    content: '';
+    /* font-size: 0.9rem;
     vertical-align: middle;
     position: relative;
-    bottom: 0.1rem;
+    bottom: 0.1rem; */
 }
 
 .sidebar-menu li {
