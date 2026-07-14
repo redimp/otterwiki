@@ -14,7 +14,8 @@
 }
 
 .navbar {
-    background: #d2d2d2;
+    background: #fff;
+    border-bottom: 1px solid #e9eaec;
 }
 
 .content-wrapper:focus {

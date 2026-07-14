@@ -1,6 +1,7 @@
 .sidebar {
     width: 20rem;
-    background: #e2e2e2;
+    background: rgb(252, 252, 252);
+    border: none;
 }
 
 #toggle-sidebar-btn {
