@@ -104,7 +104,8 @@ class ReferencingPages:
             # Process each WikiLink
             for match in matches:
                 # Clean up the page name
-                target_page = match.strip()
+                target_page = urllib.parse.unquote(match.strip())
+                target_page = target_page.split("#", 1)[0].strip()
 
                 # Normalize the page path (handle case sensitivity)
                 if not self.app.config.get("RETAIN_PAGE_NAME_CASE", False):
