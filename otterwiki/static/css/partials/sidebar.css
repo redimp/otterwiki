@@ -2,6 +2,7 @@
     width: 20rem;
     background: rgb(252, 252, 252);
     border: none;
+    padding: 5px;
 }
 
 #toggle-sidebar-btn {
@@ -230,6 +231,15 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 
 .sidebar-link {
     padding-left: 1rem;
+}
+
+.sidebar-link:hover {
+    background-color: #d5d8df5e;
+    border-radius: 10px;
+}
+
+.sidebar-icon {
+    background-color: transparent !important;
 }
 
 .sidebar-divider {
