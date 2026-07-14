@@ -496,6 +496,65 @@ def test_datatable_multiple_tables():
     assert js.count("simpleDatatables.DataTable") == 2
 
 
+def test_datatable_pipe_in_code_span():
+    """DataTable examples from issue #500, case 1 (pipe).
+
+    An unescaped pipe inside a code span makes mistune reject the
+    table, in a DataTable just like in a regular table. See
+    test_table_pipe_in_code_span.
+    """
+    md = """\
+{{datatable
+| a | b | c |
+|---|---|---|
+| a | b | `|` |
+}}
+"""
+    html, _, _ = render.markdown(md)
+    assert '<table' not in html
+
+
+def test_datatable_escaped_pipe_in_code_span():
+    """DataTable examples from issue #500, case 1 (pipe).
+
+    With the pipe escaped a DataTable must render like a regular
+    table, see test_table_escaped_pipe_in_code_span.
+    """
+    md = """\
+{{datatable
+| a | b | c |
+|---|---|---|
+| a | b | `\\|` |
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", id=lambda v: v and v.startswith("s-dt-"))
+    assert table is not None
+    assert '<td><code>|</code></td>' in html
+
+
+def test_datatable_equal_sign_in_code_span():
+    """DataTable examples from issue #500, case 2 (equal).
+
+    A table row containing a = must not be parsed as a |key=value
+    option, a DataTable must render like a regular table, see
+    test_table_equal_sign_in_code_span.
+    """
+    md = """\
+{{datatable
+| a | b | c |
+|---|---|---|
+| a | b | `=` |
+}}
+"""
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", id=lambda v: v and v.startswith("s-dt-"))
+    assert table is not None
+    assert '<td><code>=</code></td>' in html
+
+
 def test_datatable_no_table():
     from otterwiki.plugins import collect_hook
 
