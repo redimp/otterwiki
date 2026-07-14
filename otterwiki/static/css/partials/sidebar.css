@@ -150,6 +150,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     overflow-wrap: anywhere;
     min-width: 0;
     flex: 1;
+    gap: 0.30rem;
 }
 
 .parent-sidebar-menu > li {
@@ -164,10 +165,11 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     list-style: none;
     display: flex;
     align-items: baseline;
+    gap: 0.35rem;
 }
 
 .sidebarmenu details > summary::-webkit-details-marker {
-  display: none;
+    display: none;
 }
 
 .sidebarmenu details > summary::before {
@@ -190,10 +192,6 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     width: 1.3rem;
     display: inline-block;
     content: '';
-    font-size: 0.5rem;
-    vertical-align: middle;
-    position: relative;
-    bottom: 0.1rem;
 }
 
 .sidebar-menu li {
