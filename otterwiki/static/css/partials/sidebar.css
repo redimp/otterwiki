@@ -172,20 +172,24 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 
 .sidebarmenu details > summary::before {
     width: 1.3rem;
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
     flex-shrink: 0;
-    content: '▹ ';
+    content: '\f054';
 }
 
 .sidebarmenu details[open] > summary::before {
     width: 1.3rem;
     flex-shrink: 0;
-    content: '▿ ';
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    content: '\f078 ';
 }
 
 .sidebar-menu .summary-details::before {
     width: 1.3rem;
     display: inline-block;
-    content: '□ ';
+    content: '';
     font-size: 0.5rem;
     vertical-align: middle;
     position: relative;
