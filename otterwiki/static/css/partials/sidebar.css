@@ -186,10 +186,6 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     width: 1.3rem;
     display: inline-block;
     content: '';
-    /* font-size: 0.9rem;
-    vertical-align: middle;
-    position: relative;
-    bottom: 0.1rem; */
 }
 
 .sidebar-menu li {
