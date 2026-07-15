@@ -138,6 +138,9 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     box-sizing: inherit;
     overflow-wrap: anywhere;
     list-style: none;
+    display: flex;
+    align-items: baseline;
+    gap: 10px
 }
 
 .sidebarmenu li > div.summary-details > a {
@@ -148,7 +151,6 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     overflow-wrap: anywhere;
     min-width: 0;
     flex: 1;
-    gap: 0.35rem
 }
 
 .parent-sidebar-menu > li {
@@ -163,7 +165,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     list-style: none;
     display: flex;
     align-items: baseline;
-    gap: 0.35rem
+    gap: 10px
 }
 
 .sidebarmenu details > summary::-webkit-details-marker {
