@@ -146,6 +146,7 @@
       {% endif %}
       {% if config.GIT_REMOTE_PULL_ENABLED %}
       <input class="btn" name="git_pull" type="submit" value="Pull">
+      <input class="btn" name="git_reset_remote" type="submit" value="Reset to Remote" onclick="return confirm('Are you sure you want to reset to the remote? This will overwrite your local changes and this action is usually irreversible.')">
       {% endif %}
     </div>
     {% endif %}
