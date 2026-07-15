@@ -217,6 +217,72 @@ class RepositoryManager:
                     key_path, original_ssh_command, original_ssh_auth_sock
                 )
 
+    def reset_hard_to_remote(self, remote_url, private_key=None):
+        """
+        Fetch from a remote repository and hard-reset the current branch to it,
+        discarding all local commits and uncommitted changes.
+        Returns (success, output) tuple.
+        """
+        if not remote_url:
+            return False, "No remote URL provided"
+
+        with self.git_push_pull_Lock:
+            key_path, original_ssh_command, original_ssh_auth_sock = (
+                self._setup_ssh_environment(private_key)
+            )
+
+            try:
+                from otterwiki.server import app
+
+                try:
+                    current_branch = self.storage.repo.active_branch.name
+                except TypeError:
+                    # if there is no current branch we should probably just stop
+                    return False, "No active branch found"
+
+                app.logger.info(
+                    f"[RepositoryManager] Fetching from remote for hard reset: {remote_url}"
+                )
+
+                # fetch the remote branch into FETCH_HEAD without touching the working tree
+                fetch_result = self.storage.repo.git.fetch(
+                    remote_url, current_branch
+                )
+                if fetch_result:
+                    app.logger.info(
+                        f"[RepositoryManager] Fetch result: {fetch_result}"
+                    )
+
+                app.logger.warning(
+                    f"[RepositoryManager] Hard-resetting '{current_branch}' to FETCH_HEAD "
+                    f"from {remote_url} (local changes will be discarded)"
+                )
+                reset_result = self.storage.repo.git.reset(
+                    '--hard', 'FETCH_HEAD'
+                )
+
+                self.storage.notify_repository_changed_from_external()
+
+                return (
+                    True,
+                    reset_result or "Hard reset completed successfully",
+                )
+
+            except Exception as e:
+                try:
+                    from otterwiki.server import app
+
+                    app.logger.error(
+                        f"[RepositoryManager] Hard reset from remote failed: {e}"
+                    )
+                except ImportError:
+                    pass
+                return False, str(e)
+            finally:
+                self._restore_ssh_environment(
+                    key_path, original_ssh_command, original_ssh_auth_sock
+                )
+
     def push_to_remote_async(self, remote_url, private_key=None):
         """
         Asynchronously push to remote repository.
