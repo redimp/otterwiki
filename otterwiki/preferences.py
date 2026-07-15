@@ -448,7 +448,7 @@ def _handle_git_reset_remote():
 
     if not app.config.get('GIT_REMOTE_PULL_ENABLED'):
         return {
-            "action": "reset_remote",
+            "action": "Reset remote",
             "success": False,
             "output": "Pull functionality is not enabled",
         }
@@ -459,7 +459,7 @@ def _handle_git_reset_remote():
     repo_manager = get_repo_manager()
     if not repo_manager:
         return {
-            "action": "reset_remote",
+            "action": "Reset remote",
             "success": False,
             "output": "Repository manager not available",
         }
@@ -467,7 +467,7 @@ def _handle_git_reset_remote():
     success, output = repo_manager.reset_hard_to_remote(
         remote_url, private_key
     )
-    return {"action": "reset_remote", "success": success, "output": output}
+    return {"action": "Reset remote", "success": success, "output": output}
 
 
 def handle_test_mail_preferences(form):
