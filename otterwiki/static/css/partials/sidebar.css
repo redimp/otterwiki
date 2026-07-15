@@ -1,6 +1,8 @@
 .sidebar {
     width: 20rem;
-    background: #e2e2e2;
+    background: rgb(252, 252, 252);
+    border: none;
+    padding: 5px;
 }
 
 #toggle-sidebar-btn {
@@ -151,6 +153,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     overflow-wrap: anywhere;
     min-width: 0;
     flex: 1;
+    gap: 0.30rem;
 }
 
 .parent-sidebar-menu > li {
@@ -169,11 +172,13 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 }
 
 .sidebarmenu details > summary::-webkit-details-marker {
-  display: none;
+    display: none;
 }
 
 .sidebarmenu details > summary::before {
     width: 1.3rem;
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
     flex-shrink: 0;
     content: '▹';
 }
@@ -229,6 +234,15 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 
 .sidebar-link {
     padding-left: 1rem;
+}
+
+.sidebar-link:hover {
+    background-color: #d5d8df5e;
+    border-radius: 10px;
+}
+
+.sidebar-icon {
+    background-color: transparent !important;
 }
 
 .sidebar-divider {

@@ -14,7 +14,8 @@
 }
 
 .navbar {
-    background: #d2d2d2;
+    background: #fff;
+    border-bottom: 1px solid #e9eaec;
 }
 
 .content-wrapper:focus {
@@ -43,6 +44,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .relative {
     position: relative;
+}
+
+a{
+    transition: 0.25s ease;
 }
 
 a.anchor,
@@ -227,6 +232,12 @@ pre.mermaid {
     height: 2rem;
 }
 
+.dropdown-menu {
+    margin-top: 0.25rem;
+    bottom: auto !important;
+    transform: none !important;
+}
+
 .dropdown-icon {
     display: -ms-flexbox;
     display: flex;
@@ -266,6 +277,7 @@ pre.mermaid {
     border: 0.4rem solid transparent;
     color: rgba(0, 0, 0, 0.85);
     border-color: transparent;
+    transition: none !important;
 }
 
 .dark-mode .dropdown-item-with-icon {
@@ -335,6 +347,10 @@ pre.mermaid {
 
 .sidebar-active {
     font-weight: bold;
+}
+
+.btn {
+    box-shadow: none;
 }
 
 .btn-xsm {
