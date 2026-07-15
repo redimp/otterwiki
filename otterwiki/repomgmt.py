@@ -217,7 +217,7 @@ class RepositoryManager:
                     key_path, original_ssh_command, original_ssh_auth_sock
                 )
 
-    def reset_hard_to_remote(self, remote_url, private_key=None):
+    def reset_to_remote(self, remote_url, private_key=None):
         """
         Fetch from a remote repository and hard-reset the current branch to it,
         discarding all local commits and uncommitted changes.
