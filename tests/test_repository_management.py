@@ -428,6 +428,7 @@ class TestGitActionButtons:
         assert soup.find('input', {'name': 'git_push'}) is None
         assert soup.find('input', {'name': 'git_force_push'}) is None
         assert soup.find('input', {'name': 'git_pull'}) is None
+        assert soup.find('input', {'name': 'git_reset_remote'}) is None
 
         # Enable push functionality
         self._setup_features(admin_client, test_data, enable_push=True)
@@ -437,6 +438,7 @@ class TestGitActionButtons:
         assert soup.find('input', {'name': 'git_push'}) is not None
         assert soup.find('input', {'name': 'git_force_push'}) is not None
         assert soup.find('input', {'name': 'git_pull'}) is None
+        assert soup.find('input', {'name': 'git_reset_remote'}) is None
 
         # Enable both push and pull
         self._setup_features(
@@ -448,6 +450,7 @@ class TestGitActionButtons:
         assert soup.find('input', {'name': 'git_push'}) is not None
         assert soup.find('input', {'name': 'git_force_push'}) is not None
         assert soup.find('input', {'name': 'git_pull'}) is not None
+        assert soup.find('input', {'name': 'git_reset_remote'}) is not None
 
     @patch('otterwiki.repomgmt.RepositoryManager.push_to_remote')
     def test_push_button_functionality(
@@ -521,6 +524,30 @@ class TestGitActionButtons:
 
         mock_pull.assert_called_with(test_data['remote_url'], "")
 
+    @patch('otterwiki.repomgmt.RepositoryManager.reset_to_remote')
+    def test_reset_to_remote_button_functionality(
+        self, mock_pull, app_with_user, admin_client, test_data
+    ):
+        """Test that the git pull button works correctly."""
+        mock_pull.return_value = (True, "HEAD is now at")
+
+        # Enable pull functionality
+        self._setup_features(admin_client, test_data, enable_pull=True)
+
+        # Test pull button
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={"git_reset_remote": "Reset to Remote"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+        html = rv.data.decode()
+        assert "Reset To Remote Results" in html
+        assert "HEAD is now at" in html
+
+        mock_pull.assert_called_with(test_data['remote_url'], "")
+
     def test_error_handling_and_styling(
         self, app_with_user, admin_client, test_data
     ):
@@ -590,6 +617,16 @@ class TestGitActionButtons:
         )
         html = rv.data.decode()
         assert "Pull Results" in html
+        assert "Pull functionality is not enabled" in html
+
+        # Test reset remote button when disabled
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={"git_reset_remote": "Reset to Remote"},
+            follow_redirects=True,
+        )
+        html = rv.data.decode()
+        assert "Reset To Remote Results" in html
         assert "Pull functionality is not enabled" in html
 
     @patch('otterwiki.repomgmt.get_repo_manager')
