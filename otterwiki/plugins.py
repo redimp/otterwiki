@@ -13,6 +13,7 @@ from collections import OrderedDict
 from dataclasses import dataclass, field
 from werkzeug.datastructures import MultiDict
 
+import os
 import pluggy
 
 import typing
@@ -449,4 +450,5 @@ def collect_hook(hook_name, *args, **kwargs):
 # addition to the utility function above.
 plugin_manager = pluggy.PluginManager("otterwiki")
 plugin_manager.add_hookspecs(OtterWikiPluginSpec)
-plugin_manager.load_setuptools_entrypoints("otterwiki")
+if not os.getenv("OTTERWIKI_DISABLE_PLUGINS"):
+    plugin_manager.load_setuptools_entrypoints("otterwiki")

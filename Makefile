@@ -52,7 +52,7 @@ shell: venv
 	FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask shell
 
 test: venv
-	OTTERWIKI_SETTINGS="" venv/bin/pytest tests
+	OTTERWIKI_SETTINGS="" OTTERWIKI_DISABLE_PLUGINS=True venv/bin/pytest tests
 
 tox: venv
 	venv/bin/tox
