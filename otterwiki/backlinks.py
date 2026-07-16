@@ -219,3 +219,5 @@ def rename_backlinks(old_pagepath, new_pagepath):
             new_pagepath,
             e,
         )
+
+        return {}
