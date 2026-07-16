@@ -98,14 +98,14 @@ class ReferencingPages:
 
             # Get the source page path
             source_page = self.strip_filename_suffix(filepath)
-            source_page = self.normalise_page_name(source_page)
+            source_page = self.normalize_page_name(source_page)
 
             # Process each WikiLink
             for match in matches:
                 # Clean up the page name
                 target_page = urllib.parse.unquote(match.strip())
                 target_page = target_page.split("#", 1)[0].strip()
-                target_page = self.normalise_page_name(target_page)
+                target_page = self.normalize_page_name(target_page)
 
                 # Handle pure anchor links (e.g. #sub-section)
                 if not target_page:
@@ -136,7 +136,7 @@ class ReferencingPages:
         Remove all references from a file from the index.
         """
         source_page = self.strip_filename_suffix(filepath)
-        source_page = self.normalise_page_name(source_page)
+        source_page = self.normalize_page_name(source_page)
 
         # Remove this page from all reference lists
         for target_page in list(self.references.keys()):
@@ -211,7 +211,7 @@ class ReferencingPages:
                 return None
 
             # page is the pagepath string
-            page_path = self.normalise_page_name(page)
+            page_path = self.normalize_page_name(page)
 
             # Get the list of pages that reference this page
             referencing_pages = self.references.get(page_path, [])
@@ -263,8 +263,8 @@ class ReferencingPages:
                 pass
             return None
 
-    def normalise_page_name(self, page_name):
-        # Normalise the page name (handle case sensitivity)
+    def normalize_page_name(self, page_name):
+        # Normalize the page name (handle case sensitivity)
         if self.app.config.get("RETAIN_PAGE_NAME_CASE", False):
             return page_name
         return page_name.lower()
