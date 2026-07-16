@@ -96,20 +96,16 @@ class ReferencingPages:
             )
             matches = re.findall(wikilink_pattern, content)
 
-            # Get the source page path (remove .md extension)
-            source_page = (
-                filepath[:-3] if filepath.endswith('.md') else filepath
-            )
+            # Get the source page path
+            source_page = self.strip_filename_suffix(filepath)
+            source_page = self.normalise_page_name(source_page)
 
             # Process each WikiLink
             for match in matches:
                 # Clean up the page name
                 target_page = urllib.parse.unquote(match.strip())
                 target_page = target_page.split("#", 1)[0].strip()
-
-                # Normalize the page path (handle case sensitivity)
-                if not self.app.config.get("RETAIN_PAGE_NAME_CASE", False):
-                    target_page = target_page.lower()
+                target_page = self.normalise_page_name(target_page)
 
                 # Skip self-references (a page cannot reference itself)
                 if target_page == source_page:
@@ -135,7 +131,8 @@ class ReferencingPages:
         """
         Remove all references from a file from the index.
         """
-        source_page = filepath[:-3] if filepath.endswith('.md') else filepath
+        source_page = self.strip_filename_suffix(filepath)
+        source_page = self.normalise_page_name(source_page)
 
         # Remove this page from all reference lists
         for target_page in list(self.references.keys()):
@@ -210,11 +207,7 @@ class ReferencingPages:
                 return None
 
             # page is the pagepath string
-            page_path = page
-
-            # Normalize the page path
-            if not self.app.config.get("RETAIN_PAGE_NAME_CASE", False):
-                page_path = page_path.lower()
+            page_path = self.normalise_page_name(page)
 
             # Get the list of pages that reference this page
             referencing_pages = self.references.get(page_path, [])
@@ -222,7 +215,7 @@ class ReferencingPages:
             if not referencing_pages:
                 return None
 
-            # Puzzle into a dictionary, makes the references uniq and better printable.
+            # Puzzle into a dictionary, makes the references unique and better printable.
             referencing_pages = dict(
                 (k, [get_pagename(k), get_pagename(k, full=True)])
                 for k in referencing_pages
@@ -230,7 +223,7 @@ class ReferencingPages:
             # Build the HTML for the sidebar block
             # Using the same structure as the "On this page" block
             html = f'''
-    <div id="extranav-toc" {' class="sidebar-toc d-xl-none"' if is_left_sidebar else ''}>
+    <div id="backlinks-toc" {' class="sidebar-toc d-xl-none"' if is_left_sidebar else ''}>
         <details class="collapse-panel" open>
             <summary class="collapse-header">Referencing pages</summary>
 
@@ -247,7 +240,7 @@ class ReferencingPages:
                 # URL encode the page path
                 url_path = urllib.parse.quote(pagename_full)
 
-                html += f'                <a href="/{url_path}" class="sidebar-link sidebar-toc-1 sidebar-active" title="{pagename_full}">{pagename}</a>\n'
+                html += f'                <a href="/{url_path}" class="sidebar-link sidebar-toc-1" title="{pagename_full}">{pagename}</a>\n'
 
             html += '''            </div>
         </details>
@@ -265,6 +258,16 @@ class ReferencingPages:
             except:
                 pass
             return None
+
+    def normalise_page_name(self, page_name):
+        # Normalise the page name (handle case sensitivity)
+        if self.app.config.get("RETAIN_PAGE_NAME_CASE", False):
+            return page_name
+        return page_name.lower()
+
+    def strip_filename_suffix(self, filepath):
+        # Return the page path (remove .md extension)
+        return filepath[:-3] if filepath.endswith('.md') else filepath
 
 
 plugin_manager.register(ReferencingPages())
