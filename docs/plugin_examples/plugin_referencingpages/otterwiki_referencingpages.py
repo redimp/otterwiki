@@ -107,6 +107,10 @@ class ReferencingPages:
                 target_page = target_page.split("#", 1)[0].strip()
                 target_page = self.normalise_page_name(target_page)
 
+                # Handle pure anchor links (e.g. #sub-section)
+                if not target_page:
+                    continue
+
                 # Skip self-references (a page cannot reference itself)
                 if target_page == source_page:
                     continue
