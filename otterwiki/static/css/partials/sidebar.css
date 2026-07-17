@@ -140,7 +140,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     list-style: none;
     display: flex;
     align-items: baseline;
-    gap: 10px
+    gap: 5px
 }
 
 .sidebarmenu li > div.summary-details > a {
@@ -165,7 +165,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     list-style: none;
     display: flex;
     align-items: baseline;
-    gap: 10px
+    gap: 5px
 }
 
 .sidebarmenu details > summary::-webkit-details-marker {
