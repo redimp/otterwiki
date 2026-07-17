@@ -90,9 +90,9 @@ class ReferencingPages:
             # WikiLink patterns: [[Page Name]] or [[Page Name|Title]]
             # or:                [[Page Name]] or [[Title|Page Name]]
             wikilink_pattern = (
-                r'\[\[([^\]|]+)(?:\|[^\]]+)?\]\]'
+                r'\[\[(?!#)([^\]|]+)(?:\|[^\]]+)?\]\]'
                 if self.WIKILINK_STYLE.upper() == "LINKTITLE"
-                else r'\[\[(?:[^|\]]+\|)?([^\]]+)\]\]'
+                else r'\[\[(?![^|\]]*\|#)(?!#)(?:[^|\]]+\|)?([^\]]+)\]\]'
             )
             matches = re.findall(wikilink_pattern, content)
 
@@ -106,10 +106,6 @@ class ReferencingPages:
                 target_page = urllib.parse.unquote(match.strip())
                 target_page = target_page.split("#", 1)[0].strip()
                 target_page = self.normalize_page_name(target_page)
-
-                # Handle pure anchor links (e.g. #sub-section)
-                if not target_page:
-                    continue
 
                 # Skip self-references (a page cannot reference itself)
                 if target_page == source_page:
