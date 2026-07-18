@@ -17,8 +17,8 @@ Features:
 This plugin demonstrates:
 1. setup() - Initialize the plugin and build the initial reference index
 2. repository_changed() - Update the index when files change
-3. template_html_sidebar_left_inject() - Add content to the left sidebar
 3. template_html_sidebar_right_inject() - Add content to the right sidebar
+4. template_html_sidebar_left_inject() - Add content to the left sidebar
 """
 
 import os
@@ -106,6 +106,9 @@ class ReferencingPages:
                 target_page = urllib.parse.unquote(match.strip())
                 target_page = target_page.split("#", 1)[0].strip()
                 target_page = self.normalize_page_name(target_page)
+
+                if not target_page:
+                    continue
 
                 # Skip self-references (a page cannot reference itself)
                 if target_page == source_page:
@@ -223,7 +226,7 @@ class ReferencingPages:
             # Build the HTML for the sidebar block
             # Using the same structure as the "On this page" block
             html = f'''
-    <div id="backlinks-toc" {' class="sidebar-toc d-xl-none"' if is_left_sidebar else ''}>
+    <div id="backlinks-toc-{'left' if is_left_sidebar else 'right'}" {' class="sidebar-toc d-xl-none"' if is_left_sidebar else ''}>
         <details class="collapse-panel" open>
             <summary class="collapse-header">Referencing pages</summary>
 
