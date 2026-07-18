@@ -15,6 +15,9 @@
 {{ super() }}
 {% include 'snippets/menu.html' %}
 {% include 'snippets/menutree.html' %}
+<div id="sidebar-toc" class="sidebar-toc d-xl-none">
+{% include 'snippets/toc.html' %}
+</div>
 {{plugin_sidebar_left_inject(pagepath)|safe}}
 {% endblock %}
 {#
