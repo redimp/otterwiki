@@ -73,8 +73,8 @@ class PageIndex:
             self.path, self.breadcrumbs = None, None
             self.index_depth = 0
         self.pagename = (
-            get_pagename_for_title(filepath=self.path)
-            if self.path is not None
+            get_pagename_for_title(filepath=self.path, full=True)
+            if self.path
             else None
         )
 
