@@ -234,6 +234,143 @@ def test_request_loader_custom_headers(proxy_auth_app):
 
 
 #
+# unit tests: role mapping
+#
+
+# role configuration as in the example from PR #525: the proxy sends
+# roles like "member" or "moderator, admin" which are mapped to the
+# internal permissions
+ROLES_CONFIG = {
+    "read_roles": "member, moderator, admin",
+    "write_roles": "moderator, admin",
+    "upload_roles": "moderator, admin",
+    "admin_roles": "admin",
+}
+
+
+def role_auth(**kwargs):
+    from otterwiki.auth import ProxyHeaderAuth
+
+    config = {
+        "username_header": "x-otterwiki-name",
+        "email_header": "x-otterwiki-email",
+        "roles_header": "x-otterwiki-permissions",
+        **ROLES_CONFIG,
+        **kwargs,
+    }
+    return ProxyHeaderAuth(**config)
+
+
+def load_user(app, auth, roles):
+    from flask import request
+
+    with app.test_request_context(
+        "/",
+        headers={
+            "x-otterwiki-name": PROXY_USER["name"],
+            "x-otterwiki-email": PROXY_USER["email"],
+            "x-otterwiki-permissions": roles,
+        },
+    ):
+        return auth.request_loader(request)
+
+
+def test_parse_roles(create_app):
+    # create_app configures the app, without it otterwiki.auth can not
+    # be imported
+    from otterwiki.auth import ProxyHeaderAuth
+
+    parse_roles = (
+        ProxyHeaderAuth._parse_roles  # pyright: ignore[reportPrivateUsage]
+    )
+    assert parse_roles("moderator, admin") == {"MODERATOR", "ADMIN"}
+    assert parse_roles(" admin ") == {"ADMIN"}
+    assert parse_roles("a,,b, ,c") == {"A", "B", "C"}
+    assert parse_roles("") == set()
+
+
+def test_request_loader_role_mapping_member(create_app):
+    user = load_user(create_app, role_auth(), "member")
+    assert user is not None
+    assert user.allow_read is True
+    assert user.allow_write is False
+    assert user.allow_upload is False
+    assert not user.is_admin
+
+
+def test_request_loader_role_mapping_moderator(create_app):
+    user = load_user(create_app, role_auth(), "moderator")
+    assert user is not None
+    assert user.allow_read is True
+    assert user.allow_write is True
+    assert user.allow_upload is True
+    assert not user.is_admin
+
+
+def test_request_loader_role_mapping_admin(create_app):
+    user = load_user(create_app, role_auth(), "admin")
+    assert user is not None
+    assert user.allow_read is True
+    assert user.allow_write is True
+    assert user.allow_upload is True
+    assert user.is_admin
+
+
+def test_request_loader_role_mapping_multiple_roles(create_app):
+    # whitespace after the comma in the header value must not prevent
+    # the match with the configured roles
+    user = load_user(create_app, role_auth(), "moderator, admin")
+    assert user is not None
+    assert user.allow_read is True
+    assert user.allow_write is True
+    assert user.allow_upload is True
+    assert user.is_admin
+
+
+def test_request_loader_role_mapping_is_case_insensitive(create_app):
+    user = load_user(create_app, role_auth(), "Moderator")
+    assert user is not None
+    assert user.allow_read is True
+    assert user.allow_write is True
+    # and vice versa: mixed case in the configuration
+    auth = role_auth(admin_roles="Admin")
+    user = load_user(create_app, auth, "ADMIN")
+    assert user is not None
+    assert user.is_admin
+
+
+def test_request_loader_unknown_role_grants_nothing(create_app):
+    user = load_user(create_app, role_auth(), "guest")
+    assert user is not None
+    assert not user.allow_read
+    assert not user.allow_write
+    assert not user.allow_upload
+    assert not user.is_admin
+
+
+def test_request_loader_permissions_are_not_roles(create_app):
+    # with a role configuration the internal permission names must not
+    # grant any permissions (ADMIN is left out, since "admin" is a
+    # configured role in ROLES_CONFIG)
+    user = load_user(create_app, role_auth(), "READ,WRITE,UPLOAD")
+    assert user is not None
+    assert not user.allow_read
+    assert not user.allow_write
+    assert not user.allow_upload
+    assert not user.is_admin
+
+
+def test_request_loader_empty_role_config(create_app):
+    # an empty role configuration disables the permission entirely
+    auth = role_auth(admin_roles="")
+    user = load_user(create_app, auth, "admin")
+    assert user is not None
+    assert user.allow_read is True
+    assert user.allow_write is True
+    assert not user.is_admin
+
+
+#
 # unit tests: has_permission and features
 #
 def test_has_permission(proxy_auth):
@@ -354,3 +491,55 @@ def test_admin_page_forbidden_without_admin_permission(proxy_auth_app):
     )
     response = client.get("/-/admin")
     assert response.status_code == 403
+
+
+#
+# integration tests: routes with a role mapping configured
+#
+@pytest.fixture
+def role_auth_app(proxy_auth_app):
+    """proxy_auth_app with the ROLES_CONFIG mapping installed. The
+    teardown of proxy_auth_app restores the original auth_manager."""
+    import otterwiki.auth
+    from otterwiki.auth import login_manager
+
+    proxy_auth = role_auth()
+    otterwiki.auth.auth_manager = proxy_auth
+    login_manager.request_loader(proxy_auth.request_loader)
+    return proxy_auth_app
+
+
+def test_moderator_can_edit_but_not_admin(role_auth_app):
+    client = proxy_client(role_auth_app, permissions="moderator", **PROXY_USER)
+    response = client.post(
+        "/Example/save",
+        data={
+            "content": "# Example\n\nCreated by a moderator.",
+            "commit": "created example page",
+        },
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert "Created by a moderator." in response.data.decode()
+    response = client.get("/-/admin")
+    assert response.status_code == 403
+
+
+def test_member_can_read_but_not_edit(role_auth_app):
+    client = proxy_client(role_auth_app, permissions="member", **PROXY_USER)
+    response = client.get("/-/login")
+    assert response.status_code == 302
+    response = client.post(
+        "/Example/save",
+        data={
+            "content": "# Example",
+            "commit": "",
+        },
+    )
+    assert response.status_code == 403
+
+
+def test_admin_role_can_access_admin_page(role_auth_app):
+    client = proxy_client(role_auth_app, permissions="admin", **PROXY_USER)
+    response = client.get("/-/admin")
+    assert response.status_code == 200
