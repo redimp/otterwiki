@@ -95,7 +95,7 @@ commands =
 """
 
 [tool.pytest.ini_options]
-testpaths = ["./tests"]
+testpaths = ["./tests", "./docs/plugin_examples/tests"]
 filterwarnings = [
     # venv/lib/python3.12/site-packages/flask_login/login_manager.py:488: DeprecationWarning: datetime.datetime.utcnow() is deprecated
     "ignore: datetime.datetime.utcnow\\(\\) is deprecated:DeprecationWarning",
