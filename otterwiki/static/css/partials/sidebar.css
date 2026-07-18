@@ -140,7 +140,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     list-style: none;
     display: flex;
     align-items: baseline;
-    gap: 5px
+    gap: .5rem;
 }
 
 .sidebarmenu li > div.summary-details > a {
@@ -165,7 +165,7 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
     list-style: none;
     display: flex;
     align-items: baseline;
-    gap: 5px
+    gap: .5rem;
 }
 
 .sidebarmenu details > summary::-webkit-details-marker {
@@ -186,7 +186,6 @@ a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px);
 
 .sidebar-menu .summary-details::before {
     width: 1.3rem;
-    display: inline-block;
     flex-shrink: 0;
     content: '';
 }
