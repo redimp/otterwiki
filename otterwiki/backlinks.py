@@ -9,12 +9,16 @@ to the new page name instead.
 import re
 
 from otterwiki.server import app, storage
+from urllib.parse import quote, unquote
 
 """Rewrite WikiLinks and images pointing to a renamed page."""
 
 # Matches a single WikiLink and captures its inner content.
 # WikiLink inner content never contains a closing bracket.
 WIKILINK_RE = re.compile(r"\[\[([^\]]+)\]\]")
+
+# Matches nested images inside links
+IMAGE_LINK_WRAPPER_RE = re.compile(r"\[(!\[[^\]]*\]\([^)]+\))\]\((/[^)]+)\)")
 
 # Matches a Markdown image link
 IMAGE_LINK_RE = re.compile(r"!\[([^\]]*)\]\((/[^)]+)\)")
@@ -56,7 +60,7 @@ def _rewrite_inner(inner, old_key, new_pagepath, linktitle_style):
     # preserve a leading slash (absolute links) and any #anchor
     leading_slash = link_part.startswith("/")
     page, hsep, anchor = link_part.strip().lstrip("/").partition("#")
-    page = page.strip()
+    page = unquote(page.strip())
     if not page:
         # pure anchor link like [[#section]] - nothing to do
         return None
@@ -79,63 +83,94 @@ def _rewrite_inner(inner, old_key, new_pagepath, linktitle_style):
 def _rewrite_attachment(match, old_pagepath, new_pagepath):
     """Rewrite Markdown image links pointing to attachments on a renamed page."""
 
-    alt_text = match.group(1)
-    attachment_path = match.group(2)
+    alt = match.group(1)
+    url = match.group(2)
 
-    retain_case = app.config.get("RETAIN_PAGE_NAME_CASE", False)
+    new_url = _rewrite_url(
+        url,
+        old_pagepath,
+        new_pagepath,
+    )
 
-    # Attachments live in the page folder, not the .md file itself.
-    old_page_dir = old_pagepath.rsplit(".", 1)[0]
-    old_attachment_prefix = "/" + old_page_dir.strip("/") + "/"
-
-    if retain_case:
-        matches = attachment_path.startswith(old_attachment_prefix)
-    else:
-        matches = attachment_path.lower().startswith(
-            old_attachment_prefix.lower()
-        )
-
-    if not matches:
-        return match.group(0)
-
-    # Preserve the attachment relative path.
-    relative_attachment = attachment_path[len(old_attachment_prefix) - 1 :]
-
-    new_page_dir = new_pagepath.rsplit(".", 1)[0]
-    new_attachment_path = "/" + new_page_dir.strip("/") + relative_attachment
-
-    return f"![{alt_text}]({new_attachment_path})"
+    return f"![{alt}]({new_url})"
 
 
-def _rewrite_markdown_link(match, old_key, new_pagepath, old_pagepath):
+def _rewrite_markdown_link(match, new_pagepath, old_pagepath):
     """Rewrite Markdown links pointing to a renamed page."""
+
+    text = match.group(1)
+    url = match.group(2)
+
+    new_url = _rewrite_url(
+        url,
+        old_pagepath,
+        new_pagepath,
+    )
+
+    return f"[{text}]({new_url})"
+
+
+def _rewrite_url(url, old_pagepath, new_pagepath):
+    """Rewrite a Markdown URL pointing to a renamed page or one of its
+    attachments.
+
+    Returns the rewritten URL, or the original URL if no rewrite is needed.
+    """
 
     from otterwiki.helper import get_filename
 
-    link_text = match.group(1)
-    link_path = match.group(2)
+    retain_case = app.config.get("RETAIN_PAGE_NAME_CASE", False)
 
-    # Separate anchor if present.
-    page, hsep, anchor = link_path.partition("#")
+    # Split query string.
+    path, qsep, query = url.partition("?")
 
-    leading_slash = page.startswith("/")
+    # Split anchor.
+    path, hsep, anchor = path.partition("#")
 
-    # Remove leading slash before resolving filename.
-    page_name = page.strip().lstrip("/")
+    #
+    # First: attachment URLs
+    #
+    old_page_dir = quote(old_pagepath.rsplit(".", 1)[0].strip("/"), safe="/")
+    new_page_dir = quote(new_pagepath.rsplit(".", 1)[0].strip("/"), safe="/")
 
-    if not page_name:
-        return match.group(0)
+    old_prefix = "/" + old_page_dir + "/"
 
-    # Check if this Markdown link points to the renamed page.
-    if get_filename(page_name) != old_key:
-        return match.group(0)
+    if retain_case:
+        matches = path.startswith(old_prefix)
+    else:
+        matches = path.lower().startswith(old_prefix.lower())
 
-    new_link = ("/" if leading_slash else "") + new_pagepath
+    if matches:
+        relative = path[len(old_prefix) - 1 :]
+        new_path = "/" + new_page_dir + relative
 
+    else:
+        #
+        # Page URL
+        #
+        leading_slash = path.startswith("/")
+
+        page = unquote(path.lstrip("/"))
+
+        if not page:
+            return url
+
+        old_key = get_filename(old_pagepath)
+        if get_filename(page) != old_key:
+            return url
+
+        encoded = quote(new_pagepath, safe="/")
+        new_path = ("/" if leading_slash else "") + encoded
+
+    # Restore anchor.
     if hsep:
-        new_link += "#" + anchor
+        new_path += "#" + anchor
 
-    return f"[{link_text}]({new_link})"
+    # Restore query string.
+    if qsep:
+        new_path += "?" + query
+
+    return new_path
 
 
 def _rewrite_content(
@@ -149,13 +184,17 @@ def _rewrite_content(
             return match.group(0)
         return "[[" + new_inner + "]]"
 
+    def wrapper_repl(match):
+        image = match.group(1)
+        url = _rewrite_url(match.group(2), old_pagepath, new_pagepath)
+        return f"[{image}]({url})"
+
     def attachment_repl(match):
         return _rewrite_attachment(match, old_pagepath, new_pagepath)
 
     def markdown_link_repl(match):
         return _rewrite_markdown_link(
             match,
-            old_key,
             new_pagepath,
             old_pagepath,
         )
@@ -163,7 +202,10 @@ def _rewrite_content(
     # Rewrite WikiLinks
     content = WIKILINK_RE.sub(repl, content)
 
-    # Rewrite attachment links
+    # Rewrite nested images inside links
+    content = IMAGE_LINK_WRAPPER_RE.sub(wrapper_repl, content)
+
+    # Rewrite image links
     content = IMAGE_LINK_RE.sub(attachment_repl, content)
 
     # Rewrite Markdown links
