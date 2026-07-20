@@ -217,15 +217,15 @@ def _rewrite_content(
 def rename_backlinks(old_pagepath, new_pagepath):
     from otterwiki.helper import get_filename
 
-    try:
-        old_key = get_filename(old_pagepath)
-        linktitle_style = _is_linktitle_style()
+    old_key = get_filename(old_pagepath)
+    linktitle_style = _is_linktitle_style()
 
-        all_files, _ = storage.list()
-        md_files = [f for f in all_files if f.endswith(".md")]
+    all_files, _ = storage.list()
+    md_files = [f for f in all_files if f.endswith(".md")]
 
-        updated = {}
-        for md_file in md_files:
+    updated = {}
+    for md_file in md_files:
+        try:
             content = storage.load(md_file, mode="r")
             new_content = _rewrite_content(
                 content, old_key, new_pagepath, linktitle_style, old_pagepath
@@ -238,25 +238,21 @@ def rename_backlinks(old_pagepath, new_pagepath):
                 content=new_content,
             )
             updated[md_file] = new_content
-
-        if updated:
-            app.logger.info(
-                "rename_backlinks: rewrote backlinks in %d page(s) "
-                "after renaming '%s' to '%s'",
-                len(updated),
-                old_pagepath,
-                new_pagepath,
+        except Exception as e:
+            app.logger.warning(
+                "Skipping page '%s': %s",
+                md_file,
+                e,
             )
+            continue
 
-        return updated
-
-    except Exception as e:
-        app.logger.error(
-            "rename_backlinks: failed to update links after renaming "
-            "'%s' to '%s': %s",
+    if updated:
+        app.logger.info(
+            "rename_backlinks: rewrote backlinks in %d page(s) "
+            "after renaming '%s' to '%s'",
+            len(updated),
             old_pagepath,
             new_pagepath,
-            e,
         )
 
-        return {}
+    return updated
