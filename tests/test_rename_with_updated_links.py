@@ -26,7 +26,11 @@ def save_shortcut(test_client, pagename, content, commit_message):
 def rename_shortcut(test_client, pagename, new_pagename):
     rv = test_client.post(
         "/{}/rename".format(pagename),
-        data={"new_pagename": new_pagename, "message": ""},
+        data={
+            "new_pagename": new_pagename,
+            "message": "",
+            "update_backlinks": "1",
+        },
         follow_redirects=True,
     )
     assert rv.status_code == 200
