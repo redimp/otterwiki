@@ -86,6 +86,21 @@ var otterwiki = {
         for (let i = 0; i < checkboxes.length; i++) {
             checkboxes[i].checked = !checkboxes[i].checked;
         }
+    },
+    retain_update_backlinks_checkbox: function() {
+        const checkbox = document.getElementById("update_backlinks");
+        if (!checkbox) return;
+
+        const key = "otterwiki/rename/update-backlinks";
+
+        const saved = sessionStorage.getItem(key);
+        if (saved !== null) {
+            checkbox.checked = (saved === "true");
+        }
+
+        checkbox.addEventListener("change", () => {
+            sessionStorage.setItem(key, checkbox.checked);
+        });
     }
 }
 
@@ -269,6 +284,8 @@ window.addEventListener("keydown", function(event) {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+  otterwiki.retain_update_backlinks_checkbox();
+
   if (document.body.dataset.pageIndexRetainUserExpandedNodes === 'False') return;
 
   const detailsList = document.querySelectorAll("details");

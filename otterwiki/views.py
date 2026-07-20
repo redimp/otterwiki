@@ -534,6 +534,7 @@ def rename(path):
             new_pagename=request.form.get("new_pagename"),
             message=request.form.get("message"),
             author=otterwiki.auth.get_author(),
+            update_backlinks=request.form.get("update_backlinks"),
         )
     return p.rename_form()
 

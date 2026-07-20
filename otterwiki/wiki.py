@@ -986,7 +986,7 @@ class Page:
             breadcrumbs=self.breadcrumbs(),
         )
 
-    def rename(self, new_pagename, message, author):
+    def rename(self, new_pagename, message, author, update_backlinks):
         if not has_permission("WRITE"):
             abort(403)
         # filename
@@ -998,7 +998,11 @@ class Page:
         if not self.exists and (len(files) + len(directories)) == 0:
             self.exists_or_404()
 
-        pages_updated = rename_backlinks(self.filename, new_pagename)
+        pages_updated = (
+            rename_backlinks(self.filename, new_pagename)
+            if update_backlinks
+            else {}
+        )
         assert pages_updated is not None
         files_updated = list(pages_updated.keys())
 
@@ -1037,7 +1041,7 @@ class Page:
                 message=message,
             )
 
-    def handle_rename(self, new_pagename, message, author):
+    def handle_rename(self, new_pagename, message, author, update_backlinks):
         if not has_permission("WRITE"):
             abort(403)
         if empty(new_pagename):
@@ -1059,7 +1063,7 @@ class Page:
                 )
             try:
                 old_pagepath = self.pagepath
-                self.rename(new_pagename, message, author)
+                self.rename(new_pagename, message, author, update_backlinks)
             except Exception as e:
                 # I tried to plumb an error message in here, but it did not show up in the UI - turns out these messages
                 # get stored in the cookie, and some browsers don't like big cookies:

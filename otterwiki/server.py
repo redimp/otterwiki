@@ -73,7 +73,6 @@ app.config.update(
     HTML_EXTRA_BODY="",
     LOG_LEVEL_WERKZEUG="INFO",
     TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES=False,
-    UPDATE_LINKS_ON_RENAME=True,
     HOME_PAGE="",
     RENDERER_HTML_ALLOWLIST="",
     ADMIN_USER_EMAIL="",
@@ -206,7 +205,6 @@ def update_app_config():
                 "HIDE_LOGO",
                 "OPEN_LINKS_IN_NEW_TAB",
                 "TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES",
-                "UPDATE_LINKS_ON_RENAME",
             ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
                 item.value = item.value.lower() in ["true", "yes"]
             if item.name.upper() in ["MAIL_PORT"]:
