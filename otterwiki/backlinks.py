@@ -215,9 +215,6 @@ def _rewrite_content(
 
 
 def rename_backlinks(old_pagepath, new_pagepath):
-    if not app.config.get("UPDATE_LINKS_ON_RENAME", True):
-        return {}
-
     from otterwiki.helper import get_filename
 
     try:

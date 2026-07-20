@@ -7,16 +7,8 @@ import pytest
 
 
 @pytest.fixture
-def app_with_update_links_on_rename(create_app):
-    saved_value = create_app.config.get("UPDATE_LINKS_ON_RENAME")
-    create_app.config["UPDATE_LINKS_ON_RENAME"] = True
-    yield create_app
-    create_app.config["UPDATE_LINKS_ON_RENAME"] = saved_value
-
-
-@pytest.fixture
-def test_client(app_with_update_links_on_rename):
-    return app_with_update_links_on_rename.test_client()
+def test_client(create_app):
+    return create_app.test_client()
 
 
 def save_shortcut(test_client, pagename, content, commit_message):
