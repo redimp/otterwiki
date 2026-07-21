@@ -313,7 +313,7 @@ class OtterWikiPluginSpec:
         """
         This hook is called to retrieve information about the plugin.
         The return value is supposed to be the name of the plugin, a
-        short descripton and the category of the plugin. For generating the
+        short description and the category of the plugin. For generating the
         User help the plugins are grouped by category.
         """
 
