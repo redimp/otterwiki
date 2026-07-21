@@ -72,6 +72,11 @@ class PageIndex:
         else:
             self.path, self.breadcrumbs = None, None
             self.index_depth = 0
+        self.pagename = (
+            get_pagename_for_title(filepath=self.path, full=False)
+            if self.path
+            else None
+        )
 
         t_start = timer()
         # get all files in the storage
@@ -228,7 +233,7 @@ class PageIndex:
         if self.path is None or self.path.rstrip("/") == "":
             title = "Page Index"
         else:
-            title = f"Page Index: /{self.path}"
+            title = f"Page Index - {self.pagename}"
 
         upsert_pagecrumbs(get_pagename(self.path or "/", full=True))
         return render_template(

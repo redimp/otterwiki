@@ -20,7 +20,7 @@ dependencies = [
     "cython==3.0.11",
     "mistune==3.3.3",
     "pygments==2.20.0",
-    "Pillow==12.2.0",
+    "Pillow==12.3.0",
     "PyYAML==6.0.2",
     "unidiff==0.7.5",
     "beautifulsoup4==4.12.3",
@@ -95,7 +95,7 @@ commands =
 """
 
 [tool.pytest.ini_options]
-testpaths = ["./tests"]
+testpaths = ["./tests", "./docs/plugin_examples/tests"]
 filterwarnings = [
     # venv/lib/python3.12/site-packages/flask_login/login_manager.py:488: DeprecationWarning: datetime.datetime.utcnow() is deprecated
     "ignore: datetime.datetime.utcnow\\(\\) is deprecated:DeprecationWarning",

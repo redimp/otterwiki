@@ -12,10 +12,16 @@
 {% endblock %}
 {% block body_attrs %}data-index-path="{{ pagepath | slugify(keep_slashes=True) }}"{% endblock %}
 {% block content %}
-<h2 class="pr-20 d-inline-block">Page Index</h2>
-<div class="d-inline-block custom-switch font-size-12 mb-10">
-  <input type="checkbox" id="switch-headings" value="" onchange="otterwiki.toggleClass(event.target.checked,'pagetoc')">
-  <label for="switch-headings">Toggle page headings</label>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-10">
+    <h2 class="mb-0">{{ title }}</h2>
+
+    <div class="custom-switch font-size-12">
+        <input
+            type="checkbox"
+            id="switch-headings"
+            onchange="otterwiki.toggleClass(event.target.checked,'pagetoc')">
+        <label for="switch-headings" class="mb-0">Toggle page headings</label>
+    </div>
 </div>
 <div style="">
 {% with hide_toc=True %}
