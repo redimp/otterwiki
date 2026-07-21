@@ -450,5 +450,5 @@ def collect_hook(hook_name, *args, **kwargs):
 # addition to the utility function above.
 plugin_manager = pluggy.PluginManager("otterwiki")
 plugin_manager.add_hookspecs(OtterWikiPluginSpec)
-if not os.getenv("OTTERWIKI_DISABLE_PLUGINS"):
+if "pytest" not in os.sys.modules:
     plugin_manager.load_setuptools_entrypoints("otterwiki")
