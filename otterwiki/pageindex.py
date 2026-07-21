@@ -50,7 +50,9 @@ class PageIndexEntry:
 class PageIndex:
     toc: dict[str, List[PageIndexEntry]] = {}
 
-    def __init__(self, path: str | None = None):
+    def __init__(
+        self, path: str | None = None, display_page_path: bool = False
+    ):
         '''
         This will generate an index of pages/toc of pages from a given path.
         '''
@@ -156,12 +158,16 @@ class PageIndex:
                             ),
                         )
                     )
-            # strip self.path from displayname and apply title formatting
+
             displayname = get_pagename_for_title(
                 f,
-                full=False,
+                full=display_page_path,
                 header=pagename,
             )
+            if self.path is not None and display_page_path:
+                if displayname.lower().startswith(self.path.lower()):
+                    displayname = displayname[len(self.path) + 1 :]
+
             has_children = False
             for other in md_files:
                 if other.startswith(f[:-3] + "/"):

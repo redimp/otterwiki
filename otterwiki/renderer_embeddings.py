@@ -1163,7 +1163,7 @@ Options:
 
         page = getattr(self, 'page', None)
         path = page.pagepath if page else None
-        page_index = PageIndex(path=path)
+        page_index = PageIndex(path=path, display_page_path=style == 'list')
 
         pages = page_index.toc
         if src != '*':
