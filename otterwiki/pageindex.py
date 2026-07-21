@@ -89,10 +89,7 @@ class PageIndex:
         # filter .md files
         md_files = [f for f in files if f.endswith(".md")]
         for fn in md_files:
-            if self.path is None:
-                f = fn
-            else:
-                f = os.path.join(self.path, fn)
+            f = os.path.join(self.path or "", fn)
             page_depth = len(split_path(f)) - 1
             firstletter = get_pagename_for_title(fn, full=True)[0].upper()
             if firstletter not in self.toc.keys():
@@ -101,25 +98,21 @@ class PageIndex:
             subdirectories = split_path(fn)[:-1]
             for subdir_depth in range(len(subdirectories)):
                 subdir_path = join_path(subdirectories[0 : subdir_depth + 1])
-                if self.path is None:
-                    subdir_path_full = subdir_path
-                else:
-                    subdir_path_full = join_path([self.path, subdir_path])
+                subdir_path_full = join_path([self.path or "", subdir_path])
                 if storage.exists(
                     get_filename(
-                        subdir_path,
+                        subdir_path_full,
                     )
                 ):
                     # if page exists don't add the directory
                     continue
-                if subdir_path not in page_indices:
+                if subdir_path_full not in page_indices:
                     self.toc[firstletter].append(
                         PageIndexEntry(
                             depth=subdir_depth,
                             title=get_pagename_for_title(
                                 subdir_path, full=False
-                            )
-                            + "/",
+                            ),
                             url=url_for(
                                 "view",
                                 path=get_pagename(subdir_path_full, full=True),
@@ -128,7 +121,7 @@ class PageIndex:
                             has_children=True,
                         )
                     )
-                    page_indices.append(subdir_path)
+                    page_indices.append(subdir_path_full)
             pagetoc = []
             # default pagename is the pagename derived from the filename
             pagename = get_pagename(
@@ -169,15 +162,6 @@ class PageIndex:
                 full=False,
                 header=pagename,
             )
-            if self.path is not None:
-                # for nested pages, we need to strip the path prefix from the display name
-                full_display_name = get_pagename_for_title(
-                    f,
-                    full=True,
-                    header=pagename,
-                )
-                if full_display_name.lower().startswith(self.path.lower()):
-                    displayname = full_display_name[len(self.path) + 1 :]
             has_children = False
             for other in md_files:
                 if other.startswith(f[:-3] + "/"):
