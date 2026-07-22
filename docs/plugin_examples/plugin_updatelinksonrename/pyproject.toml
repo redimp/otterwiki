@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "otterwiki_updatelinksonrename"
+description = "An example plugin for An Otter Wiki that rewrites WikiLinks pointing to a page when that page is renamed."
+version = "0.1.0"
+authors = [
+    { name = "An Otter Wiki contributors" }
+]
+
+[project.entry-points.otterwiki]
+updatelinksonrename = "otterwiki_updatelinksonrename"
