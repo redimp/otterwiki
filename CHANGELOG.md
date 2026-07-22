@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+
+## [v2.22.0](https://github.com/redimp/otterwiki/releases/tag/v2.22.0) - 2026-07-22
+
+<small>[Compare with v2.21.1](https://github.com/redimp/otterwiki/compare/v2.21.1...v2.22.0)</small>
+
+**Security Update**
+
+This release addresses a critical security vulnerability. We strongly recommend
+updating to this version as soon as possible. User-supplied revision parameters
+were passed to git without validation, allowing a revision beginning with `-` to
+be interpreted as a git command-line option. This could be abused to overwrite
+pages or disclose files at the repository root (CWE-88). Thanks to @tonghuaroot
+for responsibly disclosing this issue and bringing it to our attention.
+
+### Security Fixes
+
+- Reject invalid git revisions to prevent argument injection ([799aff4](https://github.com/redimp/otterwiki/commit/799aff4)).
+
+### Features
+
+- Add the possibility to override the roles for the read/write/upload/admin permissions, see #525 ([e4a59e8](https://github.com/redimp/otterwiki/commit/e4a59e8) by @Getslow6, [e132d52](https://github.com/redimp/otterwiki/commit/e132d52) by @Getslow6).
+- Rework the page index: display the full page path for the list-style index, extend the page index title and align the heading toggle, see #534 #538 ([6e52a89](https://github.com/redimp/otterwiki/commit/6e52a89) by @ribbal, [1c71047](https://github.com/redimp/otterwiki/commit/1c71047) by @ribbal, [7b26aeb](https://github.com/redimp/otterwiki/commit/7b26aeb) by @ribbal, [3dfb593](https://github.com/redimp/otterwiki/commit/3dfb593) by @ribbal, [ca36eff](https://github.com/redimp/otterwiki/commit/ca36eff), [d131be2](https://github.com/redimp/otterwiki/commit/d131be2)).
+- Enhance the referencing pages plugin, see #527 ([cad752b](https://github.com/redimp/otterwiki/commit/cad752b) by @ribbal).
+
+### Bug Fixes
+
+- Fix page index alignment, see #531 ([f1a6fd4](https://github.com/redimp/otterwiki/commit/f1a6fd4) by @Getslow6, [cf76708](https://github.com/redimp/otterwiki/commit/cf76708)).
+
+### Dependencies
+
+- Bump pillow from 12.2.0 to 12.3.0, see #536 ([d7e26aa](https://github.com/redimp/otterwiki/commit/d7e26aa) by @dependabot).
+
 ## [v2.21.1](https://github.com/redimp/otterwiki/releases/tag/v2.21.1) - 2026-07-12
 
 <small>[Compare with v2.21.0](https://github.com/redimp/otterwiki/compare/v2.21.0...v2.21.1)</small>
