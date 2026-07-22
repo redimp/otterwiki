@@ -95,3 +95,16 @@ def test_sidebar_absent_without_references(plugin, test_client):
 def test_self_reference_is_ignored(plugin, test_client):
     save_page(test_client, "Refselfpage", "i link [[Refselfpage]]")
     assert "refselfpage" not in plugin.references
+
+
+def test_leading_slash_link_is_matched(plugin, test_client):
+    # [[/Page]] renders to the same target as [[Page]], so the backlink
+    # index must strip the leading slash to match the page path
+    save_page(test_client, "Refslashsource", "see [[/Refslashtarget]]")
+    assert plugin.references["refslashtarget"] == ["refslashsource"]
+
+
+def test_anchor_link_is_matched(plugin, test_client):
+    # [[Page#section]] must be indexed under the anchor-less page path
+    save_page(test_client, "Refanchorsource", "see [[Refanchortarget#intro]]")
+    assert plugin.references["refanchortarget"] == ["refanchorsource"]

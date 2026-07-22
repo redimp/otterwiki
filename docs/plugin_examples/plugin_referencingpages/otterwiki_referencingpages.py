@@ -104,7 +104,7 @@ class ReferencingPages:
             for match in matches:
                 # Clean up the page name
                 target_page = urllib.parse.unquote(match.strip())
-                target_page = target_page.split("#", 1)[0].strip()
+                target_page = target_page.split("#", 1)[0].strip().lstrip("/")
                 target_page = self.normalize_page_name(target_page)
 
                 if not target_page:
