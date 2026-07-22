@@ -1196,7 +1196,7 @@ Options:
                 + '</ul></div>'
             )
 
-        togglediv = f"""<div class="d-inline-block custom-switch font-size-12 mb-10" style="transform: translateY(-36px);float:right;">
+        togglediv = f"""<div class="d-inline-block custom-switch font-size-12 mb-10" style="transform: translateY(-44px);float:right;">
     <input type="checkbox" id="switch-headings" {"checked" if show_toc else ""} value="" onchange="otterwiki.toggleClass(event.target.checked,'pagetoc')"><label for="switch-headings">Toggle page headings</label>
 </div>"""
 

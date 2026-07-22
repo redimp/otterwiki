@@ -11,6 +11,14 @@
 .page h5 { font-size: 2.0rem; }
 .page h6 { font-size: 1.6rem; }
 
+.page .pageindex-header {
+    font-size: var(--content-title-font-size);
+}
+
+.pageindex-embedding {
+    clear: right;
+}
+
 .page p,
 .page li {
     font-size: 1.6rem;
