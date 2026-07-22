@@ -11,14 +11,6 @@
 .page h5 { font-size: 2.0rem; }
 .page h6 { font-size: 1.6rem; }
 
-.page .pageindex-header {
-    font-size: var(--content-title-font-size);
-}
-
-.pageindex-embedding {
-    clear: right;
-}
-
 .page p,
 .page li {
     font-size: 1.6rem;
@@ -154,4 +146,36 @@
     border: 0;
     margin: 0;
     background-color: transparent;
+}
+
+.page .pageindex-header {
+    font-size: var(--content-title-font-size);
+}
+
+/* Embedded PageIndex: move heading toggle into the title row */
+.pageindex-embedding {
+    position: relative;
+}
+
+/* The toggle immediately before an embedded index */
+.pageindex-embedding:before {
+    content: "";
+    display: block;
+}
+
+/* Parent page title + toggle alignment */
+article.page > h1 + .custom-switch {
+    float: right;
+    margin-top: -4.4rem;
+    margin-bottom: 0;
+}
+
+/* Recover the vertical space used by the old toggle position */
+article.page > h1 + .custom-switch + .pageindex-embedding {
+    clear: both;
+    margin-top: -2.75rem;
+}
+
+article.page .pageindex-embedding {
+    padding-top: 0.1rem;
 }
