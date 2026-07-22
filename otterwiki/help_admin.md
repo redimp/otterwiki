@@ -95,7 +95,7 @@ setting. Setting this to `optional` will allow empty commit messages.
 
 #### Page case name
 An Otter Wiki stores pages in files with names of all lowercase names. To retain
-the upper and lower case of the filenames, check <span class="help-button"><input type="checkbox" style="display:inline;" id="true-retain-page-name" checked> Retain page name case</span>.
+the upper and lower case of the filenames, check <span class="help-button"><input type="checkbox" style="display:inline;" id="true-retain-page-name" checked>Retain page name case</span>.
 
 #### Git Web server
 With <span class="help-button"><input type="checkbox" style="display:inline;" id="true-git-webserver" checked> Enable Git Server</span> allow users with the permission to READ to clone and pull the wiki content via git and users with UPLOAD/Attachment management permissions to push content. HTTP Basic authentication is used for non anonymous access. There is no option for using git via ssh. When enabled, users find the URL to clone the repositroy in their settings.
