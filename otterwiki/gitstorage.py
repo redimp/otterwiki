@@ -33,6 +33,11 @@ except NameError:
     FileNotFoundError = IOError
 
 
+# a revision otterwiki itself produces: a hex commit SHA (prefix or full,
+# sha1 = 40 / sha256 = 64), or the literal HEAD used as the blame default.
+_REVISION_RE = re.compile(r"\A(?:HEAD|[0-9a-fA-F]{4,64})\Z")
+
+
 class GitStorage(object):
     def __init__(self, path, initialize=False):
         # make path absolute
@@ -55,6 +60,22 @@ class GitStorage(object):
         if os.path.exists(os.path.join(self.path, ".git/RELOAD_GIT")):
             os.remove(os.path.join(self.path, ".git/RELOAD_GIT"))
             self.repo = self._read_repo()
+
+    def _validate_revision(self, revision):
+        """
+        Accept only the revision forms otterwiki generates: a hex commit
+        SHA (prefix or full) or the literal HEAD. This is an allowlist, so
+        it rejects the leading '-' that enables git argument injection
+        (CWE-88) *and* anything else that is not a plausible commit-ish,
+        rather than trying to model git's full revision grammar.
+
+        Raise StorageNotFound (not just StorageError) so callers treat an
+        invalid revision exactly like a revision that does not exist: a
+        uniform 404, with no oracle that distinguishes a blocked payload
+        from an unknown commit.
+        """
+        if revision is None or not _REVISION_RE.match(str(revision)):
+            raise StorageNotFound("Invalid revision: {!r}".format(revision))
 
     def notify_repository_changed_from_external(self):
         """
@@ -102,6 +123,7 @@ class GitStorage(object):
     def load(self, filename, mode="r", revision=None, size=-1):
         self._check_reload()
         if revision is not None:
+            self._validate_revision(revision)
             try:
                 content = self.repo.git.show(
                     "{}:{}".format(revision, filename)
@@ -181,6 +203,7 @@ class GitStorage(object):
     def blame(self, filename, revision=None):
         if revision is None:
             revision = "HEAD"
+        self._validate_revision(revision)
         try:
             commits = list(self.repo.blame(revision, filename) or [])
         except (ValueError, IndexError, git.exc.GitCommandError):
@@ -383,6 +406,7 @@ class GitStorage(object):
             repo_manager.auto_push_if_enabled()
 
     def revert(self, revision, message="", author=("", "")):
+        self._validate_revision(revision)
         actor = git.Actor(author[0], author[1])
         try:
             self.repo.git.revert(revision, "--no-commit")
@@ -406,6 +430,8 @@ class GitStorage(object):
 
     def diff(self, rev_a, rev_b):
         # https://docs.python.org/2/library/difflib.html
+        self._validate_revision(rev_a)
+        self._validate_revision(rev_b)
         return self.repo.git.diff(rev_a, rev_b)
 
     def delete(self, filename, message=None, author=("", "")):
@@ -513,6 +539,7 @@ class GitStorage(object):
         return sorted(result_files), sorted(result_directories)
 
     def show_commit(self, revision):
+        self._validate_revision(revision)
         try:
             commit = self.repo.commit(revision)
         except git.exc.BadName as e:

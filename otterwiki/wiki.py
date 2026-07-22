@@ -851,7 +851,10 @@ class Page:
             abort(500, description=self.storage_error)
         self.exists_or_404(in_git=True)
 
-        data = storage.blame(self.filename, self.revision)
+        try:
+            data = storage.blame(self.filename, self.revision)
+        except StorageError:
+            abort(404)
 
         markup_lines = pygments_render(self.content, lang="markdown")
         # fix markup_lines
@@ -919,7 +922,10 @@ class Page:
         # handle case that the page doesn't exists
         self.exists_or_404()
 
-        diff = storage.diff(rev_a, rev_b)
+        try:
+            diff = storage.diff(rev_a, rev_b)
+        except StorageError:
+            abort(404)
         patchset = get_PatchSet(diff)
         url_map = patchset2urlmap(patchset, rev_b, rev_a)
         file_diffs = patchset2filedict(patchset)
