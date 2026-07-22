@@ -1,31 +1,31 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
 {% block menu %}
-{{ super() }}
-{% include 'snippets/menu.html' %}
-{% include 'snippets/menutree.html' %}
+    {{ super() }}
+    {% include 'snippets/menu.html' %}
+    {% include 'snippets/menutree.html' %}
 {% endblock %}
 {% block navbardropdown %}
-{% include 'snippets/navbardropdown_rename_remove.html' %}
-                    <div class="dropdown-divider mt-5 mb-5"></div>
-{{ super() }}
+    {% include 'snippets/navbardropdown_rename_remove.html' %}
+    <div class="dropdown-divider mt-5 mb-5"></div>
+    {{ super() }}
 {% endblock %}
 {% block body_attrs %}data-index-path="{{ pagepath | slugify(keep_slashes=True) }}"{% endblock %}
 {% block content %}
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-10">
-    <h2 class="mb-0">{{ title }}</h2>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-10">
+        <h2 class="mb-0">{{ title }}</h2>
 
-    <div class="custom-switch font-size-12">
-        <input
-            type="checkbox"
-            id="switch-headings"
-            onchange="otterwiki.toggleClass(event.target.checked,'pagetoc')">
-        <label for="switch-headings" class="mb-0">Toggle page headings</label>
+        <div class="custom-switch font-size-12">
+            <input
+                type="checkbox"
+                id="switch-headings"
+                onchange="otterwiki.toggleClass(event.target.checked,'pagetoc')">
+            <label for="switch-headings" class="mb-0">Toggle page headings</label>
+        </div>
     </div>
-</div>
-<div style="">
-{% with hide_toc=True %}
-{% include 'snippets/pageindex.html' %}
-{% endwith %}
-</div>
+    <div style="">
+    {% with hide_toc=True %}
+    {% include 'snippets/pageindex.html' %}
+    {% endwith %}
+    </div>
 {% endblock content %}
