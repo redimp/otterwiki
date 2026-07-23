@@ -264,6 +264,8 @@ def handle_repository_management(form):
         git_action_result = _handle_git_force_push()
     elif form.get("git_pull"):
         git_action_result = _handle_git_pull()
+    elif form.get("git_reset_remote"):
+        git_action_result = _handle_git_reset_remote()
 
     # If it was a git action, return to form with results
     if git_action_result:
@@ -437,6 +439,33 @@ def _handle_git_pull():
 
     success, output = repo_manager.pull_from_remote(remote_url, private_key)
     return {"action": "pull", "success": success, "output": output}
+
+
+def _handle_git_reset_remote():
+    """Handle git reset to remote action."""
+    from otterwiki.repomgmt import get_repo_manager
+    from otterwiki.server import app
+
+    if not app.config.get('GIT_REMOTE_PULL_ENABLED'):
+        return {
+            "action": "reset to remote",
+            "success": False,
+            "output": "Pull functionality is not enabled",
+        }
+
+    remote_url = app.config.get('GIT_REMOTE_PULL_URL')
+    private_key = app.config.get('GIT_REMOTE_PULL_PRIVATE_KEY')
+
+    repo_manager = get_repo_manager()
+    if not repo_manager:
+        return {
+            "action": "reset to remote",
+            "success": False,
+            "output": "Repository manager not available",
+        }
+
+    success, output = repo_manager.reset_to_remote(remote_url, private_key)
+    return {"action": "reset to remote", "success": success, "output": output}
 
 
 def handle_test_mail_preferences(form):
