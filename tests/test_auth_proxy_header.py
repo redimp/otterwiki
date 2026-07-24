@@ -284,6 +284,9 @@ def test_parse_roles(create_app):
         ProxyHeaderAuth._parse_roles  # pyright: ignore[reportPrivateUsage]
     )
     assert parse_roles("moderator, admin") == {"MODERATOR", "ADMIN"}
+    assert parse_roles("moderator ,admin") == {"MODERATOR", "ADMIN"}
+    assert parse_roles("moderator admin") == {"MODERATOR", "ADMIN"}
+    assert parse_roles("moderator  admin") == {"MODERATOR", "ADMIN"}
     assert parse_roles(" admin ") == {"ADMIN"}
     assert parse_roles("a,,b, ,c") == {"A", "B", "C"}
     assert parse_roles("") == set()

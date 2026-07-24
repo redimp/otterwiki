@@ -646,7 +646,11 @@ class ProxyHeaderAuth:
 
     @staticmethod
     def _parse_roles(roles_str):
-        return {r.strip().upper() for r in roles_str.split(',') if r.strip()}
+        return {
+            r.strip().upper()
+            for r in re.split(r'[,\s]+', roles_str)
+            if r.strip()
+        }
 
     def _map_roles_to_permissions(self, header_roles):
         header_roles = set(header_roles)
