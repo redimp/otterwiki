@@ -2,6 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import re
+import subprocess
 
 import pytest
 
@@ -44,6 +45,70 @@ def find_link_href(html, text):
         html,
     )
     return m.group(1) if m else None
+
+
+def _git_show(storage, filename, revision="HEAD"):
+    """Return the committed content of ``filename`` at ``revision``."""
+    return subprocess.check_output(
+        ["git", "-C", storage.path, "show", f"{revision}:{filename}"],
+    ).decode()
+
+
+def _git_status(storage):
+    """Return the porcelain status of the storage repository."""
+    return subprocess.check_output(
+        ["git", "-C", storage.path, "status", "--porcelain"],
+    ).decode()
+
+
+def test_rename_commits_the_rewritten_backlinks(test_client):
+    """The rewritten backlinks must be part of the rename commit, not just
+    written to the working tree. rename_backlinks() writes the pages with
+    storage.update() (working tree only, no ``git add``) and the rename is
+    committed with ``no_add=True``, so the rewritten content never makes it
+    into git history."""
+    storage = test_client.application.storage
+    save_shortcut(
+        test_client, "CommitTarget", "# CommitTarget\n", "created target"
+    )
+    save_shortcut(
+        test_client,
+        "CommitLinker",
+        "# CommitLinker\n\n[a link](/CommitTarget)\n",
+        "created linker",
+    )
+    rename_shortcut(test_client, "CommitTarget", "CommitRenamed")
+
+    # the working tree is rewritten ...
+    assert "/CommitRenamed" in storage.load("commitlinker.md")
+    # ... but the committed version must be rewritten too
+    committed = _git_show(storage, "commitlinker.md")
+    assert "/CommitRenamed" in committed, (
+        "backlink rewrite was not committed: HEAD:commitlinker.md still reads "
+        f"{committed!r}"
+    )
+
+
+def test_rename_leaves_no_uncommitted_changes(test_client):
+    """After a rename with backlink updates the repository must be clean.
+    Because the rewritten backlinks are only written to the working tree and
+    never staged, they are left dangling as uncommitted modifications."""
+    storage = test_client.application.storage
+    save_shortcut(
+        test_client, "StatusTarget", "# StatusTarget\n", "created target"
+    )
+    save_shortcut(
+        test_client,
+        "StatusLinker",
+        "# StatusLinker\n\n[a link](/StatusTarget)\n",
+        "created linker",
+    )
+    rename_shortcut(test_client, "StatusTarget", "StatusRenamed")
+
+    status = _git_status(storage)
+    assert status == "", (
+        "repository left dirty after rename; uncommitted changes:\n" + status
+    )
 
 
 def test_rename_updates_percent_encoded_markdown_link(test_client):
