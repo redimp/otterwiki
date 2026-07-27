@@ -364,6 +364,10 @@ class GitStorage(object):
         if len(diff) == 0 and filename not in self.repo.untracked_files:
             return False
 
+        # add to git
+        index = self.repo.index
+        index.add([filename])
+
         return True
 
     def store(
@@ -374,14 +378,15 @@ class GitStorage(object):
         author=("", ""),
         mode="w",
     ):
+        # write the file and stage the change in git
         if not self.update(filename, content, mode):
             return False
 
         if message is None:
             message = ""
-        # add and commit to git
+
+        # commit to git
         index = self.repo.index
-        index.add([filename])
         actor = git.Actor(author[0], author[1])
         index.commit(message, author=actor)
 
