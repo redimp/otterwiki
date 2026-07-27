@@ -449,3 +449,99 @@ def test_get_parent_revision(storage):
         filename=filename1, revision=revision3
     )
     assert parent_revision == revision1
+
+
+# a revision that git would parse as a CLI option (leading '-') or is
+# otherwise not a hex commit-ish must be rejected before reaching git.
+INVALID_REVISIONS = [
+    "--output=Home.md",
+    "--contents=.env",
+    "-L1,1",
+    "--reverse",
+    "-p",
+    "--",
+    "HEAD~1",
+    "main",
+    "not-hex-zz",
+    "",
+]
+
+
+@pytest.fixture
+def storage_with_page(storage):
+    author = ("Example Author", "mail@example.com")
+    storage.store(
+        "Home.md",
+        content="# Home\nline2\nline3\n",
+        author=author,
+        message="initial",
+    )
+    yield storage
+
+
+@pytest.mark.parametrize("revision", INVALID_REVISIONS)
+def test_load_rejects_invalid_revision(storage_with_page, revision):
+    with pytest.raises(gitstorage.StorageError):
+        storage_with_page.load("Home.md", revision=revision)
+
+
+@pytest.mark.parametrize("revision", INVALID_REVISIONS)
+def test_blame_rejects_invalid_revision(storage_with_page, revision):
+    with pytest.raises(gitstorage.StorageError):
+        storage_with_page.blame("Home.md", revision=revision)
+
+
+@pytest.mark.parametrize("revision", INVALID_REVISIONS)
+def test_diff_rejects_invalid_revision(storage_with_page, revision):
+    good = storage_with_page.log()[0]["revision"]
+    # rejected whether the tainted value is the first or the second argument
+    with pytest.raises(gitstorage.StorageError):
+        storage_with_page.diff(revision, good)
+    with pytest.raises(gitstorage.StorageError):
+        storage_with_page.diff(good, revision)
+
+
+@pytest.mark.parametrize("revision", INVALID_REVISIONS)
+def test_revert_rejects_invalid_revision(storage_with_page, revision):
+    with pytest.raises(gitstorage.StorageError):
+        storage_with_page.revert(revision)
+
+
+@pytest.mark.parametrize("revision", INVALID_REVISIONS)
+def test_show_commit_rejects_invalid_revision(storage_with_page, revision):
+    with pytest.raises(gitstorage.StorageError):
+        storage_with_page.show_commit(revision)
+
+
+def test_diff_output_injection_does_not_write_file(storage_with_page):
+    # the diff-route argument injection: '--output=<page>' must not
+    # truncate/overwrite the page instead of producing a diff.
+    good = storage_with_page.log()[0]["revision"]
+    before = storage_with_page.load("Home.md")
+    with pytest.raises(gitstorage.StorageError):
+        storage_with_page.diff("--output=Home.md", good)
+    assert storage_with_page.load("Home.md") == before
+
+
+def test_valid_revisions_still_accepted(storage_with_page):
+    author = ("Example Author", "mail@example.com")
+    storage_with_page.store(
+        "Home.md",
+        content="# Home\nline2\nline3\nline4\n",
+        author=author,
+        message="second",
+    )
+    log = storage_with_page.log()
+    rev_b, rev_a = log[0]["revision"], log[1]["revision"]
+    # short hex prefix (git strips the trailing newline)
+    older = storage_with_page.load("Home.md", revision=rev_a)
+    assert "line3" in older and "line4" not in older
+    assert storage_with_page.blame("Home.md", revision=rev_a)
+    assert "line4" in storage_with_page.diff(rev_a, rev_b)
+    # full hex sha
+    full = storage_with_page.metadata("Home.md")["revision-full"]
+    assert storage_with_page.blame("Home.md", revision=full)
+    # the literal HEAD (blame default)
+    assert storage_with_page.blame("Home.md", revision="HEAD")
+    # uppercase hex prefix
+    assert storage_with_page.blame("Home.md", revision=rev_a.upper())

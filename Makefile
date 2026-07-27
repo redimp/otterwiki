@@ -52,13 +52,13 @@ shell: venv
 	FLASK_DEBUG=True FLASK_APP=otterwiki.server OTTERWIKI_SETTINGS=../settings.cfg venv/bin/flask shell
 
 test: venv
-	OTTERWIKI_SETTINGS="" venv/bin/pytest tests
+	OTTERWIKI_SETTINGS="" venv/bin/pytest tests docs/plugin_examples/tests
 
 tox: venv
 	venv/bin/tox
 
 coverage: venv
-	OTTERWIKI_SETTINGS="" venv/bin/coverage run --source=otterwiki -m pytest tests
+	OTTERWIKI_SETTINGS="" venv/bin/coverage run --source=otterwiki -m pytest tests docs/plugin_examples/tests
 	venv/bin/coverage report
 	venv/bin/coverage html
 

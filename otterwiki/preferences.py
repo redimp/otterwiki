@@ -51,6 +51,26 @@ def _update_preference(name, value, commit=False):
         db.session.commit()
 
 
+def _update_preference_if_changed(name, value, commit=False):
+    """
+    Update a preference, but skip creating a new database entry when
+    the value matches the current app.config value, so that saving an
+    unchanged form does not shadow configuration from environment
+    variables or the settings file. Existing entries are updated as
+    usual.
+    """
+    entry = Preferences.query.filter_by(name=name).first()
+    if entry is None:
+        current = app.config.get(name)
+        if isinstance(current, bool):
+            current = "True" if current else "False"
+        elif current is None:
+            current = ""
+        if str(value) == str(current):
+            return
+    _update_preference(name, value, commit)
+
+
 def handle_mail_preferences(form):
     if not has_permission("ADMIN"):
         abort(403)
@@ -250,7 +270,9 @@ def handle_repository_management(form):
         return repository_management_form(git_action_result)
 
     # Otherwise handle preference updates
-    _update_preference("GIT_WEB_SERVER", form.get("git_web_server", "False"))
+    _update_preference_if_changed(
+        "GIT_WEB_SERVER", form.get("git_web_server", "False")
+    )
 
     git_remote_push_enabled = form.get("git_remote_push_enabled") == "True"
 
@@ -259,26 +281,28 @@ def handle_repository_management(form):
 
         if not remote_url:
             # remote url is missing - disable the feature and show error
-            _update_preference("GIT_REMOTE_PUSH_ENABLED", "False")
-            _update_preference("GIT_REMOTE_PUSH_PRIVATE_KEY", "")
-            _update_preference("GIT_REMOTE_PUSH_URL", "")
+            _update_preference_if_changed("GIT_REMOTE_PUSH_ENABLED", "False")
+            _update_preference_if_changed("GIT_REMOTE_PUSH_PRIVATE_KEY", "")
+            _update_preference_if_changed("GIT_REMOTE_PUSH_URL", "")
             toast(
                 "SSH Remote URL is required when enabling automatic pushing.",
                 "error",
             )
         else:
-            _update_preference("GIT_REMOTE_PUSH_ENABLED", "True")
-            _update_preference("GIT_REMOTE_PUSH_URL", remote_url)
+            _update_preference_if_changed("GIT_REMOTE_PUSH_ENABLED", "True")
+            _update_preference_if_changed("GIT_REMOTE_PUSH_URL", remote_url)
 
             private_key = form.get("git_remote_push_private_key", "").strip()
             if private_key != "**********":
                 # only update if it's not the placeholder (user wants to change it)
-                _update_preference("GIT_REMOTE_PUSH_PRIVATE_KEY", private_key)
+                _update_preference_if_changed(
+                    "GIT_REMOTE_PUSH_PRIVATE_KEY", private_key
+                )
     else:
         # clear the feature and associated settings
-        _update_preference("GIT_REMOTE_PUSH_ENABLED", "False")
-        _update_preference("GIT_REMOTE_PUSH_PRIVATE_KEY", "")
-        _update_preference("GIT_REMOTE_PUSH_URL", "")
+        _update_preference_if_changed("GIT_REMOTE_PUSH_ENABLED", "False")
+        _update_preference_if_changed("GIT_REMOTE_PUSH_PRIVATE_KEY", "")
+        _update_preference_if_changed("GIT_REMOTE_PUSH_URL", "")
 
     git_remote_pull_enabled = form.get("git_remote_pull_enabled") == "True"
 
@@ -287,36 +311,40 @@ def handle_repository_management(form):
 
         if not pull_remote_url:
             # remote url is missing - disable the feature and show error
-            _update_preference("GIT_REMOTE_PULL_ENABLED", "False")
-            _update_preference("GIT_REMOTE_PULL_PRIVATE_KEY", "")
-            _update_preference("GIT_REMOTE_PULL_URL", "")
+            _update_preference_if_changed("GIT_REMOTE_PULL_ENABLED", "False")
+            _update_preference_if_changed("GIT_REMOTE_PULL_PRIVATE_KEY", "")
+            _update_preference_if_changed("GIT_REMOTE_PULL_URL", "")
             toast(
                 "SSH Remote URL is required when enabling automatic pulling.",
                 "error",
             )
         else:
-            _update_preference("GIT_REMOTE_PULL_ENABLED", "True")
+            _update_preference_if_changed("GIT_REMOTE_PULL_ENABLED", "True")
             if form.get(
                 "git_remote_pull_regenerate_webhook"
             ) == "True" or pull_remote_url != app.config.get(
                 "GIT_REMOTE_PULL_URL", ""
             ):
-                _update_preference("GIT_REMOTE_PULL_URL_SECURE", "True")
-            _update_preference("GIT_REMOTE_PULL_URL", pull_remote_url)
+                _update_preference_if_changed(
+                    "GIT_REMOTE_PULL_URL_SECURE", "True"
+                )
+            _update_preference_if_changed(
+                "GIT_REMOTE_PULL_URL", pull_remote_url
+            )
 
             pull_private_key = form.get(
                 "git_remote_pull_private_key", ""
             ).strip()
             if pull_private_key != "**********":
                 # only update if it's not the placeholder (user wants to change it)
-                _update_preference(
+                _update_preference_if_changed(
                     "GIT_REMOTE_PULL_PRIVATE_KEY", pull_private_key
                 )
     else:
         # clear the feature and associated settings
-        _update_preference("GIT_REMOTE_PULL_ENABLED", "False")
-        _update_preference("GIT_REMOTE_PULL_PRIVATE_KEY", "")
-        _update_preference("GIT_REMOTE_PULL_URL", "")
+        _update_preference_if_changed("GIT_REMOTE_PULL_ENABLED", "False")
+        _update_preference_if_changed("GIT_REMOTE_PULL_PRIVATE_KEY", "")
+        _update_preference_if_changed("GIT_REMOTE_PULL_URL", "")
 
     # commit changes to the database
     db.session.commit()

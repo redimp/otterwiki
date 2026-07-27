@@ -31,22 +31,10 @@ from otterwiki.renderer_plugins import (
     plugin_frontmatter,
     plugin_frontmatter_title,
     plugin_embeddings,
+    plugin_strict_tables,
+    plugin_table_gfm_pipes,
 )
 from otterwiki.util import empty, slugify, cursormagicword
-
-#
-# patch mistune table_plugin so that not all the newlines at the end of a table are removed
-#
-mistune.plugins.table.TABLE_PATTERN = (  # pyright: ignore
-    r'^ {0,3}\|(?P<table_head>.+)\|[ \t]*\n'
-    r' {0,3}\|(?P<table_align> *[-:]+[-| :]*)\|[ \t]*\n'
-    r'(?P<table_body>(?: {0,3}\|.*\|[ \t]*(?:\n|$))*)\n{0,1}'
-)
-mistune.plugins.table.NP_TABLE_PATTERN = (  # pyright: ignore
-    r'^ {0,3}(?P<nptable_head>\S.*\|.*)\n'
-    r' {0,3}(?P<nptable_align>[-:]+ *\|[-| :]*)\n'
-    r'(?P<nptable_body>(?:.*\|.*(?:\n|$))*)\n{0,1}'
-)
 
 #
 # patch mistune helpers to support parenthesis-delimited link titles per CommonMark spec.
@@ -603,6 +591,8 @@ class OtterwikiRenderer:
             block=self.block_parser,
             plugins=[
                 plugin_table,
+                plugin_strict_tables,
+                plugin_table_gfm_pipes,
                 plugin_url,
                 plugin_strikethrough,
                 plugin_task_lists,

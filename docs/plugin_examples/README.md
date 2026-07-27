@@ -44,3 +44,23 @@ directory.
 ### Demo of the example plugins
 
 You can find a `docker-compose.yaml` in [docs/plugin_examples](https://github.com/redimp/otterwiki/tree/main/docs/plugin_examples).
+
+## Testing the example plugins
+
+The example plugins are tested in [docs/plugin_examples/tests](https://github.com/redimp/otterwiki/tree/main/docs/plugin_examples/tests).
+The `example_plugin_loader` fixture defined in the `conftest.py` there
+loads a plugin straight from its directory, no installation is needed.
+Plugins loaded via the fixture are unregistered on teardown, which keeps
+the tests independent of each other.
+
+The tests run as part of the test suite via `make test`, or standalone with
+
+```bash
+OTTERWIKI_SETTINGS="" venv/bin/pytest docs/plugin_examples/tests
+```
+
+To add tests for a new example plugin, create a `test_<name>.py` next to
+the existing ones and load the plugin with
+`example_plugin_loader("plugin_<name>")`. If the plugin implements the
+`setup()` hook, call it on the loaded instance, see
+`test_referencingpages.py` for an example.

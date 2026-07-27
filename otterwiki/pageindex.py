@@ -50,7 +50,9 @@ class PageIndexEntry:
 class PageIndex:
     toc: dict[str, List[PageIndexEntry]] = {}
 
-    def __init__(self, path: str | None = None):
+    def __init__(
+        self, path: str | None = None, display_page_path: bool = False
+    ):
         '''
         This will generate an index of pages/toc of pages from a given path.
         '''
@@ -72,6 +74,11 @@ class PageIndex:
         else:
             self.path, self.breadcrumbs = None, None
             self.index_depth = 0
+        self.pagename = (
+            get_pagename_for_title(filepath=self.path, full=False)
+            if self.path
+            else None
+        )
 
         t_start = timer()
         # get all files in the storage
@@ -84,10 +91,7 @@ class PageIndex:
         # filter .md files
         md_files = [f for f in files if f.endswith(".md")]
         for fn in md_files:
-            if self.path is None:
-                f = fn
-            else:
-                f = os.path.join(self.path, fn)
+            f = os.path.join(self.path or "", fn)
             page_depth = len(split_path(f)) - 1
             firstletter = get_pagename_for_title(fn, full=True)[0].upper()
             if firstletter not in self.toc.keys():
@@ -96,25 +100,21 @@ class PageIndex:
             subdirectories = split_path(fn)[:-1]
             for subdir_depth in range(len(subdirectories)):
                 subdir_path = join_path(subdirectories[0 : subdir_depth + 1])
-                if self.path is None:
-                    subdir_path_full = subdir_path
-                else:
-                    subdir_path_full = join_path([self.path, subdir_path])
+                subdir_path_full = join_path([self.path or "", subdir_path])
                 if storage.exists(
                     get_filename(
-                        subdir_path,
+                        subdir_path_full,
                     )
                 ):
                     # if page exists don't add the directory
                     continue
-                if subdir_path not in page_indices:
+                if subdir_path_full not in page_indices:
                     self.toc[firstletter].append(
                         PageIndexEntry(
                             depth=subdir_depth,
                             title=get_pagename_for_title(
                                 subdir_path, full=False
-                            )
-                            + "/",
+                            ),
                             url=url_for(
                                 "view",
                                 path=get_pagename(subdir_path_full, full=True),
@@ -123,7 +123,7 @@ class PageIndex:
                             has_children=True,
                         )
                     )
-                    page_indices.append(subdir_path)
+                    page_indices.append(subdir_path_full)
             pagetoc = []
             # default pagename is the pagename derived from the filename
             pagename = get_pagename(
@@ -158,21 +158,16 @@ class PageIndex:
                             ),
                         )
                     )
-            # strip self.path from displayname and apply title formatting
+
             displayname = get_pagename_for_title(
                 f,
-                full=False,
+                full=display_page_path,
                 header=pagename,
             )
-            if self.path is not None:
-                # for nested pages, we need to strip the path prefix from the display name
-                full_display_name = get_pagename_for_title(
-                    f,
-                    full=True,
-                    header=pagename,
-                )
-                if full_display_name.lower().startswith(self.path.lower()):
-                    displayname = full_display_name[len(self.path) + 1 :]
+            if self.path is not None and display_page_path:
+                if displayname.lower().startswith(self.path.lower()):
+                    displayname = displayname[len(self.path) + 1 :]
+
             has_children = False
             for other in md_files:
                 if other.startswith(f[:-3] + "/"):
@@ -228,7 +223,7 @@ class PageIndex:
         if self.path is None or self.path.rstrip("/") == "":
             title = "Page Index"
         else:
-            title = f"Page Index: /{self.path}"
+            title = f"Page Index - {self.pagename}"
 
         upsert_pagecrumbs(get_pagename(self.path or "/", full=True))
         return render_template(

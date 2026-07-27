@@ -41,13 +41,5 @@ class NoEmojiPlugin:
         return self.emojis.sub('', md)
 
 
-# this is ne
+# this is needed so that the plugin_manager finds the plugin
 plugin_manager.register(NoEmojiPlugin())
-
-
-def test_noemoji():
-    noemoji = NoEmojiPlugin()
-    assert noemoji.preprocess_markdown("👴") == ""
-    assert (
-        noemoji.preprocess_markdown("🕶H🦴ello, W🎲orld😇!") == "Hello, World!"
-    )

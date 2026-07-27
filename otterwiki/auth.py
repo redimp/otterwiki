@@ -624,18 +624,41 @@ class SimpleAuth:
 
 
 class ProxyHeaderAuth:
-    # if logout_link is not provided, hide the logout button
     def __init__(
         self,
-        logout_link=None,
-        username_header: str = 'x-otterwiki-name',
-        email_header: str = 'x-otterwiki-email',
-        permissions_header: str = 'x-otterwiki-permissions',
+        username_header: str,
+        email_header: str,
+        roles_header: str,
+        read_roles: str,
+        write_roles: str,
+        upload_roles: str,
+        admin_roles: str,
     ):
         self._username_header = username_header
         self._email_header = email_header
-        self._permissions_header = permissions_header
-        self.logout_link = logout_link
+        self._roles_header = roles_header
+        self._role_map = {
+            'READ': self._parse_roles(read_roles),
+            'WRITE': self._parse_roles(write_roles),
+            'UPLOAD': self._parse_roles(upload_roles),
+            'ADMIN': self._parse_roles(admin_roles),
+        }
+
+    @staticmethod
+    def _parse_roles(roles_str):
+        return {
+            r.strip().upper()
+            for r in re.split(r'[,\s]+', roles_str)
+            if r.strip()
+        }
+
+    def _map_roles_to_permissions(self, header_roles):
+        header_roles = set(header_roles)
+        return {
+            permission
+            for permission, allowed_roles in self._role_map.items()
+            if header_roles & allowed_roles
+        }
 
     class User(UserMixin):
         def __init__(self, name, email, permissions):
@@ -662,13 +685,11 @@ class ProxyHeaderAuth:
         if self._email_header not in req.headers:
             app.logger.error(f"Missing header: {self._email_header}")
             return None
-        if self._permissions_header in req.headers:
-            permissions = (
-                req.headers[self._permissions_header].upper().split(',')
-            )
+        if self._roles_header in req.headers:
+            roles = self._parse_roles(req.headers[self._roles_header])
         else:
-            app.logger.warning(f"Missing header: {self._permissions_header}")
-            permissions = []
+            app.logger.warning(f"Missing header: {self._roles_header}")
+            roles = set()
         name = req.headers.get(self._username_header, "")
         email = req.headers.get(self._email_header, "")
 
@@ -677,10 +698,14 @@ class ProxyHeaderAuth:
             return None
         elif empty(name):
             app.logger.warning(
-                f"name header '{self._username_header}' is emptyt"
+                f"name header '{self._username_header}' is empty"
             )
             # default to email as username if no username is set
             name = email
+
+        # resolve the roles from the roles header into the
+        # internal permission flags (READ/WRITE/UPLOAD/ADMIN)
+        permissions = self._map_roles_to_permissions(roles)
 
         return self.User(
             name=name,
@@ -742,7 +767,11 @@ elif app.config.get("AUTH_METHOD") == "PROXY_HEADER":
     auth_manager = ProxyHeaderAuth(
         username_header=app.config.get("AUTH_HEADERS_USERNAME"),
         email_header=app.config.get("AUTH_HEADERS_EMAIL"),
-        permissions_header=app.config.get("AUTH_HEADERS_PERMISSIONS"),
+        roles_header=app.config.get("AUTH_HEADERS_PERMISSIONS"),
+        read_roles=app.config.get("AUTH_ROLES_READ"),
+        write_roles=app.config.get("AUTH_ROLES_WRITE"),
+        upload_roles=app.config.get("AUTH_ROLES_UPLOAD"),
+        admin_roles=app.config.get("AUTH_ROLES_ADMIN"),
     )
 else:
     raise RuntimeError(

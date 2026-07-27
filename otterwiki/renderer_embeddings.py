@@ -1163,7 +1163,7 @@ Options:
 
         page = getattr(self, 'page', None)
         path = page.pagepath if page else None
-        page_index = PageIndex(path=path)
+        page_index = PageIndex(path=path, display_page_path=style == 'list')
 
         pages = page_index.toc
         if src != '*':
@@ -1196,7 +1196,7 @@ Options:
                 + '</ul></div>'
             )
 
-        togglediv = f"""<div class="d-inline-block custom-switch font-size-12 mb-10">
+        togglediv = f"""<div class="d-inline-block custom-switch font-size-12 mb-10" style="transform: translateY(-36px);float:right;">
     <input type="checkbox" id="switch-headings" {"checked" if show_toc else ""} value="" onchange="otterwiki.toggleClass(event.target.checked,'pagetoc')"><label for="switch-headings">Toggle page headings</label>
 </div>"""
 

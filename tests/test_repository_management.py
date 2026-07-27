@@ -1336,3 +1336,127 @@ class TestWebhookHashBackwardCompatibility:
             'input', {'name': 'git_remote_pull_regenerate_webhook'}
         )
         assert regenerate_input is None
+
+
+class TestPreferencesDoNotShadowEnvironment:
+    """Test that saving the form without changes does not create
+    database preferences that would shadow configuration from
+    environment variables or the settings file."""
+
+    def _clear_git_preferences(self, app):
+        from otterwiki.server import db, Preferences
+
+        Preferences.query.filter(Preferences.name.like("GIT_%")).delete(
+            synchronize_session=False
+        )
+        db.session.commit()
+        # reset to the defaults, simulating a fresh install
+        app.config["GIT_WEB_SERVER"] = False
+        app.config["GIT_REMOTE_PUSH_ENABLED"] = False
+        app.config["GIT_REMOTE_PUSH_URL"] = ""
+        app.config["GIT_REMOTE_PUSH_PRIVATE_KEY"] = ""
+        app.config["GIT_REMOTE_PULL_ENABLED"] = False
+        app.config["GIT_REMOTE_PULL_URL"] = ""
+        app.config["GIT_REMOTE_PULL_URL_SECURE"] = False
+        app.config["GIT_REMOTE_PULL_PRIVATE_KEY"] = ""
+
+    def _git_preference_names(self):
+        from otterwiki.server import Preferences
+
+        return [
+            entry.name
+            for entry in Preferences.query.filter(
+                Preferences.name.like("GIT_%")
+            )
+        ]
+
+    def test_unchanged_save_creates_no_preferences(
+        self, app_with_user, admin_client
+    ):
+        """Saving the untouched form must not create database entries."""
+        self._clear_git_preferences(app_with_user)
+
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={"update_preferences": "true"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+        assert self._git_preference_names() == []
+
+    def test_unchanged_save_preserves_env_configuration(
+        self, app_with_user, admin_client
+    ):
+        """With settings configured via environment variables, saving the
+        pre-filled form must not copy them into the database."""
+        self._clear_git_preferences(app_with_user)
+        # simulate configuration via environment variables
+        app_with_user.config["GIT_REMOTE_PUSH_ENABLED"] = True
+        app_with_user.config["GIT_REMOTE_PUSH_URL"] = TEST_REMOTE_URL
+        app_with_user.config["GIT_REMOTE_PUSH_PRIVATE_KEY"] = TEST_PRIVATE_KEY
+
+        # the form is pre-filled with the values from app.config, the
+        # private key is masked with the placeholder
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={
+                "git_remote_push_enabled": "True",
+                "git_remote_push_url": TEST_REMOTE_URL,
+                "git_remote_push_private_key": "**********",
+                "update_preferences": "true",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+        assert self._git_preference_names() == []
+        # the configuration is still intact
+        assert app_with_user.config["GIT_REMOTE_PUSH_ENABLED"] == True
+        assert app_with_user.config["GIT_REMOTE_PUSH_URL"] == TEST_REMOTE_URL
+
+    def test_changed_save_creates_preferences(
+        self, app_with_user, admin_client
+    ):
+        """Actual changes are still written to the database."""
+        self._clear_git_preferences(app_with_user)
+
+        rv = admin_client.post(
+            ADMIN_REPO_MGMT_URL,
+            data={
+                "git_remote_push_enabled": "True",
+                "git_remote_push_url": TEST_REMOTE_URL,
+                "git_remote_push_private_key": TEST_PRIVATE_KEY,
+                "update_preferences": "true",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+
+        assert "GIT_REMOTE_PUSH_ENABLED" in self._git_preference_names()
+        assert app_with_user.config["GIT_REMOTE_PUSH_ENABLED"] == True
+
+    def test_warning_when_database_overrides_environment(
+        self, app_with_user, caplog
+    ):
+        """update_app_config() warns when a database preference overrides
+        a value set via an environment variable."""
+        import logging
+        import otterwiki.server as server
+        from otterwiki.preferences import _update_preference
+
+        self._clear_git_preferences(app_with_user)
+        _update_preference("GIT_REMOTE_PUSH_ENABLED", "True", commit=True)
+        server.config_from_environment["GIT_REMOTE_PUSH_ENABLED"] = False
+        try:
+            with caplog.at_level(logging.WARNING):
+                server.update_app_config()
+        finally:
+            del server.config_from_environment["GIT_REMOTE_PUSH_ENABLED"]
+            self._clear_git_preferences(app_with_user)
+
+        assert any(
+            "GIT_REMOTE_PUSH_ENABLED" in record.message
+            and "overridden by the database" in record.message
+            for record in caplog.records
+        )
