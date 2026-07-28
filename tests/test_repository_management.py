@@ -526,15 +526,15 @@ class TestGitActionButtons:
 
     @patch('otterwiki.repomgmt.RepositoryManager.reset_to_remote')
     def test_reset_to_remote_button_functionality(
-        self, mock_pull, app_with_user, admin_client, test_data
+        self, mock_reset, app_with_user, admin_client, test_data
     ):
-        """Test that the git pull button works correctly."""
-        mock_pull.return_value = (True, "HEAD is now at")
+        """Test that the git reset to remote button works correctly."""
+        mock_reset.return_value = (True, "HEAD is now at")
 
         # Enable pull functionality
         self._setup_features(admin_client, test_data, enable_pull=True)
 
-        # Test pull button
+        # Test reset to remote button
         rv = admin_client.post(
             ADMIN_REPO_MGMT_URL,
             data={"git_reset_remote": "Reset to Remote"},
@@ -546,7 +546,7 @@ class TestGitActionButtons:
         assert "Reset To Remote Results" in html
         assert "HEAD is now at" in html
 
-        mock_pull.assert_called_with(test_data['remote_url'], "")
+        mock_reset.assert_called_with(test_data['remote_url'], "")
 
     def test_error_handling_and_styling(
         self, app_with_user, admin_client, test_data
