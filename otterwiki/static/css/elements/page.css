@@ -157,12 +157,6 @@
     position: relative;
 }
 
-/* The toggle immediately before an embedded index */
-.pageindex-embedding:before {
-    content: "";
-    display: block;
-}
-
 /* Parent page title + toggle alignment */
 article.page > h1 + .custom-switch {
     float: right;
