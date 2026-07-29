@@ -154,7 +154,7 @@ def test_login_fail_wrong_password(app_with_user, test_client):
     assert "Invalid email address or password." in html
 
 
-def test_logout(test_client):
+def test_logout(app_with_user, test_client):
     result = login(test_client)
     html = test_client.get(
         "/-/logout",
