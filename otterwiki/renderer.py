@@ -333,7 +333,11 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
 
         attrs = []
 
-        attrs.append('href="{}"'.format(link))
+        # escape the url again for the html attribute context. escape_url
+        # leaves a bare '&' behind (its internal unescape undoes the escaping
+        # done by safe_url), which the final BeautifulSoup pass would otherwise
+        # decode as an html entity, e.g. a trailing &reg becoming ® (issue #545)
+        attrs.append('href="{}"'.format(mistune.escape(link)))
 
         if title:
             attrs.append('title="{}"'.format(mistune.escape(title)))
