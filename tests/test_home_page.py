@@ -191,8 +191,19 @@ def test_home_page_custom_with_retain_case(app_with_user, test_client):
 @pytest.fixture
 def create_app_with_home_page_env(tmpdir):
     """Create app with HOME_PAGE set via environment variable before initialization."""
+    import sys
+
     original_home_page = os.environ.get("HOME_PAGE")
     original_settings = os.environ.get("OTTERWIKI_SETTINGS")
+    # snapshot the currently imported otterwiki modules so we can restore the
+    # exact same module objects on teardown. Re-importing otterwiki.server
+    # below rebuilds the whole module graph (a fresh plugin_manager, renderer,
+    # storage, ...); without restoring, other test modules that hold a
+    # module-level reference (e.g. `from otterwiki.renderer import render`)
+    # would be left pointing at a stale, orphaned graph.
+    saved_otterwiki_modules = {
+        k: v for k, v in sys.modules.items() if k.startswith('otterwiki')
+    }
 
     def _create_app(home_page_value):
         tmpdir.mkdir("repo")
@@ -215,8 +226,6 @@ def create_app_with_home_page_env(tmpdir):
 
         os.environ["HOME_PAGE"] = home_page_value
         os.environ["OTTERWIKI_SETTINGS"] = settings_cfg
-
-        import sys
 
         # remove cached modules to force fresh import
         modules_to_remove = [
@@ -247,14 +256,13 @@ def create_app_with_home_page_env(tmpdir):
     elif "OTTERWIKI_SETTINGS" in os.environ:
         del os.environ["OTTERWIKI_SETTINGS"]
 
-    # remove cached modules to force fresh import for next test
-    import sys
-
-    modules_to_remove = [
-        k for k in sys.modules.keys() if k.startswith('otterwiki')
-    ]
-    for mod in modules_to_remove:
+    # restore the original otterwiki module objects so that other tests'
+    # module-level references stay bound to the same graph a fresh import
+    # would return (otherwise e.g. the DataTable renderer and collect_hook end
+    # up split across two plugin_manager instances).
+    for mod in [k for k in sys.modules if k.startswith('otterwiki')]:
         del sys.modules[mod]
+    sys.modules.update(saved_otterwiki_modules)
 
 
 def test_initialization_with_default_home_page(create_app_with_home_page_env):
