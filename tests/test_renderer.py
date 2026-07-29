@@ -1463,6 +1463,52 @@ def test_link():
     assert a_html.attrs.get("title", None) == "With a title"
 
 
+def test_link_url_with_entity_issue545():
+    """https://github.com/redimp/otterwiki/issues/545
+
+    The exact markdown from the issue. With explicit link text the URL
+    only appears in the href, where the ampersand is escaped as `&amp;`
+    so the browser decodes it back to the literal URL. The `®` entity
+    must not appear.
+    """
+    md = "[this is a linkt](https://example.com/file&reg=something)"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert (
+        a_html.attrs.get("href", None)
+        == "https://example.com/file&reg=something"
+    )
+    assert a_html.text == "this is a linkt"
+    assert "®" not in html
+    assert 'href="https://example.com/file&amp;reg=something"' in html
+
+
+def test_link_empty_text_url_with_entity_issue545():
+    """https://github.com/redimp/otterwiki/issues/545
+
+    When a link has empty text the URL is used as the display text.
+    A URL containing an ampersand sequence that looks like an HTML
+    entity (e.g. `&reg`) must not be rendered as that entity (®);
+    the ampersand has to be escaped in the visible text just like it
+    is in the href.
+    """
+    md = "[](https://example.com/file&reg=something)"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    # href is preserved
+    assert (
+        a_html.attrs.get("href", None)
+        == "https://example.com/file&reg=something"
+    )
+    # visible text must be the literal url, not contain the ® entity
+    assert a_html.text == "https://example.com/file&reg=something"
+    assert "®" not in html
+    # the raw html must escape the ampersand in the link body
+    assert "&amp;reg=something</a>" in html
+
+
 def test_link_ref_definition_double_quoted_title():
     """CommonMark 4.7: [label]: URL "title" — definition is silent, ref renders as link."""
     md = '[example]: http://example.com "Example title"\n\n[example]\n'

@@ -320,7 +320,9 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
 
     def link(self, text, url=None, title=None):
         if empty(text):
-            text = url
+            # the url is used as visible text, escape it so sequences
+            # like &reg are not interpreted as html entities (issue #545)
+            text = mistune.escape(url)
 
         # escape url
         link = mistune.escape_url(self.safe_url(url))
