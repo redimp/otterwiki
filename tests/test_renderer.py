@@ -1484,6 +1484,25 @@ def test_link_url_with_entity_issue545():
     assert 'href="https://example.com/file&amp;reg=something"' in html
 
 
+def test_link_url_trailing_entity_issue545():
+    """https://github.com/redimp/otterwiki/issues/545
+
+    An entity-like sequence at the very end of the URL (a trailing `&reg`
+    with no `=` behind it) is the case that actually leaked: escape_url
+    strips the escaping safe_url adds, and the final BeautifulSoup pass
+    then decodes the bare `&reg` into ®. The ampersand has to survive as
+    `&amp;` in the href so the browser gets the literal URL back.
+    """
+    md = "[text](https://example.com/?x=1&reg)"
+    html, _, _ = render.markdown(md)
+    a_html = BeautifulSoup(html, "html.parser").find('a')
+    assert a_html
+    assert a_html.attrs.get("href", None) == "https://example.com/?x=1&reg"
+    assert a_html.text == "text"
+    assert "®" not in html
+    assert 'href="https://example.com/?x=1&amp;reg"' in html
+
+
 def test_link_empty_text_url_with_entity_issue545():
     """https://github.com/redimp/otterwiki/issues/545
 
