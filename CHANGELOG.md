@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.22.1](https://github.com/redimp/otterwiki/releases/tag/v2.22.1) - 2026-07-30
+
+<small>[Compare with v2.22.0](https://github.com/redimp/otterwiki/compare/v2.22.0...v2.22.1)</small>
+
+### Features
+
+- Add a reset to remote function, see #532 ([f9c34e9](https://github.com/redimp/otterwiki/commit/f9c34e9) by @Getslow6, [fbd088f](https://github.com/redimp/otterwiki/commit/fbd088f) by @Getslow6, [f4ebcf7](https://github.com/redimp/otterwiki/commit/f4ebcf7) by @Getslow6).
+- Parse space and/or comma separated roles for the permission overrides, see #541 ([1b0eff6](https://github.com/redimp/otterwiki/commit/1b0eff6) by @Getslow6).
+
+### Bug Fixes
+
+- Escape URLs reused as link text and href to prevent HTML entity rendering, see #545 ([d7fb717](https://github.com/redimp/otterwiki/commit/d7fb717), [11e01be](https://github.com/redimp/otterwiki/commit/11e01be)).
+
+### Plugins
+
+- Match leading-slash and anchored WikiLinks in the referencing pages example, see #509 #527 ([be4795c](https://github.com/redimp/otterwiki/commit/be4795c)).
+
+### Refactoring
+
+- Tidy up page index alignment and styling, see #539 ([d795dfb](https://github.com/redimp/otterwiki/commit/d795dfb) by @ribbal, [cffc6fa](https://github.com/redimp/otterwiki/commit/cffc6fa) by @ribbal, [e251215](https://github.com/redimp/otterwiki/commit/e251215)).
+
+### Tests
+
+- Isolate storage, database and config per test to stop state leaking across the suite, at the cost of a slower test run ([1c80969](https://github.com/redimp/otterwiki/commit/1c80969), [2514eb2](https://github.com/redimp/otterwiki/commit/2514eb2)).
+
+### Dependencies
+
+- Bump gitpython from 3.1.50 to 3.1.54, see #542 ([70f4846](https://github.com/redimp/otterwiki/commit/70f4846) by @dependabot).
+
 ## [v2.22.0](https://github.com/redimp/otterwiki/releases/tag/v2.22.0) - 2026-07-22
 
 <small>[Compare with v2.21.1](https://github.com/redimp/otterwiki/compare/v2.21.1...v2.22.0)</small>
