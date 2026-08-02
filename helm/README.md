@@ -68,6 +68,7 @@ that can be configured during installation.
 | `affinity`                        | Affinity settings for pod assignment                 | `{}`                                        |
 | `tolerations`                     | Toleration labels for pod assignment                 | `[]`                                        |
 | `podAnnotations`                  | Pod annotations                                      | `{}`                                        |
+| `podLabelsAdditional`             | Specify additional labels to add to the pods         | `{}`                                        |
 
 
 The parameters can be specified using `--set key=value[,key=value]` as argument to `helm install`, e.g.
