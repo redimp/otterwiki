@@ -46,6 +46,7 @@ that can be configured during installation.
 | `service.type`                    | Kubernetes Service type                              | `ClusterIP`                                 |
 | `service.port`                    | Service HTTP port                                    | `80`                                        |
 | `ingress.enabled`                 | Enable ingress controller resource                   | `false`                                     |
+| `ingress.annotations`             | Configure custom annotations to add to the resource  | `{}`                                        |
 | `ingress.hosts[0].host`           | Hostname to your OtterWiki installation              | `otterwiki.local`                           |
 | `ingress.hosts[0].paths.path`     | Path within the url structure                        | `/`                                         |
 | `ingress.hosts[0].paths.pathType` | Path matching rule                                   | `ImplementationSpecific`                    |
@@ -57,6 +58,7 @@ that can be configured during installation.
 | `httproute.parentRefs`            | References to the parent Gateway controller objects  | `[]`                                        |
 | `httproute.rules`                 | Rules to apply to the HTTPRoute object               | `[]`                                        |
 | `persistence.enabled`             | Enable persistence using PVC                         | `true`                                      |
+| `persistence.annotations`         | Configure custom annotations to add to the resource  | `{}`                                        |
 | `persistence.existingClaim`       | Use an existing PVC instead of creating one          | `nil`                                       |
 | `persistence.storageClass`        | PVC Storage Class for OtterWiki volume               | `nil` (uses alpha storage class annotation) |
 | `persistence.accessMode`          | PVC Access Mode for OtterWiki volume                 | `ReadWriteOnce`                             |
