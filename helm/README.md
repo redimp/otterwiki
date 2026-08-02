@@ -28,7 +28,7 @@ helm repo update
 After that, to install the chart with the release name `my-otterwiki`, run:
 
 ```bash
-helm install my-otterwiki --version 0.1.0 otterwiki/otterwiki
+helm install my-otterwiki --version 0.2.0 otterwiki/otterwiki
 ```
 
 The command deploys An Otter Wiki on the kubernetes cluster in the default namespace
@@ -51,6 +51,11 @@ that can be configured during installation.
 | `ingress.hosts[0].paths.pathType` | Path matching rule                                   | `ImplementationSpecific`                    |
 | `ingress.hosts[0].tls[0].hosts[0]`  |  Hostname for which TLS will be configured         | `otterwiki.local`                           |
 | `ingress.hosts[0].tls[0].secretName` | TLS Secret (certificates)                         | `otterwiki-local-tls`                       |
+| `httproute.enabled`               | Enable Gateway API HTTPRoute resource                | `false`                                     |
+| `httproute.annotations`           | Configure custom annotations to add to the resource  | `{}`                                        |
+| `httproute.hostnames`             | List of hostnames to your OtterWiki installation     | `[otterwiki.local]`                         |
+| `httproute.parentRefs`            | References to the parent Gateway controller objects  | `[]`                                        |
+| `httproute.rules`                 | Rules to apply to the HTTPRoute object               | `[]`                                        |
 | `persistence.enabled`             | Enable persistence using PVC                         | `true`                                      |
 | `persistence.storageClass`        | PVC Storage Class for OtterWiki volume               | `nil` (uses alpha storage class annotation) |
 | `persistence.accessMode`          | PVC Access Mode for OtterWiki volume                 | `ReadWriteOnce`                             |
@@ -69,7 +74,7 @@ helm install my-otterwiki \
   --set config.SITE_DESCRIPTION="An Otter Wiki deployed with Helm" \
   --set ingress.enabled=true \
   --set ingress.hosts[0].host="helm.otterwiki.com" \
-  --version 0.1.0 \
+  --version 0.2.0 \
   otterwiki/otterwiki
 ```
 
@@ -89,14 +94,14 @@ and deploy it with
 ```bash
 helm install my-otterwiki \
   --values values.yaml \
-  --version 0.1.0 \
+  --version 0.2.0 \
   otterwiki/otterwiki
 ```
 
 The most recent default `values.yaml` can be fetched using
 
 ```bash
-helm show values --version 0.1.0 otterwiki/otterwiki > values.yaml
+helm show values --version 0.2.0 otterwiki/otterwiki > values.yaml
 ```
 
 ### Application configuration
