@@ -186,6 +186,15 @@ Options specific to CSV:
         if not src:
             return ''
 
+        # Reject path traversal early with a clear message. Attachment paths
+        # are always relative to a page's attachment directory, so a `..`
+        # component can only be an attempt to escape the repository.
+        if '..' in src.replace('\\', '/').split('/'):
+            raise ValueError(
+                f'datatable: invalid src "{src}", path traversal is not'
+                ' allowed.'
+            )
+
         delimiter = args.options.get(
             'delimiter',
             args.options.get('sep', args.options.get('separator', ';')),

@@ -1353,6 +1353,22 @@ class Attachment:
         )
         self.filepath = os.path.join(self.directory, filename)
         self.abspath = os.path.join(storage.path, self.filepath)
+        # Guard against path traversal: the resolved attachment path must
+        # stay within the storage repository. Without this a crafted filename
+        # (or pagepath) such as "../../settings.cfg" would allow reading files
+        # outside the wiki repository, e.g. via the DataTable embedding's
+        # `src` option.
+        storage_root = os.path.realpath(storage.path)
+        resolved_abspath = os.path.realpath(self.abspath)
+        if (
+            os.path.commonpath([storage_root, resolved_abspath])
+            != storage_root
+        ):
+            raise StorageError(
+                "Invalid attachment path "
+                f"'{os.path.join(pagepath, filename)}': path traversal "
+                "outside the repository is not allowed."
+            )
         self.mimetype = guess_mimetype(self.filepath)
         try:
             self.metadata = storage.metadata(
