@@ -14,7 +14,7 @@ If you run into any issues, please report them via [github](https://github.com/r
 
 - Kubernetes 1.23+
 - Helm 3.8.0+
-- PV provisioner support in the underlying infrastructure
+- PV provisioner support in the underlying infrastructure, or set `persistence.existingClaim`
 
 ## Installing the Chart
 
@@ -57,6 +57,7 @@ that can be configured during installation.
 | `httproute.parentRefs`            | References to the parent Gateway controller objects  | `[]`                                        |
 | `httproute.rules`                 | Rules to apply to the HTTPRoute object               | `[]`                                        |
 | `persistence.enabled`             | Enable persistence using PVC                         | `true`                                      |
+| `persistence.existingClaim`       | Use an existing PVC instead of creating one          | `nil`                                       |
 | `persistence.storageClass`        | PVC Storage Class for OtterWiki volume               | `nil` (uses alpha storage class annotation) |
 | `persistence.accessMode`          | PVC Access Mode for OtterWiki volume                 | `ReadWriteOnce`                             |
 | `persistence.size`                | PVC Storage Request for OtterWiki volume             | `512Mi`                                     |
