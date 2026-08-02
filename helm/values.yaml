@@ -56,6 +56,21 @@ ingress:
   #    hosts:
   #      - otterwiki.local
 
+httproute:
+  enabled: false
+  annotations: {}
+  hostnames:
+    - otterwiki.local
+  parentRefs: []
+  # See HTTPRoute.spec.parentRefs API specification.
+  # - group: gateway.networking.k8s.io
+  #   kind: Gateway
+  #   name: your-gateway-name
+  #   namespace: kube-system
+  rules: []
+  # See HTTPRoute.spec.rules API specification.
+  # Supported are filters, matches, and timeouts.
+
 resources: {}
   # limits:
   #   cpu: 100m
