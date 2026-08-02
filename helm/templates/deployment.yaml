@@ -23,6 +23,7 @@ spec:
       {{- end }}
       labels:
         {{- include "otterwiki.selectorLabels" . | nindent 8 }}
+        {{- toYaml .Values.podLabelsAdditional | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
