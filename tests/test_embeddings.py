@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import os
 import pytest
 from otterwiki.renderer import render
 from bs4 import BeautifulSoup
@@ -888,6 +889,84 @@ def test_datatable_csv_absolute_src(create_app):
     assert "Berlin" in html
     assert "Paris" in html
     assert "City" in html
+
+
+def _write_secret_outside_repo(create_app):
+    """Create a secret file in the parent directory of the repository and
+    return (path, content). Attachments live in `<repo>/<page>/`, so a
+    `../../` traversal from there lands in the repository's parent."""
+    secret_content = "SECRET_KEY = super-secret-value-12345\n"
+    secret_path = os.path.join(
+        os.path.dirname(create_app.storage.path.rstrip(os.sep)),
+        "secret.cfg",
+    )
+    with open(secret_path, "w") as f:
+        f.write(secret_content)
+    return secret_path, secret_content
+
+
+def test_datatable_csv_path_traversal_relative_blocked(create_app):
+    """A relative src with `..` must not read files outside the repository."""
+    secret_path, secret_content = _write_secret_outside_repo(create_app)
+    try:
+        author = ("Test Author", "test@example.com")
+        # a genuine attachment so the page's attachment directory exists
+        create_app.storage.store(
+            "csvtrav.md",
+            content="# Traversal\n{{datatable\n|src=../../secret.cfg\n"
+            "|header=false\n}}\n",
+            author=author,
+            message="traversal page",
+        )
+        create_app.storage.store(
+            "csvtrav/data.csv",
+            content="a;b\n1;2\n",
+            author=author,
+            message="add csv",
+        )
+        client = create_app.test_client()
+        response = client.get("/Csvtrav/view")
+        assert response.status_code == 200
+        html = response.data.decode()
+        # the secret must not leak into the rendered page
+        assert "super-secret-value-12345" not in html
+        # and the embedding reports a clear error instead
+        assert "traversal" in html.lower()
+    finally:
+        os.remove(secret_path)
+
+
+def test_datatable_csv_path_traversal_absolute_blocked(create_app):
+    """An absolute src with `..` must not escape the repository either."""
+    secret_path, secret_content = _write_secret_outside_repo(create_app)
+    try:
+        author = ("Test Author", "test@example.com")
+        create_app.storage.store(
+            "csvtravabs.md",
+            content="# Traversal\n{{datatable\n"
+            "|src=/csvtravabs/../../../secret.cfg\n|header=false\n}}\n",
+            author=author,
+            message="traversal abs page",
+        )
+        client = create_app.test_client()
+        response = client.get("/Csvtravabs/view")
+        assert response.status_code == 200
+        html = response.data.decode()
+        assert "super-secret-value-12345" not in html
+        assert "traversal" in html.lower()
+    finally:
+        os.remove(secret_path)
+
+
+def test_attachment_rejects_path_traversal(create_app):
+    """The Attachment constructor guards against traversal for every caller,
+    not just the DataTable embedding."""
+    from otterwiki.gitstorage import StorageError
+    from otterwiki.wiki import Attachment
+
+    with create_app.app_context():
+        with pytest.raises(StorageError):
+            Attachment("somepage", "../../secret.cfg")
 
 
 def test_attachmentlist(create_app):
