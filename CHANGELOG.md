@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.22.2](https://github.com/redimp/otterwiki/releases/tag/v2.22.2) - 2026-08-02
+
+<small>[Compare with v2.22.1](https://github.com/redimp/otterwiki/compare/v2.22.1...v2.22.2)</small>
+
+### Security Fixes
+
+- Prevent path traversal via attachment paths and the DataTable embedding `src`
+  option, which allowed reading files outside the wiki repository. Thanks to
+  @NomanProdhan for responsibly disclosing this issue
+  ([62a5336](https://github.com/redimp/otterwiki/commit/62a5336)).
+
 ## [v2.22.1](https://github.com/redimp/otterwiki/releases/tag/v2.22.1) - 2026-07-30
 
 <small>[Compare with v2.22.0](https://github.com/redimp/otterwiki/compare/v2.22.0...v2.22.1)</small>
