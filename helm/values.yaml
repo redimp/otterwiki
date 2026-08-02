@@ -24,6 +24,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 podAnnotations: {}
+podLabelsAdditional: {}
 
 podSecurityContext: {}
   # fsGroup: 2000
