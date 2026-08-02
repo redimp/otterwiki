@@ -85,6 +85,9 @@ persistence:
   accessMode: ReadWriteOnce
   annotations: {}
   storageClass: ""
+  #existingClaim: name-of-existing-pvc
+  # To use an existing claim persistence.enabled must also be true.
+  # Other options are ignored.
 
 nodeSelector: {}
 
