@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   @NomanProdhan for responsibly disclosing this issue
   ([62a5336](https://github.com/redimp/otterwiki/commit/62a5336)).
 
+### Dependencies
+
+- Bump gitpython from 3.1.54 to 3.1.55 ([78d6ba6](https://github.com/redimp/otterwiki/commit/78d6ba6)).
+
 ## [v2.22.1](https://github.com/redimp/otterwiki/releases/tag/v2.22.1) - 2026-07-30
 
 <small>[Compare with v2.22.0](https://github.com/redimp/otterwiki/compare/v2.22.0...v2.22.1)</small>
