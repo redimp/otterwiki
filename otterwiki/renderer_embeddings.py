@@ -34,6 +34,22 @@ def _style_attr(styles):
     return f' style="{mistune.escape(";".join(styles))}"'
 
 
+# a bare renderer instance, only used for its safe_url() helper below
+_url_safety = mistune.HTMLRenderer()
+
+
+def _safe_attr_url(url):
+    """Return *url* safe to interpolate into an HTML src/href attribute.
+
+    Harmful protocols (``javascript:``, ``data:``, ...) are neutralised and
+    the value is escaped so a crafted value (e.g. an ImageFrame/Video
+    ``|src=`` read from ``options_raw``) cannot break out of the attribute
+    and inject event handlers. Mirrors OtterwikiMdRenderer's handling of
+    link and image URLs.
+    """
+    return mistune.escape_url(_url_safety.safe_url(url))
+
+
 class DatatableEmbedding:
     @hookimpl
     def info(self):
@@ -575,9 +591,10 @@ div.imageframe {
                     )
                 alt = alt or mistune.escape(att_filename)
                 img_url = attachment.get_url()
+            safe_img_url = _safe_attr_url(img_url)
             content += (
-                f'<a href="{img_url}" target="_blank">'
-                f'<img src="{img_url}" alt="{alt}" style="width:100%">'
+                f'<a href="{safe_img_url}" target="_blank">'
+                f'<img src="{safe_img_url}" alt="{alt}" style="width:100%">'
                 f'</a>'
             )
         else:
@@ -681,7 +698,9 @@ https://www.youtube.com/watch?v=dQw4w9WgXcQ
     ):
         if embedding.lower() != "video":
             return None
-        width = args.options_raw.get("width", "100%")
+        # width is read raw and interpolated into an attribute; escape it so
+        # a crafted value cannot break out and inject event handlers
+        width = mistune.escape(args.options_raw.get("width", "100%"))
         flags = []
         if args.get_flag("controls", True):
             flags.append("controls")
@@ -746,7 +765,7 @@ https://www.youtube.com/watch?v=dQw4w9WgXcQ
                     t = " type=\"video/mp4\""
                 elif s.endswith(".ogg"):
                     t = " type=\"video/ogg\""
-                video_sources += f'<source src="{s}"{t}>\n'
+                video_sources += f'<source src="{_safe_attr_url(s)}"{t}>\n'
 
         if video_sources:
             html_parts.append(
