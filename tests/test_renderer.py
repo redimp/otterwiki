@@ -1610,3 +1610,96 @@ def test_link_escape():
     assert a_html.text == "fixed width code"
     code_html = a_html.findChild("code")
     assert str(code_html) == "<code>fixed width code</code>"
+
+
+def _assert_no_event_handlers(html):
+    """Fail if any rendered tag carries an on* event-handler attribute."""
+    soup = BeautifulSoup(html, "html.parser")
+    for tag in soup.find_all(True):
+        for attr in tag.attrs:
+            assert not attr.lower().startswith(
+                "on"
+            ), f"event handler {attr!r} injected on <{tag.name}>: {html!r}"
+
+
+def test_fancyblock_family_no_xss():
+    """A crafted ::: family must not break out of the class attribute."""
+    md = '::: x" onmouseover="alert(1)\nbody\n:::\n'
+    html, _, _ = render.markdown(md)
+    _assert_no_event_handlers(html)
+    # the crafted quote is escaped, so the class attribute stays a single
+    # inert value and no onmouseover attribute node is created
+    soup = BeautifulSoup(html, "html.parser")
+    div = soup.find("div", class_="alert")
+    assert div is not None
+    assert "onmouseover" not in div.attrs
+    # legitimate custom family still yields its class
+    html, _, _ = render.markdown("::: info\nbody\n:::\n")
+    assert "alert-primary" in html
+
+
+def test_fancyblock_header_no_xss():
+    """A crafted ::: header line must not inject HTML."""
+    md = "::: info\n# <img src=x onerror=alert(1)>\nbody\n:::\n"
+    html, _, _ = render.markdown(md)
+    _assert_no_event_handlers(html)
+    assert "<img" not in html
+    # legitimate header still renders as an alert-heading
+    html, _, _ = render.markdown("::: info\n# Heading\nbody\n:::\n")
+    soup = BeautifulSoup(html, "html.parser")
+    heading = soup.find("h4", class_="alert-heading")
+    assert heading is not None
+    assert heading.get_text(strip=True) == "Heading"
+
+
+def test_fold_header_no_xss():
+    """A crafted fold header must not inject HTML."""
+    md = ">| # <img src=x onerror=alert(1)>\n>| body\n"
+    html, _, _ = render.markdown(md)
+    _assert_no_event_handlers(html)
+    assert "<img" not in html
+    # a normal fold still renders a summary
+    html, _, _ = render.markdown(">| body\n")
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup.find("summary", class_="collapse-header") is not None
+
+
+def test_math_no_xss():
+    """Crafted math source must not inject HTML into the MathJax text node."""
+    payloads = [
+        "$$<img src=x onerror=alert(1)>$$",
+        "inline $<img src=x onerror=alert(1)>$ text",
+        "- $$<img src=x onerror=alert(1)>$$\n",
+    ]
+    for md in payloads:
+        html, _, _ = render.markdown(md)
+        _assert_no_event_handlers(html)
+        assert "<img" not in html
+    # legitimate math still typesets (angle brackets/ampersands survive as
+    # entities that the browser decodes back before MathJax reads them)
+    html, _, _ = render.markdown("inline $a < b$ text")
+    assert "\\(a &lt; b\\)" in html
+    html, _, _ = render.markdown("$$a & b$$")
+    assert "\\[a &amp; b\\]" in html
+
+
+def test_frontmatter_title_no_xss():
+    """A crafted frontmatter title must not inject HTML into the <h1>."""
+    md = "---\ntitle: <img src=x onerror=alert(1)>\n---\n"
+    html, _, _ = render.markdown(md)
+    _assert_no_event_handlers(html)
+    assert "<img" not in html
+    # a normal title still yields an <h1>
+    html, _, _ = render.markdown("---\ntitle: My Title\n---\n")
+    soup = BeautifulSoup(html, "html.parser")
+    h1 = soup.find("h1")
+    assert h1 is not None
+    assert h1.get_text(strip=True) == "My Title"
+
+
+def test_frontmatter_body_no_xss():
+    """A crafted frontmatter body must not break out of the <pre> block."""
+    md = '---\nfoo: "</pre><img src=x onerror=alert(2)>"\n---\n'
+    html, _, _ = render.markdown(md)
+    _assert_no_event_handlers(html)
+    assert "<img" not in html

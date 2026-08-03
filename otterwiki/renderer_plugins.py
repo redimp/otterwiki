@@ -22,6 +22,7 @@ import re
 import string
 import yaml
 import base64
+import mistune
 
 from mistune.helpers import LINK_LABEL
 from mistune.util import unikey
@@ -418,11 +419,11 @@ class mistunePluginFancyBlocks:
         elif family in ["none", "empty"]:
             cls = "alert"
         elif family is not None:
-            cls = f"alert alert-{family}"
+            cls = f"alert alert-{mistune.escape(family)}"
         else:
             cls = "alert"
         if header is not None:
-            header = f'<h4 class="alert-heading">{header}</h4>'
+            header = f'<h4 class="alert-heading">{mistune.escape(header)}</h4>'
         else:
             header = ""
         text = text.strip()
@@ -533,6 +534,7 @@ class mistunePluginFold:
             text = text[:-4]
         if header is None:
             header = "..."
+        header = mistune.escape(header)
         return f'''<details class="collapse-panel">
 <summary class="collapse-header">
 {header}
@@ -592,6 +594,7 @@ class mistunePluginMath:
 
     def render_html_block(self, md_renderer, text):
         self._mark_required(md_renderer)
+        text = mistune.escape(text, quote=False)
         return f'''\n\\[{text}\\]\n'''
 
     def parse_inline(self, inline, m, state):
@@ -606,6 +609,7 @@ class mistunePluginMath:
 
     def render_html_inline(self, md_renderer, text):
         self._mark_required(md_renderer)
+        text = mistune.escape(text, quote=False)
         return '\\(' + text + '\\)'
 
     def parse_display_inline(self, inline, m, state):
@@ -625,6 +629,7 @@ class mistunePluginMath:
 
     def render_html_display_inline(self, md_renderer, text):
         self._mark_required(md_renderer)
+        text = mistune.escape(text, quote=False)
         return '\\[' + text + '\\]'
 
     def __call__(self, md):
@@ -878,7 +883,7 @@ class mistunePluginFrontmatter:
         <details class="collapse-panel" id="frontmatter">
             <summary class="collapse-header">Properties</summary>
             <div class="collapse-content">
-                <pre>{text}</pre>
+                <pre>{mistune.escape(text)}</pre>
             </div>
         </details>
         '''
@@ -928,7 +933,7 @@ class mistunePluginFrontmatterTitle:
             'has_h1_heading', False
         ):
             title = state.env['frontmatter_title']
-            h1_element = f'<h1>{title}</h1>'
+            h1_element = f'<h1>{mistune.escape(title)}</h1>'
 
             # Insert after frontmatter if present
             if '<details class="collapse-panel" id="frontmatter">' in result:

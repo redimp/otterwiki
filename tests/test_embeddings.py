@@ -236,6 +236,22 @@ def test_video_width_no_xss():
         _assert_no_event_handlers(html)
 
 
+def test_infobox_key_no_xss():
+    """A crafted InfoBox key must not inject HTML/event handlers. The \\=
+    escape lets an attacker smuggle a raw key past the |key=value split."""
+    md = "{{InfoBox\n|<svg onload\\=alert(1)>=v\n}}\n"
+    html, _, _ = render.markdown(md)
+    _assert_no_event_handlers(html)
+    assert "<svg" not in html
+    # a normal key still renders inside <strong>
+    md = "{{InfoBox\n|Name=Alice\n}}\n"
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    strong = soup.find("strong")
+    assert strong is not None
+    assert strong.get_text(strip=True) == "Name"
+
+
 def test_imageframe_alias():
     md = """
 {{Image Frame
@@ -802,6 +818,42 @@ def test_datatable_csv_header_override(create_app):
     assert (
         "Score" not in table.find("thead").decode_contents()
     )  # pyright:ignore
+
+
+def test_datatable_csv_header_override_no_xss(create_app):
+    """A crafted |headers= value in CSV mode must not inject HTML into the
+    generated <th> cells."""
+    author = ("Test Author", "test@example.com")
+    csv_content = "Name;Score\nAlice;42\nBob;7\n"
+    create_app.storage.store(
+        "csvpage_xss.md",
+        content=(
+            "# CSV Test\n{{datatable\n|src=data.csv\n"
+            "|headers=<img src=x onerror=alert(1)>,Points\n}}\n"
+        ),
+        author=author,
+        message="csv page",
+    )
+    create_app.storage.store(
+        "csvpage_xss/data.csv",
+        content=csv_content,
+        author=author,
+        message="add csv",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvpage_xss/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find(
+        "table", id=lambda v: v and v.startswith("s-dt-")  # pyright: ignore
+    )
+    assert table is not None
+    thead = table.find("thead")  # pyright: ignore
+    assert thead is not None
+    _assert_no_event_handlers(str(table))
+    # the crafted header must not inject a live <img> into the header cells
+    assert thead.find("img") is None  # pyright: ignore
 
 
 def test_datatable_csv_no_header(create_app):

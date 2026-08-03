@@ -946,7 +946,7 @@ table.infobox td {
                 continue
             if key.startswith("_"):
                 key = key[1:]
-            table_html += f'<tr class="infobox-key-value"><td><strong>{key}</strong></td><td>{value}</td></tr>'
+            table_html += f'<tr class="infobox-key-value"><td><strong>{mistune.escape(key)}</strong></td><td>{value}</td></tr>'
         table_html += "</table>"
 
         return f'<div class="infobox infobox-float-{floating}"{style_attr}>{caption_html}{table_html}</div>'
