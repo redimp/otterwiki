@@ -455,6 +455,38 @@ def test_datatable_javascript():
     assert "s-dt-" in js
 
 
+def test_datatable_javascript_error_isolation():
+    """Each DataTable init is wrapped in its own try/catch so that a single
+    table that fails to initialize (e.g. a heading/column count mismatch)
+    does not abort the shared script and break the remaining tables. The
+    caught error is reported to the console with the offending table id."""
+    from otterwiki.plugins import collect_hook
+
+    # two independent tables in one document -> one shared script block
+    md = """\
+{{datatable
+| A | B |
+| - | - |
+| 1 | 2 |
+}}
+
+{{datatable
+| C | D |
+| - | - |
+| 3 | 4 |
+}}
+"""
+    render.markdown(md)
+    js = "".join(collect_hook("renderer_javascript"))
+    # every init is guarded and logs a descriptive, id-specific error
+    assert js.count("try {") == 2
+    assert js.count("} catch (error) {") == 2
+    assert js.count("simpleDatatables.DataTable") == 2
+    assert (
+        js.count("An Otter Wiki: failed to initialize DataTable #s-dt-") == 2
+    )
+
+
 def test_datatable_options_bool():
     from otterwiki.plugins import collect_hook
 
