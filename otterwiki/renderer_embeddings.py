@@ -418,7 +418,11 @@ Options specific to CSV:
                         pass
             script += f"""
 let options_{id} = {{{", ".join(jsoptions)}}};
-let datatable_{id} = new simpleDatatables.DataTable("#s-dt-{id}", options_{id});
+try {{
+    let datatable_{id} = new simpleDatatables.DataTable("#s-dt-{id}", options_{id});
+}} catch (error) {{
+    console.error("An Otter Wiki: failed to initialize DataTable #s-dt-{id}:", error);
+}}
 """
         return script
 
