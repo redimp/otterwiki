@@ -184,6 +184,58 @@ Content
         assert "&quot;" in html
 
 
+def _assert_no_event_handlers(html):
+    """Fail if any rendered tag carries an on* event-handler attribute."""
+    soup = BeautifulSoup(html, "html.parser")
+    for tag in soup.find_all(True):
+        for attr in tag.attrs:
+            assert not attr.lower().startswith(
+                "on"
+            ), f"event handler {attr!r} injected on <{tag.name}>: {html!r}"
+
+
+def test_imageframe_src_no_xss():
+    """A crafted |src= must not break out of the attribute and inject an
+    event handler (see the ImageFrame/Video XSS report)."""
+    payloads = [
+        'http://x" autofocus onfocus="alert(document.domain)',
+        'https://e.com/x.png" onerror="alert(1)',
+    ]
+    for payload in payloads:
+        md = f"{{{{ImageFrame\n|src={payload}\n}}}}\n"
+        html, _, _ = render.markdown(md)
+        _assert_no_event_handlers(html)
+        # the crafted double-quote must not survive as a live attribute
+        # delimiter (it is neutralised via escaping/percent-encoding)
+        assert 'onfocus="' not in html
+        assert 'onerror="' not in html
+
+
+def test_video_src_no_xss():
+    """A crafted Video src (option or positional) must not inject an event
+    handler onto the <source> element."""
+    payloads = [
+        '{{Video\n|src=https://e.com/v.mp4" onerror="alert(1)\n}}\n',
+        '{{Video\nhttps://e.com/v.mp4" onerror="alert(1)\n}}\n',
+    ]
+    for md in payloads:
+        html, _, _ = render.markdown(md)
+        _assert_no_event_handlers(html)
+
+
+def test_video_width_no_xss():
+    """A crafted |width= must not break out of the attribute — on the file
+    <video> element or on the YouTube <iframe>."""
+    payloads = [
+        '{{Video\n|width=100" onmouseover="alert(1)\n/x.mp4\n}}\n',
+        '{{Video\n|width=100" onmouseover="alert(1)\n'
+        'https://youtu.be/dQw4w9WgXcQ\n}}\n',
+    ]
+    for md in payloads:
+        html, _, _ = render.markdown(md)
+        _assert_no_event_handlers(html)
+
+
 def test_imageframe_alias():
     md = """
 {{Image Frame
