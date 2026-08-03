@@ -493,7 +493,7 @@ class GitStorage(object):
         message=None,
         author=None,
         no_commit=False,
-        files_updated=[],
+        files_updated=None,
     ):
         if self.exists(new_filename):
             raise StorageError(
@@ -516,7 +516,7 @@ class GitStorage(object):
         if message is None:
             message = "{} renamed to {}.".format(old_filename, new_filename)
         if not no_commit:
-            files_updated.append(new_filename)
+            files_updated = (files_updated or []) + [new_filename]
             self.commit(files_updated, message, author, no_add=True)
 
     def list(self, p=None, depth=None, exclude=[]):
