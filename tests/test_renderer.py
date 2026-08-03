@@ -1666,8 +1666,13 @@ def test_fold_header_no_xss():
 
 def test_math_no_xss():
     """Crafted math source must not inject HTML into the MathJax text node."""
+    # The block-math payloads are wrapped in surrounding paragraphs so the
+    # rendered output contains real HTML tags. A standalone math block renders
+    # to a tag-less "\\[...\\]" string, whose backslash delimiters otherwise
+    # trip BeautifulSoup's MarkupResemblesLocatorWarning (it mistakes them for
+    # a file path). The wrapping does not affect what is being tested.
     payloads = [
-        "$$<img src=x onerror=alert(1)>$$",
+        "Text before\n\n$$<img src=x onerror=alert(1)>$$\n\nText after",
         "inline $<img src=x onerror=alert(1)>$ text",
         "- $$<img src=x onerror=alert(1)>$$\n",
     ]
@@ -1679,7 +1684,7 @@ def test_math_no_xss():
     # entities that the browser decodes back before MathJax reads them)
     html, _, _ = render.markdown("inline $a < b$ text")
     assert "\\(a &lt; b\\)" in html
-    html, _, _ = render.markdown("$$a & b$$")
+    html, _, _ = render.markdown("Text before\n\n$$a & b$$\n\nText after")
     assert "\\[a &amp; b\\]" in html
 
 
