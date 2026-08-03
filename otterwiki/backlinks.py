@@ -28,6 +28,17 @@ IMAGE_LINK_RE = re.compile(r"!\[([^\]]*)\]\((/[^)]+)\)")
 MARKDOWN_LINK_RE = re.compile(r"\[([^\]]+)\]\((/[^)]+)\)")
 
 
+def _strip_md(pagepath):
+    """Strip a trailing ``.md`` extension to get the page/attachment path.
+
+    Only a literal ``.md`` suffix is removed; dots elsewhere in the page
+    name (e.g. ``Report.Final``) are preserved.
+    """
+    if pagepath.endswith(".md"):
+        return pagepath[:-3]
+    return pagepath
+
+
 def _is_linktitle_style():
     """True if the link is the *left* side of ``[[left|right]]``."""
     style = (
@@ -130,8 +141,8 @@ def _rewrite_url(url, old_pagepath, new_pagepath):
     #
     # First: attachment URLs
     #
-    old_page_dir = quote(old_pagepath.rsplit(".", 1)[0].strip("/"), safe="/")
-    new_page_dir = quote(new_pagepath.rsplit(".", 1)[0].strip("/"), safe="/")
+    old_page_dir = quote(_strip_md(old_pagepath).strip("/"), safe="/")
+    new_page_dir = quote(_strip_md(new_pagepath).strip("/"), safe="/")
 
     old_prefix = "/" + old_page_dir + "/"
 
