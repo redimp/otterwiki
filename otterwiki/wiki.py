@@ -1008,42 +1008,51 @@ class Page:
         # (e.g. the target already exists), and we must not rewrite backlinks
         # in other pages before the rename itself has succeeded - otherwise a
         # failure would leave those rewrites staged but uncommitted.
-        changed_files = []
-        if (len(files) + len(directories)) > 0:
-            # rename attachment directory
-            new_attachment_directoryname = get_attachment_directoryname(
-                new_filename
-            )
-            storage.rename(
-                self.attachment_directoryname,
-                new_attachment_directoryname,
-                author=author,
-                message=message,
-                no_commit=True,
-            )
-            changed_files.append(new_attachment_directoryname)
-        # rename page
-        if self.exists:
-            storage.rename(
-                self.filename,
-                new_filename,
-                message=message,
-                author=author,
-                no_commit=True,
-            )
-            changed_files.append(new_filename)
+        #
+        # Everything up to and including the commit is staged in the working
+        # tree; if any step raises we roll the repository back to HEAD so a
+        # partially applied rename never leaves dangling changes behind.
+        try:
+            changed_files = []
+            if (len(files) + len(directories)) > 0:
+                # rename attachment directory
+                new_attachment_directoryname = get_attachment_directoryname(
+                    new_filename
+                )
+                storage.rename(
+                    self.attachment_directoryname,
+                    new_attachment_directoryname,
+                    author=author,
+                    message=message,
+                    no_commit=True,
+                )
+                changed_files.append(new_attachment_directoryname)
+            # rename page
+            if self.exists:
+                storage.rename(
+                    self.filename,
+                    new_filename,
+                    message=message,
+                    author=author,
+                    no_commit=True,
+                )
+                changed_files.append(new_filename)
 
-        # Now that the rename has succeeded, rewrite backlinks in other pages.
-        pages_updated = (
-            rename_backlinks(self.filename, new_pagename)
-            if update_backlinks
-            else {}
-        )
-        changed_files += list(pages_updated.keys())
+            # Now that the rename has succeeded, rewrite backlinks in other
+            # pages.
+            pages_updated = (
+                rename_backlinks(self.filename, new_pagename)
+                if update_backlinks
+                else {}
+            )
+            changed_files += list(pages_updated.keys())
 
-        # Commit the rename together with the rewritten backlinks, so the
-        # repository is never left with uncommitted changes.
-        storage.commit(changed_files, message, author, no_add=True)
+            # Commit the rename together with the rewritten backlinks, so the
+            # repository is never left with uncommitted changes.
+            storage.commit(changed_files, message, author, no_add=True)
+        except Exception:
+            storage.reset()
+            raise
 
         # notify plugins of backlink pages updated
         for pagepath, content in pages_updated.items():

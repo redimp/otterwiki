@@ -111,6 +111,54 @@ def test_rename_leaves_no_uncommitted_changes(test_client):
     )
 
 
+def test_rename_rolls_back_when_backlink_rewrite_fails(
+    test_client, monkeypatch
+):
+    """If any step fails after the rename has been staged, the repository
+    must be rolled back to its previous state - neither the staged rename nor
+    the partially rewritten backlinks may be left in the working tree."""
+    storage = test_client.application.storage
+    save_shortcut(
+        test_client, "RollbackTarget", "# RollbackTarget\n", "created target"
+    )
+    save_shortcut(
+        test_client,
+        "RollbackLinker",
+        "# RollbackLinker\n\n[a link](/RollbackTarget)\n",
+        "created linker",
+    )
+    head_before = _git_show(storage, "rollbacktarget.md")
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("simulated backlink rewrite failure")
+
+    monkeypatch.setattr("otterwiki.wiki.rename_backlinks", boom)
+
+    # the rename must fail gracefully (handle_rename catches and toasts)
+    rv = test_client.post(
+        "/RollbackTarget/rename",
+        data={
+            "new_pagename": "RollbackRenamed",
+            "message": "",
+            "update_backlinks": "1",
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # the repository must be clean ...
+    status = _git_status(storage)
+    assert status == "", (
+        "repository left dirty after failed rename; uncommitted changes:\n"
+        + status
+    )
+    # ... the original page must still exist under its old name ...
+    assert storage.exists("rollbacktarget.md")
+    assert not storage.exists("rollbackrenamed.md")
+    # ... and the backlink must be untouched.
+    assert _git_show(storage, "rollbacktarget.md") == head_before
+
+
 def test_rename_updates_percent_encoded_markdown_link(test_client):
     """Markdown links to a page with a space in its name are commonly
     written percent-encoded, e.g. [a link](/Target%20Page). Renaming

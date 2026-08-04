@@ -422,6 +422,18 @@ class GitStorage(object):
         if repo_manager:
             repo_manager.auto_push_if_enabled()
 
+    def reset(self, revision="HEAD"):
+        """Discard staged and working-tree changes, restoring the repository
+        to `revision` (HEAD by default). Used to roll back a partially
+        applied, uncommitted operation so the repository is never left with
+        dangling changes.
+        """
+        self._validate_revision(revision)
+        try:
+            self.repo.git.reset("--hard", revision)
+        except git.exc.GitCommandError as e:
+            raise StorageError("Reset to {} failed: {}.".format(revision, e))
+
     def revert(self, revision, message="", author=("", "")):
         self._validate_revision(revision)
         actor = git.Actor(author[0], author[1])
