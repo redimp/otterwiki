@@ -1010,8 +1010,11 @@ class Page:
         # failure would leave those rewrites staged but uncommitted.
         #
         # Everything up to and including the commit is staged in the working
-        # tree; if any step raises we roll the repository back to HEAD so a
+        # tree; if any step raises we roll the paths below back to HEAD so a
         # partially applied rename never leaves dangling changes behind.
+        # `touched` collects both sides of every rename, since rolling one
+        # back means restoring the old path and dropping the new one.
+        touched = [self.filename, new_filename]
         try:
             changed_files = []
             if (len(files) + len(directories)) > 0:
@@ -1019,6 +1022,10 @@ class Page:
                 new_attachment_directoryname = get_attachment_directoryname(
                     new_filename
                 )
+                touched += [
+                    self.attachment_directoryname,
+                    new_attachment_directoryname,
+                ]
                 storage.rename(
                     self.attachment_directoryname,
                     new_attachment_directoryname,
@@ -1046,12 +1053,21 @@ class Page:
                 else {}
             )
             changed_files += list(pages_updated.keys())
+            touched += list(pages_updated.keys())
 
             # Commit the rename together with the rewritten backlinks, so the
             # repository is never left with uncommitted changes.
             storage.commit(changed_files, message, author, no_add=True)
         except Exception:
-            storage.reset()
+            try:
+                storage.restore(touched)
+            except Exception as rollback_error:
+                # never let a failed rollback mask what actually went wrong
+                app.logger.error(
+                    "Rolling back the rename of %s failed: %s",
+                    self.filename,
+                    rollback_error,
+                )
             raise
 
         # notify plugins of backlink pages updated. rename_backlinks() keys

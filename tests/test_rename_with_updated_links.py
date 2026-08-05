@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import logging
+import os
 import re
 import subprocess
 import sys
 
 import pytest
 
+from otterwiki import gitstorage
 from otterwiki.plugins import hookimpl
 
 
@@ -240,6 +243,81 @@ def test_rename_rolls_back_when_backlink_rewrite_fails(
     assert not storage.exists("rollbackrenamed.md")
     # ... and the backlink must be untouched.
     assert _git_show(storage, "rollbacktarget.md") == head_before
+
+
+def test_rename_rollback_keeps_unrelated_uncommitted_changes(
+    test_client, monkeypatch
+):
+    """Rolling a failed rename back must only touch the paths that rename
+    involved. Uncommitted work elsewhere in the repository - the webhook pull
+    thread merging into the working tree, say - must survive."""
+    storage = test_client.application.storage
+    save_shortcut(
+        test_client, "ScopeTarget", "# ScopeTarget\n", "created target"
+    )
+    save_shortcut(
+        test_client,
+        "ScopeLinker",
+        "# ScopeLinker\n\n[a link](/ScopeTarget)\n",
+        "created linker",
+    )
+    save_shortcut(
+        test_client, "Bystander", "# Bystander\n", "created bystander"
+    )
+
+    # simulate a concurrent, uncommitted change to an unrelated page: staged
+    # in the index and present in the working tree, but not committed
+    bystander = "# Bystander\n\nwritten by another thread\n"
+    storage.update(filename="bystander.md", content=bystander)
+    # and an unrelated untracked file
+    untracked = os.path.join(storage.path, "unrelated.md")
+    with open(untracked, "w") as f:
+        f.write("# Unrelated\n")
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("simulated backlink rewrite failure")
+
+    monkeypatch.setattr("otterwiki.wiki.rename_backlinks", boom)
+
+    rename_shortcut(test_client, "ScopeTarget", "ScopeRenamed")
+
+    # the rename was rolled back ...
+    assert storage.exists("scopetarget.md")
+    assert not storage.exists("scoperenamed.md")
+    # ... but the concurrent change survived, in the working tree ...
+    assert storage.load("bystander.md") == bystander
+    # ... and still staged ...
+    assert "M  bystander.md" in _git_status(storage)
+    # ... and the untracked file was not swept away either.
+    assert os.path.exists(untracked)
+
+
+def test_rename_logs_but_does_not_mask_a_failed_rollback(
+    test_client, monkeypatch, caplog
+):
+    """If the rollback itself fails it must be logged, but the error that
+    caused the rename to fail is what has to reach the caller - otherwise the
+    root cause is lost."""
+    storage = test_client.application.storage
+    save_shortcut(test_client, "MaskTarget", "# MaskTarget\n", "created")
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("simulated backlink rewrite failure")
+
+    def rollback_boom(*args, **kwargs):
+        raise gitstorage.StorageError("simulated rollback failure")
+
+    monkeypatch.setattr("otterwiki.wiki.rename_backlinks", boom)
+    monkeypatch.setattr(storage, "restore", rollback_boom)
+
+    with caplog.at_level(logging.ERROR):
+        rename_shortcut(test_client, "MaskTarget", "MaskRenamed")
+
+    messages = caplog.text
+    # the rollback failure is reported ...
+    assert "simulated rollback failure" in messages
+    # ... and the original error still surfaced through handle_rename
+    assert "simulated backlink rewrite failure" in messages
 
 
 def test_rename_updates_percent_encoded_markdown_link(test_client):

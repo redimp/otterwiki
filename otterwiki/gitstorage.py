@@ -422,17 +422,59 @@ class GitStorage(object):
         if repo_manager:
             repo_manager.auto_push_if_enabled()
 
-    def reset(self, revision="HEAD"):
-        """Discard staged and working-tree changes, restoring the repository
-        to `revision` (HEAD by default). Used to roll back a partially
+    def _known_paths(self, paths, revision):
+        """Filter `paths` down to what git knows about, either in the index
+        or in `revision`.
+
+        `git restore` fails on a pathspec that matches neither, which happens
+        when an operation is rolled back before anything was staged. Both
+        commands below are used with `-z` so that paths are reported
+        verbatim, without the quoting `core.quotePath` applies to non-ASCII
+        page names.
+        """
+        paths = [p for p in paths if p]
+        if not paths:
+            return set()
+        known = set()
+        # paths currently in the index
+        known.update(self.repo.git.ls_files("-z", "--", *paths).split("\0"))
+        # paths present in the revision. A staged rename drops the old path
+        # from the index, so the index alone is not enough.
+        known.update(
+            self.repo.git.ls_tree(
+                "-r", "-z", "--name-only", revision, "--", *paths
+            ).split("\0")
+        )
+        return {p for p in known if p}
+
+    def restore(self, paths, revision="HEAD"):
+        """Discard staged and working-tree changes below `paths`, restoring
+        them to `revision` (HEAD by default). Used to roll back a partially
         applied, uncommitted operation so the repository is never left with
         dangling changes.
+
+        Only the given paths are touched: uncommitted changes elsewhere in
+        the repository - a concurrent pull, for instance - are left alone.
         """
         self._validate_revision(revision)
+        known = self._known_paths(paths, revision)
+        if not known:
+            return
         try:
-            self.repo.git.reset("--hard", revision)
+            self.repo.git.restore(
+                "--source",
+                revision,
+                "--staged",
+                "--worktree",
+                "--",
+                *sorted(known),
+            )
         except git.exc.GitCommandError as e:
-            raise StorageError("Reset to {} failed: {}.".format(revision, e))
+            raise StorageError(
+                "Restoring {} to {} failed: {}.".format(
+                    ", ".join(sorted(known)), revision, e
+                )
+            )
 
     def revert(self, revision, message="", author=("", "")):
         self._validate_revision(revision)

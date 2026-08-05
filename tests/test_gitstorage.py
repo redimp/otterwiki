@@ -545,3 +545,51 @@ def test_valid_revisions_still_accepted(storage_with_page):
     assert storage_with_page.blame("Home.md", revision="HEAD")
     # uppercase hex prefix
     assert storage_with_page.blame("Home.md", revision=rev_a.upper())
+
+
+def test_restore_is_scoped_to_the_given_paths(storage):
+    """restore() must undo staged and working-tree changes below the given
+    paths only, leaving the rest of the repository alone."""
+    author = ("Example Author", "mail@example.com")
+    storage.store("target.md", content="target\n", author=author)
+    storage.store("bystander.md", content="bystander\n", author=author)
+    # stage a rename and an edit of the target ...
+    storage.rename("target.md", "renamed.md", author=author, no_commit=True)
+    # ... plus an unrelated, uncommitted change
+    storage.update(filename="bystander.md", content="bystander changed\n")
+
+    storage.restore(["target.md", "renamed.md"])
+
+    # the rename is undone ...
+    assert storage.exists("target.md")
+    assert not storage.exists("renamed.md")
+    assert storage.load("target.md") == "target\n"
+    # ... the unrelated change is untouched
+    assert storage.load("bystander.md") == "bystander changed\n"
+    assert "bystander.md" in storage.repo.git.diff("--cached", "--name-only")
+
+
+def test_restore_ignores_paths_unknown_to_git(storage):
+    """A rollback can run before anything was staged, so restore() must
+    tolerate paths git has never heard of instead of raising."""
+    author = ("Example Author", "mail@example.com")
+    storage.store("kept.md", content="kept\n", author=author)
+
+    # neither path is in the index or in HEAD
+    storage.restore(["never_existed.md", "no/such/dir"])
+    storage.restore([])
+
+    assert storage.load("kept.md") == "kept\n"
+
+
+def test_restore_handles_non_ascii_paths(storage):
+    """Paths are passed to git with -z, so page names git would otherwise
+    quote (core.quotePath) are still matched."""
+    author = ("Example Author", "mail@example.com")
+    filename = "Übung Sätze.md"
+    storage.store(filename, content="original\n", author=author)
+    storage.update(filename=filename, content="changed\n")
+
+    storage.restore([filename])
+
+    assert storage.load(filename) == "original\n"
