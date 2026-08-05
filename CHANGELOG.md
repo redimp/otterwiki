@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.23.0](https://github.com/redimp/otterwiki/releases/tag/v2.23.0) - 2026-08-05
+
+<small>[Compare with v2.22.2](https://github.com/redimp/otterwiki/compare/v2.22.2...v2.23.0)</small>
+
+### Security Fixes
+
+- Escape user-controlled URLs in the ImageFrame and Video embeddings, which
+  allowed stored XSS via attribute breakout. Thanks to @Jellexer for responsibly
+  disclosing this issue
+  ([c8eb5cc](https://github.com/redimp/otterwiki/commit/c8eb5cc)).
+- Escape user-controlled input in renderer plugins and embeddings to prevent
+  stored XSS in FancyBlocks, Fold, Math, Frontmatter and InfoBox
+  ([84b911e](https://github.com/redimp/otterwiki/commit/84b911e)).
+
+### Features
+
+- Update backlinks when a page is renamed, covering WikiLinks, Markdown links
+  and links to attachments. Controlled by a new **Update backlinks** checkbox on
+  the rename page. Implemented by @ribbal, picking up the example plugin
+  @skirmess contributed in #508, see #228 #508 #530
+  (by @ribbal:
+  [e4e2a31](https://github.com/redimp/otterwiki/commit/e4e2a31),
+  [0be30e8](https://github.com/redimp/otterwiki/commit/0be30e8),
+  [3027e8d](https://github.com/redimp/otterwiki/commit/3027e8d),
+  [a964573](https://github.com/redimp/otterwiki/commit/a964573);
+  follow-ups:
+  [7203218](https://github.com/redimp/otterwiki/commit/7203218),
+  [4c8bf54](https://github.com/redimp/otterwiki/commit/4c8bf54),
+  [5b347bd](https://github.com/redimp/otterwiki/commit/5b347bd),
+  [edd146e](https://github.com/redimp/otterwiki/commit/edd146e),
+  [6290ec9](https://github.com/redimp/otterwiki/commit/6290ec9),
+  [d35edc3](https://github.com/redimp/otterwiki/commit/d35edc3)).
+
+### Bug Fixes
+
+- Isolate DataTable initialization so one broken table does not break the others
+  on the page ([a758b3e](https://github.com/redimp/otterwiki/commit/a758b3e)).
+
+### Dependencies
+
+- Bump gitpython from 3.1.55 to 3.1.57, see #548
+  ([b83138c](https://github.com/redimp/otterwiki/commit/b83138c) by
+  @dependabot).
+
 ## [v2.22.2](https://github.com/redimp/otterwiki/releases/tag/v2.22.2) - 2026-08-02
 
 <small>[Compare with v2.22.1](https://github.com/redimp/otterwiki/compare/v2.22.1...v2.22.2)</small>
