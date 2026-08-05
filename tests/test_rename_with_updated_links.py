@@ -3,13 +3,60 @@
 
 import re
 import subprocess
+import sys
 
 import pytest
+
+from otterwiki.plugins import hookimpl
 
 
 @pytest.fixture
 def test_client(create_app):
     return create_app.test_client()
+
+
+def _get_plugin_manager():
+    """Get the current plugin_manager, even after module reloads by other
+    tests."""
+    return sys.modules["otterwiki.plugins"].plugin_manager
+
+
+class RenameHookRecorder:
+    """Test plugin recording the hooks fired while backlinks are rewritten."""
+
+    def __init__(self):
+        self.saved = []
+        self.renamed = []
+        self.repository_changed_calls = []
+
+    @hookimpl
+    def page_saved(self, pagepath, content, author, message):
+        self.saved.append(
+            {
+                "pagepath": pagepath,
+                "content": content,
+                "author": author,
+                "message": message,
+            }
+        )
+
+    @hookimpl
+    def page_renamed(self, old_pagepath, new_pagepath, author, message):
+        self.renamed.append(
+            {"old_pagepath": old_pagepath, "new_pagepath": new_pagepath}
+        )
+
+    @hookimpl
+    def repository_changed(self, changed_files):
+        self.repository_changed_calls.append(list(changed_files))
+
+
+@pytest.fixture
+def hook_recorder():
+    recorder = RenameHookRecorder()
+    _get_plugin_manager().register(recorder)
+    yield recorder
+    _get_plugin_manager().unregister(recorder)
 
 
 def save_shortcut(test_client, pagename, content, commit_message):
@@ -24,14 +71,19 @@ def save_shortcut(test_client, pagename, content, commit_message):
     assert rv.status_code == 200
 
 
-def rename_shortcut(test_client, pagename, new_pagename):
+def rename_shortcut(
+    test_client, pagename, new_pagename, update_backlinks=True
+):
+    data = {
+        "new_pagename": new_pagename,
+        "message": "",
+    }
+    # an unchecked checkbox is not submitted by the browser at all
+    if update_backlinks:
+        data["update_backlinks"] = "1"
     rv = test_client.post(
         "/{}/rename".format(pagename),
-        data={
-            "new_pagename": new_pagename,
-            "message": "",
-            "update_backlinks": "1",
-        },
+        data=data,
         follow_redirects=True,
     )
     assert rv.status_code == 200
@@ -87,6 +139,37 @@ def test_rename_commits_the_rewritten_backlinks(test_client):
         "backlink rewrite was not committed: HEAD:commitlinker.md still reads "
         f"{committed!r}"
     )
+
+
+def test_rename_without_update_backlinks_leaves_links_untouched(test_client):
+    """With the 'Update backlinks' checkbox unchecked the field is not
+    submitted at all. The rename must still happen, but no other page may be
+    touched and no extra commit may show up in the history."""
+    storage = test_client.application.storage
+    save_shortcut(test_client, "OptOutTarget", "# OptOutTarget\n", "target")
+    linker = (
+        "# OptOutLinker\n\n"
+        "[a link](/OptOutTarget)\n"
+        "[[OptOutTarget]]\n"
+        "![](/OptOutTarget/otter.png)\n"
+    )
+    save_shortcut(test_client, "OptOutLinker", linker, "linker")
+    log_before = storage.log("optoutlinker.md")
+
+    rename_shortcut(
+        test_client, "OptOutTarget", "OptOutRenamed", update_backlinks=False
+    )
+
+    # the rename itself happened ...
+    assert storage.exists("optoutrenamed.md")
+    assert not storage.exists("optouttarget.md")
+    # ... the linking page is untouched in the working tree ...
+    assert storage.load("optoutlinker.md") == linker
+    # ... and in git history, no new commit touched it ...
+    assert _git_show(storage, "optoutlinker.md") == linker
+    assert len(storage.log("optoutlinker.md")) == len(log_before)
+    # ... and nothing is left dangling.
+    assert _git_status(storage) == ""
 
 
 def test_rename_leaves_no_uncommitted_changes(test_client):
@@ -216,3 +299,136 @@ def test_rename_to_name_with_space_keeps_link_parseable(test_client):
     rv = test_client.get(href)
     assert rv.status_code == 200
     assert "Source" in rv.data.decode()
+
+
+def test_page_saved_hook_fired_for_each_updated_backlink(
+    test_client, hook_recorder
+):
+    """Every page whose backlinks were rewritten must be announced via the
+    page_saved hook - and only those, pages left untouched must not fire."""
+    save_shortcut(test_client, "HookTarget", "# HookTarget\n", "target")
+    save_shortcut(
+        test_client,
+        "HookLinkerOne",
+        "# HookLinkerOne\n\n[a link](/HookTarget)\n",
+        "linker one",
+    )
+    save_shortcut(
+        test_client,
+        "HookLinkerTwo",
+        "# HookLinkerTwo\n\n[[HookTarget]]\n",
+        "linker two",
+    )
+    save_shortcut(
+        test_client,
+        "HookUnrelated",
+        "# HookUnrelated\n\n[elsewhere](/SomewhereElse)\n",
+        "unrelated",
+    )
+    # only the hooks fired by the rename itself are of interest
+    hook_recorder.saved.clear()
+
+    rename_shortcut(test_client, "HookTarget", "HookRenamed")
+
+    # NOTE: page_saved is fired with the on-disk filename here, while
+    # Page.save() fires it with the pagepath ("HookLinkerOne"). Pin the
+    # current behaviour; if the hook is changed to pass a pagepath, this is
+    # the assertion to update.
+    assert {call["pagepath"] for call in hook_recorder.saved} == {
+        "hooklinkerone.md",
+        "hooklinkertwo.md",
+    }
+    by_page = {call["pagepath"]: call for call in hook_recorder.saved}
+    # the hook must carry the rewritten content, not the old one
+    assert "[a link](/HookRenamed)" in by_page["hooklinkerone.md"]["content"]
+    assert "[[HookRenamed]]" in by_page["hooklinkertwo.md"]["content"]
+    # and the commit message of the rename
+    assert by_page["hooklinkerone.md"]["message"] == (
+        "Renamed HookTarget to HookRenamed."
+    )
+    # the rename itself is still announced separately
+    assert hook_recorder.renamed == [
+        {"old_pagepath": "HookTarget", "new_pagepath": "HookRenamed"}
+    ]
+
+
+def test_page_saved_hook_not_fired_without_update_backlinks(
+    test_client, hook_recorder
+):
+    """With the 'Update backlinks' checkbox unchecked no page is rewritten,
+    so no page_saved hook may fire - only page_renamed."""
+    save_shortcut(test_client, "QuietTarget", "# QuietTarget\n", "target")
+    save_shortcut(
+        test_client,
+        "QuietLinker",
+        "# QuietLinker\n\n[a link](/QuietTarget)\n",
+        "linker",
+    )
+    hook_recorder.saved.clear()
+
+    rename_shortcut(
+        test_client, "QuietTarget", "QuietRenamed", update_backlinks=False
+    )
+
+    assert hook_recorder.saved == []
+    assert len(hook_recorder.renamed) == 1
+
+
+def test_repository_changed_hook_includes_rewritten_backlinks(
+    test_client, hook_recorder
+):
+    """The rename and the rewritten backlinks land in a single commit, so
+    repository_changed must fire once and list all of them together."""
+    save_shortcut(test_client, "RepoTarget", "# RepoTarget\n", "target")
+    save_shortcut(
+        test_client,
+        "RepoLinker",
+        "# RepoLinker\n\n[a link](/RepoTarget)\n",
+        "linker",
+    )
+    save_shortcut(
+        test_client,
+        "RepoUnrelated",
+        "# RepoUnrelated\n",
+        "unrelated",
+    )
+    hook_recorder.repository_changed_calls.clear()
+
+    rename_shortcut(test_client, "RepoTarget", "RepoRenamed")
+
+    assert len(hook_recorder.repository_changed_calls) == 1, (
+        "rename and backlink rewrites must be committed once, got "
+        f"{hook_recorder.repository_changed_calls!r}"
+    )
+    changed_files = hook_recorder.repository_changed_calls[0]
+    assert set(changed_files) == {"reporenamed.md", "repolinker.md"}
+
+
+def test_repository_changed_hook_not_fired_when_rename_rolls_back(
+    test_client, hook_recorder, monkeypatch
+):
+    """A rename that fails is rolled back, so no commit happens and neither
+    repository_changed nor page_saved may be announced."""
+    save_shortcut(test_client, "FailTarget", "# FailTarget\n", "target")
+    save_shortcut(
+        test_client,
+        "FailLinker",
+        "# FailLinker\n\n[a link](/FailTarget)\n",
+        "linker",
+    )
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("simulated backlink rewrite failure")
+
+    monkeypatch.setattr("otterwiki.wiki.rename_backlinks", boom)
+    # the two saves above prove the recorder is wired up, so the emptiness
+    # asserted below cannot pass vacuously
+    assert len(hook_recorder.saved) == 2
+    saved_before = len(hook_recorder.saved)
+    changes_before = len(hook_recorder.repository_changed_calls)
+
+    rename_shortcut(test_client, "FailTarget", "FailRenamed")
+
+    assert len(hook_recorder.repository_changed_calls) == changes_before
+    assert len(hook_recorder.saved) == saved_before
+    assert hook_recorder.renamed == []
