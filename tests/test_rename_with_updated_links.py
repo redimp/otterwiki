@@ -330,22 +330,25 @@ def test_page_saved_hook_fired_for_each_updated_backlink(
 
     rename_shortcut(test_client, "HookTarget", "HookRenamed")
 
-    # NOTE: page_saved is fired with the on-disk filename here, while
-    # Page.save() fires it with the pagepath ("HookLinkerOne"). Pin the
-    # current behaviour; if the hook is changed to pass a pagepath, this is
-    # the assertion to update.
+    # page_saved must carry a pagepath, like Page.save() does, not the
+    # on-disk filename
     assert {call["pagepath"] for call in hook_recorder.saved} == {
-        "hooklinkerone.md",
-        "hooklinkertwo.md",
+        "Hooklinkerone",
+        "Hooklinkertwo",
     }
     by_page = {call["pagepath"]: call for call in hook_recorder.saved}
     # the hook must carry the rewritten content, not the old one
-    assert "[a link](/HookRenamed)" in by_page["hooklinkerone.md"]["content"]
-    assert "[[HookRenamed]]" in by_page["hooklinkertwo.md"]["content"]
+    assert "[a link](/HookRenamed)" in by_page["Hooklinkerone"]["content"]
+    assert "[[HookRenamed]]" in by_page["Hooklinkertwo"]["content"]
     # and the commit message of the rename
-    assert by_page["hooklinkerone.md"]["message"] == (
+    assert by_page["Hooklinkerone"]["message"] == (
         "Renamed HookTarget to HookRenamed."
     )
+    # the reported pagepath must be usable as one: it has to address the
+    # page it belongs to
+    for pagepath in by_page:
+        rv = test_client.get("/{}/view".format(pagepath))
+        assert rv.status_code == 200, f"{pagepath} does not address a page"
     # the rename itself is still announced separately
     assert hook_recorder.renamed == [
         {"old_pagepath": "HookTarget", "new_pagepath": "HookRenamed"}
