@@ -1054,10 +1054,13 @@ class Page:
             storage.reset()
             raise
 
-        # notify plugins of backlink pages updated
-        for pagepath, content in pages_updated.items():
+        # notify plugins of backlink pages updated. rename_backlinks() keys
+        # its result by filename, since that is what the commit above needs,
+        # but page_saved is documented to carry a pagepath - the same kind of
+        # value Page.save() passes.
+        for filename, content in pages_updated.items():
             plugin_manager.hook.page_saved(
-                pagepath=pagepath,
+                pagepath=get_pagename(filename, full=True),
                 content=content,
                 author=author,
                 message=message,
