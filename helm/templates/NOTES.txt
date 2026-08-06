@@ -4,6 +4,13 @@ Open up your installation of An Otter Wiki via
 {{ range $host := .Values.ingress.hosts }}
     http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}
 {{- end }}
+{{- else if .Values.httproute.enabled }}
+
+Open up your installation of An Otter Wiki using one of the following URLs:
+{{ range $host := .Values.httproute.hostnames }}
+    http://{{ $host }} | https://{{ $host }}
+{{- end}}
+    NOTE: whether to use HTTP or HTTPS depends on your Gateway.
 {{- else if contains "NodePort" .Values.service.type }}
 
 Get the application URL by running these commands:
