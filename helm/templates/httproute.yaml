@@ -17,22 +17,29 @@ spec:
   parentRefs:
     {{- toYaml .Values.httproute.parentRefs | nindent 4 }}
   rules:
-  {{- range .Values.httproute.rules }}
+  {{- if gt (len .Values.httproute.rules) 0 }}
+    {{- range .Values.httproute.rules }}
     - backendRefs:
         - name: {{ $fullName }}
           kind: Service
           port: {{ $svcPort }}
-    {{- with .filters }}
+      {{- with .filters }}
       filters:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .matches }}
+      {{- end }}
+      {{- with .matches }}
       matches:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .timeouts }}
+      {{- end }}
+      {{- with .timeouts }}
       timeouts:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
     {{- end }}
+  {{- else }}
+    - backendRefs:
+        - name: {{ $fullName }}
+          kind: Service
+          port: {{ $svcPort }}
   {{- end }}
 {{- end }}
