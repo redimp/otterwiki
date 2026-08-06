@@ -19,7 +19,7 @@ spec:
   rules:
   {{- range .Values.httproute.rules }}
     - backendRefs:
-        - name: {{ $fulName }}
+        - name: {{ $fullName }}
           kind: Service
           port: {{ $svcPort }}
     {{- with .filters }}
