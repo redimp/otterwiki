@@ -63,6 +63,7 @@ that can be configured during installation.
 | `persistence.storageClass`        | PVC Storage Class for OtterWiki volume               | `nil` (uses alpha storage class annotation) |
 | `persistence.accessMode`          | PVC Access Mode for OtterWiki volume                 | `ReadWriteOnce`                             |
 | `persistence.size`                | PVC Storage Request for OtterWiki volume             | `512Mi`                                     |
+| `persistence.subPath`             | Sub-path to use for OtterWiki's data within the PV   | `nil`                                       |
 | `resources`                       | CPU/Memory resource requests/limits                  | `{}`                                        |
 | `nodeSelector`                    | Node labels for pod assignment                       | `{}`                                        |
 | `affinity`                        | Affinity settings for pod assignment                 | `{}`                                        |
