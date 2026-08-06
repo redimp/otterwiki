@@ -1,4 +1,4 @@
-{{- if and .Values.httproute.enabled (semverCompare ">=1.25-0" .Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") -}}
+{{- if and .Values.httproute.enabled (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") -}}
 {{- $fullName := include "otterwiki.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
 apiVersion: gateway.networking.k8s.io/v1
