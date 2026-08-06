@@ -98,4 +98,6 @@ httproute:
   #   namespace: kube-system
   rules: []
   # See HTTPRoute.spec.rules API specification.
-  # Supported are filters, matches, and timeouts.
+  # Supported are filters, matches, and timeouts. Appropriate backendRefs are added automatically
+  # to each custom rule.
+  # Leaving this on default creates a default rule allowing access to OtterWiki.
