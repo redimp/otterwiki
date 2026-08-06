@@ -53,6 +53,8 @@ persistence:
   accessMode: ReadWriteOnce
   annotations: {}
   storageClass: ""
+  #subPath: path-within-volume
+  # sub-path to use for otterwiki's app-data volume
   #existingClaim: name-of-existing-pvc
   # To use an existing claim persistence.enabled must also be true.
   # Other options are ignored.
