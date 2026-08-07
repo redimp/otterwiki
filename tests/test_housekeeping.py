@@ -628,9 +628,11 @@ class TestHousekeepingSecurityCheck:
             assert "description" in ok
             assert ok.get("passed") is True
 
-    def test_security_check_requires_login(self, app_with_user, test_client):
+    def test_security_check_requires_login(
+        self, app_with_user, anonymous_client
+    ):
         """Test that the security check endpoint requires authentication."""
-        rv = test_client.get(
+        rv = anonymous_client.get(
             "/-/housekeeping/security-check", follow_redirects=False
         )
         assert rv.status_code == 302
@@ -687,9 +689,11 @@ class TestHousekeepingGeneral:
         html = rv.data.decode()
         assert "Unkown task" in html or "Unknown task" in html
 
-    def test_housekeeping_requires_login(self, app_with_user, test_client):
+    def test_housekeeping_requires_login(
+        self, app_with_user, anonymous_client
+    ):
         """Test that housekeeping requires login."""
-        rv = test_client.get("/-/housekeeping", follow_redirects=False)
+        rv = anonymous_client.get("/-/housekeeping", follow_redirects=False)
         # Should redirect to login
         assert rv.status_code == 302
         assert "login" in rv.location
