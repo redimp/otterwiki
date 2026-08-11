@@ -39,6 +39,8 @@ podLabelsAdditional: {}
 podSecurityContext: {}
   # fsGroup: 2000
 
+podContainerPort: 80 # 8080 if using the -slim image variant
+
 resources: {}
   # limits:
   #   cpu: 100m
