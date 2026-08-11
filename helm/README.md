@@ -60,6 +60,7 @@ that can be configured during installation.
 | `affinity`                        | Affinity settings for pod assignment                 | `{}`                                        |
 | `tolerations`                     | Toleration labels for pod assignment                 | `[]`                                        |
 | `podAnnotations`                  | Pod annotations                                      | `{}`                                        |
+| `podContainerPort`                | Port exposed by the container                        | `80`                                        |
 
 
 The parameters can be specified using `--set key=value[,key=value]` as argument to `helm install`, e.g.

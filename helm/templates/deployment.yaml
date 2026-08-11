@@ -52,7 +52,7 @@ spec:
               optional: true
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.podContainerPort }}
               protocol: TCP
           livenessProbe:
             httpGet:
