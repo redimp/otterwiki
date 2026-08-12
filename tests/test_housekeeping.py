@@ -588,6 +588,78 @@ Link to [[Parent Sub/Child Sub]] and [[Parent Sub/Missing Sub]].
 
         assert "Missing" in html or "../Missing" in html
 
+    def test_housekeeping_broken_wikilinks_ignores_mermaid_nodes(
+        self, app_with_user, admin_client
+    ):
+        """Mermaid's [["Node Label"]] double-bracket node syntax inside a
+        fenced code block must not be mistaken for a WikiLink."""
+        from otterwiki.server import storage
+        from otterwiki.helper import get_filename
+
+        app_with_user.config["WIKILINK_STYLE"] = ""
+
+        storage.store(
+            get_filename("Page With Mermaid"),
+            (
+                "# Page With Mermaid\n\n"
+                "```mermaid\n"
+                "graph TD\n"
+                '    attic_switch[["Switch"]]:::switch\n'
+                '    attic_switch --> attic_lightbulb[["Lightbulb"]]\n'
+                "```\n"
+            ),
+            message="Create page with mermaid diagram",
+            author=("Test User", "mail@example.org"),
+        )
+
+        rv = admin_client.post(
+            "/-/housekeeping",
+            data={"task": "brokenwikilinks"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+
+        assert "no broken" in html.lower()
+        assert "Switch" not in html
+        assert "Lightbulb" not in html
+
+    def test_housekeeping_broken_wikilinks_mermaid_does_not_mask_real_links(
+        self, app_with_user, admin_client
+    ):
+        """A genuinely broken WikiLink outside a mermaid fence must still
+        be reported, proving the fence-stripping fix doesn't mask real
+        broken links."""
+        from otterwiki.server import storage
+        from otterwiki.helper import get_filename
+
+        app_with_user.config["WIKILINK_STYLE"] = ""
+
+        storage.store(
+            get_filename("Page With Mermaid And Broken Link"),
+            (
+                "# Page With Mermaid And Broken Link\n\n"
+                "```mermaid\n"
+                "graph TD\n"
+                '    attic_switch[["Switch"]]:::switch\n'
+                "```\n\n"
+                "See also [[Missing Page]].\n"
+            ),
+            message="Create page",
+            author=("Test User", "mail@example.org"),
+        )
+
+        rv = admin_client.post(
+            "/-/housekeeping",
+            data={"task": "brokenwikilinks"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+
+        assert "Missing Page" in html
+        assert "Switch" not in html
+
 
 class TestHousekeepingSecurityCheck:
     """Tests for the security check functionality."""
