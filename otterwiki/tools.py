@@ -159,6 +159,17 @@ def handle_housekeeping_emptypages(form):
     )
 
 
+# Fenced code blocks (```...``` or ~~~...~~~), e.g. mermaid diagrams.
+# Mermaid's double-bracket "subroutine" node shape (e.g. `x[["Switch"]]`)
+# looks exactly like a WikiLink to WIKI_LINK_PATTERN below, so fenced
+# code has to be stripped from the page content before scanning for
+# WikiLinks, or every such node gets misreported as a broken link.
+FENCED_CODE_BLOCK_PATTERN = re.compile(
+    r"^[ \t]{0,3}(`{3,}|~{3,})[^\n]*\n.*?^[ \t]{0,3}\1[ \t]*$",
+    re.DOTALL | re.MULTILINE,
+)
+
+
 def handle_housekeeping_brokenwikilinks(form):
     """Analyze pages for broken WikiLinks."""
     if not has_permission("WRITE"):
@@ -184,7 +195,11 @@ def handle_housekeeping_brokenwikilinks(form):
             continue
         current_pagename = get_pagename(filename, full=True)
 
-        wikilinks = WIKI_LINK_PATTERN.findall(content)
+        # Strip fenced code blocks (e.g. mermaid diagrams) so their
+        # contents are never mistaken for WikiLinks.
+        content_without_code = FENCED_CODE_BLOCK_PATTERN.sub("", content)
+
+        wikilinks = WIKI_LINK_PATTERN.findall(content_without_code)
 
         if not wikilinks:
             continue
