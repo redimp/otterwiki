@@ -28,13 +28,14 @@ def test_diff_route_output_injection_does_not_corrupt_page(
     save_shortcut(test_client, "Home", "# Welcome\n\nHome page.\n", "initial")
     commit = storage.log()[0]["revision"]
 
-    before = storage.load("Home.md")
+    # RETAIN_PAGE_NAME_CASE is off by default: the file on disk is lowercase
+    before = storage.load("home.md")
 
     rv = test_client.get("/Home/diff/--output=Home.md/{}".format(commit))
     assert rv.status_code == 404
     # the page on disk must be untouched, not overwritten with diff output
-    assert storage.load("Home.md") == before
-    assert "diff --git" not in storage.load("Home.md")
+    assert storage.load("home.md") == before
+    assert "diff --git" not in storage.load("home.md")
 
 
 def test_blame_route_contents_injection_does_not_leak_file(
