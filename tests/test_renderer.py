@@ -449,6 +449,70 @@ def test_clean_html_xss_vectors():
     )
 
 
+def test_clean_html_entity_encoded_protocol():
+    """Dangerous protocols obfuscated with html entities must be blocked.
+
+    BeautifulSoup decodes the entities while parsing, so "jav&#x09;ascript:"
+    arrives as "jav\tascript:" which does not literally start with
+    "javascript:". Browsers strip TAB, LF and CR from urls before resolving
+    the protocol and would execute the payload.
+    """
+    vectors = [
+        # tab, line feed and carriage return, entity encoded
+        '<a href="jav&#x09;ascript:alert(1)">clickme</a>',
+        '<a href="java&#10;script:alert(1)">clickme</a>',
+        '<a href="java&#13;script:alert(1)">clickme</a>',
+        # ... and as raw control characters
+        '<a href="jav\tascript:alert(1)">clickme</a>',
+        '<a href="java\nscript:alert(1)">clickme</a>',
+        # leading (encoded) whitespace and control characters
+        '<a href="&#x20;&#x09;javascript:alert(1)">clickme</a>',
+        '<a href="\x01javascript:alert(1)">clickme</a>',
+        # entity encoded characters of the protocol itself
+        '<a href="&#x6a;avascript:alert(1)">clickme</a>',
+        '<a href="javascript&colon;alert(1)">clickme</a>',
+        # double encoded
+        '<a href="&amp;#106;avascript:alert(1)">clickme</a>',
+        # other dangerous protocols
+        '<a href="da&#9;ta:text/html,<script>alert(1)</script>">clickme</a>',
+        '<a href="vb&#9;script:alert(1)">clickme</a>',
+        # and on other url carrying attributes
+        '<img src="jav&#x09;ascript:alert(1)">',
+        '<video poster="jav&#x09;ascript:alert(1)"></video>',
+    ]
+    for vector in vectors:
+        result = clean_html(vector)
+        assert result != vector, f"not escaped: {vector}"
+        assert '&lt;' in result, f"not escaped: {vector}"
+
+
+def test_clean_html_entity_encoded_protocol_in_custom_allowlist():
+    """The obfuscated protocols must be blocked on custom allowed tags, too."""
+    from otterwiki.renderer import parse_custom_allowlist
+
+    custom_tags, custom_attributes = parse_custom_allowlist(
+        'iframe[src width height]'
+    )
+    vector = '<iframe src="jav&#x09;ascript:alert(1)"></iframe>'
+    result = clean_html(
+        vector,
+        custom_tags=custom_tags,
+        custom_attributes=custom_attributes,
+    )
+    assert '&lt;iframe' in result
+
+
+def test_markdown_entity_encoded_protocol():
+    """End to end: the payload must not survive the rendering of a page."""
+    md = '<a href="jav&#x09;ascript:document.title=\'XSS-EXEC\'">clickme</a>'
+    html, _, _ = render.markdown(md)
+    # neither entity encoded nor decoded the link must be rendered as html
+    assert '<a href=' not in html
+    assert '&lt;a href=' in html
+    soup = BeautifulSoup(html, 'html.parser')
+    assert soup.find('a') is None
+
+
 def test_clean_html_allowed_tags():
     """Test that allowed tags pass through correctly"""
     # Test basic formatting tags

@@ -4,6 +4,7 @@
 import re
 import mistune
 import urllib.parse
+from html import unescape
 from bs4 import BeautifulSoup
 from markupsafe import Markup, escape
 from mistune.plugins.formatting import strikethrough as plugin_strikethrough
@@ -141,6 +142,42 @@ def parse_custom_allowlist(custom_allowlist: str = None) -> tuple:
     return custom_tags, custom_attributes
 
 
+# attributes that carry an url and must be checked against the
+# allowlist of protocols
+URL_ATTRIBUTES = [
+    'href',
+    'src',
+    'poster',
+    'action',
+    'formaction',
+    'data',
+    'background',
+    'xlink:href',
+]
+
+# control characters and whitespace: browsers strip TAB, LF and CR from
+# urls (and ignore leading/trailing control characters) before resolving
+# the protocol, so "jav&#x09;ascript:" is executed as "javascript:".
+_URL_STRIP_RE = re.compile(r"[\x00-\x20\x7f]")
+
+
+def normalize_url_for_protocol_check(value: str) -> str:
+    """
+    Normalize an attribute value the way a browser does before it resolves
+    the protocol of an url: decode html entities, drop control characters
+    and whitespace, lowercase.
+
+    BeautifulSoup already decodes entities while parsing, the additional
+    unescape() guards against values that carry another layer of encoding.
+    """
+    # decode entities the parser may have left behind, e.g. "&amp;#106;"
+    decoded = unescape(value)
+    if decoded != value:
+        # one more pass, in case of nested encoding
+        decoded = unescape(decoded)
+    return _URL_STRIP_RE.sub("", decoded).lower()
+
+
 def clean_html(
     html: str, custom_tags: list = None, custom_attributes: dict = None
 ) -> str:
@@ -237,11 +274,13 @@ def clean_html(
                     _escape = True
                     break
 
-                if attr_name_lower in ['href', 'src', 'poster']:
+                if attr_name_lower in URL_ATTRIBUTES:
                     if isinstance(attr_value, str):
-                        attr_lower = attr_value.lower().strip()
+                        attr_normalized = normalize_url_for_protocol_check(
+                            attr_value
+                        )
                         for protocol in DANGEROUS_PROTOCOLS:
-                            if attr_lower.startswith(protocol):
+                            if attr_normalized.startswith(protocol):
                                 _escape = True
                                 break
 
