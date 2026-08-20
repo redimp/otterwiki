@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import json
 import os
 
 from bs4 import BeautifulSoup
@@ -176,6 +177,83 @@ def test_sidebar_custom_menu_with_icons(create_app, test_client, req_ctx):
     assert menu_data["items"][0]["type"] == "link"
     assert '<i class="fas fa-home"></i>' in menu_data["items"][0]["html"]
     assert "Home Page" in menu_data["items"][0]["text"]
+
+
+def _assert_no_xss(link_html):
+    """Assert that the rendered link contains no executable HTML."""
+    soup = BeautifulSoup(link_html, "html.parser")
+
+    # no dangerous elements
+    assert soup.find("script") is None
+    assert soup.find("img") is None
+    assert soup.find("svg") is None
+    assert soup.find("iframe") is None
+    assert soup.find("object") is None
+    assert soup.find("embed") is None
+
+    # no event handler attributes anywhere
+    for element in soup.find_all(True):
+        for attr in element.attrs:
+            assert not attr.lower().startswith("on"), (
+                "event handler attribute found: %s" % attr
+            )
+
+    # no dangerous URL protocols in href/src
+    for element in soup.find_all(True):
+        for attr in ("href", "src", "poster"):
+            value = element.get(attr)
+            if value:
+                assert (
+                    not value.lower()
+                    .lstrip()
+                    .startswith(("javascript:", "data:", "vbscript:", "file:"))
+                ), ("dangerous URL protocol in %s" % attr)
+
+
+def test_sidebar_custom_menu_icon_xss(create_app, test_client, req_ctx):
+    """
+    Icons in the sidebar custom menu are rendered as raw HTML; a malicious
+    payload must be neutralized so it cannot execute in a visitor's browser.
+    """
+    payloads = [
+        # event handler on a tag (the reported PoC)
+        "<img src=x onerror=alert('xss')>",
+        "<svg onload=alert('xss')></svg>",
+        # script injection
+        "<script>alert('xss')</script>",
+        # javascript: in an attribute
+        '<a href="javascript:alert(1)">x</a>',
+        # data: URL in an img src
+        '<img src="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==">',
+        # attribute breakout trying to inject an event handler
+        '<i class="fas fa-home" onclick="alert(1)"></i>',
+    ]
+
+    for payload in payloads:
+        create_app.config["SIDEBAR_CUSTOM_MENU"] = (
+            '[{"link": "Home", "title": "Home Page", "icon": %s}]'
+            % json.dumps(payload)
+        )
+        menu_data = get_sidebar_menu(test_client)
+        assert menu_data is not None
+        _assert_no_xss(menu_data["items"][0]["html"])
+
+    # the dangerous payload must not appear verbatim anywhere in the page
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = (
+        """[{"link": "Home", "title": "Home Page", "icon": "<img src=x onerror=alert('xss')>"}]"""
+    )
+    rv = test_client.get("/")
+    assert rv.status_code == 200
+    assert "<img src=x onerror=" not in rv.data.decode().lower()
+
+    # legitimate font-awesome icons must still render as HTML
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = (
+        '[{"link": "Home", "title": "Home Page", "icon": %s}]'
+        % json.dumps('<i class="fas fa-home"></i>')
+    )
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data is not None
+    assert '<i class="fas fa-home"></i>' in menu_data["items"][0]["html"]
 
 
 def test_sidebar_custom_menu_with_separator(create_app, test_client, req_ctx):
