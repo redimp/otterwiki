@@ -10,6 +10,7 @@ from flask import url_for
 from otterwiki.plugins import call_hook
 from otterwiki.gitstorage import StorageError
 from otterwiki.server import storage, app
+from otterwiki.renderer import clean_html
 from otterwiki.util import (
     get_page_directoryname,
     split_path,
@@ -53,6 +54,10 @@ class SidebarMenu:
                 entry.get("icon", ""),
             )
             self.config.append({"link": link, "title": title, "icon": icon})
+
+            # The icon is rendered as raw HTML in snippets/menu.html, so it is
+            # sanitized with the same allowlist used for the markdown renderer.
+            icon = clean_html(icon)
 
             # handle separator
             if link == "---" and empty(title) and empty(icon):
