@@ -5,10 +5,16 @@ import csv
 import fnmatch
 import io
 import re
+import threading
 import urllib.parse
 import json
 
-from otterwiki.plugins import hookimpl, plugin_manager, EmbeddingArgs
+from otterwiki.plugins import (
+    hookimpl,
+    plugin_manager,
+    call_hook,
+    EmbeddingArgs,
+)
 from bs4 import BeautifulSoup
 from otterwiki.util import sha256sum
 import mistune
@@ -1366,6 +1372,208 @@ div.figure-embedding-caption {
         )
 
 
+def _include_flag(args: EmbeddingArgs, key: str, default: bool) -> bool:
+    """Read a boolean option from the raw (lowercased) option dict."""
+    value = args.options_raw.get(key)
+    if value is None:
+        return default
+    return value.strip().lower() in ("true", "1", "on", "yes")
+
+
+class IncludeEmbedding:
+    """Transclude another page, or one of its sections, into the current page.
+
+    Syntax::
+
+        {{include|src=PagePath}}                  # the whole page
+        {{include|src=PagePath|section=animals}}  # a single section
+
+    ``section`` is the heading anchor slug, matched the same way heading
+    anchors and ``[[Page#anchor]]`` fragments are generated, independent of
+    the heading level. ``src`` is resolved relative to the current page unless
+    it starts with ``/`` (absolute from the wiki root).
+    """
+
+    #: hard limit that stops runaway recursion even without a direct cycle
+    MAX_DEPTH = 8
+
+    def __init__(self):
+        # per-thread stack of "pagepath#section" keys currently being included,
+        # used to detect cycles under a threaded wsgi server
+        self._local = threading.local()
+
+    @hookimpl
+    def info(self):
+        return (
+            "Include",
+            "Transclude another page or one of its sections.",
+            "Syntax/Embeddings",
+        )
+
+    @hookimpl
+    def help(self, plugin):
+        if plugin.lower() != "include":
+            return None
+        return """
+<div class="row mb-10">
+Include (transclude) the content of another page, or a single section of it,
+into the current page. The included content is rendered inline, seamlessly.
+<div class="col">
+
+```
+{{include|src=Some/Page}}
+{{include|src=Some/Page|section=installation}}
+{{include|src=/Absolute/Page|section=installation|children=false|heading=false}}
+```
+
+Options:
+- `src`: path of the page to include. Relative to the current page unless it
+  starts with `/` (absolute from the wiki root).
+- `section`: the anchor slug of the heading to include, matched the same way
+  heading links (`[[Page#anchor]]`) are generated, independent of the heading
+  level. If omitted the whole page is included.
+- `children`: include sub-sections of the section (default `true`). With
+  `children=false` only the content directly under the heading is included.
+- `heading`: include the section's own heading line (default `true`).
+
+**Limitations:**
+- Relative links and attachments (e.g. `![](image.png)`) in the included
+  content resolve against the *including* page, not the source page, so they
+  may break. Use absolute paths (`/Source/Page/image.png`) in content that is
+  meant to be included.
+- Headings from included content do not appear in the including page's table
+  of contents.
+- Combining a stateful embedding such as `DataTable` with an `include` on the
+  same page may leave the page's own DataTable uninitialised. Put such
+  embeddings on separate pages.
+- Includes are limited to a nesting depth of 8, and include cycles (a page
+  including itself, directly or indirectly) are detected and reported instead
+  of being expanded.
+
+</div>
+</div>
+"""
+
+    @hookimpl
+    def page_render_context(self, page, preview: bool):
+        self.page = page
+        self.preview = preview
+
+    @property
+    def _stack(self) -> "list[str]":
+        if not hasattr(self._local, "stack"):
+            self._local.stack = []
+        return self._local.stack
+
+    def _resolve_pagepath(self, src: str) -> str:
+        """Resolve ``src`` to a wiki page path.
+
+        Absolute (``/Foo/Bar``) paths are taken from the wiki root, relative
+        paths are resolved against the current page's directory. ``..``
+        components are rejected, mirroring the other embeddings.
+        """
+        if ".." in src.replace("\\", "/").split("/"):
+            raise ValueError(
+                f'include: invalid src "{src}", path traversal is not allowed.'
+            )
+        if src.startswith("/"):
+            return src.lstrip("/")
+        page = getattr(self, "page", None)
+        if page is not None and "/" in page.pagepath:
+            parent = page.pagepath.rsplit("/", 1)[0]
+            return f"{parent}/{src}"
+        return src
+
+    def _render_markdown(self, markdown: str, page) -> str:
+        """Render *markdown* on a dedicated renderer.
+
+        A fresh renderer instance is used so the host page's table of contents,
+        anchor de-duplication and library-requirement flags are never clobbered
+        by this nested render.
+        """
+        from otterwiki.renderer import OtterwikiRenderer
+        from otterwiki.server import app
+
+        renderer = OtterwikiRenderer(config=app.config)
+        html, _toc, _requirements = renderer.markdown(
+            markdown, page_url=page.page_view_url
+        )
+        return html
+
+    @hookimpl
+    def embedding_render(
+        self,
+        embedding: str,
+        args: EmbeddingArgs,
+    ):
+        if embedding.lower() != "include":
+            return None
+
+        src = args.options_raw.get("src")
+        if not src:
+            raise ValueError("include: |src= is required.")
+        section = args.options_raw.get("section")
+        include_children = _include_flag(args, "children", True)
+        include_heading = _include_flag(args, "heading", True)
+
+        pagepath = self._resolve_pagepath(src)
+
+        from otterwiki.wiki import Page
+
+        page = Page(pagepath=pagepath)
+        if not page.exists or page.content is None:
+            raise ValueError(f'include: page "{src}" not found.')
+
+        markdown = page.content
+        if section is not None:
+            from otterwiki.mdutils import extract_section, list_anchors
+
+            extracted = extract_section(
+                markdown,
+                section,
+                include_children=include_children,
+                include_heading=include_heading,
+            )
+            if extracted is None:
+                available = ", ".join(list_anchors(markdown)) or "none"
+                raise ValueError(
+                    f'include: section "{section}" not found in "{src}"'
+                    f' (available: {available}).'
+                )
+            markdown = extracted
+
+        # cycle / depth protection
+        key = f"{page.pagepath}#{section or ''}"
+        stack = self._stack
+        if key in stack:
+            raise ValueError(f'include: cycle detected including "{src}".')
+        if len(stack) >= self.MAX_DEPTH:
+            raise ValueError(
+                f"include: maximum include depth ({self.MAX_DEPTH}) exceeded."
+            )
+
+        host_page = getattr(self, "page", None)
+        host_preview = getattr(self, "preview", False)
+        stack.append(key)
+        try:
+            # switch the plugin render context to the source page so nested
+            # embeddings (attachments, relative csv/image src, ...) resolve
+            # against the included page while it is rendered
+            call_hook("page_render_context", page=page, preview=host_preview)
+            html = self._render_markdown(markdown, page)
+        finally:
+            stack.pop()
+            # restore the host page context for the rest of the host render
+            if host_page is not None:
+                call_hook(
+                    "page_render_context",
+                    page=host_page,
+                    preview=host_preview,
+                )
+
+        return f'<div class="include-embedding">{html}</div>'
+
+
 plugin_manager.register(FigureEmbedding())
 plugin_manager.register(ImageFrameEmbedding())
 plugin_manager.register(InfoBoxEmbedding())
@@ -1373,3 +1581,4 @@ plugin_manager.register(VideoEmbedding())
 plugin_manager.register(DatatableEmbedding())
 plugin_manager.register(AttachmentListEmbedding())
 plugin_manager.register(PageIndexEmbedding())
+plugin_manager.register(IncludeEmbedding())
