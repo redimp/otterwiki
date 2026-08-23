@@ -1525,12 +1525,20 @@ Options:
             raise ValueError(f'include: page "{src}" not found.')
 
         markdown = page.content
-        if section is not None:
-            from otterwiki.mdutils import extract_section, list_anchors
+        if section:
+            from otterwiki.mdutils import (
+                default_anchor,
+                extract_section,
+                list_anchors,
+            )
 
+            # normalise the section the same way anchors are generated, so
+            # section=Installation or section="My Section" match the anchor
+            # (installation / my-section) regardless of case or spacing
+            anchor = default_anchor(section)
             extracted = extract_section(
                 markdown,
-                section,
+                anchor,
                 include_children=include_children,
                 include_heading=include_heading,
             )

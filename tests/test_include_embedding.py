@@ -59,6 +59,21 @@ def test_include_section_with_children(req_ctx):
     assert "intro text" not in html
 
 
+def test_include_section_is_slugified(req_ctx):
+    from otterwiki.server import storage
+
+    _store(storage, "Target", TARGET)
+    # section=Animals (capitalised) matches the "animals" anchor
+    html, _ = _render("Host", "{{include|src=/Target|section=Animals}}")
+    assert "cats and dogs" in html
+    # a value with spaces is slugified too
+    _store(storage, "Spaced", "# Getting Started\nhello\n")
+    html, _ = _render(
+        "Host", "{{include|src=/Spaced|section=Getting Started}}"
+    )
+    assert "hello" in html
+
+
 def test_include_section_without_children(req_ctx):
     from otterwiki.server import storage
 
