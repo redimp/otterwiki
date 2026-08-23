@@ -256,6 +256,30 @@ def test_sidebar_custom_menu_icon_xss(create_app, test_client, req_ctx):
     assert '<i class="fas fa-home"></i>' in menu_data["items"][0]["html"]
 
 
+def test_sidebar_custom_menu_icon_allowlist(create_app, test_client, req_ctx):
+    """
+    Icons are sanitized with the allowlist configured for the markdown
+    renderer, so tags allowed there must not be stripped from the sidebar.
+    """
+    icon = '<svg class="icon"><path d="M0 0"></path></svg>'
+    create_app.config["SIDEBAR_CUSTOM_MENU"] = (
+        '[{"link": "Home", "title": "Home Page", "icon": %s}]'
+        % json.dumps(icon)
+    )
+
+    # without the allowlist the icon is escaped
+    create_app.config["RENDERER_HTML_ALLOWLIST"] = ""
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data is not None
+    assert "<svg" not in menu_data["items"][0]["html"]
+
+    # with svg allowlisted the icon is rendered as html
+    create_app.config["RENDERER_HTML_ALLOWLIST"] = "svg,path[d]"
+    menu_data = get_sidebar_menu(test_client)
+    assert menu_data is not None
+    assert icon in menu_data["items"][0]["html"]
+
+
 def test_sidebar_custom_menu_with_separator(create_app, test_client, req_ctx):
     from otterwiki.sidebar import SidebarMenu
 
