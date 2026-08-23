@@ -1120,6 +1120,19 @@ class mistunePluginEmbeddings:
             self._EMBEDDING_SCANNER_PATTERN,
             self.parse_block,
         )
+        # Move embedding_block ahead of the table/nptable rules. In the
+        # combined block scanner the first matching alternative wins; a
+        # one-line embedding that contains a pipe (e.g. {{include|src=Foo}})
+        # is otherwise matched by the (n)ptable rule, which then rejects it
+        # as not-a-table and the line falls back to a paragraph. Registering
+        # ahead of the tables lets single-line embeddings with |options work.
+        if 'embedding_block' in md.block.rules:
+            md.block.rules.remove('embedding_block')
+        try:
+            insert_at = md.block.rules.index('table')
+        except ValueError:
+            insert_at = 0
+        md.block.rules.insert(insert_at, 'embedding_block')
 
         md.renderer.register(
             "embedding_option", _rm(self.render_embedding_option)

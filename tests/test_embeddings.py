@@ -2253,3 +2253,22 @@ Content
     figure = soup.find("div", class_="figure-embedding")
     content = figure.find("div", class_="figure-embedding-content")
     assert content.get("style") is None
+
+
+def test_oneline_embedding_with_pipe_options():
+    # a single-line embedding whose options contain a pipe must be parsed as
+    # an embedding and not shadowed by the (n)ptable rule (rendered as a
+    # paragraph). See the embedding_block rule ordering in renderer_plugins.
+    html, _, _ = render.markdown("{{InfoBox|caption=Hello|Answer=42}}\n")
+    soup = BeautifulSoup(html, "html.parser")
+    infobox = soup.find("div", class_="infobox")
+    assert infobox is not None
+    assert "{{InfoBox" not in html
+
+
+def test_oneline_embedding_ordering_keeps_tables_working():
+    # placing embedding_block ahead of the table rules must not break tables
+    md = "a | b\n--- | ---\n1 | 2\n"
+    html, _, _ = render.markdown(md)
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup.find("table") is not None
