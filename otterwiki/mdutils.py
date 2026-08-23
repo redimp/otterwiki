@@ -36,6 +36,7 @@ __all__ = [
     "parse_sections",
     "extract_section",
     "list_anchors",
+    "default_anchor",
 ]
 
 # a fenced code block opener/closer, e.g. ``` or ~~~~ with an optional info
