@@ -10,7 +10,7 @@ from flask import url_for
 from otterwiki.plugins import call_hook
 from otterwiki.gitstorage import StorageError
 from otterwiki.server import storage, app
-from otterwiki.renderer import clean_html
+from otterwiki.renderer import clean_html, parse_custom_allowlist
 from otterwiki.util import (
     get_page_directoryname,
     split_path,
@@ -40,6 +40,11 @@ class SidebarMenu:
                 f"Error decoding SIDEBAR_CUSTOM_MENU={app.config.get('SIDEBAR_CUSTOM_MENU','')}: {e}"
             )
             raw_config = []
+        # the icons are rendered as raw html in snippets/menu.html, so they
+        # are sanitized with the allowlist used for the markdown renderer
+        custom_tags, custom_attributes = parse_custom_allowlist(
+            app.config.get("RENDERER_HTML_ALLOWLIST", "")
+        )
         # generate both config and menu from raw_config
         for entry in raw_config:
             if (
@@ -55,9 +60,11 @@ class SidebarMenu:
             )
             self.config.append({"link": link, "title": title, "icon": icon})
 
-            # The icon is rendered as raw HTML in snippets/menu.html, so it is
-            # sanitized with the same allowlist used for the markdown renderer.
-            icon = clean_html(icon)
+            icon = clean_html(
+                icon,
+                custom_tags=custom_tags,
+                custom_attributes=custom_attributes,
+            )
 
             # handle separator
             if link == "---" and empty(title) and empty(icon):
