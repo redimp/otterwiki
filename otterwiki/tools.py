@@ -164,8 +164,22 @@ def handle_housekeeping_emptypages(form):
 # looks exactly like a WikiLink to WIKI_LINK_PATTERN below, so fenced
 # code has to be stripped from the page content before scanning for
 # WikiLinks, or every such node gets misreported as a broken link.
+#
+# This has to match mistune's own fence-closing rule, or stripping goes
+# wrong in both directions:
+#   - mistune closes a fence on a closing line of the *same or greater*
+#     length (`(?P=fence)(?P=c)*`), not only an exact-length match. A
+#     shorter regex that requires an exact match misses a longer closing
+#     fence, runs on into the next fenced block, and swallows content
+#     (and any real broken links) that sits between them.
+#   - mistune lets an unclosed fence run to EOF (`|\Z` below), rather
+#     than leaving it unmatched, so a page ending mid-fence still has
+#     its contents stripped instead of being scanned as if it were
+#     regular text.
+# mistune only allows spaces (not tabs) in the fence's leading indent.
 FENCED_CODE_BLOCK_PATTERN = re.compile(
-    r"^[ \t]{0,3}(`{3,}|~{3,})[^\n]*\n.*?^[ \t]{0,3}\1[ \t]*$",
+    r"^ {0,3}(?P<fence>(?P<c>[`~])(?P=c){2,})[^\n]*\n"
+    r".*?(?:^ {0,3}(?P=fence)(?P=c)*[ \t]*$|\Z)",
     re.DOTALL | re.MULTILINE,
 )
 
