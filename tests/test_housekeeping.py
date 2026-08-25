@@ -661,6 +661,76 @@ Link to [[Parent Sub/Child Sub]] and [[Parent Sub/Missing Sub]].
         assert "Switch" not in html
 
 
+    def test_housekeeping_broken_wikilinks_mermaid_longer_closing_fence(
+        self, app_with_user, admin_client
+    ):
+        """A closing fence longer than the opener (mistune allows this,
+        e.g. opened with ``` and closed with ````) must still be
+        recognized as the end of the block, and content in a second
+        fenced block right after it must not be swallowed along with
+        it."""
+        from otterwiki.server import storage
+        from otterwiki.helper import get_filename
+
+        app_with_user.config["WIKILINK_STYLE"] = ""
+
+        storage.store(
+            get_filename("Page With Longer Closing Fence"),
+            (
+                "# Page With Longer Closing Fence\n\n"
+                "```mermaid\n"
+                'attic_switch[["Switch"]]\n'
+                "````\n"
+                "See also [[Missing Page Longer Fence]].\n"
+            ),
+            message="Create page",
+            author=("Test User", "mail@example.org"),
+        )
+
+        rv = admin_client.post(
+            "/-/housekeeping",
+            data={"task": "brokenwikilinks"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+
+        assert "Switch" not in html
+        assert "Missing Page Longer Fence" in html
+
+    def test_housekeeping_broken_wikilinks_mermaid_unclosed_fence(
+        self, app_with_user, admin_client
+    ):
+        """An unclosed fence (mistune treats the rest of the page as
+        code, running to EOF) must still have its mermaid node syntax
+        stripped, not just a fence with a matching close."""
+        from otterwiki.server import storage
+        from otterwiki.helper import get_filename
+
+        app_with_user.config["WIKILINK_STYLE"] = ""
+
+        storage.store(
+            get_filename("Page With Unclosed Fence"),
+            (
+                "# Page With Unclosed Fence\n\n"
+                "```mermaid\n"
+                'attic_switch[["Switch"]]\n'
+            ),
+            message="Create page",
+            author=("Test User", "mail@example.org"),
+        )
+
+        rv = admin_client.post(
+            "/-/housekeeping",
+            data={"task": "brokenwikilinks"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+
+        assert "Switch" not in html
+
+
 class TestHousekeepingSecurityCheck:
     """Tests for the security check functionality."""
 
