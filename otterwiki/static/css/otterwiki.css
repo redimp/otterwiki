@@ -171,6 +171,17 @@ pre.mermaid {
 }
 
 
+/* Establish a block formatting context on block elements that may follow a
+ * floated infobox, so their box sits beside the float instead of rendering
+ * behind it (see #559). */
+.page blockquote,
+.page .alert,
+.page .quote-alert,
+.page .spoiler,
+.page details.collapse-panel {
+    display: flow-root;
+}
+
 .quote-alert {
     border-left: .3rem solid;
     padding: 0.5rem 2rem;
