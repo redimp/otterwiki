@@ -6,7 +6,6 @@ import os.path
 
 from flask import (
     redirect,
-    url_for,
     render_template,
     abort,
 )
@@ -19,6 +18,7 @@ from otterwiki.models import Drafts
 from otterwiki.auth import has_permission, get_author
 
 from otterwiki.helper import (
+    url_for,
     toast,
     get_filename,
     get_pagename,

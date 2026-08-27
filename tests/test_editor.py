@@ -57,3 +57,21 @@ def test_urlquote(test_client):
         # make sure the right block has been found and checked
         assert uploadUrl_found
         assert fetchUrl_found
+
+
+def test_edit_query_flag(test_client):
+    # the editor is served via the ?edit query flag so the editor page keeps
+    # the same base url as the rendered page
+    html = test_client.get("/Example?edit").data.decode()
+    assert "cm_editor" in html
+
+    # links pointing at the editor should use the query flag, not a
+    # /edit path suffix
+    view_html = test_client.get("/Example").data.decode()
+    assert "?edit" in view_html
+    assert "/Example/edit" not in view_html
+
+
+def test_edit_path_suffix_still_works(test_client):
+    # the /edit route is kept for tests and existing links
+    assert test_client.get("/Example/edit").status_code == 200

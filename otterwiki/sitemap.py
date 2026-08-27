@@ -3,10 +3,10 @@
 
 from datetime import datetime
 from xml.etree.ElementTree import Element, SubElement, tostring, indent
-from flask import url_for, make_response, abort
+from flask import make_response, abort
 from otterwiki.server import app, storage
 from otterwiki.auth import has_permission
-from otterwiki.helper import get_pagename, get_filename
+from otterwiki.helper import url_for, get_pagename, get_filename
 
 
 def sitemap():

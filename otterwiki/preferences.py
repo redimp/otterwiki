@@ -10,7 +10,6 @@ from otterwiki.util import is_valid_email
 from flask import (
     redirect,
     abort,
-    url_for,
     render_template,
 )
 from flask_login import (
@@ -19,6 +18,7 @@ from flask_login import (
 from otterwiki.server import app, db, update_app_config, Preferences
 from otterwiki.sidebar import SidebarPageIndex, SidebarMenu
 from otterwiki.helper import (
+    url_for,
     toast,
     send_mail,
     get_pagename_for_title,

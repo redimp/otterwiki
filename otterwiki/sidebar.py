@@ -6,7 +6,6 @@ import re
 import json
 from collections import OrderedDict
 from timeit import default_timer as timer
-from flask import url_for
 from otterwiki.plugins import call_hook
 from otterwiki.gitstorage import StorageError
 from otterwiki.server import storage, app
@@ -18,6 +17,7 @@ from otterwiki.util import (
     empty,
 )
 from otterwiki.helper import (
+    url_for,
     get_pagename,
     get_pagename_for_title,
 )

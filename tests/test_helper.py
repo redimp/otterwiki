@@ -312,3 +312,29 @@ def test_ftoc_cache(create_app, req_ctx):
         (0, 'Header 1', 1, 'Header 1', 'header-1'),
         (1, 'Header 2', 2, 'Header 2', 'header-2'),
     ] == get_ftoc(filename)
+
+
+def test_url_for_passthrough(create_app, req_ctx):
+    from otterwiki.helper import url_for
+
+    # non-edit endpoints are passed through to flask.url_for unchanged
+    assert url_for("index") == "/"
+    assert url_for("view", path="Example") == "/Example"
+
+
+def test_url_for_edit_query_flag(create_app, req_ctx):
+    from otterwiki.helper import url_for
+
+    # the editor endpoint is rewritten to the view route with an ?edit flag
+    assert url_for("edit", path="Example") == "/Example?edit"
+    # nested pagepaths are kept intact
+    assert url_for("edit", path="Sub/Page") == "/Sub/Page?edit"
+    # additional values (e.g. revision) are appended as query arguments
+    assert (
+        url_for("edit", path="Example", revision="abc123")
+        == "/Example?edit&revision=abc123"
+    )
+    # the _external flag is forwarded to the underlying view url
+    url = url_for("edit", path="Example", _external=True)
+    assert url.endswith("/Example?edit")
+    assert url.startswith("http")
