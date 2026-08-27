@@ -11,7 +11,6 @@ from flask import (
     render_template,
     make_response,
     redirect,
-    url_for,
     jsonify,
     g,
 )
@@ -30,6 +29,7 @@ import otterwiki.preferences
 import otterwiki.tools
 from otterwiki.renderer import render
 from otterwiki.helper import (
+    url_for,
     toast,
     health_check,
     get_pagename_prefixes,
@@ -497,8 +497,16 @@ def pageview(path="Home", revision=None):
 
 
 # last matching endpoint seems to be the default for url_for
-@app.route("/<path:path>")
+@app.route("/<path:path>", methods=["POST", "GET"])
 def view(path="Home"):
+    # the editor is served via the ?edit query flag so it keeps the same base
+    # url as the rendered page (POST is used by the draft handling form)
+    if "edit" in request.values:
+        p = Page(path, revision=request.values.get("revision"))
+        return p.editor(
+            author=otterwiki.auth.get_author(),
+            handle_draft=request.form.get("draft", None),
+        )
     p = AutoRoute(path, values=request.values)
     return p.view()
 

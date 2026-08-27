@@ -10,7 +10,6 @@ import flask_login
 from flask import (
     redirect,
     request,
-    url_for,
     render_template,
     abort,
     session,
@@ -25,6 +24,7 @@ from flask_login import (
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from otterwiki.helper import (
+    url_for,
     toast,
     send_mail,
     serialize,

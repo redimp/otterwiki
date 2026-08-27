@@ -21,7 +21,6 @@ from flask import (
     render_template,
     request,
     send_file,
-    url_for,
 )
 from markupsafe import escape as html_escape
 from werkzeug.http import http_date
@@ -33,6 +32,7 @@ from bs4 import BeautifulSoup
 from otterwiki.auth import current_user, has_permission
 from otterwiki.gitstorage import StorageError, StorageNotFound
 from otterwiki.helper import (
+    url_for,
     auto_url,
     get_attachment_directoryname,
     get_breadcrumbs,

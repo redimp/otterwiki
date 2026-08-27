@@ -353,7 +353,11 @@ def set_security_headers(response):
     return response
 
 
-from otterwiki.helper import load_custom_html
+from otterwiki.helper import load_custom_html, url_for
+
+# override flask's url_for in templates so the editor endpoint is rewritten
+# to the ?edit query flag (see otterwiki.helper.url_for)
+app.jinja_env.globals.update(url_for=url_for)
 
 
 def plugin_html_head_inject(page=None):

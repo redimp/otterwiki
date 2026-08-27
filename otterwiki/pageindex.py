@@ -10,7 +10,6 @@ from flask import (
     redirect,
     render_template,
     request,
-    url_for,
 )
 
 import textwrap
@@ -19,6 +18,7 @@ from typing import List, Tuple, Iterable
 from otterwiki.auth import has_permission, current_user
 
 from otterwiki.helper import (
+    url_for,
     get_breadcrumbs,
     get_filename,
     get_ftoc,

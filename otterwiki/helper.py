@@ -15,7 +15,9 @@ import json
 from collections import namedtuple
 from otterwiki.server import app, mail, storage, Preferences, db, app_renderer
 from otterwiki.gitstorage import StorageError
-from flask import flash, url_for, session
+from urllib.parse import urlencode
+from flask import flash, session
+from flask import url_for as flask_url_for
 from threading import Thread
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
@@ -29,6 +31,33 @@ from otterwiki.util import (
     get_header,
 )
 from otterwiki.models import Cache
+
+
+def url_for(endpoint, **values):
+    """Drop-in replacement for :func:`flask.url_for`.
+
+    The editor is served through the ``view`` route using an ``?edit`` query
+    flag instead of a dedicated ``/edit`` path, so the editor keeps the same
+    base url as the rendered page. A call to ``url_for("edit", path=...)`` is
+    therefore rewritten to the matching ``view`` url with ``?edit`` appended.
+    Any remaining values (e.g. ``revision``) are appended as query arguments.
+    All other endpoints are passed through to :func:`flask.url_for` unchanged.
+    """
+    if endpoint != "edit":
+        return flask_url_for(endpoint, **values)
+    # rewrite the editor endpoint to the view route with an ?edit query flag
+    _external = values.pop("_external", False)
+    _anchor = values.pop("_anchor", None)
+    path = values.pop("path", None)
+    url = flask_url_for("view", path=path, _external=_external)
+    # 'edit' as a bare query flag, plus any remaining values (e.g. revision)
+    query = "edit"
+    if values:
+        query += "&" + urlencode(values)
+    url = "{}?{}".format(url, query)
+    if _anchor is not None:
+        url = "{}#{}".format(url, _anchor)
+    return url
 
 
 class SerializeError(ValueError):
