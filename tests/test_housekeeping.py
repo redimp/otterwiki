@@ -660,7 +660,6 @@ Link to [[Parent Sub/Child Sub]] and [[Parent Sub/Missing Sub]].
         assert "Missing Page" in html
         assert "Switch" not in html
 
-
     def test_housekeeping_broken_wikilinks_mermaid_longer_closing_fence(
         self, app_with_user, admin_client
     ):
@@ -729,6 +728,74 @@ Link to [[Parent Sub/Child Sub]] and [[Parent Sub/Missing Sub]].
         html = rv.data.decode()
 
         assert "Switch" not in html
+
+    def test_housekeeping_broken_wikilinks_inline_code_span(
+        self, app_with_user, admin_client
+    ):
+        """A [[...]] inside an inline code span (single backticks) is not
+        a WikiLink and must not be reported as broken, e.g. a `[[Page]]`
+        reference or python subscripts like `df[['a', "b"]]`."""
+        from otterwiki.server import storage
+        from otterwiki.helper import get_filename
+
+        app_with_user.config["WIKILINK_STYLE"] = ""
+
+        storage.store(
+            get_filename("Page With Inline Code"),
+            (
+                "# Page With Inline Code\n\n"
+                "A reference `[[Inline Code Page]]` in text.\n\n"
+                'And a subscript `df[[\'a\', "b"]]` too.\n\n'
+                "Double ticks ``[[Double Tick Page]]`` as well.\n"
+            ),
+            message="Create page",
+            author=("Test User", "mail@example.org"),
+        )
+
+        rv = admin_client.post(
+            "/-/housekeeping",
+            data={"task": "brokenwikilinks"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+
+        assert "Inline Code Page" not in html
+        assert "Double Tick Page" not in html
+
+    def test_housekeeping_broken_wikilinks_inline_code_does_not_mask_real(
+        self, app_with_user, admin_client
+    ):
+        """A genuinely broken WikiLink next to an inline code span must
+        still be reported, and a stray unmatched backtick must not
+        swallow it."""
+        from otterwiki.server import storage
+        from otterwiki.helper import get_filename
+
+        app_with_user.config["WIKILINK_STYLE"] = ""
+
+        storage.store(
+            get_filename("Page With Inline Code And Broken Link"),
+            (
+                "# Page With Inline Code And Broken Link\n\n"
+                "See `[[In Code]]` and also [[Missing Inline Page]].\n\n"
+                "A ` stray backtick then [[Second Missing Page]].\n"
+            ),
+            message="Create page",
+            author=("Test User", "mail@example.org"),
+        )
+
+        rv = admin_client.post(
+            "/-/housekeeping",
+            data={"task": "brokenwikilinks"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+
+        assert "In Code" not in html
+        assert "Missing Inline Page" in html
+        assert "Second Missing Page" in html
 
 
 class TestHousekeepingSecurityCheck:

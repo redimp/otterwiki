@@ -183,6 +183,25 @@ FENCED_CODE_BLOCK_PATTERN = re.compile(
     re.DOTALL | re.MULTILINE,
 )
 
+# Inline code spans (`...`), which fenced-block stripping above does not
+# cover. Just like a mermaid node inside a fence, a `[[...]]` inside an
+# inline code span (e.g. `` `df[['a', "b"]]` `` or `` `[[Page]]` ``)
+# looks exactly like a WikiLink, so inline code has to be stripped too.
+#
+# This mirrors mistune's own codespan rule (see mistune's
+# InlineParser.parse_codespan): an opening run of N backticks, then a
+# closing run of the *same* length not followed by another backtick,
+# with at least one non-backtick before the close. Newlines act like
+# spaces within a span, but a code span cannot cross a blank line (it
+# lives inside a single block), which the blank-line guard enforces so a
+# stray unmatched backtick can't swallow a real WikiLink further down.
+INLINE_CODE_SPAN_PATTERN = re.compile(
+    r"(?<!`)(?P<ticks>`+)(?!`)"
+    r"(?:(?!\n[ \t]*\n).)*?[^`]"
+    r"(?P=ticks)(?!`)",
+    re.DOTALL,
+)
+
 
 def handle_housekeeping_brokenwikilinks(form):
     """Analyze pages for broken WikiLinks."""
@@ -209,9 +228,14 @@ def handle_housekeeping_brokenwikilinks(form):
             continue
         current_pagename = get_pagename(filename, full=True)
 
-        # Strip fenced code blocks (e.g. mermaid diagrams) so their
-        # contents are never mistaken for WikiLinks.
+        # Strip fenced code blocks (e.g. mermaid diagrams) and then
+        # inline code spans so their contents are never mistaken for
+        # WikiLinks. Fenced blocks are removed first so their backticks
+        # can't be mistaken for inline-span delimiters.
         content_without_code = FENCED_CODE_BLOCK_PATTERN.sub("", content)
+        content_without_code = INLINE_CODE_SPAN_PATTERN.sub(
+            "", content_without_code
+        )
 
         wikilinks = WIKI_LINK_PATTERN.findall(content_without_code)
 
