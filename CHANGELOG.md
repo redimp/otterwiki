@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.24.0](https://github.com/redimp/otterwiki/releases/tag/v2.24.0) - 2026-08-29
+
+<small>[Compare with v2.23.0](https://github.com/redimp/otterwiki/compare/v2.23.0...v2.24.0)</small>
+
+### Security Fixes
+
+- Sanitize custom menu icons through clean_html() with the renderer's HTML
+  allowlist, so allowlisted tags are no longer stripped from the sidebar icons,
+  see #557
+  ([a2a09bf](https://github.com/redimp/otterwiki/commit/a2a09bf),
+  [96bd485](https://github.com/redimp/otterwiki/commit/96bd485) by @deseven).
+- Block entity-encoded protocols in clean_html() by normalizing attribute values
+  (unescape, drop control characters and whitespace, lowercase) before the
+  protocol check, and extend the checked attributes to action, formaction, data,
+  background and xlink:href. Thanks to @sywinksvg for reaching out
+  ([d6e25dd](https://github.com/redimp/otterwiki/commit/d6e25dd)).
+
+### Features
+
+- Add the {{include}} transclusion embedding to include a whole page or a single
+  section into another page, with section lookup by heading anchor (independent
+  of case, spacing or heading level) and guards against include cycles, see #547
+  ([ff4f205](https://github.com/redimp/otterwiki/commit/ff4f205),
+  [d067695](https://github.com/redimp/otterwiki/commit/d067695),
+  [0ffadc5](https://github.com/redimp/otterwiki/commit/0ffadc5)).
+
+### Bug Fixes
+
+- Fix broken WikiLink false positives in the housekeeping scan for Mermaid
+  diagram nodes, fenced code blocks and inline code spans, see #550 #556 #561
+  ([4e58077](https://github.com/redimp/otterwiki/commit/4e58077) by @agu2347,
+  [2472cb6](https://github.com/redimp/otterwiki/commit/2472cb6) by @agu2347,
+  [4062eb8](https://github.com/redimp/otterwiki/commit/4062eb8)).
+- Allow single-line embeddings whose options contain a pipe (e.g.
+  {{PageIndex|src=*}}) to render, by ordering the embedding block rule ahead of
+  the table rules
+  ([9d97bd4](https://github.com/redimp/otterwiki/commit/9d97bd4)).
+- Serve the editor via an ?edit query flag, see #555
+  ([19dc33e](https://github.com/redimp/otterwiki/commit/19dc33e)).
+- Prevent blockquotes, fancy blocks, alerts, folded blocks and spoilers from
+  rendering behind a floated infobox, see #559
+  ([e04968d](https://github.com/redimp/otterwiki/commit/e04968d)).
+
+### Dependencies
+
+- Bump gitpython from 3.1.57 to 3.1.58, see #551
+  ([88760ba](https://github.com/redimp/otterwiki/commit/88760ba) by @dependabot).
+- Pin the lxml version explicitly, as a transitive dependency of feedgen, for
+  armv7l wheel support in the docker images
+  ([4c714e2](https://github.com/redimp/otterwiki/commit/4c714e2)).
+
 ## [v2.23.0](https://github.com/redimp/otterwiki/releases/tag/v2.23.0) - 2026-08-05
 
 <small>[Compare with v2.22.2](https://github.com/redimp/otterwiki/compare/v2.22.2...v2.23.0)</small>
