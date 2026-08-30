@@ -3,6 +3,8 @@
 
 import pytest
 import base64
+import pathlib
+from io import BytesIO
 from flask import url_for
 
 
@@ -142,6 +144,58 @@ def test_rename_attachment(test_client, req_ctx):
     )
     assert response.status_code == 200
     assert "attachment0_renamed.txt" in response.data.decode()
+
+
+def _gif_bytes():
+    content_b64 = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+    return base64.b64decode(content_b64)
+
+
+def test_upload_attachment_unicode_filename(test_client):
+    # issue #560: unicode characters must be preserved on upload
+    filename = "Градове.gif"
+    data = {"file": (BytesIO(_gif_bytes()), filename)}
+    response = test_client.post(
+        "/Test/attachments",
+        content_type="multipart/form-data",
+        data=data,
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert filename in response.data.decode()
+    # the file exists on disk with its unicode name preserved
+    storage_path = test_client._app.storage.path
+    assert pathlib.Path(storage_path, "test", filename).exists()
+
+
+def test_upload_attachment_path_traversal(test_client):
+    # a traversal filename must land safely inside the attachment dir
+    data = {"file": (BytesIO(_gif_bytes()), "../../evil.gif")}
+    response = test_client.post(
+        "/Test/attachments",
+        content_type="multipart/form-data",
+        data=data,
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    storage_path = test_client._app.storage.path
+    # stored inside the page's attachment directory, not outside the repo
+    assert pathlib.Path(storage_path, "test", "evil.gif").exists()
+    assert not pathlib.Path(storage_path).parent.joinpath("evil.gif").exists()
+
+
+def test_rename_attachment_unicode(test_client, req_ctx):
+    response = test_client.post(
+        url_for(
+            "edit_attachment", pagepath="Test", filename="attachment0.txt"
+        ),
+        data={"new_filename": "Градове.txt"},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert "Градове.txt" in response.data.decode()
+    storage_path = test_client._app.storage.path
+    assert pathlib.Path(storage_path, "test", "Градове.txt").exists()
 
 
 def test_rename_page_with_attachment(app_with_attachments, test_client):

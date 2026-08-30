@@ -66,6 +66,7 @@ from otterwiki.util import (
     guess_mimetype,
     join_path,
     patchset2filedict,
+    sanitize_filename,
     sanitize_pagename,
     sizeof_fmt,
     split_path,
@@ -1251,9 +1252,11 @@ class Page:
                 # no file selected
                 continue
             if not empty(filename):
-                fn = secure_filename(filename)
+                fn = sanitize_filename(filename) or secure_filename(filename)
             else:
-                fn = secure_filename(upload.filename)
+                fn = sanitize_filename(upload.filename) or secure_filename(
+                    upload.filename
+                )
             attachment = Attachment(self.pagepath, fn)
             # make sure the directory exists
             os.makedirs(attachment.absdirectory, mode=0o775, exist_ok=True)
@@ -1321,6 +1324,9 @@ class Page:
         if not empty(new_filename):
             if not has_permission("WRITE"):
                 return abort(403)
+            new_filename = sanitize_filename(new_filename) or secure_filename(
+                new_filename
+            )
             if new_filename != filename:
                 return a.rename(new_filename, message=message, author=author)
         # show edit form

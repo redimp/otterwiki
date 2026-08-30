@@ -104,6 +104,28 @@ def sanitize_pagename(value, allow_unicode=True, handle_md=False):
     return value
 
 
+def sanitize_filename(value):
+    """Unicode-preserving sanitizer for attachment filenames.
+
+    Keeps Unicode (NFKC-normalized, matching sanitize_pagename) while
+    removing path components and unsafe characters. Returns "" if nothing
+    safe remains, so callers can fall back to secure_filename().
+    """
+    value = unicodedata.normalize("NFKC", str(value))
+    # strip any directory components: keep only the final path segment,
+    # treating both / and \ as separators
+    value = value.replace("\\", "/").split("/")[-1]
+    # remove NUL and control characters
+    value = re.sub(r"[\x00-\x1f\x7f]", "", value)
+    # strip leading/trailing whitespace and trailing dots (Windows)
+    value = value.strip().rstrip(".").strip()
+    # reject pure-traversal / empty names; leading dots (e.g. .gitignore)
+    # are intentionally preserved
+    if value in ("", ".", ".."):
+        return ""
+    return value
+
+
 def split_path(path: str) -> List[str]:
     if path == "":
         return []

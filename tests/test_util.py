@@ -12,6 +12,7 @@ from otterwiki.util import (
     is_valid_email,
     empty,
     sanitize_pagename,
+    sanitize_filename,
     get_pagepath,
     get_page_directoryname,
     random_password,
@@ -124,6 +125,31 @@ def test_sanitize_pagename():
     assert sanitize_pagename("IT/SystemD", handle_md=True) == "IT/SystemD"
     assert sanitize_pagename("IT/Systemd", handle_md=True) == "IT/Systemd"
     assert sanitize_pagename("IT/Systemd.md", handle_md=True) == "IT/Systemd"
+
+
+def test_sanitize_filename():
+    # unicode is preserved (issue #560)
+    assert sanitize_filename("Градове.pdf") == "Градове.pdf"
+    assert sanitize_filename("test.png") == "test.png"
+    assert sanitize_filename("😊.png") == "😊.png"
+    # path components are stripped, keeping only the final segment
+    assert sanitize_filename("../../Градове.pdf") == "Градове.pdf"
+    assert sanitize_filename("foo/bar.txt") == "bar.txt"
+    assert sanitize_filename("foo\\bar.txt") == "bar.txt"
+    assert sanitize_filename("/etc/passwd") == "passwd"
+    # pure traversal / empty names are rejected
+    assert sanitize_filename("..") == ""
+    assert sanitize_filename(".") == ""
+    assert sanitize_filename("") == ""
+    assert sanitize_filename("/") == ""
+    # NUL and control characters are removed
+    assert sanitize_filename("a\x00b.txt") == "ab.txt"
+    assert sanitize_filename("a\tb\n.txt") == "ab.txt"
+    # leading dots are preserved (e.g. dotfiles)
+    assert sanitize_filename(".gitignore") == ".gitignore"
+    # trailing dots and whitespace are stripped
+    assert sanitize_filename("name. ") == "name"
+    assert sanitize_filename("  name.txt  ") == "name.txt"
 
 
 def test_random_password():
