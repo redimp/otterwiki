@@ -91,6 +91,8 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/
 COPY --chmod=0755 docker/stop-supervisor.sh /etc/supervisor/
 # Copy the entrypoint that will generate Nginx additional configs
 COPY --chmod=0755 ./docker/entrypoint.sh /entrypoint.sh
+# nginx (configured in the entrypoint) listens on both 80 and 8080
+EXPOSE 80 8080
 # configure a healthcheck
 HEALTHCHECK --interval=5m --timeout=3s --retries=3  --start-period=30s --start-interval=5s \
     CMD curl -A "docker-healthcheck" -f http://localhost:8080/-/healthz || exit 1
