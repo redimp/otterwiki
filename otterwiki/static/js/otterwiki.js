@@ -79,7 +79,26 @@ var otterwiki = {
             console.log("Error: pre element matching the button could not found. This is a bug.")
             return;
         }
-        navigator.clipboard.writeText(pre_element.innerText);
+        var text = pre_element.innerText;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text);
+        } else {
+            // Fallback for non-secure contexts (e.g. plain HTTP), where
+            // navigator.clipboard is undefined.
+            var textarea = document.createElement("textarea");
+            textarea.value = text;
+            textarea.style.position = "fixed";
+            textarea.style.opacity = "0";
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand("copy");
+            } catch (err) {
+                console.log("Error: copy to clipboard failed.", err);
+            }
+            document.body.removeChild(textarea);
+        }
     },
     toggle_invert_by_name: function(checkbox_name) {
         let checkboxes = document.querySelectorAll('input[name='+checkbox_name+']');
