@@ -303,6 +303,11 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
     toc_anchors = {}
 
     def __init__(self, env, custom_allowlist=None, *args, **kwargs):
+        # escape=False: html entities in text (e.g. &middot;, &#183;) must
+        # pass through untouched so the browser renders them; actual html
+        # tags are separate inline_html/block_html tokens and stay guarded
+        # by clean_html
+        kwargs.setdefault("escape", False)
         super().__init__(*args, **kwargs)
         self.env = env
         self.custom_tags, self.custom_attributes = parse_custom_allowlist(
