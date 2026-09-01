@@ -41,6 +41,7 @@ def test_git_info_refs_404(create_app, test_client):
 def test_git_info_refs(create_app_with_git, test_client_with_git):
     create_app_with_git.config["READ_ACCESS"] = "ANONYMOUS"
     create_app_with_git.config["WRITE_ACCESS"] = "ANONYMOUS"
+    create_app_with_git.config["ATTACHMENT_ACCESS"] = "ANONYMOUS"
     rv = test_client_with_git.get(
         "/.git/info/refs?service=git-upload-pack",
         follow_redirects=True,
@@ -62,6 +63,7 @@ def test_git_info_refs(create_app_with_git, test_client_with_git):
 def test_git_info_refs_permissions(create_app_with_git, test_client_with_git):
     create_app_with_git.config["READ_ACCESS"] = "ANONYMOUS"
     create_app_with_git.config["WRITE_ACCESS"] = "ANONYMOUS"
+    create_app_with_git.config["ATTACHMENT_ACCESS"] = "ANONYMOUS"
     rv = test_client_with_git.get(
         "/.git/info/refs?service=git-upload-pack",
         follow_redirects=True,
