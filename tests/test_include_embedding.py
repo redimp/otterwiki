@@ -16,7 +16,13 @@ trees
 
 
 def _store(storage, path, content):
-    filename = path if path.endswith(".md") else f"{path}.md"
+    from otterwiki.helper import get_filename
+
+    # normalise the filename the same way Page.save() does, so pages are
+    # stored under the on-disk name include resolution looks them up by
+    # (lowercased unless RETAIN_PAGE_NAME_CASE); otherwise the tests fail on
+    # case-sensitive filesystems. See issue #563.
+    filename = get_filename(path)
     storage.store(
         filename=filename,
         content=content,
