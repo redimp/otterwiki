@@ -109,7 +109,13 @@ var MathJax = {
         inlineMath: [["\\(", "\\)"]],
         displayMath: [ ['\\[', '\\]'], ],
         processEscapes: true,
-    }
+    },
+    options: {
+        // Never typeset the markdown source inside the CodeMirror editor:
+        // raw math like \[ ... \] must stay as text while editing. The
+        // editor's preview lives outside .cm-editor and is still typeset.
+        ignoreHtmlClass: 'cm-editor',
+    },
 };
 
 /* Hot Keys */
