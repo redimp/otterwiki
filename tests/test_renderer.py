@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import html as html_module
+import re
+
 import pytest
 from bs4 import BeautifulSoup
 from otterwiki.renderer import (
@@ -1787,3 +1790,184 @@ def test_frontmatter_body_no_xss():
     html, _, _ = render.markdown(md)
     _assert_no_event_handlers(html)
     assert "<img" not in html
+
+
+#
+# html entities are rendered as characters (escape=False), these tests make
+# sure that this does not open a way to inject script or to obfuscate a
+# dangerous protocol
+#
+
+_ENTITY_XSS_PAYLOADS = [
+    # entity encoded tags must stay text
+    "&lt;script&gt;alert(1)&lt;/script&gt;",
+    "&#60;script&#62;alert(1)&#60;/script&#62;",
+    "&#x3c;script&#x3e;alert(1)&#x3c;/script&#x3e;",
+    "&#60;&#115;&#99;&#114;&#105;&#112;&#116;&#62;alert(1)",
+    "&#X3C;SCRIPT&#X3E;alert(1)&#X3C;/SCRIPT&#X3E;",
+    "&amp;lt;script&amp;gt;alert(1)&amp;lt;/script&amp;gt;",
+    "&lt;img src=x onerror=alert(1)&gt;",
+    "&#60;img src=x onerror=alert(1)&#62;",
+    "&NewLine;&lt;script&gt;alert(1)&lt;/script&gt;",
+    "&#0;&lt;script&gt;alert(1)&lt;/script&gt;",
+    "&#xD800;&lt;img src=x onerror=alert(1)&gt;",
+    "&#x110000;&lt;img src=x onerror=alert(1)&gt;",
+    # entities must not break out of attributes of allowed raw html
+    '<span title="a&quot; onmouseover=&quot;alert(1)">x</span>',
+    "<span title='a&#39; onmouseover=&#39;alert(1)'>x</span>",
+    '<span class="a&quot;onclick=&quot;alert(1)">x</span>',
+    '<span title="a&gt;&lt;script&gt;alert(1)&lt;/script&gt;">x</span>',
+    '<span title="a">&#34; onmouseover=&#34;alert(1)</span>',
+    '<span class="a">&#39; onmouseover=&#39;alert(1)</span>',
+    '<span title="a&#10;onclick=alert(1)">x</span>',
+    "<span>&#x0;<img src=x onerror=alert(1)></span>",
+    "<div>\n\n&#60;img src=x onerror=alert(1)&#62;\n\n</div>",
+    # entity obfuscated protocols
+    "[click](&#106;avascript:alert(1))",
+    "[click](java&#115;cript:alert(1))",
+    "[click](jav&#x09;ascript:alert(1))",
+    "[click](javascript&colon;alert(1))",
+    "[click](&#x6a;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3a;alert(1))",
+    "![alt](&#106;avascript:alert(1))",
+    "<java&#115;cript:alert(1)>",
+    '<a href="&#106;avascript:alert(1)">x</a>',
+    '<a href="&amp;#106;avascript:alert(1)">x</a>',
+    '<a href="&#10;javascript:alert(1)">x</a>',
+    '<img src="jav&#x0A;ascript:alert(1)">',
+    '<video poster="jav&#9;ascript:alert(1)" controls></video>',
+    "[[java&#115;cript:alert(1)|x]]",
+    # entities in inline text that ends up in an attribute
+    '[a&quot; onmouseover=&quot;alert(1)](http://example.com)',
+    "[a&#39; onmouseover=&#39;alert(1)](http://example.com)",
+    '![a&quot; onerror=&quot;alert(1)](http://example.com/y.png)',
+    "![a&#39; onerror=&#39;alert(1)](http://example.com/y.png)",
+    '![a](http://example.com/y.png "t&quot; onerror=&quot;alert(1)")',
+    "# a&quot; onclick=&quot;alert(1)",
+    "# a&#39; onclick=&#39;alert(1)",
+    "# &lt;script&gt;alert(1)&lt;/script&gt;",
+    "*[HTML]: a&quot; onclick=&quot;alert(1)\n\nHTML",
+    "[[page|a&quot; onclick=&quot;alert(1)]]",
+    "[[&lt;script&gt;alert(1)&lt;/script&gt;]]",
+    # entities inside the otterwiki block plugins
+    "==&lt;script&gt;alert(1)&lt;/script&gt;==",
+    ">! &lt;script&gt;alert(1)&lt;/script&gt;",
+    ">| header a&quot; onclick=&quot;alert(1)\n>| body",
+    "> [!NOTE]\n> &lt;script&gt;alert(1)&lt;/script&gt;",
+    "::: info a&quot; onclick=&quot;x\ncontent\n:::",
+    "| a |\n|---|\n| &lt;script&gt;alert(1)&lt;/script&gt; |",
+    "- [ ] &lt;script&gt;alert(1)&lt;/script&gt;",
+    "text[^1]\n\n[^1]: &lt;script&gt;alert(1)&lt;/script&gt;",
+    "---\ntitle: a&quot; onclick=&quot;alert(1)\n---\n\ntext",
+    "```\n&lt;script&gt;alert(1)&lt;/script&gt;\n```",
+    "```html\n&lt;script&gt;alert(1)&lt;/script&gt;\n```",
+    "    &lt;script&gt;alert(1)&lt;/script&gt;",
+    "```mermaid\n&lt;script&gt;alert(1)&lt;/script&gt;\n```",
+    "`&lt;script&gt;alert(1)&lt;/script&gt;`",
+]
+
+# the event handlers otterwiki renders itself, see renderer.py and
+# renderer_plugins.py
+_OTTERWIKI_EVENT_HANDLERS = {
+    "otterwiki.copy_to_clipboard(this);",
+    "otterwiki.toggle_spoiler(this)",
+}
+
+_INJECTED_TAGS = {
+    "script",
+    "iframe",
+    "object",
+    "embed",
+    "base",
+    "form",
+    "svg",
+    "math",
+    "frame",
+    "frameset",
+    "applet",
+}
+
+_INJECTED_PROTOCOLS = ("javascript:", "vbscript:", "data:text/html")
+
+
+def _find_injections(html):
+    """Return the script injection vectors found in html, if any."""
+    problems = []
+    soup = BeautifulSoup(html, "html.parser")
+    for tag in soup.find_all(True):
+        name = tag.name.lower()
+        if name in _INJECTED_TAGS:
+            problems.append(f"tag <{name}>")
+        for attr, value in (tag.attrs or {}).items():
+            if isinstance(value, list):
+                value = " ".join(value)
+            if (
+                attr.lower().startswith("on")
+                and value not in _OTTERWIKI_EVENT_HANDLERS
+            ):
+                problems.append(f"event handler {attr} on <{name}>")
+            if not isinstance(value, str):
+                continue
+            # normalize like a browser does before resolving the protocol
+            normalized = re.sub(
+                r"[\x00-\x20\x7f]", "", html_module.unescape(value)
+            ).lower()
+            if normalized.startswith(_INJECTED_PROTOCOLS):
+                problems.append(f"dangerous protocol in {attr} on <{name}>")
+    return sorted(set(problems))
+
+
+def test_entities_no_xss():
+    for md in _ENTITY_XSS_PAYLOADS:
+        html, _, _ = render.markdown(md)
+        assert not _find_injections(html), (md, html)
+        # the same in preview mode, where the cursor span is injected
+        html, _, _ = render.markdown(md, cursor=0)
+        assert not _find_injections(html), (md, html)
+
+
+def test_entities_no_xss_with_custom_allowlist():
+    renderer = OtterwikiRenderer(
+        config={"RENDERER_HTML_ALLOWLIST": "span[data-x], div[data-y]"}
+    )
+    for md in _ENTITY_XSS_PAYLOADS:
+        html, _, _ = renderer.markdown(md)
+        assert not _find_injections(html), (md, html)
+
+
+def test_entities_are_rendered():
+    """The entities themselves must arrive in the browser (issue: &middot;)."""
+    for md, expected in [
+        ("a &middot; b", "·"),
+        ("a &#183; b", "·"),
+        ("a &#xB7; b", "·"),
+        ("&copy; 2026", "©"),
+        ("5 &lt; 6", "5 &lt; 6"),
+        ("AT&amp;T", "AT&amp;T"),
+    ]:
+        html, _, _ = render.markdown(md)
+        assert expected in html, (md, html)
+
+
+def test_entity_encoded_heading_escaped_in_page(test_client):
+    """A heading with entity encoded html ends up in the page title, the
+    og:title meta tag and the toc: all of them must escape it."""
+    payloads = [
+        "# &lt;script&gt;alert(1)&lt;/script&gt;\n\ntext\n",
+        "# &lt;img src=x onerror=alert(1)&gt;\n\ntext\n",
+        '# a&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;\n\ntext\n',
+    ]
+    for i, content in enumerate(payloads):
+        rv = test_client.post(
+            f"/EntityHeading{i}/save",
+            data={"content": content, "commit": "test"},
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        # nothing is unescaped anywhere in the response
+        assert "<script>alert(1)" not in html
+        assert "<img src=x" not in html
+        # and the rendered page carries no injected tag or handler
+        article = BeautifulSoup(html, "html.parser").find("article")
+        assert article is not None
+        assert not _find_injections(str(article)), html
