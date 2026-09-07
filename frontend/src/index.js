@@ -10,7 +10,7 @@ import {
   dropCursor,
 } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import {
   syntaxHighlighting,
   indentOnInput,
@@ -34,6 +34,7 @@ import { attachInlineUpload } from './inline-attachment.js';
 import { listDepthHighlighter } from './list-depth.js';
 import { WikiLink } from './syntax_wikilink.js';
 import { embeddingHighlighter } from './syntax_embedding.js';
+import { indentBlockKeymap } from './editor-indent.js';
 
 function initEditor() {
   const textarea = document.getElementById('content_editor');
@@ -71,7 +72,7 @@ function initEditor() {
         ...historyKeymap,
         ...searchKeymap,
         ...closeBracketsKeymap,
-        indentWithTab,
+        indentBlockKeymap,
       ]),
       lineNumbers(),
       drawSelection(),
