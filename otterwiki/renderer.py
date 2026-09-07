@@ -482,8 +482,6 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
 
 
 class OtterwikiBlockParser(mistune.BlockParser):
-    INDENT_CODE = re.compile(r'((?:\n*)(?:(?: {4}| *\t)[^\n]+\n*)+)\n')
-
     # Pattern to detect alert syntax in the first line of a blockquote
     _ALERT_DETECT = re.compile(
         r'\s*\[!(?:' + mistunePluginAlerts.TYPES_WITH_PIPES + r')\]',
@@ -539,18 +537,24 @@ class OtterwikiBlockParser(mistune.BlockParser):
 
     def parse_indent_code(self, m, state):
         """
-        Overrides mistunes rendering, since mistune catches one \\n too much.
-        Re-match the v3 scanner's group(0) against our custom INDENT_CODE regex
-        so that group(1) strips the extra trailing blank-line newlines exactly
-        as v2 did.
+        Overrides mistunes rendering to match the v2 convention of keeping a
+        single trailing newline on indented code blocks.
+
+        mistune v3 strips all surrounding blank lines via ``code.strip('\\n')``.
+        We instead strip only leading blank lines and a single trailing
+        newline, which matches the v2 convention (#212) while correctly
+        preserving blank lines *inside* the block (#566). Using mistune's full
+        scanner match (``m.group(0)``) instead of a custom regex avoids
+        truncating the block at whitespace-only lines.
         """
-        m2 = self.INDENT_CODE.match(m.group(0))
-        raw = m2.group(1) if m2 else m.group(0)
+        raw = m.group(0)
         text = mistune.block_parser.expand_leading_tab(raw)
         code = mistune.block_parser._INDENT_CODE_TRIM.sub(  # pyright: ignore
             '', text
         )
         code = code.lstrip('\n')
+        if code.endswith('\n'):
+            code = code[:-1]
         state.append_token(
             {"type": "block_code", "raw": code, "style": "indent"}
         )

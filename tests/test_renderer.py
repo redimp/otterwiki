@@ -1314,6 +1314,21 @@ This is regular."""
     assert """This is preformatted.\n""" == pre.text
 
 
+def test_indent_preformatted_blank_lines_issue566():
+    # blank lines inside an indented code block must not truncate it,
+    # regardless of whether the blank line is empty or contains 4 spaces.
+    for blank in ("", "    "):
+        md = (
+            "# t\n\nSome text.\n\n"
+            "    some_code()\n" + blank + "\n    some_more_code()\n\n"
+            "Some more text."
+        )
+        html, _, _ = render.markdown(md)
+        pre = BeautifulSoup(html, "html.parser").find('pre')
+        assert pre
+        assert "some_code()\n\nsome_more_code()\n" == pre.text
+
+
 def test_nested_list():
     md = """# Nested lists
 1. A
