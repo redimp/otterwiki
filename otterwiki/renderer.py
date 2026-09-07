@@ -155,10 +155,44 @@ URL_ATTRIBUTES = [
     'xlink:href',
 ]
 
+# protocols that must never be reached from an attribute, neither from an
+# url attribute nor from an url() inside a style attribute
+DANGEROUS_PROTOCOLS = [
+    'javascript:',
+    'data:',
+    'vbscript:',
+    'file:',
+    'about:',
+]
+
+# css constructs that run script or pull in a stylesheet. expression() and
+# behavior: are only understood by ancient browsers, -moz-binding: by old
+# geckos, but they cost nothing to reject.
+DANGEROUS_CSS = [
+    'expression(',
+    'behavior:',
+    '-moz-binding:',
+    '@import',
+]
+
 # control characters and whitespace: browsers strip TAB, LF and CR from
 # urls (and ignore leading/trailing control characters) before resolving
 # the protocol, so "jav&#x09;ascript:" is executed as "javascript:".
 _URL_STRIP_RE = re.compile(r"[\x00-\x20\x7f]")
+
+# css comments may appear in the middle of a value, e.g. "expr/**/ession("
+_CSS_COMMENT_RE = re.compile(r"/\*.*?(?:\*/|$)", re.S)
+
+# css escapes: "\6a" (optionally followed by one whitespace) or "\<char>",
+# browsers decode both before they interpret the value, so
+# "url(\6a avascript:alert(1))" resolves to "url(javascript:alert(1))"
+_CSS_ESCAPE_RE = re.compile(r"\\([0-9a-fA-F]{1,6})[ \t\r\n\f]?|\\(.)", re.S)
+
+# the target of an url(), quoted or bare
+_CSS_URL_RE = re.compile(
+    r"url\([ \t\r\n\f]*(?:\"([^\"]*)\"|'([^']*)'|([^)]*))",
+    re.I,
+)
 
 
 def normalize_url_for_protocol_check(value: str) -> str:
@@ -178,6 +212,55 @@ def normalize_url_for_protocol_check(value: str) -> str:
     return _URL_STRIP_RE.sub("", decoded).lower()
 
 
+def _decode_css_escapes(value: str) -> str:
+    def replace(m):
+        if m.group(1) is not None:
+            try:
+                return chr(int(m.group(1), 16))
+            except ValueError:
+                return ""
+        return m.group(2)
+
+    return _CSS_ESCAPE_RE.sub(replace, value)
+
+
+def is_dangerous_style(value: str) -> bool:
+    """
+    Check the value of a style attribute the way a browser reads it: decode
+    html entities and css escapes, drop css comments, then reject script
+    constructs and url()s that carry a dangerous protocol.
+    """
+    # every step below is guarded by a substring check: an ordinary style
+    # value like "color:red" carries no entity, escape, comment or url() and
+    # must not pay for a regex pass that cannot match anything
+    decoded = value
+    if "&" in decoded:
+        # BeautifulSoup decoded the entities, the extra pass guards against
+        # another layer of encoding, as it does for url attributes
+        decoded = unescape(decoded)
+        if "&" in decoded:
+            decoded = unescape(decoded)
+    if "\\" in decoded:
+        decoded = _decode_css_escapes(decoded)
+    # after decoding the escapes, "\2f\2a" has become a comment opener
+    if "/*" in decoded:
+        decoded = _CSS_COMMENT_RE.sub("", decoded)
+
+    # css ignores whitespace between the parts of a declaration
+    stripped = _URL_STRIP_RE.sub("", decoded).lower()
+    if any(construct in stripped for construct in DANGEROUS_CSS):
+        return True
+
+    if "url(" in stripped:
+        for match in _CSS_URL_RE.finditer(decoded):
+            url = match.group(1) or match.group(2) or match.group(3) or ""
+            normalized = normalize_url_for_protocol_check(url)
+            if normalized.startswith(tuple(DANGEROUS_PROTOCOLS)):
+                return True
+
+    return False
+
+
 def clean_html(
     html: str, custom_tags: list = None, custom_attributes: dict = None
 ) -> str:
@@ -188,6 +271,7 @@ def clean_html(
     - Event handlers (onclick, onload, onbegin, etc.)
     - Dangerous protocols (javascript:, data:)
     - Dangerous tags (object, embed, iframe, svg with events, etc.)
+    - Dangerous css in style attributes (url(javascript:), expression(), ...)
     """
 
     # tags and attrs are logically groupped by types
@@ -226,14 +310,6 @@ def clean_html(
         '*': ['id', 'class', 'title', 'style'],
     }
     # fmt: on
-
-    DANGEROUS_PROTOCOLS = [
-        'javascript:',
-        'data:',
-        'vbscript:',
-        'file:',
-        'about:',
-    ]
 
     # extend with custom user-defined tags and attributes
     if custom_tags:
@@ -283,6 +359,11 @@ def clean_html(
                             if attr_normalized.startswith(protocol):
                                 _escape = True
                                 break
+                elif attr_name_lower == 'style':
+                    if isinstance(attr_value, str) and is_dangerous_style(
+                        attr_value
+                    ):
+                        _escape = True
 
                 if _escape:
                     break

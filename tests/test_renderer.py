@@ -6,9 +6,11 @@ import re
 
 import pytest
 from bs4 import BeautifulSoup
+from markupsafe import escape
 from otterwiki.renderer import (
     render,
     clean_html,
+    is_dangerous_style,
     OtterwikiRenderer,
     pygments_render,
 )
@@ -1913,6 +1915,8 @@ def _find_injections(html):
             ).lower()
             if normalized.startswith(_INJECTED_PROTOCOLS):
                 problems.append(f"dangerous protocol in {attr} on <{name}>")
+            if attr.lower() == "style" and is_dangerous_style(value):
+                problems.append(f"dangerous css in style on <{name}>")
     return sorted(set(problems))
 
 
@@ -1971,3 +1975,72 @@ def test_entity_encoded_heading_escaped_in_page(test_client):
         article = BeautifulSoup(html, "html.parser").find("article")
         assert article is not None
         assert not _find_injections(str(article)), html
+
+
+def test_clean_html_style_dangerous():
+    """A style attribute must not smuggle script or a remote stylesheet."""
+    vectors = [
+        # url() with a dangerous protocol
+        '<span style="background:url(javascript:alert(1))">x</span>',
+        '<span style="background:url(\'javascript:alert(1)\')">x</span>',
+        '<span style="background:url(&quot;javascript:alert(1)&quot;)">x</span>',
+        '<span style="background: url( javascript:alert(1) )">x</span>',
+        '<span style="background:URL(JavaScript:alert(1))">x</span>',
+        '<span style="background:url(vbscript:alert(1))">x</span>',
+        '<span style="background:url(data:text/html,<script>alert(1)</script>)">x</span>',
+        # entity encoded
+        '<span style="background:url(&#106;avascript:alert(1))">x</span>',
+        '<span style="background:url(jav&#x09;ascript:alert(1))">x</span>',
+        '<span style="&#98;ackground:url(&#106;avascript:alert(1))">x</span>',
+        # css escapes
+        r'<span style="background:url(\6a avascript:alert(1))">x</span>',
+        r'<span style="background:url(\6A\61\76\61\73\63\72\69\70\74\3a alert(1))">x</span>',
+        r'<span style="background:url(j\61vascript:alert(1))">x</span>',
+        # css comments
+        '<span style="background:url(/**/javascript:alert(1))">x</span>',
+        '<span style="width:expr/**/ession(alert(1))">x</span>',
+        # script constructs
+        '<span style="width:expression(alert(1))">x</span>',
+        '<span style="behavior:url(#default#time2)">x</span>',
+        '<span style="-moz-binding:url(http://example.com/x.xml#e)">x</span>',
+        "<span style=\"@import 'http://example.com/x.css'\">x</span>",
+        r'<span style="\40 import \27 http://example.com/x.css\27 ">x</span>',
+        # on a tag whose style comes from the generic '*' attributes
+        '<td style="background:url(javascript:alert(1))">x</td>',
+    ]
+    for vector in vectors:
+        # the whole element is escaped, so it renders as inert text
+        assert clean_html(vector) == str(escape(vector)), vector
+
+
+def test_clean_html_style_harmless():
+    """Ordinary inline styles must keep working."""
+    for harmless in [
+        '<span style="color:red">x</span>',
+        '<span style="opacity:0.8;text-align:justify">x</span>',
+        '<td style="text-align:center">x</td>',
+        '<span style="background:url(/attachments/img.png)">x</span>',
+        '<span style="background:url(\'https://example.com/img.png\')">x</span>',
+        '<span style="background:url(https://example.com/a.png?a=1&amp;b=2)">x</span>',
+        '<span style="font-family:\'Java Script\'">x</span>',
+        '<span style="content:\'a/*b\'">x</span>',
+    ]:
+        assert clean_html(harmless) == harmless, harmless
+
+
+def test_markdown_style_dangerous():
+    """The same, through the renderer."""
+    for md in [
+        '<span style="background:url(javascript:alert(1))">x</span>',
+        '<span style="width:expression(alert(1))">x</span>',
+        r'<span style="background:url(\6a avascript:alert(1))">x</span>',
+    ]:
+        html, _, _ = render.markdown(md)
+        assert not _find_injections(html), (md, html)
+        # no element is left at all, the source shows up as text
+        assert BeautifulSoup(html, "html.parser").find("span") is None
+    # a harmless style survives the round trip
+    html, _, _ = render.markdown('<span style="color:red">x</span>')
+    span = BeautifulSoup(html, "html.parser").find("span")
+    assert span is not None
+    assert span.attrs.get("style") == "color:red"
