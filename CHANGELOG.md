@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.24.1](https://github.com/redimp/otterwiki/releases/tag/v2.24.1) - 2026-09-08
+
+<small>[Compare with v2.24.0](https://github.com/redimp/otterwiki/compare/v2.24.0...v2.24.1)</small>
+
+### Security Fixes
+
+- Check style attributes for dangerous CSS in clean_html: url() targets are held
+  to the same protocol allowlist as href and src, and expression(), behavior:,
+  -moz-binding: and @import are rejected, decoding entities, CSS escapes and
+  comments first
+  ([488a8e7](https://github.com/redimp/otterwiki/commit/488a8e7)).
+
+### Bug Fixes
+
+- Render HTML entities like &middot; in text again by passing entities through
+  while html tags stay guarded by clean_html
+  ([e8a390b](https://github.com/redimp/otterwiki/commit/e8a390b)).
+- Fall back to a hidden textarea and document.execCommand("copy") when copying a
+  code block over plain HTTP, where navigator.clipboard is unavailable, see #562
+  ([5c75701](https://github.com/redimp/otterwiki/commit/5c75701)).
+- Preserve unicode in uploaded filenames with a NFKC-normalized
+  sanitize_filename(), aligning filename handling for pages and attachments, see
+  #560
+  ([b937bf2](https://github.com/redimp/otterwiki/commit/b937bf2)).
+- Don't indent empty lines when tab-indenting a selection in the editor, see #566
+  ([b92df95](https://github.com/redimp/otterwiki/commit/b92df95)).
+- Preserve blank lines inside indented code blocks, see #566
+  ([d09b635](https://github.com/redimp/otterwiki/commit/d09b635)).
+- Prevent MathJax from typesetting the editor source, see #564
+  ([131a72e](https://github.com/redimp/otterwiki/commit/131a72e)).
+
 ## [v2.24.0](https://github.com/redimp/otterwiki/releases/tag/v2.24.0) - 2026-08-29
 
 <small>[Compare with v2.23.0](https://github.com/redimp/otterwiki/compare/v2.23.0...v2.24.0)</small>
