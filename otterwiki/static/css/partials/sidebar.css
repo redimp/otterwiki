@@ -82,12 +82,17 @@ img.sidebar-logo {
   --radius  : 1rem;
 }
 
-a.sidebar-toc-1 { padding-left: calc(2 * var(--spacing) - var(--radius)); padding-right: 0; }
-a.sidebar-toc-2 { padding-left: calc(3 * var(--spacing) - var(--radius) - 13px); padding-right: 0; }
-a.sidebar-toc-3 { padding-left: calc(4 * var(--spacing) - var(--radius) - 13px); padding-right: 0; }
-a.sidebar-toc-4 { padding-left: calc(5 * var(--spacing) - var(--radius) - 13px); padding-right: 0; }
-a.sidebar-toc-5 { padding-left: calc(6 * var(--spacing) - var(--radius) - 13px); padding-right: 0; }
-a.sidebar-toc-6 { padding-left: calc(7 * var(--spacing) - var(--radius) - 13px); padding-right: 0; }
+.sidebar-toc {
+  --toc-base: calc(2 * var(--spacing) - var(--radius)); /* 20px */
+  --toc-step: 0.8rem;                                   /* 8px  */
+}
+
+a.sidebar-toc-1 { padding-left: var(--toc-base); padding-right: 0; }
+a.sidebar-toc-2 { padding-left: calc(var(--toc-base) + 1 * var(--toc-step)); padding-right: 0; }
+a.sidebar-toc-3 { padding-left: calc(var(--toc-base) + 2 * var(--toc-step)); padding-right: 0; }
+a.sidebar-toc-4 { padding-left: calc(var(--toc-base) + 3 * var(--toc-step)); padding-right: 0; }
+a.sidebar-toc-5 { padding-left: calc(var(--toc-base) + 4 * var(--toc-step)); padding-right: 0; }
+a.sidebar-toc-6 { padding-left: calc(var(--toc-base) + 5 * var(--toc-step)); padding-right: 0; }
 
 .sidebar-title {
     margin-left: 1rem;
