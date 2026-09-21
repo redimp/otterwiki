@@ -1,0 +1,45 @@
+{{- if and .Values.httproute.enabled (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") -}}
+{{- $fullName := include "otterwiki.fullname" . -}}
+{{- $svcPort := .Values.service.port -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "otterwiki.labels" . | nindent 4 }}
+  {{- with .Values.httproute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  hostnames:
+    {{- toYaml .Values.httproute.hostnames | nindent 4 }}
+  parentRefs:
+    {{- toYaml .Values.httproute.parentRefs | nindent 4 }}
+  rules:
+  {{- if gt (len .Values.httproute.rules) 0 }}
+    {{- range .Values.httproute.rules }}
+    - backendRefs:
+        - name: {{ $fullName }}
+          kind: Service
+          port: {{ $svcPort }}
+      {{- with .filters }}
+      filters:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .matches }}
+      matches:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .timeouts }}
+      timeouts:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+  {{- else }}
+    - backendRefs:
+        - name: {{ $fullName }}
+          kind: Service
+          port: {{ $svcPort }}
+  {{- end }}
+{{- end }}
