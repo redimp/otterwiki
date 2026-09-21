@@ -216,6 +216,20 @@ def handle_app_preferences(form):
         )
         return redirect(url_for("admin"))
 
+    not_found_page = form.get("not_found_page", "").strip().strip("/")
+    if not_found_page.endswith(".md"):
+        toast(
+            "Custom 404 page path should not include the .md extension.",
+            "error",
+        )
+        return redirect(url_for("admin"))
+    if not_found_page.startswith("-/"):
+        toast(
+            "Custom 404 page must be a regular wiki page, not a special page.",
+            "error",
+        )
+        return redirect(url_for("admin"))
+
     # handle server_name
     server_name = form.get("server_name", "").strip()
     if empty(server_name):
@@ -223,6 +237,7 @@ def handle_app_preferences(form):
 
     _update_preference("SERVER_NAME", server_name)
     _update_preference("HOME_PAGE", home_page)
+    _update_preference_if_changed("NOT_FOUND_PAGE", not_found_page)
 
     # commit changes to the database
     db.session.commit()
