@@ -445,6 +445,24 @@ class Page:
 
         return content, metadata
 
+    def _render_custom_404(self) -> str | None:
+        not_found_page = (app.config.get("NOT_FOUND_PAGE") or "").strip("/")
+        if not not_found_page or not_found_page.startswith("-/"):
+            return None
+        filename = get_filename(not_found_page)
+        try:
+            content = storage.load(filename)
+        except StorageNotFound:
+            app.logger.warning(
+                "NOT_FOUND_PAGE {} does not exist".format(not_found_page)
+            )
+            return None
+        htmlcontent, _, _ = app_renderer.markdown(
+            content,
+            page_url=url_for("view", path=get_pagepath(not_found_page)),
+        )
+        return htmlcontent
+
     def exists_or_404(self, in_git: bool = False):
         if not self.exists or (in_git and self.metadata is None):
             app.logger.warning("Not found {}".format(self.pagename))
@@ -454,6 +472,7 @@ class Page:
                     title="{} - not found".format(self.pagename_full),
                     pagename=self.pagename_full,
                     pagepath=self.pagepath,
+                    custom_404_html=self._render_custom_404(),
                 ),
                 404,
             )

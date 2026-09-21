@@ -78,6 +78,16 @@
   </div>
 {##}
   <div class="form-group">
+    <label for="not_found_page">Custom 404 Page</label>
+    <input name="not_found_page" type="text" placeholder="Leave empty for the default message" class="form-control" id="not_found_page" value="{{ config.NOT_FOUND_PAGE or "" }}">
+    <div class="form-text">
+      A wiki page (e.g. <code>Meta/NotFound</code>) whose content is displayed when a page does not exist.
+      The link to create the missing page is still shown below it.
+      <em>Note: Do not include the <code>.md</code> extension.</em>
+    </div>
+  </div>
+{##}
+  <div class="form-group">
     <label for="site_icon">Site Icon (favicon)</label>
     <input name="site_icon" type="text" placeholder="/static/img/otter-favicon.png" class="form-control" id="site_icon" value="{{ config.SITE_ICON or "" }}">
     <div class="form-text">
