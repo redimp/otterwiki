@@ -17,7 +17,7 @@ def test_load_custom_html_nonexistent_file(create_app):
         assert result == ""
 
 
-def test_custom_html(test_client, create_app):
+def test_custom_html(anonymous_client, create_app):
     """Test that custom HTML works with HTML_EXTRA_HEAD, HTML_EXTRA_BODY and custom files"""
     app = create_app
 
@@ -44,7 +44,7 @@ def test_custom_html(test_client, create_app):
         f.write(body_content)
 
     try:
-        response = test_client.get('/')
+        response = anonymous_client.get('/')
         html = response.data.decode('utf-8')
 
         assert 'env-head-value' in html
