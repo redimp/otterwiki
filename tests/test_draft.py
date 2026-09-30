@@ -171,3 +171,24 @@ def test_draft_unchanged_new_page_is_discarded(app_with_user, test_client):
     assert len(Drafts.query.filter_by(pagepath=pagepath).all()) == 1
     # clean up
     Drafts.query.filter_by(pagepath=pagepath).delete()
+
+
+def test_discard_draft(app_with_user, test_client):
+    assert app_with_user
+    from otterwiki.models import Drafts
+
+    # login the client
+    login(test_client)
+
+    pagepath = "test_discard_draft"
+    create_draft(test_client, pagepath, "test\ntest\n")
+    assert len(Drafts.query.filter_by(pagepath=pagepath).all()) == 1
+
+    rv = test_client.post("/{}/draft/discard".format(pagepath))
+    assert rv.status_code == 200
+    assert rv.json["status"] == "draft discarded"
+    assert len(Drafts.query.filter_by(pagepath=pagepath).all()) == 0
+
+    # discarding a non existing draft is fine
+    rv = test_client.post("/{}/draft/discard".format(pagepath))
+    assert rv.status_code == 200

@@ -291,6 +291,26 @@
     Navbar
 #}
 {% block bodytop %}
+<div class="modal" id="modal-leave" tabindex="-1" role="dialog" aria-labelledby="modal-leave-title">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <a href="#" class="close" id="leave-close" role="button" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </a>
+      <h5 class="modal-title" id="modal-leave-title">Unsaved changes</h5>
+      <p>
+        You have unsaved changes to <strong>{{pagename}}</strong>. Keep them
+        as a draft to continue editing later, or discard the draft.
+      </p>
+      <p id="leave-error" class="text-danger" style="display: none;"></p>
+      <div class="d-flex flex-wrap justify-content-end">
+        <button id="leave-discard" class="btn btn-danger mr-5 mt-5" type="button">Discard changes</button>
+        <button id="leave-keep-editing" class="btn mr-5 mt-5" type="button">Keep editing</button>
+        <button id="leave-keep-draft" class="btn btn-primary mt-5" type="button">Keep draft and leave</button>
+      </div>
+    </div>
+  </div>
+</div>
 {%if config["COMMIT_MESSAGE"] != "DISABLED"%}
 <div class="modal" id="modal-commit" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
@@ -526,6 +546,8 @@
     // content of the last draft sent to the server, the editor was loaded
     // either with the stored page or with the stored draft
     var cm_last_draft = null;
+    // the last draft request, resolves to true if the draft has been stored
+    var cm_draft_request = Promise.resolve(true);
 
     const save_draft = function(unloading) {
         if (cm_save_timer != null) {
@@ -533,11 +555,11 @@
             cm_save_timer = null;
         }
         if (cm_saving) {
-            return;
+            return Promise.resolve(true);
         }
         const content = cm_editor.state.doc.toString();
         if (content === cm_last_draft) {
-            return;
+            return cm_draft_request;
         }
         cm_last_draft = content;
         const formData = new FormData();
@@ -547,7 +569,7 @@
         formData.append("cursor_line", lineAt.number - 1);
         formData.append("cursor_ch", sel.head - lineAt.from);
         formData.append("revision", "{{revision}}");
-        fetch({{ url_for('draft', path=pagepath) | tojson }}, {
+        cm_draft_request = fetch({{ url_for('draft', path=pagepath) | tojson }}, {
             method: 'POST',
             headers: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
             body: formData,
@@ -559,14 +581,17 @@
                 if (!response.ok) {
                     throw new Error(response.status);
                 }
+                return true;
             })
             .catch(function () {
                 cm_last_draft = null;
                 console.log('Error saving draft ...');
+                return false;
             });
+        return cm_draft_request;
     }
     const handleBeforeUnload = (event) => {
-        if (!cm_saving && !cmIsClean()) {
+        if (!cm_saving && !cm_leaving && !cmIsClean()) {
             event.preventDefault();
             // No browser actually displays this message anymore.
             // But Chrome requires it to be defined else the popup won't show.
@@ -588,6 +613,7 @@
         // the page was restored from the back/forward cache
         if (event.persisted) {
             cm_saving = false;
+            cm_leaving = false;
         }
     });
 
@@ -629,6 +655,139 @@
             cm_save_timer = null;
         }
         cmMarkClean();
+    };
+
+    /*
+        leaving the editor with unsaved changes via a link or a form asks the
+        user what to do with the changes. Closing the tab, reloading or
+        entering an url can only be handled by the beforeunload dialog.
+    */
+    // set when the user decided how to leave the editor
+    var cm_leaving = false;
+    // the url or form the user is about to leave to
+    var cm_leave_target = null;
+    const leave_modal = document.getElementById('modal-leave');
+    const leave_error = document.getElementById('leave-error');
+    const leave_buttons = leave_modal.querySelectorAll('button');
+
+    const leave_modal_busy = function(busy) {
+        leave_buttons.forEach((button) => button.disabled = busy);
+    }
+    const leave_modal_error = function(message) {
+        leave_error.textContent = message;
+        leave_error.style.display = message ? '' : 'none';
+    }
+    const confirm_leave = function(target) {
+        if (cm_saving || cm_leaving || cmIsClean()) {
+            return true;
+        }
+        cm_leave_target = target;
+        leave_modal_busy(false);
+        leave_modal_error('');
+        leave_modal.classList.add('show');
+        document.getElementById('leave-keep-draft').focus();
+        return false;
+    }
+    const leave_editor = function() {
+        const target = cm_leave_target;
+        cm_leave_target = null;
+        cm_leaving = true;
+        leave_modal.classList.remove('show');
+        if (target instanceof HTMLFormElement) {
+            target.submit();
+        } else {
+            window.location.href = target;
+        }
+    }
+    const keep_editing = function() {
+        cm_leave_target = null;
+        leave_modal.classList.remove('show');
+        cm_editor.focus();
+    }
+
+    document.addEventListener('click', (event) => {
+        if (event.defaultPrevented || event.button !== 0 || event.ctrlKey
+            || event.metaKey || event.shiftKey || event.altKey) {
+            return;
+        }
+        const link = event.target.closest('a[href]');
+        if (link == null || (link.target && link.target !== '_self')
+            || link.hasAttribute('download')) {
+            return;
+        }
+        // links to anchors and links used as buttons don't leave the editor
+        if (link.getAttribute('href').startsWith('#')) {
+            return;
+        }
+        // e.g. mailto: or javascript: links
+        if (!['http:', 'https:'].includes(new URL(link.href).protocol)) {
+            return;
+        }
+        if (!confirm_leave(link.href)) {
+            event.preventDefault();
+        }
+    });
+    document.addEventListener('submit', (event) => {
+        const form = event.target;
+        if (event.defaultPrevented || form.id === 'saveform'
+            || (form.target && form.target !== '_self')) {
+            return;
+        }
+        if (!confirm_leave(form)) {
+            event.preventDefault();
+        }
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && leave_modal.classList.contains('show')) {
+            event.preventDefault();
+            keep_editing();
+        }
+    });
+
+    document.getElementById('leave-keep-editing').onclick = keep_editing;
+    document.getElementById('leave-close').onclick = (event) => {
+        event.preventDefault();
+        keep_editing();
+    };
+    document.getElementById('leave-keep-draft').onclick = () => {
+        leave_modal_busy(true);
+        save_draft(true).then((stored) => {
+            if (stored) {
+                leave_editor();
+            } else {
+                leave_modal_busy(false);
+                leave_modal_error('The draft could not be saved.');
+            }
+        });
+    };
+    document.getElementById('leave-discard').onclick = () => {
+        leave_modal_busy(true);
+        // no more drafts must be stored, after the draft has been discarded
+        cm_saving = true;
+        if (cm_save_timer != null) {
+            window.clearTimeout(cm_save_timer);
+            cm_save_timer = null;
+        }
+        // wait for a pending draft request, it would recreate the draft
+        cm_draft_request
+            .then(() => fetch({{ url_for('discard_draft', path=pagepath) | tojson }}, {
+                method: 'POST',
+                headers: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
+            }))
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(response.status);
+                }
+                // the draft is gone, if the page is restored from the
+                // back/forward cache, the content is stored again on leaving
+                cm_last_draft = null;
+                leave_editor();
+            })
+            .catch(() => {
+                cm_saving = false;
+                leave_modal_busy(false);
+                leave_modal_error('The draft could not be discarded.');
+            });
     };
     /* preview */
     preview_btn.onclick = function() {

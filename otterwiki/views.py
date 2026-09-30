@@ -618,6 +618,16 @@ def draft(path):
     )
 
 
+@app.route("/<path:path>/draft/discard", methods=["POST"])
+def discard_draft(path):
+    p = Page(path)
+    # only the draft of the current user is discarded
+    p.discard_draft(author=otterwiki.auth.get_author())
+    return {
+        "status": "draft discarded",
+    }
+
+
 @app.route("/<path:pagepath>/source/<string:revision>")
 @app.route("/<path:pagepath>/source", methods=["GET"])
 def source(pagepath, revision=None):
