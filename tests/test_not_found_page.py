@@ -3,6 +3,7 @@
 """
 Tests for the configurable 404 page (NOT_FOUND_PAGE).
 """
+
 import pytest
 
 
@@ -126,3 +127,29 @@ def test_admin_rejects_invalid_not_found_page(
     assert message in rv.data.decode()
     assert app_with_user.config.get("NOT_FOUND_PAGE") == original
     assert app_with_user.config["SITE_NAME"] == site_name
+
+
+def test_custom_404_loads_renderer_libraries(not_found_page, test_client):
+    _save(
+        test_client,
+        "Meta/NotFound",
+        "```mermaid\ngraph TD;\n  A-->B;\n```\n\n"
+        "{{DataTable\n| a | b |\n|---|---|\n| 1 | 2 |\n}}\n",
+    )
+    not_found_page.config["NOT_FOUND_PAGE"] = "Meta/NotFound"
+    rv = test_client.get("/Missing")
+    assert rv.status_code == 404
+    html = rv.data.decode()
+    assert "js/mermaid@" in html
+    assert "css/simple-datatables@" in html
+    assert "js/simple-datatables@" in html
+    assert "simpleDatatables.DataTable" in html
+
+
+def test_default_404_skips_renderer_libraries(not_found_page, test_client):
+    not_found_page.config["NOT_FOUND_PAGE"] = ""
+    rv = test_client.get("/Missing")
+    assert rv.status_code == 404
+    html = rv.data.decode()
+    assert "js/mermaid@" not in html
+    assert "simple-datatables@" not in html

@@ -1,5 +1,11 @@
 {# vim: set et ts=8 sts=4 sw=4 ai: #}
 {% extends "wiki.html" %}
+{% block js %}
+{{ super() }}
+{%- if custom_404_html %}
+{% include 'snippets/renderer_js.html' %}
+{%- endif %}
+{% endblock %}
 {% block content %}
 {% if custom_404_html %}
 <article class="page">
