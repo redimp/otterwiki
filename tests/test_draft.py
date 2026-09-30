@@ -222,6 +222,16 @@ def store_as_someone_else(pagepath, content, message):
     )
 
 
+def diff_headers(html):
+    from bs4 import BeautifulSoup
+
+    soup = BeautifulSoup(html, "html.parser")
+    return [
+        " ".join(th.get_text().split())
+        for th in soup.select("#draft-diff th.diff-header")
+    ]
+
+
 def post_draft(test_client, pagepath, content, revision):
     rv = test_client.post(
         "/{}/draft".format(pagepath),
@@ -240,7 +250,7 @@ def test_draft_diff(app_with_user, test_client):
     post_draft(
         test_client,
         pagepath,
-        "# Diff\n\nfirst line\nline from the draft\n",
+        "# Diff\n\nfirst line\nline from the **draft**\n",
         page_revision(pagepath),
     )
 
@@ -248,10 +258,19 @@ def test_draft_diff(app_with_user, test_client):
     assert rv.status_code == 200
     html = rv.data.decode()
     assert "Continue editing draft?" in html
-    assert 'id="draft-diff"' in html
-    assert '<tr class="added">' in html
-    assert "line from the draft" in html
+    assert 'class="diff diff-side-by-side highlight" id="draft-diff"' in html
+    # the added line has no counterpart
+    assert '<td class="value empty"></td>' in html
+    # the markdown is highlighted
+    assert (
+        '<td class="value added">line from the '
+        '<span class="gs">**draft**</span></td>'
+    ) in html
+    assert '<span class="gh"># Diff</span>' in html
     assert 'id="draft-outdated"' not in html
+    headers = diff_headers(html)
+    assert headers[0] == "Current version {}".format(page_revision(pagepath))
+    assert headers[1].startswith("Draft saved")
 
 
 def test_draft_outdated(app_with_user, test_client):
@@ -281,6 +300,9 @@ def test_draft_outdated(app_with_user, test_client):
     html = rv.data.decode()
     assert 'id="draft-outdated"' in html
     assert "has been changed since the draft was started" in html
+    assert diff_headers(html)[0] == (
+        "Version the draft is based on {}".format(base_revision)
+    )
     assert "change by someone else" in html
     assert (
         "/{}/diff/{}/{}".format(pagepath, base_revision, current_revision)
@@ -319,6 +341,7 @@ def test_draft_outdated_new_page(app_with_user, test_client):
     assert rv.status_code == 200
     html = rv.data.decode()
     assert "has been changed since the draft was started" in html
+    assert diff_headers(html)[0] == "New page"
     diff = html.split('id="draft-diff"')[1].split("</table>")[0]
     assert "from the draft" in diff
     assert "created meanwhile" not in diff
@@ -347,6 +370,7 @@ def test_draft_outdated_deleted_page(app_with_user, test_client):
     assert rv.status_code == 200
     html = rv.data.decode()
     assert "has been deleted since the draft was started" in html
+    assert diff_headers(html)[0].startswith("Version the draft is based on ")
     diff = html.split('id="draft-diff"')[1].split("</table>")[0]
     assert "from the draft" in diff
 
@@ -365,5 +389,8 @@ def test_draft_unknown_revision(app_with_user, test_client):
     assert rv.status_code == 200
     html = rv.data.decode()
     assert "can not be found in the history" in html
+    assert diff_headers(html)[0] == "Current version {}".format(
+        page_revision(pagepath)
+    )
     assert "Compared to the stored version" in html
     assert "from the draft" in html

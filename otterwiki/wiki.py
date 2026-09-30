@@ -54,13 +54,15 @@ from otterwiki.plugins import (
     plugin_manager,
 )
 from otterwiki.pluginmgmt import collect_plugin_info
-from otterwiki.renderer import pygments_render
+from otterwiki.renderer import pygments_render, pygments_render_lines
 from otterwiki.server import app, app_renderer, db, storage
 from otterwiki.sidebar import SidebarMenu, SidebarPageIndex
 from otterwiki.pageindex import PageIndex
 from otterwiki.util import (
     diff_content,
+    diff_side_by_side,
     empty,
+    normalize_content,
     get_header,
     get_page_directoryname,
     get_pagepath,
@@ -353,10 +355,6 @@ class Changelog:
             href=url_for("changelog_feed_atom", _external=True), rel='self'
         )
         return fg.atom_str(pretty=True)
-
-
-def _normalize_content(content):
-    return content.replace("\r\n", "\n").strip() + "\n"
 
 
 class Page:
@@ -868,23 +866,56 @@ class Page:
             base_content = (
                 self.content if self.exists else self._new_page_content()
             )
+        base_content = base_content or ""
+        draft_content = draft.content or ""
+        # highlight the markdown of both versions as a whole, so e.g. code
+        # blocks are highlighted correctly, and pick the lines of the diff
+        base_html = pygments_render_lines(
+            normalize_content(base_content), "markdown"
+        )
+        draft_html = pygments_render_lines(
+            normalize_content(draft_content), "markdown"
+        )
+
+        def _cell(line, number, html_lines):
+            if line is None:
+                return None
+            if 0 < number <= len(html_lines):
+                html = html_lines[number - 1]
+            else:
+                html = str(html_escape(line["value"].rstrip("\n")))
+            return {"number": number, "style": line["style"], "html": html}
+
+        draft_diff = []
+        for row in diff_side_by_side(
+            diff_content(base_content, draft_content)
+        ):
+            if "hunk" in row:
+                draft_diff.append(row)
+                continue
+            left, right = row["left"], row["right"]
+            draft_diff.append(
+                {
+                    "left": _cell(left, left and left["source"], base_html),
+                    "right": _cell(
+                        right, right and right["target"], draft_html
+                    ),
+                }
+            )
         return render_template(
             "draft.html",
             title="{} - draft".format(self.pagename),
             pagename=self.pagename,
             pagepath=self.pagepath,
-            content=(
-                pygments_render(self.content, lang='markdown')
-                if self.content
-                else None
-            ),
-            draft_content=pygments_render(draft.content, lang='markdown'),
             draft_datetime=draft.datetime.astimezone(UTC),
             draft_revision=draft_revision,
-            draft_diff=diff_content(base_content or "", draft.content or ""),
+            draft_diff=draft_diff,
             diff_against_stored=diff_against_stored,
             changes=changes,
             page_exists=self.exists,
+            current_revision=(
+                self.metadata.get("revision") if self.metadata else None
+            ),
         )
 
     def save(self, content, commit, author):
@@ -1466,9 +1497,9 @@ class Page:
         stored_content = (
             self.content if self.exists else self._new_page_content()
         )
-        if stored_content is not None and _normalize_content(
+        if stored_content is not None and normalize_content(
             content
-        ) == _normalize_content(stored_content):
+        ) == normalize_content(stored_content):
             self.discard_draft(author)
             return {
                 "status": "draft discarded",

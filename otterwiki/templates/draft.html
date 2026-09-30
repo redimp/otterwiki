@@ -44,13 +44,13 @@
     </div>
 {% endif %}
 
-    <div class="d-flex">
-        <form action="{{ url_for("edit", path=pagepath) }}" method="POST" class="mr-15">
+    <div class="d-flex flex-wrap">
+        <form action="{{ url_for("edit", path=pagepath) }}" method="POST" class="mr-15 mb-10">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="draft" value="edit" />
             <input class="btn btn-primary" type="submit" name="submit" value="Continue editing draft" />
         </form>
-        <form action="{{ url_for("edit", path=pagepath) }}" method="POST">
+        <form action="{{ url_for("edit", path=pagepath) }}" method="POST" class="mb-10">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="draft" value="discard" />
             <input class="btn" type="submit" name="submit" value="Discard draft" />
@@ -63,14 +63,47 @@
 <p class="text-muted">Compared to the stored version, since the version the draft is based on is not available.</p>
 {% endif %}
 {% if draft_diff %}
-<table class="diff" id="draft-diff">
-{% for l in draft_diff %}
-<tr class="{{l.style}}">
-{%- if l.style == "hunk" %}
-<td class="hunk" colspan="2">{{l.value}}</td>
+<table class="diff diff-side-by-side highlight" id="draft-diff">
+<colgroup>
+  <col class="diff-linenumber"><col><col class="diff-linenumber"><col>
+</colgroup>
+{%- macro revision_link(revision) -%}
+{%- if page_exists %} <a href="{{ url_for('pageview', path=pagepath, revision=revision) }}" class="revision-small">{{revision}}</a>
+{%- else %} <span class="revision-small">{{revision}}</span>
+{%- endif -%}
+{%- endmacro %}
+<thead>
+<tr>
+  <th class="diff-header" colspan="2">
+{%- if diff_against_stored %}
+    Current version{% if current_revision %}{{ revision_link(current_revision) }}{% endif %}
+{%- elif not draft_revision %}
+    New page
+{%- elif changes %}
+    Version the draft is based on{{ revision_link(draft_revision) }}
 {%- else %}
-    <td class="diff-decoration">{{l.type}}</td>
-    <td class="value">{{l.value | replace('\n', '')}}</td>
+    Current version{{ revision_link(draft_revision) }}
+{%- endif -%}
+  </th>
+  <th class="diff-header" colspan="2">
+    Draft <span class="font-weight-normal text-muted" title="{{draft_datetime|format_datetime}}">saved {{draft_datetime|format_datetime("deltanow")}} ago</span>
+  </th>
+</tr>
+</thead>
+{% for row in draft_diff %}
+<tr>
+{%- if row.hunk %}
+<td class="hunk" colspan="4">{{row.hunk}}</td>
+{%- else %}
+{%- for cell in [row.left, row.right] %}
+{%- if cell %}
+    <td class="diff-decoration linenumber {{cell.style}}">{{cell.number}}</td>
+    <td class="value {{cell.style}}">{{cell.html|safe}}</td>
+{%- else %}
+    <td class="diff-decoration empty"></td>
+    <td class="value empty"></td>
+{%- endif %}
+{%- endfor %}
 {%- endif -%}
 </tr>
 {%- endfor %}
@@ -78,28 +111,4 @@
 {% else %}
 <p>The draft has no changes.</p>
 {% endif %}
-
-<details class="collapse-panel mt-20">
-<summary class="collapse-header">Draft and stored version</summary>
-<div class="collapse-content p-0">
-<table class="table table-inner-bordered table-draft">
-  <thead>
-    <tr>
-        <td><em>Draft</em></td>
-{% if content %}
-      <td>Stored Version</td>
-{% endif %}
-    </tr>
-  </thead>
-  <tbody>
-    <tr class="align-top">
-      <td>{{draft_content|safe}}</td>
-{% if content %}
-      <td>{{content|safe}}</td>
-{% endif %}
-    </tr>
-  </tbody>
-</table>
-</div>
-</details>
 {% endblock %}
