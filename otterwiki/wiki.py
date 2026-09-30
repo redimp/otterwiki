@@ -445,10 +445,10 @@ class Page:
 
         return content, metadata
 
-    def _render_custom_404(self) -> str | None:
+    def _render_custom_404(self):
         not_found_page = (app.config.get("NOT_FOUND_PAGE") or "").strip("/")
         if not not_found_page or not_found_page.startswith("-/"):
-            return None
+            return None, None
         filename = get_filename(not_found_page)
         try:
             content = storage.load(filename)
@@ -456,23 +456,33 @@ class Page:
             app.logger.warning(
                 "NOT_FOUND_PAGE {} does not exist".format(not_found_page)
             )
-            return None
-        htmlcontent, _, _ = app_renderer.markdown(
+            return None, None
+        htmlcontent, _, library_requirements = app_renderer.markdown(
             content,
             page_url=url_for("view", path=get_pagepath(not_found_page)),
         )
-        return htmlcontent
+        return htmlcontent, library_requirements
 
     def exists_or_404(self, in_git: bool = False):
         if not self.exists or (in_git and self.metadata is None):
             app.logger.warning("Not found {}".format(self.pagename))
+            custom_404_html, library_requirements = self._render_custom_404()
+            extra_js = ""
+            if custom_404_html:
+                extra_js = "".join(collect_hook("renderer_javascript"))
+                if len(extra_js):
+                    extra_js = (
+                        f"<script type=\"text/javascript\">{extra_js}</script>"
+                    )
             response404 = make_response(
                 render_template(
                     "page404.html",
                     title="{} - not found".format(self.pagename_full),
                     pagename=self.pagename_full,
                     pagepath=self.pagepath,
-                    custom_404_html=self._render_custom_404(),
+                    custom_404_html=custom_404_html,
+                    library_requirements=library_requirements,
+                    extra_js=extra_js,
                 ),
                 404,
             )
