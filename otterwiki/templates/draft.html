@@ -91,14 +91,18 @@
 </tr>
 </thead>
 {% for row in draft_diff %}
-<tr>
+<tr{% if row.context %} class="diff-context"{% endif %}>
 {%- if row.hunk %}
 <td class="hunk" colspan="4">{{row.hunk}}</td>
 {%- else %}
 {%- for cell in [row.left, row.right] %}
 {%- if cell %}
     <td class="diff-decoration linenumber {{cell.style}}">{{cell.number}}</td>
+{%- if row.context %}
+    <td class="value"><div class="diff-clamp">{{cell.html|safe}}</div></td>
+{%- else %}
     <td class="value {{cell.style}}">{{cell.html|safe}}</td>
+{%- endif %}
 {%- else %}
     <td class="diff-decoration empty"></td>
     <td class="value empty"></td>
@@ -111,4 +115,60 @@
 {% else %}
 <p>The draft has no changes.</p>
 {% endif %}
+{% endblock %}
+{% block js %}
+{{ super() }}
+<script type="text/javascript">
+(function() {
+    /*
+        unchanged lines are shortened, make the shortened ones expandable
+        by click or keyboard
+    */
+    const rows = document.querySelectorAll('#draft-diff tr.diff-context');
+    const mark_clamped = function() {
+        rows.forEach((row) => {
+            if (row.classList.contains('expanded')) {
+                return;
+            }
+            const clamped = [...row.querySelectorAll('.diff-clamp')].some(
+                (div) => div.scrollHeight > div.clientHeight + 1);
+            row.classList.toggle('clamped', clamped);
+            if (clamped) {
+                row.setAttribute('tabindex', '0');
+                row.setAttribute('title', 'Show the full line');
+                row.setAttribute('aria-expanded', 'false');
+            } else {
+                row.removeAttribute('tabindex');
+                row.removeAttribute('title');
+                row.removeAttribute('aria-expanded');
+            }
+        });
+    };
+    const toggle = function(row) {
+        if (!row.classList.contains('clamped') && !row.classList.contains('expanded')) {
+            return;
+        }
+        const expanded = row.classList.toggle('expanded');
+        row.classList.toggle('clamped', !expanded);
+        row.setAttribute('aria-expanded', expanded);
+        row.setAttribute('title', expanded ? 'Shorten the line' : 'Show the full line');
+    };
+    rows.forEach((row) => {
+        row.addEventListener('click', () => {
+            // don't toggle while the user is selecting text
+            if (window.getSelection().toString() === '') {
+                toggle(row);
+            }
+        });
+        row.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggle(row);
+            }
+        });
+    });
+    mark_clamped();
+    window.addEventListener('resize', mark_clamped);
+})();
+</script>
 {% endblock %}

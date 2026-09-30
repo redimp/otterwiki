@@ -61,6 +61,7 @@ from otterwiki.pageindex import PageIndex
 from otterwiki.util import (
     diff_content,
     diff_side_by_side,
+    diff_words,
     empty,
     normalize_content,
     get_header,
@@ -894,12 +895,22 @@ class Page:
                 draft_diff.append(row)
                 continue
             left, right = row["left"], row["right"]
+            left_cell = _cell(left, left and left["source"], base_html)
+            right_cell = _cell(right, right and right["target"], draft_html)
+            if left and right and left["style"] == "removed":
+                # a changed line: mark the changed words instead of the
+                # markdown syntax, so small changes in long lines stand out
+                words = diff_words(
+                    left["value"].rstrip("\n"), right["value"].rstrip("\n")
+                )
+                if words is not None:
+                    left_cell["html"], right_cell["html"] = words
             draft_diff.append(
                 {
-                    "left": _cell(left, left and left["source"], base_html),
-                    "right": _cell(
-                        right, right and right["target"], draft_html
-                    ),
+                    "left": left_cell,
+                    "right": right_cell,
+                    # unchanged lines are shortened in the diff
+                    "context": bool(left and left["style"] == ""),
                 }
             )
         return render_template(

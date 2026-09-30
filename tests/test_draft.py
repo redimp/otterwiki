@@ -394,3 +394,31 @@ def test_draft_unknown_revision(app_with_user, test_client):
     )
     assert "Compared to the stored version" in html
     assert "from the draft" in html
+
+
+def test_draft_diff_words_and_context(app_with_user, test_client):
+    assert app_with_user
+    login(test_client)
+
+    pagepath = "test_draft_diff_words"
+    paragraph = (
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. " * 10
+    )
+    content = "# Words\n\n{p}\n\n{p}\n".format(p=paragraph.strip())
+    save_page(test_client, pagepath, content)
+    post_draft(
+        test_client,
+        pagepath,
+        content.replace("elit. Lorem", "elit. <Abc> Lorem", 1),
+        page_revision(pagepath),
+    )
+
+    rv = test_client.get("/{}/edit".format(pagepath))
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    diff = html.split('id="draft-diff"')[1].split("</table>")[0]
+    # the changed words are marked and escaped
+    assert '<span class="diff-word"> &lt;Abc&gt;</span>' in diff
+    # the unchanged paragraph is a shortened context line
+    assert '<tr class="diff-context">' in diff
+    assert '<div class="diff-clamp">' in diff
