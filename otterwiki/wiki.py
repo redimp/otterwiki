@@ -59,6 +59,7 @@ from otterwiki.server import app, app_renderer, db, storage
 from otterwiki.sidebar import SidebarMenu, SidebarPageIndex
 from otterwiki.pageindex import PageIndex
 from otterwiki.util import (
+    diff_content,
     empty,
     get_header,
     get_page_directoryname,
@@ -769,33 +770,32 @@ class Page:
                 "None" if draft is None else "found", timer() - t_start
             )
         )
+        revision = self.metadata.get("revision", "") if self.metadata else ""
         if draft is not None:
+            # the revision the draft is based on, empty for a new page
+            draft_revision = draft.revision or ""
             if handle_draft is None:
-                return render_template(
-                    "draft.html",
-                    title="{} - draft".format(self.pagename),
-                    pagename=self.pagename,
-                    pagepath=self.pagepath,
-                    revision=(
-                        self.metadata["revision"] if self.metadata else None
-                    ),
-                    draft_revision=self.revision,
-                    content=(
-                        pygments_render(self.content, lang='markdown')
-                        if self.content
-                        else None
-                    ),
-                    draft_content=pygments_render(
-                        draft.content, lang='markdown'
-                    ),
-                    draft_datetime=draft.datetime.astimezone(UTC),
+                return self._draft_overview(
+                    draft, draft_revision, self._changes_since(draft_revision)
                 )
             if handle_draft == "discard":
                 self.discard_draft(author=author)
             if handle_draft == "edit":
+                changes = self._changes_since(draft_revision)
                 content = draft.content
                 cursor_line = draft.cursor_line
                 cursor_ch = draft.cursor_ch
+                # keep the revision the draft is based on, so the draft
+                # stays marked as outdated until the page is saved
+                revision = draft_revision
+                if changes is None or len(changes) > 0:
+                    toast(
+                        "{} has been changed since the draft was started. "
+                        "Saving the draft overwrites these changes.".format(
+                            self.pagename_full
+                        ),
+                        "warning",
+                    )
 
         # get file listing
         t_start = timer()
@@ -829,11 +829,62 @@ class Page:
             pages=list(page_idx.pages()),
             cursor_line=cursor_line,
             cursor_ch=cursor_ch,
-            revision=(
-                self.metadata.get("revision", "") if self.metadata else ""
-            ),
+            revision=revision,
             force_load_libraries=True,
             embedding_info=embedding_info,
+        )
+
+    def _changes_since(self, revision):
+        """
+        Returns the commits of the page newer than revision, newest first.
+        Returns None if revision can not be found in the history of the page.
+        """
+        try:
+            log = storage.log(self.filename)
+        except StorageNotFound:
+            log = []
+        changes = []
+        for entry in log:
+            if entry["revision"] == revision:
+                return changes
+            changes.append(entry)
+        # an empty revision marks a draft of a page that didn't exist yet
+        return changes if not revision else None
+
+    def _draft_overview(self, draft, draft_revision, changes):
+        # diff the draft against the version it is based on, so the diff shows
+        # only the changes made in the draft
+        base_content = None
+        if not draft_revision:
+            base_content = self._new_page_content()
+        elif changes is not None:
+            try:
+                base_content, _ = self.load(revision=draft_revision)
+            except StorageError:
+                pass
+        # fall back to the stored version, if the base can not be loaded
+        diff_against_stored = base_content is None
+        if diff_against_stored:
+            base_content = (
+                self.content if self.exists else self._new_page_content()
+            )
+        return render_template(
+            "draft.html",
+            title="{} - draft".format(self.pagename),
+            pagename=self.pagename,
+            pagepath=self.pagepath,
+            content=(
+                pygments_render(self.content, lang='markdown')
+                if self.content
+                else None
+            ),
+            draft_content=pygments_render(draft.content, lang='markdown'),
+            draft_datetime=draft.datetime.astimezone(UTC),
+            draft_revision=draft_revision,
+            draft_diff=diff_content(base_content or "", draft.content or ""),
+            diff_against_stored=diff_against_stored,
+            changes=changes,
+            page_exists=self.exists,
         )
 
     def save(self, content, commit, author):

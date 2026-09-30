@@ -6,8 +6,43 @@
     <h2 class="card-title">Continue editing draft?</h2>
 
     <div class="mt-5 mb-15">
-        For <strong>{{pagepath}}</strong> exists a draft version saved  <span title="{{draft_datetime|format_datetime}}">{{draft_datetime|format_datetime("deltanow")}} ago</span>.
+        There is a draft of <strong>{{pagepath}}</strong>, saved <span title="{{draft_datetime|format_datetime}}">{{draft_datetime|format_datetime("deltanow")}} ago</span>.
     </div>
+
+{% if changes is none or changes %}
+    <div class="alert alert-secondary mb-15" role="alert" id="draft-outdated">
+{% if changes is none %}
+        <h4 class="alert-heading">The page might have been changed</h4>
+        The revision this draft is based on can not be found in the history of <strong>{{pagename}}</strong>.
+        The page might have been changed since the draft was started.
+{% elif not page_exists %}
+        <h4 class="alert-heading">The page has been deleted</h4>
+        <strong>{{pagename}}</strong> has been deleted since the draft was started.
+{% else %}
+        <h4 class="alert-heading">The page has been changed</h4>
+        <strong>{{pagename}}</strong> has been changed since the draft was started.
+        Saving the draft overwrites these changes:
+{% endif %}
+{% if changes %}
+        <ul class="mt-5 mb-5">
+{% for entry in changes %}
+            <li>
+{%- if page_exists %}
+                <a href="{{ url_for('pageview', path=pagepath, revision=entry.revision) }}" class="revision-small">{{entry.revision}}</a>
+{%- else %}
+                <span class="revision-small">{{entry.revision}}</span>
+{%- endif %}
+                <span title="{{entry.datetime|format_datetime}}">{{entry.datetime|format_datetime("deltanow")}} ago</span>
+                by {{entry.author_name}}: {{entry.message or '-/-'}}
+            </li>
+{% endfor %}
+        </ul>
+{% if page_exists and draft_revision %}
+        <a href="{{ url_for('diff', path=pagepath, rev_a=draft_revision, rev_b=changes[0].revision) }}">Show changes</a>
+{% endif %}
+{% endif %}
+    </div>
+{% endif %}
 
     <div class="d-flex">
         <form action="{{ url_for("edit", path=pagepath) }}" method="POST" class="mr-15">
@@ -22,6 +57,31 @@
         </form>
     </div>
 </div>
+
+<h3>Your changes</h3>
+{% if diff_against_stored %}
+<p class="text-muted">Compared to the stored version, since the version the draft is based on is not available.</p>
+{% endif %}
+{% if draft_diff %}
+<table class="diff" id="draft-diff">
+{% for l in draft_diff %}
+<tr class="{{l.style}}">
+{%- if l.style == "hunk" %}
+<td class="hunk" colspan="2">{{l.value}}</td>
+{%- else %}
+    <td class="diff-decoration">{{l.type}}</td>
+    <td class="value">{{l.value | replace('\n', '')}}</td>
+{%- endif -%}
+</tr>
+{%- endfor %}
+</table>
+{% else %}
+<p>The draft has no changes.</p>
+{% endif %}
+
+<details class="collapse-panel mt-20">
+<summary class="collapse-header">Draft and stored version</summary>
+<div class="collapse-content p-0">
 <table class="table table-inner-bordered table-draft">
   <thead>
     <tr>
@@ -40,4 +100,6 @@
     </tr>
   </tbody>
 </table>
+</div>
+</details>
 {% endblock %}
