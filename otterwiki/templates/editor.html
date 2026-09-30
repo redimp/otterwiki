@@ -520,17 +520,28 @@
     const extranav_attachments = document.querySelector("#extranav-attachments");
     let editor_blocks = [];
     const preview_block = document.querySelector("#preview_block");
-    var cm_last_change = 0;
     var cm_save_timer = null;
+    // set when the page is being saved, no more drafts must be stored
+    var cm_saving = false;
+    // content of the last draft sent to the server, the editor was loaded
+    // either with the stored page or with the stored draft
+    var cm_last_draft = null;
 
-    save_draft = function() {
-        cm_last_change = Date.now();
+    const save_draft = function(unloading) {
         if (cm_save_timer != null) {
             window.clearTimeout(cm_save_timer);
             cm_save_timer = null;
         }
+        if (cm_saving) {
+            return;
+        }
+        const content = cm_editor.state.doc.toString();
+        if (content === cm_last_draft) {
+            return;
+        }
+        cm_last_draft = content;
         const formData = new FormData();
-        formData.append("content", cm_editor.state.doc.toString());
+        formData.append("content", content);
         const sel = cm_editor.state.selection.main;
         const lineAt = cm_editor.state.doc.lineAt(sel.head);
         formData.append("cursor_line", lineAt.number - 1);
@@ -540,36 +551,63 @@
             method: 'POST',
             headers: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
             body: formData,
+            // keepalive lets the request outlive the page, but browsers
+            // limit the body of keepalive requests to 64KiB
+            keepalive: unloading === true && new Blob([content]).size < 60000,
         })
             .then(function (response) {
-                return response.json();
+                if (!response.ok) {
+                    throw new Error(response.status);
+                }
             })
             .catch(function () {
+                cm_last_draft = null;
                 console.log('Error saving draft ...');
             });
     }
-    const handleUnload = (event) => {
-        if (cm_editor != null && !cmIsClean()) {
+    const handleBeforeUnload = (event) => {
+        if (!cm_saving && !cmIsClean()) {
             event.preventDefault();
             // No browser actually displays this message anymore.
             // But Chrome requires it to be defined else the popup won't show.
             event.returnValue = '';
-            save_draft();
         }
     };
+    /*
+        store the draft when the user leaves the page or switches away from
+        the tab, pagehide and visibilitychange are more reliable than
+        beforeunload, especially in Safari and on mobile
+    */
+    window.addEventListener('pagehide', () => save_draft(true));
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            save_draft(true);
+        }
+    });
+    window.addEventListener('pageshow', (event) => {
+        // the page was restored from the back/forward cache
+        if (event.persisted) {
+            cm_saving = false;
+        }
+    });
 
     window.addEventListener('load', function () {
         editor_blocks = [
             document.getElementById('editor_block'),
             document.getElementById('editor-bottom-panel'),
         ];
-        /*
-            prevent user leaving with unsaved changes
-            Known Issue: this doesn't work reliable in Safari
-        */
+        cm_last_draft = cm_editor.state.doc.toString();
         cm_editor.dom.addEventListener('cm6change', () => {
-            window.removeEventListener('beforeunload', handleUnload);
-            window.addEventListener('beforeunload', handleUnload);
+            /*
+                prevent user leaving with unsaved changes, the listener is
+                only registered while there are any, since it keeps some
+                browsers from using the back/forward cache
+            */
+            if (cmIsClean()) {
+                window.removeEventListener('beforeunload', handleBeforeUnload);
+            } else {
+                window.addEventListener('beforeunload', handleBeforeUnload);
+            }
             if (cm_save_timer == null) {
                 cm_save_timer = window.setTimeout(save_draft, 6000);
             }
@@ -583,6 +621,13 @@
         const lineAt = cm_editor.state.doc.lineAt(sel.head);
         document.getElementById('save_cursor_line').value = lineAt.number - 1;
         document.getElementById('save_cursor_ch').value = sel.head - lineAt.from;
+        // make sure no pending or unload triggered draft recreates the
+        // draft, that is discarded when the page is saved
+        cm_saving = true;
+        if (cm_save_timer != null) {
+            window.clearTimeout(cm_save_timer);
+            cm_save_timer = null;
+        }
         cmMarkClean();
     };
     /* preview */

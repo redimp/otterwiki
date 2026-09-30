@@ -56,7 +56,6 @@ function initEditor() {
     ? { spellcheck: 'true', autocorrect: 'on', autocapitalize: 'on' }
     : { spellcheck: 'true' };
 
-  let cleanGeneration = 0;
   let currentGeneration = 0;
 
   const view = new EditorView({
@@ -129,12 +128,16 @@ function initEditor() {
     attachInlineUpload(view, config.inlineAttachmentOptions);
   }
 
+  // the editor is clean when its content matches the last clean state,
+  // so undoing all changes makes the editor clean again
+  let cleanDoc = view.state.doc;
+
   function markClean() {
-    cleanGeneration = currentGeneration;
+    cleanDoc = view.state.doc;
   }
 
   function isClean() {
-    return cleanGeneration === currentGeneration;
+    return view.state.doc.eq(cleanDoc);
   }
 
   window.cm_editor = view;

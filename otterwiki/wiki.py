@@ -354,6 +354,10 @@ class Changelog:
         return fg.atom_str(pretty=True)
 
 
+def _normalize_content(content):
+    return content.replace("\r\n", "\n").strip() + "\n"
+
+
 class Page:
     def __init__(
         self,
@@ -749,7 +753,7 @@ class Page:
             cursor_line = 0
             cursor_ch = 0
         else:
-            content = f"# {self.pagename}\n\n"
+            content = self._new_page_content()
             # Place the cursor in the beginning of the first (empty) line of the\
             # new document
             cursor_line = 2
@@ -1398,11 +1402,26 @@ class Page:
         ).delete()
         db.session.commit()
 
+    def _new_page_content(self):
+        return f"# {self.pagename}\n\n"
+
     def save_draft(
         self, author, content, revision="", cursor_line=0, cursor_ch=0
     ):
         if not has_permission("WRITE"):
             abort(403)
+        # a draft without changes is no draft, e.g. when the user reverted
+        # all changes, compare normalized like in views.save()
+        stored_content = (
+            self.content if self.exists else self._new_page_content()
+        )
+        if stored_content is not None and _normalize_content(
+            content
+        ) == _normalize_content(stored_content):
+            self.discard_draft(author)
+            return {
+                "status": "draft discarded",
+            }
         # Handle anonymous users, save draft in session
         if current_user.is_anonymous:
             author_email = current_user.anonymous_uid()

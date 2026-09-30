@@ -112,3 +112,62 @@ def test_draft_discard(app_with_user, test_client):
     html = rv.data.decode()
     # check that the page content is back to the default for new pages
     assert "# Test_Draft_Discard" in html
+
+
+def test_draft_unchanged_is_discarded(app_with_user, test_client):
+    assert app_with_user
+    from otterwiki.models import Drafts
+
+    # login the client
+    login(test_client)
+
+    pagepath = "test_draft_unchanged"
+    content = "# Unchanged\n\nfirst line\n"
+    rv = test_client.post(
+        "/{}/save".format(pagepath),
+        data={"content": content, "commit": "initial commit"},
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+
+    # store a draft with changes
+    create_draft(test_client, pagepath, content + "second line\n")
+    assert len(Drafts.query.filter_by(pagepath=pagepath).all()) == 1
+
+    # revert the changes, the draft is identical to the stored page
+    rv = test_client.post(
+        "/{}/draft".format(pagepath),
+        data={"content": content.replace("\n", "\r\n") + "\r\n"},
+    )
+    assert rv.status_code == 200
+    assert rv.json["status"] == "draft discarded"
+    assert len(Drafts.query.filter_by(pagepath=pagepath).all()) == 0
+
+    # the editor opens without the draft warning
+    rv = test_client.get("/{}/edit".format(pagepath))
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    assert "Continue editing draft?".lower() not in html.lower()
+
+
+def test_draft_unchanged_new_page_is_discarded(app_with_user, test_client):
+    assert app_with_user
+    from otterwiki.models import Drafts
+
+    # login the client
+    login(test_client)
+
+    pagepath = "test_draft_unchanged_new_page"
+    # the content the editor starts with for new pages
+    rv = test_client.post(
+        "/{}/draft".format(pagepath),
+        data={"content": "# Test_Draft_Unchanged_New_Page\n\n"},
+    )
+    assert rv.status_code == 200
+    assert rv.json["status"] == "draft discarded"
+    assert len(Drafts.query.filter_by(pagepath=pagepath).all()) == 0
+
+    create_draft(test_client, pagepath, "# Test_Draft_Unchanged_New_Page\n\nX")
+    assert len(Drafts.query.filter_by(pagepath=pagepath).all()) == 1
+    # clean up
+    Drafts.query.filter_by(pagepath=pagepath).delete()
