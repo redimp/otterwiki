@@ -11,9 +11,8 @@
 <article class="page">
 {{ custom_404_html|safe }}
 </article>
-<p>Page "{{pagename}}" not found. Do you want to <a href="{{ url_for("edit", path=pagepath) }}">create</a> it?</p>
 {% else %}
 <h2>404 Page not found</h2>
-<p>Page "{{pagename}}" not found. Do you want to <a href="{{ url_for("edit", path=pagepath) }}">create</a> it?</p>
 {% endif %}
+<p>Page "{{pagename}}" not found. Do you want to <a href="{{ url_for("edit", path=pagepath) }}">create</a> it?</p>
 {% endblock %}
