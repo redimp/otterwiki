@@ -449,17 +449,19 @@ class Page:
         not_found_page = (app.config.get("NOT_FOUND_PAGE") or "").strip("/")
         if not not_found_page or not_found_page.startswith("-/"):
             return None, None
-        filename = get_filename(not_found_page)
-        try:
-            content = storage.load(filename)
-        except StorageNotFound:
+        page = Page(not_found_page)
+        if not page.exists or page.storage_error is not None:
             app.logger.warning(
                 "NOT_FOUND_PAGE {} does not exist".format(not_found_page)
             )
             return None, None
+        # send context of the page rendered to plugins
+        call_hook("page_render_context", page=page, preview=False)
         htmlcontent, _, library_requirements = app_renderer.markdown(
-            content,
-            page_url=url_for("view", path=get_pagepath(not_found_page)),
+            page.content, page_url=page.page_view_url
+        )
+        htmlcontent = chain_hooks(
+            "page_view_htmlcontent_postprocess", htmlcontent, page
         )
         return htmlcontent, library_requirements
 

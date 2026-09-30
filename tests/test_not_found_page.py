@@ -4,7 +4,11 @@
 Tests for the configurable 404 page (NOT_FOUND_PAGE).
 """
 
+import sys
+
 import pytest
+
+from otterwiki.plugins import hookimpl
 
 
 @pytest.fixture
@@ -153,3 +157,34 @@ def test_default_404_skips_renderer_libraries(not_found_page, test_client):
     html = rv.data.decode()
     assert "js/mermaid@" not in html
     assert "simple-datatables@" not in html
+
+
+class NotFoundHookRecorder:
+    def __init__(self):
+        self.context_pages = []
+
+    @hookimpl
+    def page_render_context(self, page, preview):
+        self.context_pages.append((page.pagepath, preview))
+
+    @hookimpl
+    def page_view_htmlcontent_postprocess(self, html, page):
+        return html + f"<p>postprocessed {page.pagepath}</p>"
+
+
+def test_custom_404_calls_plugin_hooks(not_found_page, test_client):
+    _save(test_client, "Meta/NotFound", "custom not found text")
+    not_found_page.config["NOT_FOUND_PAGE"] = "Meta/NotFound"
+    plugin_manager = sys.modules["otterwiki.plugins"].plugin_manager
+    recorder = NotFoundHookRecorder()
+    plugin_manager.register(recorder)
+    try:
+        rv = test_client.get("/Missing")
+    finally:
+        plugin_manager.unregister(recorder)
+    assert rv.status_code == 404
+    html = rv.data.decode()
+    assert "custom not found text" in html
+    # the hooks receive the configured 404 page, not the missing page
+    assert "<p>postprocessed Meta/NotFound</p>" in html
+    assert recorder.context_pages == [("Meta/NotFound", False)]
