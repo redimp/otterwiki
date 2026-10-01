@@ -228,7 +228,18 @@ def diff_headers(html):
     soup = BeautifulSoup(html, "html.parser")
     return [
         " ".join(th.get_text().split())
-        for th in soup.select("#draft-diff th.diff-header")
+        for th in soup.select("#draft-diff th.diff-header:not(.diff-buttons)")
+    ]
+
+
+def diff_buttons(html):
+    """the labels of the buttons above the left and the right side"""
+    from bs4 import BeautifulSoup
+
+    soup = BeautifulSoup(html, "html.parser")
+    return [
+        button["value"]
+        for button in soup.select("#draft-diff th.diff-buttons input.btn")
     ]
 
 
@@ -269,8 +280,12 @@ def test_draft_diff(app_with_user, test_client):
     assert '<span class="gh"># Diff</span>' in html
     assert 'id="draft-outdated"' not in html
     headers = diff_headers(html)
-    assert headers[0] == "Current version {}".format(page_revision(pagepath))
-    assert headers[1].startswith("Draft saved")
+    assert headers[0] == "Latest saved version {}".format(
+        page_revision(pagepath)
+    )
+    assert headers[1].startswith("Your draft saved")
+    # the buttons are placed above the side they keep
+    assert diff_buttons(html) == ["Discard draft", "Continue editing draft"]
 
 
 def test_draft_outdated(app_with_user, test_client):
@@ -303,6 +318,11 @@ def test_draft_outdated(app_with_user, test_client):
     assert diff_headers(html)[0] == (
         "Version the draft is based on {}".format(base_revision)
     )
+    # discarding doesn't restore the left side, but the latest version
+    assert diff_buttons(html) == [
+        "Discard draft, edit latest version",
+        "Continue editing draft",
+    ]
     assert "change by someone else" in html
     assert (
         "/{}/diff/{}/{}".format(pagepath, base_revision, current_revision)
@@ -371,6 +391,7 @@ def test_draft_outdated_deleted_page(app_with_user, test_client):
     html = rv.data.decode()
     assert "has been deleted since the draft was started" in html
     assert diff_headers(html)[0].startswith("Version the draft is based on ")
+    assert diff_buttons(html)[0] == "Discard draft, start a new page"
     diff = html.split('id="draft-diff"')[1].split("</table>")[0]
     assert "from the draft" in diff
 
@@ -389,7 +410,7 @@ def test_draft_unknown_revision(app_with_user, test_client):
     assert rv.status_code == 200
     html = rv.data.decode()
     assert "can not be found in the history" in html
-    assert diff_headers(html)[0] == "Current version {}".format(
+    assert diff_headers(html)[0] == "Latest saved version {}".format(
         page_revision(pagepath)
     )
     assert "Compared to the stored version" in html
@@ -422,3 +443,26 @@ def test_draft_diff_words_and_context(app_with_user, test_client):
     # the unchanged paragraph is a shortened context line
     assert '<tr class="diff-context">' in diff
     assert '<div class="diff-clamp">' in diff
+
+
+def test_draft_without_changes_shows_buttons(app_with_user, test_client):
+    assert app_with_user
+    login(test_client)
+
+    pagepath = "test_draft_without_changes"
+    content = "# Without changes\n\nfirst line\n"
+    save_page(test_client, pagepath, content)
+    base_revision = page_revision(pagepath)
+    store_as_someone_else(
+        pagepath, content + "line from someone else\n", "add a line"
+    )
+    # a draft identical to the version it is based on
+    post_draft(test_client, pagepath, content, base_revision)
+
+    rv = test_client.get("/{}/edit".format(pagepath))
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    assert "The draft has no changes." in html
+    assert 'id="draft-diff"' not in html
+    assert 'value="Continue editing draft"' in html
+    assert 'value="Discard draft, edit latest version"' in html

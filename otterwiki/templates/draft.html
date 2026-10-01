@@ -2,11 +2,34 @@
 {% extends "page.html" %}
 
 {% block content %}
+{#- the delta is empty for less than a second ago -#}
+{%- macro time_ago(datetime) -%}
+{%- set ago = datetime|format_datetime("deltanow") -%}
+<span title="{{datetime|format_datetime}}">{{ ago ~ " ago" if ago else "just now" }}</span>
+{%- endmacro -%}
+{%- set draft_saved = time_ago(draft_datetime) -%}
+{#- discarding the draft opens the editor with the latest saved version, which
+    is the left side of the diff, unless the page has been changed since the
+    draft was started -#}
+{%- if not changes %}
+{%- set discard_label = "Discard draft" %}
+{%- elif page_exists %}
+{%- set discard_label = "Discard draft, edit latest version" %}
+{%- else %}
+{%- set discard_label = "Discard draft, start a new page" %}
+{%- endif %}
+{%- macro draft_button(action, label, classes) -%}
+<form action="{{ url_for("edit", path=pagepath) }}" method="POST" class="draft-button">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="draft" value="{{ action }}" />
+    <input class="btn {{ classes }}" type="submit" name="submit" value="{{ label }}" />
+</form>
+{%- endmacro %}
 <div class="card">
     <h2 class="card-title">Continue editing draft?</h2>
 
     <div class="mt-5 mb-15">
-        There is a draft of <strong>{{pagepath}}</strong>, saved <span title="{{draft_datetime|format_datetime}}">{{draft_datetime|format_datetime("deltanow")}} ago</span>.
+        You have a draft of <strong>{{pagepath}}</strong>, saved {{ draft_saved }}.
     </div>
 
 {% if changes is none or changes %}
@@ -32,7 +55,7 @@
 {%- else %}
                 <span class="revision-small">{{entry.revision}}</span>
 {%- endif %}
-                <span title="{{entry.datetime|format_datetime}}">{{entry.datetime|format_datetime("deltanow")}} ago</span>
+                {{ time_ago(entry.datetime) }}
                 by {{entry.author_name}}: {{entry.message or '-/-'}}
             </li>
 {% endfor %}
@@ -44,21 +67,15 @@
     </div>
 {% endif %}
 
+{% if not draft_diff %}
+    {#- without a diff, there are no sides to place the buttons above #}
     <div class="d-flex flex-wrap">
-        <form action="{{ url_for("edit", path=pagepath) }}" method="POST" class="mr-15 mb-10">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="draft" value="edit" />
-            <input class="btn btn-primary" type="submit" name="submit" value="Continue editing draft" />
-        </form>
-        <form action="{{ url_for("edit", path=pagepath) }}" method="POST" class="mb-10">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="draft" value="discard" />
-            <input class="btn" type="submit" name="submit" value="Discard draft" />
-        </form>
+        {{ draft_button("edit", "Continue editing draft", "btn-primary mr-15 mb-10") }}
+        {{ draft_button("discard", discard_label, "mb-10") }}
     </div>
+{% endif %}
 </div>
 
-<h3>Your changes</h3>
 {% if diff_against_stored %}
 <p class="text-muted">Compared to the stored version, since the version the draft is based on is not available.</p>
 {% endif %}
@@ -74,19 +91,23 @@
 {%- endmacro %}
 <thead>
 <tr>
+  <th class="diff-header diff-buttons" colspan="2">{{ draft_button("discard", discard_label, "") }}</th>
+  <th class="diff-header diff-buttons" colspan="2">{{ draft_button("edit", "Continue editing draft", "btn-primary") }}</th>
+</tr>
+<tr>
   <th class="diff-header" colspan="2">
 {%- if diff_against_stored %}
-    Current version{% if current_revision %}{{ revision_link(current_revision) }}{% endif %}
+    Latest saved version{% if current_revision %}{{ revision_link(current_revision) }}{% endif %}
 {%- elif not draft_revision %}
     New page
 {%- elif changes %}
     Version the draft is based on{{ revision_link(draft_revision) }}
 {%- else %}
-    Current version{{ revision_link(draft_revision) }}
+    Latest saved version{{ revision_link(draft_revision) }}
 {%- endif -%}
   </th>
   <th class="diff-header" colspan="2">
-    Draft <span class="font-weight-normal text-muted" title="{{draft_datetime|format_datetime}}">saved {{draft_datetime|format_datetime("deltanow")}} ago</span>
+    Your draft <span class="font-weight-normal text-muted">saved {{ draft_saved }}</span>
   </th>
 </tr>
 </thead>

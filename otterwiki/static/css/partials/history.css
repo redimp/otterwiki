@@ -68,8 +68,23 @@ table.diff-side-by-side th.diff-header {
     border-bottom: 1px solid rgba(128,128,128,0.25);
     vertical-align: bottom;
 }
+/* the buttons above the sides, centered in each side */
+table.diff-side-by-side th.diff-buttons {
+    text-align: center;
+    padding: 0.5rem;
+    border-bottom: none;
+}
+table.diff-side-by-side th.diff-buttons .btn {
+    /* long labels wrap instead of overflowing the column */
+    white-space: normal;
+    height: auto;
+    min-height: 3.2rem;
+    line-height: 1.4;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
 @media (max-width: 768px) {
-    table.diff-side-by-side th.diff-header {
+    table.diff-side-by-side th.diff-header:not(.diff-buttons) {
         padding-left: 0.5rem;
     }
 }
