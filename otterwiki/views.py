@@ -813,7 +813,7 @@ def plugin_url_admin_request(name, extra):
     if not otterwiki.auth.has_permission("ADMIN"):
         abort(403)
     result = call_hook(
-        "url_admin_request", plugin=name, extra=extra, valuies=request.values
+        "url_admin_request", plugin=name, extra=extra, values=request.values
     )
     if not result:
         abort(404)
