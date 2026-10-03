@@ -497,9 +497,11 @@ def test_diff_side_by_side(test_client):
     # inline is the default
     html = test_client.get(url).data.decode()
     assert "diff-side-by-side" not in html
+    assert 'id="switch-side-by-side" autocomplete="off"\n' in html
     # switch to side by side
     html = test_client.get(url + "?view=side-by-side").data.decode()
     assert '<table class="diff diff-side-by-side' in html
+    assert 'id="switch-side-by-side" autocomplete="off" checked' in html
     # markdown is highlighted, changed words are marked
     assert '<span class="gh"># Head</span>' in html
     assert '<span class="diff-word">simple</span> &lt;b&gt;wiki' in html

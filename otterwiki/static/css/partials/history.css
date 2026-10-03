@@ -186,3 +186,8 @@ a:hover span.page-match {
     text-decoration: underline;
     padding: 0.2em;
 }
+
+/* vertically align the side by side switch with the button group */
+.diff-view-switch {
+    margin-top: calc((var(--button-height) - var(--switch-height)) / 2);
+}

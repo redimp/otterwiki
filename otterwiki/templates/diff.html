@@ -40,12 +40,13 @@
   {% endif %}
 </div>
 </nav>
-<nav aria-label="Diff view" class="float-right ml-10 mb-10">
-<div class="btn-group" role="group">
-  <a class="btn{% if view == 'inline' %} active{% endif %}" href="{{ url_for('diff', path=pagepath, rev_a=rev_a, rev_b=rev_b, view='inline') }}"{% if view == 'inline' %} aria-current="true"{% endif %}>Inline</a>
-  <a class="btn{% if view == 'side-by-side' %} active{% endif %}" href="{{ url_for('diff', path=pagepath, rev_a=rev_a, rev_b=rev_b, view='side-by-side') }}"{% if view == 'side-by-side' %} aria-current="true"{% endif %}>Side by side</a>
+<div class="custom-switch diff-view-switch float-right ml-10 mb-10">
+  <input type="checkbox" id="switch-side-by-side" autocomplete="off"{% if view == 'side-by-side' %} checked{% endif %}
+    data-url-inline="{{ url_for('diff', path=pagepath, rev_a=rev_a, rev_b=rev_b, view='inline') }}"
+    data-url-side-by-side="{{ url_for('diff', path=pagepath, rev_a=rev_a, rev_b=rev_b, view='side-by-side') }}"
+    onchange="window.location.href = this.checked ? this.dataset.urlSideBySide : this.dataset.urlInline;">
+  <label for="switch-side-by-side" class="mb-0">Side by side</label>
 </div>
-</nav>
     <h3>Comparing <tt>{{rev_a}}</tt> to <tt>{{rev_b}}</tt></h3>
 {% macro revision_metadata(rev, metadata) %}
           <tr class="align-top">
