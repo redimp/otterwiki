@@ -1497,3 +1497,82 @@ class TestPreferencesDoNotShadowEnvironment:
             and "overridden by the database" in record.message
             for record in caplog.records
         )
+
+
+class TestPrivateKeyFiles:
+    """Test loading the ssh private keys via the *_PRIVATE_KEY_FILE
+    settings."""
+
+    @pytest.fixture
+    def key_file(self, tmp_path):
+        filename = tmp_path / "id_ed25519"
+        filename.write_text(TEST_PRIVATE_KEY)
+        return str(filename)
+
+    @pytest.fixture
+    def config(self, app_with_user, monkeypatch):
+        from otterwiki.server import db, Preferences
+
+        Preferences.query.filter(
+            Preferences.name.like("GIT_REMOTE_%_PRIVATE_KEY%")
+        ).delete(synchronize_session=False)
+        db.session.commit()
+        # restore the configuration after the test
+        for key in [
+            "GIT_REMOTE_PUSH_PRIVATE_KEY",
+            "GIT_REMOTE_PUSH_PRIVATE_KEY_FILE",
+            "GIT_REMOTE_PULL_PRIVATE_KEY",
+            "GIT_REMOTE_PULL_PRIVATE_KEY_FILE",
+        ]:
+            monkeypatch.setitem(app_with_user.config, key, "")
+        return app_with_user.config
+
+    @pytest.mark.parametrize("action", ["PUSH", "PULL"])
+    def test_key_loaded_from_file(self, config, key_file, action):
+        from otterwiki.server import update_app_config
+
+        config[f"GIT_REMOTE_{action}_PRIVATE_KEY_FILE"] = key_file
+        update_app_config()
+        assert config[f"GIT_REMOTE_{action}_PRIVATE_KEY"] == TEST_PRIVATE_KEY
+
+    def test_configured_key_takes_precedence(self, config, key_file):
+        from otterwiki.server import update_app_config
+
+        config["GIT_REMOTE_PUSH_PRIVATE_KEY"] = "configured key"
+        config["GIT_REMOTE_PUSH_PRIVATE_KEY_FILE"] = key_file
+        update_app_config()
+        assert config["GIT_REMOTE_PUSH_PRIVATE_KEY"] == "configured key"
+
+    def test_empty_database_preference_falls_back_to_file(
+        self, config, key_file
+    ):
+        from otterwiki.server import update_app_config, db, Preferences
+
+        config["GIT_REMOTE_PUSH_PRIVATE_KEY_FILE"] = key_file
+        db.session.add(
+            Preferences(name="GIT_REMOTE_PUSH_PRIVATE_KEY", value="")
+        )
+        db.session.commit()
+        update_app_config()
+        assert config["GIT_REMOTE_PUSH_PRIVATE_KEY"] == TEST_PRIVATE_KEY
+
+    def test_missing_file_logs_error(self, config, tmp_path, caplog):
+        from otterwiki.server import update_app_config
+
+        config["GIT_REMOTE_PUSH_PRIVATE_KEY_FILE"] = str(tmp_path / "missing")
+        update_app_config()
+        assert config["GIT_REMOTE_PUSH_PRIVATE_KEY"] == ""
+        assert "GIT_REMOTE_PUSH_PRIVATE_KEY_FILE" in caplog.text
+
+    def test_admin_form_shows_placeholder(
+        self, config, key_file, admin_client
+    ):
+        from otterwiki.server import update_app_config
+
+        config["GIT_REMOTE_PUSH_PRIVATE_KEY_FILE"] = key_file
+        update_app_config()
+        rv = admin_client.get(ADMIN_REPO_MGMT_URL)
+        assert rv.status_code == 200
+        soup = BeautifulSoup(rv.data.decode(), "html.parser")
+        textarea = soup.find("textarea", {"id": "git_remote_push_private_key"})
+        assert textarea.text == "**********"

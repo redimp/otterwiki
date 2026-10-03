@@ -71,10 +71,12 @@ app.config.update(
     GIT_REMOTE_PUSH_ENABLED=False,
     GIT_REMOTE_PUSH_URL="",
     GIT_REMOTE_PUSH_PRIVATE_KEY="",
+    GIT_REMOTE_PUSH_PRIVATE_KEY_FILE="",
     GIT_REMOTE_PULL_ENABLED=False,
     GIT_REMOTE_PULL_URL="",
     GIT_REMOTE_PULL_URL_SECURE=False,
     GIT_REMOTE_PULL_PRIVATE_KEY="",
+    GIT_REMOTE_PULL_PRIVATE_KEY_FILE="",
     SIDEBAR_SHORTCUTS="home pageindex createpage",
     ROBOTS_TXT="allow",
     WIKILINK_STYLE="",
@@ -199,6 +201,27 @@ from otterwiki.models import *
 mail = None
 
 
+def load_private_key_files():
+    """
+    Read the ssh private keys from the files configured via
+    GIT_REMOTE_PUSH_PRIVATE_KEY_FILE and GIT_REMOTE_PULL_PRIVATE_KEY_FILE,
+    unless the key itself has been configured.
+    """
+    for key in ["GIT_REMOTE_PUSH_PRIVATE_KEY", "GIT_REMOTE_PULL_PRIVATE_KEY"]:
+        filename = app.config.get(f"{key}_FILE")
+        if not filename or app.config.get(key):
+            continue
+        try:
+            with open(filename, "r") as f:
+                app.config[key] = f.read()
+        except OSError as e:
+            app.logger.error(
+                "server: Unable to read {}_FILE \"{}\": {}".format(
+                    key, filename, e
+                )
+            )
+
+
 def update_app_config():
     global mail
     with app.app_context():
@@ -243,6 +266,7 @@ def update_app_config():
                 )
             # update app settings
             app.config[item.name] = item.value
+        load_private_key_files()
         # setup flask_mail
         mail = Mail(app)
 
