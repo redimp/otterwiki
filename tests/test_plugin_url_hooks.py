@@ -19,13 +19,17 @@ class EchoPlugin:
     def url_request(self, plugin, extra, method="GET", values=None):
         if plugin != "echo":
             return None
-        return "url_request {} foo={}".format(extra, values.get("foo"))
+        return "url_request {} {} foo={}".format(
+            method, extra, values.get("foo")
+        )
 
     @hookimpl
     def url_admin_request(self, plugin, extra, method="GET", values=None):
         if plugin != "echo":
             return None
-        return "url_admin_request {} foo={}".format(extra, values.get("foo"))
+        return "url_admin_request {} {} foo={}".format(
+            method, extra, values.get("foo")
+        )
 
 
 def make_echo_plugin():
@@ -39,7 +43,7 @@ def test_url_request_receives_values(test_client):
     try:
         rv = test_client.get("/-/plugin/echo/action?foo=bar")
         assert rv.status_code == 200
-        assert rv.data.decode() == "url_request action foo=bar"
+        assert rv.data.decode() == "url_request GET action foo=bar"
     finally:
         _get_plugin_manager().unregister(plugin)
 
@@ -49,7 +53,29 @@ def test_url_admin_request_receives_values(admin_client):
     try:
         rv = admin_client.get("/-/admin/plugin/echo/action?foo=bar")
         assert rv.status_code == 200
-        assert rv.data.decode() == "url_admin_request action foo=bar"
+        assert rv.data.decode() == "url_admin_request GET action foo=bar"
+    finally:
+        _get_plugin_manager().unregister(plugin)
+
+
+def test_url_request_receives_post_method(test_client):
+    plugin = make_echo_plugin()
+    try:
+        rv = test_client.post("/-/plugin/echo/action", data={"foo": "bar"})
+        assert rv.status_code == 200
+        assert rv.data.decode() == "url_request POST action foo=bar"
+    finally:
+        _get_plugin_manager().unregister(plugin)
+
+
+def test_url_admin_request_receives_post_method(admin_client):
+    plugin = make_echo_plugin()
+    try:
+        rv = admin_client.post(
+            "/-/admin/plugin/echo/action", data={"foo": "bar"}
+        )
+        assert rv.status_code == 200
+        assert rv.data.decode() == "url_admin_request POST action foo=bar"
     finally:
         _get_plugin_manager().unregister(plugin)
 

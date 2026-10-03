@@ -799,7 +799,11 @@ def pull_webhook(webhook_hash):
 @app.route("/-/plugin/<string:name>/<string:extra>", methods=["POST", "GET"])
 def plugin_url_request(name, extra):
     result = call_hook(
-        "url_request", plugin=name, extra=extra, values=request.values
+        "url_request",
+        plugin=name,
+        extra=extra,
+        method=request.method,
+        values=request.values,
     )
     if not result:
         abort(404)
@@ -813,7 +817,11 @@ def plugin_url_admin_request(name, extra):
     if not otterwiki.auth.has_permission("ADMIN"):
         abort(403)
     result = call_hook(
-        "url_admin_request", plugin=name, extra=extra, values=request.values
+        "url_admin_request",
+        plugin=name,
+        extra=extra,
+        method=request.method,
+        values=request.values,
     )
     if not result:
         abort(404)
