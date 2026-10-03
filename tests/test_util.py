@@ -23,6 +23,10 @@ from otterwiki.util import (
     strfdelta_round,
     is_valid_name,
     int_or_None,
+    diff_content,
+    diff_side_by_side,
+    diff_side_by_side_html,
+    diff_words,
 )
 
 
@@ -322,3 +326,67 @@ def test_sha256sum():
         sha256sum("An Otter Wiki")
         == "c0b00e171401dfa2c70f2524fa977d66ead451ec9837543556fc66087b211646"
     )
+
+
+def test_diff_content():
+    lines = diff_content("a\nb\nc\n", "a\nB\nc\nd\n")
+    assert lines[0]["style"] == "hunk"
+    changed = [(l["type"], l["value"]) for l in lines[1:] if l["style"]]
+    assert changed == [("-", "b\n"), ("+", "B\n"), ("+", "d\n")]
+    # identical content, line endings and the trailing newline are ignored
+    assert diff_content("a\nb\n", "a\nb\n") == []
+    assert diff_content("a\r\nb\r\n", "a\nb") == []
+
+
+def test_diff_side_by_side():
+    lines = diff_content("a\nb\nc\nx\n", "a\nB\nB2\nc\n")
+    rows = diff_side_by_side(lines)
+
+    def cell(line):
+        return (line["type"], line["value"]) if line else None
+
+    assert rows[0] == {"hunk": "@@ 1,4 1,4 @@"}
+    assert [(cell(r["left"]), cell(r["right"])) for r in rows[1:]] == [
+        ((" ", "a\n"), (" ", "a\n")),
+        (("-", "b\n"), ("+", "B\n")),
+        (None, ("+", "B2\n")),
+        ((" ", "c\n"), (" ", "c\n")),
+        (("-", "x\n"), None),
+    ]
+    assert diff_side_by_side([]) == []
+
+
+def test_diff_side_by_side_html():
+    lines = diff_content("a <b>\nsome text\nc\n", "a <b>\nsome new text\n")
+    html_a = ["A", "B", "C"]
+    rows = diff_side_by_side_html(lines, html_a=html_a)
+    assert rows[0] == {"hunk": "@@ 1,3 1,2 @@"}
+    # unchanged lines use the highlighted html if given
+    assert rows[1] == {
+        "left": {"number": 1, "style": "", "html": "A"},
+        "right": {"number": 1, "style": "", "html": "a &lt;b&gt;"},
+        "context": True,
+    }
+    # changed lines are compared word by word
+    assert rows[2]["context"] is False
+    assert rows[2]["left"]["html"] == "some text"
+    assert rows[2]["right"]["html"] == (
+        'some <span class="diff-word">new </span>text'
+    )
+    # removed lines without a counterpart
+    assert rows[3]["left"] == {"number": 3, "style": "removed", "html": "C"}
+    assert rows[3]["right"] is None
+
+
+def test_diff_words():
+    assert diff_words("a <b> simple wiki", "a <b> small wiki") == (
+        'a &lt;b&gt; <span class="diff-word">simple</span> wiki',
+        'a &lt;b&gt; <span class="diff-word">small</span> wiki',
+    )
+    # only the added words are marked, the removed side has none
+    assert diff_words("Donec arcu vel.", "Donec arcu vel. Abc.") == (
+        "Donec arcu vel.",
+        'Donec arcu vel.<span class="diff-word"> Abc.</span>',
+    )
+    # lines without much in common are not compared word by word
+    assert diff_words("completely different", "nothing alike here") is None

@@ -13,6 +13,7 @@ from otterwiki.renderer import (
     is_dangerous_style,
     OtterwikiRenderer,
     pygments_render,
+    pygments_render_lines,
 )
 
 
@@ -2044,3 +2045,16 @@ def test_markdown_style_dangerous():
     span = BeautifulSoup(html, "html.parser").find("span")
     assert span is not None
     assert span.attrs.get("style") == "color:red"
+
+
+def test_pygments_render_lines():
+    code = "# Head\n\n```python\ns = \"\"\"a\nb\"\"\"\n```\n<b>\n"
+    lines = pygments_render_lines(code, "markdown")
+    # one line of html per line of code, each with balanced spans
+    assert len(lines) == len(code.splitlines())
+    for line in lines:
+        assert line.count("<span") == line.count("</span>")
+    assert lines[0] == '<span class="gh"># Head</span>'
+    assert "&lt;b&gt;" in lines[-1]
+    # unknown languages are escaped
+    assert pygments_render_lines("<i>\nx", "nonexistent") == ["&lt;i&gt;", "x"]

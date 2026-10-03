@@ -1,0 +1,44 @@
+{# vim: set et ts=8 sts=4 sw=4 ai: #}
+{#-
+    Render the rows of otterwiki.util.diff_side_by_side_html() as a two
+    column diff. The content of a call block is placed in the <thead>.
+    color_a and color_b mark the changed lines of each side with a colored
+    border, e.g. by the revision they belong to.
+-#}
+{% macro diff_side_by_side(rows, id=none, color_a=none, color_b=none) -%}
+<table class="diff diff-side-by-side highlight"{% if id %} id="{{ id }}"{% endif %}>
+<colgroup>
+  <col class="diff-linenumber"><col><col class="diff-linenumber"><col>
+</colgroup>
+{%- if caller is defined %}
+<thead>
+{{ caller() }}
+</thead>
+{%- endif %}
+{%- for row in rows %}
+<tr{% if row.context %} class="diff-context"{% endif %}>
+{%- if row.hunk %}
+<td class="hunk" colspan="4">{{ row.hunk }}</td>
+{%- else %}
+{%- for cell, color in [(row.left, color_a), (row.right, color_b)] %}
+{%- if cell %}
+{%- if color and not row.context %}
+    <td class="diff-decoration linenumber diff-color {{ cell.style }}" style="border-left-color: #{{ color }};">{{ cell.number }}</td>
+{%- else %}
+    <td class="diff-decoration linenumber {{ cell.style }}">{{ cell.number }}</td>
+{%- endif %}
+{%- if row.context %}
+    <td class="value"><div class="diff-clamp">{{ cell.html|safe }}</div></td>
+{%- else %}
+    <td class="value {{ cell.style }}">{{ cell.html|safe }}</td>
+{%- endif %}
+{%- else %}
+    <td class="diff-decoration empty"></td>
+    <td class="value empty"></td>
+{%- endif %}
+{%- endfor %}
+{%- endif -%}
+</tr>
+{%- endfor %}
+</table>
+{%- endmacro %}

@@ -106,6 +106,60 @@ var otterwiki = {
             checkboxes[i].checked = !checkboxes[i].checked;
         }
     },
+    /*
+        unchanged lines in a side by side diff are shortened, make the
+        shortened ones expandable by click or keyboard
+    */
+    diff_expandable_context: function() {
+        const rows = document.querySelectorAll('table.diff-side-by-side tr.diff-context');
+        if (rows.length < 1) {
+            return;
+        }
+        const mark_clamped = function() {
+            rows.forEach((row) => {
+                if (row.classList.contains('expanded')) {
+                    return;
+                }
+                const clamped = [...row.querySelectorAll('.diff-clamp')].some(
+                    (div) => div.scrollHeight > div.clientHeight + 1);
+                row.classList.toggle('clamped', clamped);
+                if (clamped) {
+                    row.setAttribute('tabindex', '0');
+                    row.setAttribute('title', 'Show the full line');
+                    row.setAttribute('aria-expanded', 'false');
+                } else {
+                    row.removeAttribute('tabindex');
+                    row.removeAttribute('title');
+                    row.removeAttribute('aria-expanded');
+                }
+            });
+        };
+        const toggle = function(row) {
+            if (!row.classList.contains('clamped') && !row.classList.contains('expanded')) {
+                return;
+            }
+            const expanded = row.classList.toggle('expanded');
+            row.classList.toggle('clamped', !expanded);
+            row.setAttribute('aria-expanded', expanded);
+            row.setAttribute('title', expanded ? 'Shorten the line' : 'Show the full line');
+        };
+        rows.forEach((row) => {
+            row.addEventListener('click', () => {
+                // don't toggle while the user is selecting text
+                if (window.getSelection().toString() === '') {
+                    toggle(row);
+                }
+            });
+            row.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    toggle(row);
+                }
+            });
+        });
+        mark_clamped();
+        window.addEventListener('resize', mark_clamped);
+    },
     retain_update_backlinks_checkbox: function() {
         const checkbox = document.getElementById("update_backlinks");
         if (!checkbox) return;
@@ -310,6 +364,7 @@ window.addEventListener("keydown", function(event) {
 
 document.addEventListener("DOMContentLoaded", () => {
   otterwiki.retain_update_backlinks_checkbox();
+  otterwiki.diff_expandable_context();
 
   if (document.body.dataset.pageIndexRetainUserExpandedNodes === 'False') return;
 

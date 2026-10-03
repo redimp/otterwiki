@@ -2,6 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import datetime
+import difflib
 import mimetypes
 import os.path
 import pathlib
@@ -14,6 +15,7 @@ import unicodedata
 from hashlib import sha256
 from functools import lru_cache
 from typing import List, Tuple
+from markupsafe import escape
 from unidiff import PatchSet
 
 # the cursor magic word which is ignored by the rendering
@@ -264,6 +266,147 @@ def patchset2filedict(patchset):
         files[file.path] = line_data
 
     return files
+
+
+def normalize_content(content):
+    """
+    Normalize page content like saving a page does: unix line endings, no
+    leading or trailing whitespace, a single newline at the end.
+    """
+    return content.replace("\r\n", "\n").strip() + "\n"
+
+
+def diff_content(content_a, content_b, filename="page.md"):
+    """
+    Diff two versions of a text, returns the lines of the diff in the format
+    of patchset2filedict(). The texts are normalized with normalize_content(),
+    so line endings and a missing newline at the end don't show up as changes.
+    """
+    diff = "".join(
+        difflib.unified_diff(
+            normalize_content(content_a).splitlines(keepends=True),
+            normalize_content(content_b).splitlines(keepends=True),
+            fromfile=f"a/{filename}",
+            tofile=f"b/{filename}",
+        )
+    )
+    if not diff:
+        return []
+    return list(patchset2filedict(PatchSet(diff)).values())[0]
+
+
+_DIFF_WORDS_RE = re.compile(r"\w+|\s+|[^\w\s]")
+
+
+def diff_words(line_a, line_b, min_ratio=0.4):
+    """
+    Compare two versions of a line word by word. Returns the html of both
+    lines with the changed words wrapped in <span class="diff-word">, or
+    None if the lines are too different for a word diff to be helpful.
+    """
+    words_a = _DIFF_WORDS_RE.findall(line_a)
+    words_b = _DIFF_WORDS_RE.findall(line_b)
+    matcher = difflib.SequenceMatcher(None, words_a, words_b, autojunk=False)
+    if matcher.ratio() < min_ratio:
+        return None
+
+    def _html(words, changed):
+        text = str(escape("".join(words)))
+        if changed and text:
+            return f'<span class="diff-word">{text}</span>'
+        return text
+
+    html_a, html_b = [], []
+    for op, a1, a2, b1, b2 in matcher.get_opcodes():
+        html_a.append(_html(words_a[a1:a2], op != "equal"))
+        html_b.append(_html(words_b[b1:b2], op != "equal"))
+    return "".join(html_a), "".join(html_b)
+
+
+def diff_side_by_side(lines):
+    """
+    Arrange the lines of a diff (in the format of patchset2filedict()) in two
+    columns: removed lines on the left, added lines on the right and
+    unchanged lines on both sides. Returns a list of rows, either
+    {"hunk": value} or {"left": line or None, "right": line or None}.
+    """
+    rows = []
+    removed = []
+    added = []
+
+    def flush():
+        # pair a block of removed lines with the following added lines
+        for i in range(max(len(removed), len(added))):
+            rows.append(
+                {
+                    "left": removed[i] if i < len(removed) else None,
+                    "right": added[i] if i < len(added) else None,
+                }
+            )
+        removed.clear()
+        added.clear()
+
+    for line in lines:
+        if line["style"] == "hunk":
+            flush()
+            rows.append({"hunk": line["value"]})
+        elif line["type"] == "-":
+            if added:
+                flush()
+            removed.append(line)
+        elif line["type"] == "+":
+            added.append(line)
+        elif line["type"] == " ":
+            flush()
+            rows.append({"left": line, "right": line})
+    flush()
+    return rows
+
+
+def diff_side_by_side_html(lines, html_a=None, html_b=None):
+    """
+    Arrange the lines of a diff like diff_side_by_side() and prepare the
+    cells for templates/snippets/diff_side_by_side.html. html_a and html_b
+    are the highlighted lines of both versions, see pygments_render_lines(),
+    lines without highlighting are escaped. Returns a list of rows, either
+    {"hunk": value} or {"left": cell, "right": cell, "context": bool} with
+    a cell being None or {"number": .., "style": .., "html": ..}.
+    """
+
+    def _cell(line, number, html_lines):
+        if line is None:
+            return None
+        if html_lines and 0 < number <= len(html_lines):
+            html = html_lines[number - 1]
+        else:
+            html = str(escape(line["value"].rstrip("\n")))
+        return {"number": number, "style": line["style"], "html": html}
+
+    rows = []
+    for row in diff_side_by_side(lines):
+        if "hunk" in row:
+            rows.append(row)
+            continue
+        left, right = row["left"], row["right"]
+        left_cell = _cell(left, left and left["source"], html_a)
+        right_cell = _cell(right, right and right["target"], html_b)
+        if left and right and left["style"] == "removed":
+            # a changed line: mark the changed words instead of the
+            # markdown syntax, so small changes in long lines stand out
+            words = diff_words(
+                left["value"].rstrip("\n"), right["value"].rstrip("\n")
+            )
+            if words is not None:
+                left_cell["html"], right_cell["html"] = words
+        rows.append(
+            {
+                "left": left_cell,
+                "right": right_cell,
+                # unchanged lines are shortened in the diff
+                "context": bool(left and left["style"] == ""),
+            }
+        )
+    return rows
 
 
 def get_local_timezone():

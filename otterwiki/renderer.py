@@ -91,6 +91,20 @@ def pygments_render(code, lang, linenumbers=False):
     return html
 
 
+def pygments_render_lines(code, lang):
+    """
+    Highlight code and return the html of each line. The spans pygments
+    creates are closed at the end of each line, so the lines can be used
+    on their own, e.g. in a diff.
+    """
+    try:
+        lexer = get_lexer_by_name(lang.strip(), stripall=False)
+    except ClassNotFound:
+        return [str(escape(line)) for line in code.splitlines()]
+    html = highlight(code, lexer, HtmlFormatter(nowrap=True))
+    return html.splitlines()
+
+
 def hidemagicword(text):
     arr = text.splitlines(True)
     for n, line in enumerate(arr):

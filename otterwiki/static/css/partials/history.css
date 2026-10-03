@@ -18,28 +18,96 @@ table.diff td.hunk {
     font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
     white-space: pre-wrap;
 }
-tr.removed {
+tr.removed,
+td.removed {
     color: rgba(0, 0, 0, 0.85);
     background-color: #f8d0d9;
     border-color: #ed586c;
 }
-tr.added {
+tr.added,
+td.added {
     color: rgba(0, 0, 0, 0.85);
     background-color: #d5f9e5;
     border-color: #0be881;
 }
-.dark-mode tr.removed {
+.dark-mode tr.removed,
+.dark-mode td.removed {
     color: #ff4d4f;
     background-color: #301923;
     border-color: #8c0e2e;
 }
-.dark-mode tr.added {
+.dark-mode tr.added,
+.dark-mode td.added {
     color: #0be881;
     background-color: #17312a;
     border-color: #0d8951;
 }
 .diff-decoration {
     width: 0.5rem;
+}
+/* side by side diff */
+table.diff-side-by-side {
+    table-layout: fixed;
+}
+table.diff-side-by-side col.diff-linenumber {
+    width: 3.5rem;
+}
+table.diff-side-by-side td {
+    padding: 0.1rem 0.5rem;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+}
+table.diff-side-by-side td.linenumber {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    text-align: right;
+    opacity: 0.6;
+}
+table.diff-side-by-side th.diff-header {
+    text-align: left;
+    padding: 0.5rem 0.5rem 0.5rem 4rem;
+    border-bottom: 1px solid rgba(128,128,128,0.25);
+    vertical-align: bottom;
+}
+@media (max-width: 768px) {
+    table.diff-side-by-side th.diff-header {
+        padding-left: 0.5rem;
+    }
+}
+/* changed words in a changed line */
+td.removed .diff-word {
+    background-color: rgba(237, 88, 108, 0.45);
+    border-radius: 2px;
+}
+td.added .diff-word {
+    background-color: rgba(11, 232, 129, 0.45);
+    border-radius: 2px;
+}
+.dark-mode td.removed .diff-word {
+    color: #fff;
+    background-color: rgba(255, 77, 79, 0.45);
+}
+.dark-mode td.added .diff-word {
+    color: #fff;
+    background-color: rgba(11, 232, 129, 0.35);
+}
+/* unchanged lines are shortened to two lines, click to expand */
+table.diff-side-by-side tr.diff-context:not(.expanded) .diff-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+}
+table.diff-side-by-side tr.diff-context.clamped,
+table.diff-side-by-side tr.diff-context.expanded {
+    cursor: pointer;
+}
+table.diff-side-by-side tr.diff-context.clamped:hover td,
+table.diff-side-by-side tr.diff-context.expanded:hover td {
+    background-color: rgba(128,128,128,0.08);
+}
+table.diff-side-by-side td.empty {
+    background-color: rgba(128,128,128,0.08);
 }
 
 table .min {
