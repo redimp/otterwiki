@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.25.0](https://github.com/redimp/otterwiki/releases/tag/v2.25.0) - 2026-10-03
+
+<small>[Compare with v2.24.1](https://github.com/redimp/otterwiki/compare/v2.24.1...v2.25.0)</small>
+
+### Features
+
+- Show date, author and commit message of both compared revisions on the diff
+  page in a compact table, and color changed lines by their commit, see #571
+  ([8336860](https://github.com/redimp/otterwiki/commit/8336860),
+  [4f5c7a9](https://github.com/redimp/otterwiki/commit/4f5c7a9)).
+- Add previous and next edit buttons to the diff page to navigate between
+  neighbouring revisions, including the changes of a former filename when
+  diffing across a rename, see #571
+  ([3782a08](https://github.com/redimp/otterwiki/commit/3782a08),
+  [23231be](https://github.com/redimp/otterwiki/commit/23231be)).
+- Add a side by side view to the diff page, toggled by a switch and remembered
+  in the session, see #571
+  ([9633efd](https://github.com/redimp/otterwiki/commit/9633efd),
+  [24e6c95](https://github.com/redimp/otterwiki/commit/24e6c95)).
+- Validate the revision selection on the history page, see #571
+  ([13d9665](https://github.com/redimp/otterwiki/commit/13d9665)).
+- Diff a draft against the version it was based on and warn about newer
+  changes, shown side by side with markdown highlighting, changed words
+  highlighted and unchanged lines shortened. The discard and continue buttons
+  are placed above the side they keep, see #567
+  ([7d89503](https://github.com/redimp/otterwiki/commit/7d89503),
+  [3657a04](https://github.com/redimp/otterwiki/commit/3657a04),
+  [531666f](https://github.com/redimp/otterwiki/commit/531666f),
+  [d869153](https://github.com/redimp/otterwiki/commit/d869153)).
+- Ask in a modal whether to keep the draft, discard it or keep editing when
+  leaving the editor with unsaved changes
+  ([586ea41](https://github.com/redimp/otterwiki/commit/586ea41)).
+- Read ssh private keys for remote push and pull from files, see #573
+  ([19616f7](https://github.com/redimp/otterwiki/commit/19616f7)).
+- Add a configurable custom 404 page via NOT_FOUND_PAGE, see #197 #570
+  ([9254b97](https://github.com/redimp/otterwiki/commit/9254b97) by @yukidevv,
+  [79de1a6](https://github.com/redimp/otterwiki/commit/79de1a6),
+  [995693b](https://github.com/redimp/otterwiki/commit/995693b),
+  [cbb380f](https://github.com/redimp/otterwiki/commit/cbb380f)).
+
+### Bug Fixes
+
+- Save drafts reliably when leaving the editor, stop saving drafts once the page
+  is saved and discard drafts identical to the page
+  ([cbef8a4](https://github.com/redimp/otterwiki/commit/cbef8a4)).
+- Pass values to the url_admin_request plugin hook, which failed with a
+  TypeError due to a misspelled keyword, see #582
+  ([ea7bb44](https://github.com/redimp/otterwiki/commit/ea7bb44) by @noakky).
+- Pass the request method to the url_request and url_admin_request plugin hooks
+  ([8831c20](https://github.com/redimp/otterwiki/commit/8831c20)).
+- Handle merge commits without files in the /-/changelog
+  ([5148a97](https://github.com/redimp/otterwiki/commit/5148a97)).
+- Use an even, tighter per-level indentation for the sidebar table of contents
+  ([0038142](https://github.com/redimp/otterwiki/commit/0038142)).
+
+### Dependencies
+
+- Bump gitpython from 3.1.58 to 3.1.59, see #568
+  ([1413209](https://github.com/redimp/otterwiki/commit/1413209)).
+
 ## [v2.24.1](https://github.com/redimp/otterwiki/releases/tag/v2.24.1) - 2026-09-08
 
 <small>[Compare with v2.24.0](https://github.com/redimp/otterwiki/compare/v2.24.0...v2.24.1)</small>
