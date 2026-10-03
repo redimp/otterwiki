@@ -59,11 +59,8 @@ from otterwiki.server import app, app_renderer, db, storage
 from otterwiki.sidebar import SidebarMenu, SidebarPageIndex
 from otterwiki.pageindex import PageIndex
 from otterwiki.util import (
-    diff_content,
-    diff_side_by_side,
-    diff_words,
+    diff_side_by_side_html,
     empty,
-    normalize_content,
     get_header,
     get_page_directoryname,
     get_pagepath,
@@ -76,6 +73,8 @@ from otterwiki.util import (
     split_path,
     get_PatchSet,
     int_or_None,
+    diff_content,
+    normalize_content,
 )
 
 from .backlinks import rename_backlinks
@@ -878,41 +877,11 @@ class Page:
             normalize_content(draft_content), "markdown"
         )
 
-        def _cell(line, number, html_lines):
-            if line is None:
-                return None
-            if 0 < number <= len(html_lines):
-                html = html_lines[number - 1]
-            else:
-                html = str(html_escape(line["value"].rstrip("\n")))
-            return {"number": number, "style": line["style"], "html": html}
-
-        draft_diff = []
-        for row in diff_side_by_side(
-            diff_content(base_content, draft_content)
-        ):
-            if "hunk" in row:
-                draft_diff.append(row)
-                continue
-            left, right = row["left"], row["right"]
-            left_cell = _cell(left, left and left["source"], base_html)
-            right_cell = _cell(right, right and right["target"], draft_html)
-            if left and right and left["style"] == "removed":
-                # a changed line: mark the changed words instead of the
-                # markdown syntax, so small changes in long lines stand out
-                words = diff_words(
-                    left["value"].rstrip("\n"), right["value"].rstrip("\n")
-                )
-                if words is not None:
-                    left_cell["html"], right_cell["html"] = words
-            draft_diff.append(
-                {
-                    "left": left_cell,
-                    "right": right_cell,
-                    # unchanged lines are shortened in the diff
-                    "context": bool(left and left["style"] == ""),
-                }
-            )
+        draft_diff = diff_side_by_side_html(
+            diff_content(base_content, draft_content),
+            html_a=base_html,
+            html_b=draft_html,
+        )
         return render_template(
             "draft.html",
             title="{} - draft".format(self.pagename),

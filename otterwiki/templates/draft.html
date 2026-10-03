@@ -1,5 +1,6 @@
 {#- vim: set et ts=8 sts=4 sw=4 ai: -#}
 {% extends "page.html" %}
+{% from "snippets/diff_side_by_side.html" import diff_side_by_side %}
 
 {% block content %}
 {#- the delta is empty for less than a second ago -#}
@@ -80,16 +81,12 @@
 <p class="text-muted">Compared to the stored version, since the version the draft is based on is not available.</p>
 {% endif %}
 {% if draft_diff %}
-<table class="diff diff-side-by-side highlight" id="draft-diff">
-<colgroup>
-  <col class="diff-linenumber"><col><col class="diff-linenumber"><col>
-</colgroup>
 {%- macro revision_link(revision) -%}
 {%- if page_exists %} <a href="{{ url_for('pageview', path=pagepath, revision=revision) }}" class="revision-small">{{revision}}</a>
 {%- else %} <span class="revision-small">{{revision}}</span>
 {%- endif -%}
 {%- endmacro %}
-<thead>
+{% call diff_side_by_side(draft_diff, id="draft-diff") %}
 <tr>
   <th class="diff-header diff-buttons" colspan="2">{{ draft_button("discard", discard_label, "") }}</th>
   <th class="diff-header diff-buttons" colspan="2">{{ draft_button("edit", "Continue editing draft", "btn-primary") }}</th>
@@ -110,86 +107,8 @@
     Your draft <span class="font-weight-normal text-muted">saved {{ draft_saved }}</span>
   </th>
 </tr>
-</thead>
-{% for row in draft_diff %}
-<tr{% if row.context %} class="diff-context"{% endif %}>
-{%- if row.hunk %}
-<td class="hunk" colspan="4">{{row.hunk}}</td>
-{%- else %}
-{%- for cell in [row.left, row.right] %}
-{%- if cell %}
-    <td class="diff-decoration linenumber {{cell.style}}">{{cell.number}}</td>
-{%- if row.context %}
-    <td class="value"><div class="diff-clamp">{{cell.html|safe}}</div></td>
-{%- else %}
-    <td class="value {{cell.style}}">{{cell.html|safe}}</td>
-{%- endif %}
-{%- else %}
-    <td class="diff-decoration empty"></td>
-    <td class="value empty"></td>
-{%- endif %}
-{%- endfor %}
-{%- endif -%}
-</tr>
-{%- endfor %}
-</table>
+{% endcall %}
 {% else %}
 <p>The draft has no changes.</p>
 {% endif %}
-{% endblock %}
-{% block js %}
-{{ super() }}
-<script type="text/javascript">
-(function() {
-    /*
-        unchanged lines are shortened, make the shortened ones expandable
-        by click or keyboard
-    */
-    const rows = document.querySelectorAll('#draft-diff tr.diff-context');
-    const mark_clamped = function() {
-        rows.forEach((row) => {
-            if (row.classList.contains('expanded')) {
-                return;
-            }
-            const clamped = [...row.querySelectorAll('.diff-clamp')].some(
-                (div) => div.scrollHeight > div.clientHeight + 1);
-            row.classList.toggle('clamped', clamped);
-            if (clamped) {
-                row.setAttribute('tabindex', '0');
-                row.setAttribute('title', 'Show the full line');
-                row.setAttribute('aria-expanded', 'false');
-            } else {
-                row.removeAttribute('tabindex');
-                row.removeAttribute('title');
-                row.removeAttribute('aria-expanded');
-            }
-        });
-    };
-    const toggle = function(row) {
-        if (!row.classList.contains('clamped') && !row.classList.contains('expanded')) {
-            return;
-        }
-        const expanded = row.classList.toggle('expanded');
-        row.classList.toggle('clamped', !expanded);
-        row.setAttribute('aria-expanded', expanded);
-        row.setAttribute('title', expanded ? 'Shorten the line' : 'Show the full line');
-    };
-    rows.forEach((row) => {
-        row.addEventListener('click', () => {
-            // don't toggle while the user is selecting text
-            if (window.getSelection().toString() === '') {
-                toggle(row);
-            }
-        });
-        row.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                toggle(row);
-            }
-        });
-    });
-    mark_clamped();
-    window.addEventListener('resize', mark_clamped);
-})();
-</script>
 {% endblock %}
