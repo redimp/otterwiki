@@ -1030,9 +1030,23 @@ class Page:
         url_map = patchset2urlmap(patchset, rev_b, rev_a)
         file_diffs = patchset2filedict(patchset)
 
+        # find the metadata of both revisions in the log of the page
+        try:
+            log = storage.log(self.filename)
+        except StorageNotFound:
+            log = []
+
+        def find_metadata(revision):
+            for entry in log:
+                if entry["revision-full"].startswith(revision):
+                    return entry
+            return None
+
         menutree = SidebarPageIndex(self.pagepath)
         return render_template(
             "diff.html",
+            metadata_a=find_metadata(rev_a),
+            metadata_b=find_metadata(rev_b),
             title="{} - diff {} {}".format(self.pagename, rev_a, rev_b),
             pagepath=self.pagepath,
             pagename=self.pagename,

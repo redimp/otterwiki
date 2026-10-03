@@ -365,6 +365,27 @@ def test_blame_and_history_and_diff(test_client):
     assert revision[1] in html
 
 
+def test_diff_shows_revision_metadata(test_client):
+    pagename = "Diff Metadata Test"
+    save_shortcut(test_client, pagename, "aaa", "first diff message")
+    save_shortcut(test_client, pagename, "bbb", "second diff message")
+    html = test_client.get("/{}/history".format(pagename)).data.decode()
+    revision = re.findall(
+        r"class=\"btn revision-small\">([A-z0-9]+)</a>", html
+    )
+    assert len(revision) == 2
+    rv = test_client.get(
+        "/{}/diff/{}/{}".format(pagename, revision[1], revision[0])
+    )
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    messages = re.findall(
+        r"<td class=\"text-wrap diff-revision-message\">([^<]*)</td>", html
+    )
+    assert messages == ["first diff message", "second diff message"]
+    assert html.count("class=\"datetime\"") == 2
+
+
 def test_blame_and_history_404(test_client):
     pagename = "Does not exist"
     # check blame

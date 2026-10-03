@@ -42,6 +42,16 @@ td.added {
     background-color: #17312a;
     border-color: #0d8951;
 }
+/* revision metadata above the diff */
+.diff-revisions {
+    margin-bottom: 1rem;
+}
+td.diff-color {
+    border-left: 2px solid transparent;
+}
+.diff-revision-message {
+    white-space: pre-wrap;
+}
 .diff-decoration {
     width: 0.5rem;
 }
