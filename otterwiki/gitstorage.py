@@ -266,12 +266,15 @@ class GitStorage(object):
         datetime_obj = datetime.strptime(
             datetime_str, "%a %b %d %H:%M:%S %Y %z"
         )
-        # Get commit msg
-        message = "\n".join(
-            [x.strip() for x in logentry_lines[offset + 4 : -2]]
-        )
-
-        files = logentry_lines[-1].split("\x00")
+        # The message lines are indented, the optional list of files
+        # follows after an empty line. Merge commits come without files.
+        body = logentry_lines[offset + 3 :]
+        files = []
+        if len(body) > 1 and body[-2] == "" and not body[-1].startswith(" "):
+            files = body[-1].split("\x00")
+            body = body[:-2]
+        # Get commit msg, skipping the empty line after the header
+        message = "\n".join([x.strip() for x in body[1:]])
 
         # TODO: make an object?
         metadata = {

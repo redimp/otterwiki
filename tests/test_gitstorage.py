@@ -95,6 +95,30 @@ def test_log(storage):
     assert msg["message"] == message
 
 
+def test_log_merge_commit(storage):
+    author = ("Example Author", "mail@example.com")
+    assert storage.store(
+        "base.md", content="base", author=author, message="base"
+    )
+    main = storage.repo.active_branch.name
+    storage.repo.git.checkout("-b", "feature")
+    assert storage.store(
+        "feature.md", content="feature", author=author, message="feature"
+    )
+    storage.repo.git.checkout(main)
+    assert storage.store(
+        "main.md", content="main", author=author, message="main"
+    )
+    storage.repo.git.merge(
+        "feature", "--no-ff", "-m", "Merge branch 'feature'"
+    )
+    log = storage.log()
+    assert len(log) == 4
+    assert log[0]["message"] == "Merge branch 'feature'"
+    assert log[0]["files"] == []
+    assert log[1]["files"] in (["main.md"], ["feature.md"])
+
+
 def test_revert(storage):
     author = ("Example Author", "mail@example.com")
     filename = "test_revert.md"
