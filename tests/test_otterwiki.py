@@ -386,6 +386,74 @@ def test_diff_shows_revision_metadata(test_client):
     assert html.count("class=\"datetime\"") == 2
 
 
+def get_history_revisions(test_client, pagename):
+    html = test_client.get("/{}/history".format(pagename)).data.decode()
+    return re.findall(r"class=\"btn revision-small\">([A-z0-9]+)</a>", html)
+
+
+def test_diff_previous_and_next_edit(test_client):
+    pagename = "DiffNavigationTest"
+    for i in range(4):
+        save_shortcut(test_client, pagename, "line {}".format(i), str(i))
+    # newest first
+    r = get_history_revisions(test_client, pagename)
+    assert len(r) == 4
+
+    def nav(rev_a, rev_b):
+        html = test_client.get(
+            "/{}/diff/{}/{}".format(pagename, rev_a, rev_b)
+        ).data.decode()
+        prev_url = re.findall(
+            r"<a class=\"btn\" href=\"([^\"]*)\"><i [^>]*></i> Previous edit",
+            html,
+        )
+        next_url = re.findall(
+            r"<a class=\"btn\" href=\"([^\"]*)\">Next edit", html
+        )
+        return (
+            prev_url[0] if prev_url else None,
+            next_url[0] if next_url else None,
+        )
+
+    url = "/{}/diff/{}/{}".format
+    # oldest diff: no previous edit
+    assert nav(r[3], r[2]) == (None, url(pagename, r[2], r[1]))
+    # middle diff
+    assert nav(r[2], r[1]) == (
+        url(pagename, r[3], r[2]),
+        url(pagename, r[1], r[0]),
+    )
+    # newest diff: no next edit
+    assert nav(r[1], r[0]) == (url(pagename, r[2], r[1]), None)
+    # a diff spanning several edits steps out of both ends
+    assert nav(r[2], r[0]) == (url(pagename, r[3], r[2]), None)
+    # reversed order is treated the same
+    assert nav(r[1], r[2]) == (
+        url(pagename, r[3], r[2]),
+        url(pagename, r[1], r[0]),
+    )
+
+
+def test_diff_across_rename(test_client):
+    old_pagename, new_pagename = "Diff Rename Old", "Diff Rename New"
+    save_shortcut(test_client, old_pagename, "old content", "first")
+    save_shortcut(test_client, old_pagename, "changed content", "second")
+    test_client.post(
+        "/{}/rename".format(old_pagename),
+        data={"new_pagename": new_pagename, "message": ""},
+        follow_redirects=True,
+    )
+    save_shortcut(test_client, new_pagename, "newest content", "third")
+    r = get_history_revisions(test_client, new_pagename)
+    assert len(r) == 4
+    # the diff before the rename shows the old filename
+    html = test_client.get(
+        "/{}/diff/{}/{}".format(new_pagename, r[3], r[2])
+    ).data.decode()
+    assert "diff rename old.md" in html
+    assert "changed content" in html
+
+
 def test_blame_and_history_404(test_client):
     pagename = "Does not exist"
     # check blame

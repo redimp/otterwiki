@@ -25,6 +25,22 @@
 {% block content %}
 <div class="w-full mw-full p-0 clearfix">
 {% if rev_a and rev_b %}
+{% if prev_url or next_url %}
+<nav aria-label="Edit navigation" class="float-right">
+<div class="btn-group" role="group">
+  {% if prev_url %}
+  <a class="btn" href="{{ prev_url }}"><i class="fa fa-angle-left" aria-hidden="true"></i> Previous edit</a>
+  {% else %}
+  <span class="btn disabled"><i class="fa fa-angle-left" aria-hidden="true"></i> Previous edit</span>
+  {% endif %}
+  {% if next_url %}
+  <a class="btn" href="{{ next_url }}">Next edit <i class="fa fa-angle-right" aria-hidden="true"></i></a>
+  {% else %}
+  <span class="btn disabled">Next edit <i class="fa fa-angle-right" aria-hidden="true"></i></span>
+  {% endif %}
+</div>
+</nav>
+{% endif %}
     <h3>Comparing <tt>{{rev_a}}</tt> to <tt>{{rev_b}}</tt></h3>
 {% macro revision_metadata(rev, metadata) %}
           <tr class="align-top">
@@ -65,7 +81,7 @@
 {% for file in patchset %}
 {% with filename=file.path,lines=file_diffs[file.path],urlobj=url_map[file.path] %}
 {# {{filename}} {{lines}} {{file}} #}
-{%- if page_filename|length == 0 or filename == page_filename %}
+{%- if not page_filenames or filename in page_filenames %}
 <tr>
 <td class="filename" colspan="{{colspan}}">
 {%- if urlobj.source_file == urlobj.target_file %}
@@ -111,7 +127,7 @@
 </tr>
 {%- endfor -%}{# l in lines #}
 {%- else -%}
-<!-- skipped page_filename={{page_filename}} filename={{filename}} -->
+<!-- skipped filename={{filename}} -->
 {%- endif %}
 {% endwith %}{# filename,lines in file_diffs #}
 {% endfor %}{# filename,lines in file_diffs #}

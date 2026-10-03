@@ -1036,21 +1036,50 @@ class Page:
         except StorageNotFound:
             log = []
 
-        def find_metadata(revision):
-            for entry in log:
+        def find_index(revision):
+            for i, entry in enumerate(log):
                 if entry["revision-full"].startswith(revision):
-                    return entry
+                    return i
             return None
+
+        index_a, index_b = find_index(rev_a), find_index(rev_b)
+
+        # the filenames of the page at both revisions, to follow renames
+        page_filenames = {self.filename}
+        for index in (index_a, index_b):
+            if index is not None:
+                page_filenames.update(log[index]["files"])
+
+        # previous and next edit, the log is ordered newest first
+        prev_url, next_url = None, None
+        if index_a is not None and index_b is not None:
+            older, newer = max(index_a, index_b), min(index_a, index_b)
+            if older + 1 < len(log):
+                prev_url = url_for(
+                    "diff",
+                    path=self.pagepath,
+                    rev_a=log[older + 1]["revision"],
+                    rev_b=log[older]["revision"],
+                )
+            if newer > 0:
+                next_url = url_for(
+                    "diff",
+                    path=self.pagepath,
+                    rev_a=log[newer]["revision"],
+                    rev_b=log[newer - 1]["revision"],
+                )
 
         menutree = SidebarPageIndex(self.pagepath)
         return render_template(
             "diff.html",
-            metadata_a=find_metadata(rev_a),
-            metadata_b=find_metadata(rev_b),
+            metadata_a=log[index_a] if index_a is not None else None,
+            metadata_b=log[index_b] if index_b is not None else None,
+            prev_url=prev_url,
+            next_url=next_url,
             title="{} - diff {} {}".format(self.pagename, rev_a, rev_b),
             pagepath=self.pagepath,
             pagename=self.pagename,
-            page_filename=self.filename,
+            page_filenames=page_filenames,
             file_diffs=file_diffs,
             patchset=patchset,
             url_map=url_map,
