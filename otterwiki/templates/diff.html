@@ -4,6 +4,7 @@
 {% else %}
 {% extends "wiki.html" %}
 {% endif %}
+{% from "snippets/diff_side_by_side.html" import diff_side_by_side %}
 
 {%block head -%}
 {{- super() }}
@@ -25,8 +26,14 @@
 {% block content %}
 <div class="w-full mw-full p-0 clearfix">
 {% if rev_a and rev_b %}
+<nav aria-label="Diff view" class="float-right ml-10 mb-10">
+<div class="btn-group" role="group">
+  <a class="btn{% if view == 'inline' %} active{% endif %}" href="{{ url_for('diff', path=pagepath, rev_a=rev_a, rev_b=rev_b, view='inline') }}"{% if view == 'inline' %} aria-current="true"{% endif %}>Inline</a>
+  <a class="btn{% if view == 'side-by-side' %} active{% endif %}" href="{{ url_for('diff', path=pagepath, rev_a=rev_a, rev_b=rev_b, view='side-by-side') }}"{% if view == 'side-by-side' %} aria-current="true"{% endif %}>Side by side</a>
+</div>
+</nav>
 {% if prev_url or next_url %}
-<nav aria-label="Edit navigation" class="float-right">
+<nav aria-label="Edit navigation" class="float-right ml-10 mb-10">
 <div class="btn-group" role="group">
   {% if prev_url %}
   <a class="btn" href="{{ prev_url }}"><i class="fa fa-angle-left" aria-hidden="true"></i> Previous edit</a>
@@ -74,6 +81,23 @@
 {%if not metadata.author_email%}{{metadata.author_name}}{%else%}<a href="mailto:{{metadata.author_email}}">{{metadata.author_name}}</a>{%endif%}:
 {{metadata.message or '-/-'}}
 {%endif%}
+{% if side_by_side %}
+{%- macro side_header(file, url, rev) -%}
+{%- if url %}<a href="{{ url }}"><tt>{{ file }}</tt></a>{% else %}<tt>{{ file }}</tt>{% endif %}
+ <a href="{{ url_for('show_commit', revision=rev) }}" class="revision-small">{{ rev }}</a>
+{%- endmacro %}
+{% for file in patchset %}
+{%- if file.path in side_by_side %}
+{%- set urlobj = url_map[file.path] %}
+{% call diff_side_by_side(side_by_side[file.path], color_a=rev_a[:6], color_b=rev_b[:6]) %}
+<tr>
+  <th class="diff-header" colspan="2">{{ side_header(urlobj.source_file, urlobj.source_url, rev_a) }}</th>
+  <th class="diff-header" colspan="2">{{ side_header(urlobj.target_file, urlobj.target_url, rev_b) }}</th>
+</tr>
+{% endcall %}
+{%- endif %}
+{% endfor %}
+{% else %}
 {# color the changed lines like the commit they belong to #}
 {% set colorcolumn = rev_a and rev_b %}
 {% set colspan = 2 + (2 if withlinenumbers else 0) %}
@@ -132,5 +156,6 @@
 {% endwith %}{# filename,lines in file_diffs #}
 {% endfor %}{# filename,lines in file_diffs #}
 </table>
+{% endif %}{# side_by_side #}
 {######}
 {% endblock %}

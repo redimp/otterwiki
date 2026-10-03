@@ -21,6 +21,7 @@ from flask import (
     render_template,
     request,
     send_file,
+    session,
 )
 from markupsafe import escape as html_escape
 from werkzeug.http import http_date
@@ -355,6 +356,10 @@ class Changelog:
             href=url_for("changelog_feed_atom", _external=True), rel='self'
         )
         return fg.atom_str(pretty=True)
+
+
+# the views of the diff page, the first one is the default
+DIFF_VIEWS = ("inline", "side-by-side")
 
 
 class Page:
@@ -1069,9 +1074,31 @@ class Page:
                     rev_b=log[newer - 1]["revision"],
                 )
 
+        # inline or side by side, the choice is remembered in the session
+        view = request.args.get("view")
+        if view in DIFF_VIEWS:
+            session["diff_view"] = view
+        else:
+            view = session.get("diff_view")
+            if view not in DIFF_VIEWS:
+                view = DIFF_VIEWS[0]
+        side_by_side = {}
+        if view == "side-by-side":
+            for file in patchset:
+                if file.path not in page_filenames:
+                    continue
+                urlobj = url_map[file.path]
+                side_by_side[file.path] = diff_side_by_side_html(
+                    file_diffs[file.path],
+                    html_a=self._diff_highlight(urlobj.source_file, rev_a),
+                    html_b=self._diff_highlight(urlobj.target_file, rev_b),
+                )
+
         menutree = SidebarPageIndex(self.pagepath)
         return render_template(
             "diff.html",
+            view=view,
+            side_by_side=side_by_side,
             metadata_a=log[index_a] if index_a is not None else None,
             metadata_b=log[index_b] if index_b is not None else None,
             prev_url=prev_url,
@@ -1090,6 +1117,24 @@ class Page:
             custom_menu=SidebarMenu().query(),
             breadcrumbs=self.breadcrumbs(),
         )
+
+    def _diff_highlight(self, filename, revision):
+        """
+        Returns the highlighted lines of a markdown file at revision, or
+        None if the file can not be highlighted line by line.
+        """
+        if filename == "/dev/null" or not filename.endswith(".md"):
+            return None
+        try:
+            content = storage.load(filename, revision=revision)
+        except StorageError:
+            return None
+        html_lines = pygments_render_lines(content, "markdown")
+        # pygments drops leading and trailing empty lines, the lines would
+        # not match the line numbers of the diff anymore
+        if len(html_lines) != len(content.splitlines()):
+            return None
+        return html_lines
 
     def history(self, rev_a: str | None = None, rev_b: str | None = None):
         if not has_permission("READ"):

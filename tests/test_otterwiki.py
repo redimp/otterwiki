@@ -483,6 +483,35 @@ def test_diff_across_rename(test_client):
     assert "changed content" in html
 
 
+def test_diff_side_by_side(test_client):
+    pagename = "DiffSideBySideTest"
+    save_shortcut(test_client, pagename, "# Head\n\nsimple <b>wiki", "1")
+    save_shortcut(test_client, pagename, "# Head\n\nsmall <b>wiki", "2")
+    r = get_history_revisions(test_client, pagename)
+    url = "/{}/diff/{}/{}".format(pagename, r[1], r[0])
+    # inline is the default
+    html = test_client.get(url).data.decode()
+    assert "diff-side-by-side" not in html
+    # switch to side by side
+    html = test_client.get(url + "?view=side-by-side").data.decode()
+    assert '<table class="diff diff-side-by-side' in html
+    # markdown is highlighted, changed words are marked
+    assert '<span class="gh"># Head</span>' in html
+    assert '<span class="diff-word">simple</span> &lt;b&gt;wiki' in html
+    assert '<span class="diff-word">small</span> &lt;b&gt;wiki' in html
+    # the choice is remembered
+    html = test_client.get(url).data.decode()
+    assert '<table class="diff diff-side-by-side' in html
+    # invalid views are ignored
+    html = test_client.get(url + "?view=invalid").data.decode()
+    assert '<table class="diff diff-side-by-side' in html
+    # switch back to inline
+    html = test_client.get(url + "?view=inline").data.decode()
+    assert "diff-side-by-side" not in html
+    html = test_client.get(url).data.decode()
+    assert "diff-side-by-side" not in html
+
+
 def test_blame_and_history_404(test_client):
     pagename = "Does not exist"
     # check blame
