@@ -1101,10 +1101,26 @@ class Page:
 
         orig_log = storage.log(self.filename)
 
-        if rev_a is not None and rev_b is not None and rev_a != rev_b:
-            return redirect(
-                url_for("diff", path=self.pagepath, rev_a=rev_a, rev_b=rev_b)
-            )
+        if request.method == "POST":
+            if rev_a is None or rev_b is None:
+                toast("Please select two revisions to compare.", "warning")
+            elif rev_a == rev_b:
+                toast("Please select two different revisions.", "warning")
+            else:
+                # the log is ordered newest first, make sure rev_a is the
+                # older revision, so that the diff shows old -> new
+                revisions = [str(entry['revision']) for entry in orig_log]
+                if (
+                    rev_a in revisions
+                    and rev_b in revisions
+                    and revisions.index(rev_a) < revisions.index(rev_b)
+                ):
+                    rev_a, rev_b = rev_b, rev_a
+                return redirect(
+                    url_for(
+                        "diff", path=self.pagepath, rev_a=rev_a, rev_b=rev_b
+                    )
+                )
 
         log = []
         for i, orig_entry in enumerate(orig_log):

@@ -391,6 +391,35 @@ def get_history_revisions(test_client, pagename):
     return re.findall(r"class=\"btn revision-small\">([A-z0-9]+)</a>", html)
 
 
+def test_history_compare_revisions(test_client):
+    pagename = "HistoryCompareTest"
+    for i in range(3):
+        save_shortcut(test_client, pagename, "line {}".format(i), str(i))
+    # newest first
+    r = get_history_revisions(test_client, pagename)
+    assert len(r) == 3
+    url = "/{}/history".format(pagename)
+    # same revision twice: no redirect, but a toast
+    rv = test_client.post(url, data={"rev_a": r[1], "rev_b": r[1]})
+    assert rv.status_code == 200
+    assert "Please select two different revisions." in rv.data.decode()
+    # only one revision selected
+    rv = test_client.post(url, data={"rev_a": r[1]})
+    assert rv.status_code == 200
+    assert "Please select two revisions to compare." in rv.data.decode()
+    # correct order
+    rv = test_client.post(url, data={"rev_a": r[2], "rev_b": r[0]})
+    assert rv.status_code == 302
+    assert rv.location.endswith("/{}/diff/{}/{}".format(pagename, r[2], r[0]))
+    # swapped order: the older revision ends up as rev_a
+    rv = test_client.post(url, data={"rev_a": r[0], "rev_b": r[2]})
+    assert rv.status_code == 302
+    assert rv.location.endswith("/{}/diff/{}/{}".format(pagename, r[2], r[0]))
+    # plain GET shows no toast
+    html = test_client.get(url).data.decode()
+    assert "Please select" not in html
+
+
 def test_diff_previous_and_next_edit(test_client):
     pagename = "DiffNavigationTest"
     for i in range(4):
