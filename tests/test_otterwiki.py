@@ -461,6 +461,11 @@ def test_diff_previous_and_next_edit(test_client):
         url(pagename, r[3], r[2]),
         url(pagename, r[1], r[0]),
     )
+    # a diff spanning the whole history shows both buttons disabled
+    assert nav(r[3], r[0]) == (None, None)
+    html = test_client.get(url(pagename, r[3], r[0])).data.decode()
+    assert '<span class="btn disabled" aria-disabled="true"><i' in html
+    assert '<span class="btn disabled" aria-disabled="true">Next edit' in html
 
 
 def test_diff_across_rename(test_client):
