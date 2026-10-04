@@ -702,6 +702,31 @@ class TestSSHKeyManagement:
         assert key_path is None
 
 
+FAKE_PRIVATE_KEY = """-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+fakekeycontentfakekeycontentfakekeycontentfakekeycontentfakekeycontent
+zqeO0onQWeF37QQGzNJ5AAAAGnVidW50dUBvdHRlcndpa2ktMjAyNjA5MjlhAQID
+-----END OPENSSH PRIVATE KEY-----
+"""
+
+
+def test_sanitize_ssh_key():
+    from otterwiki.repomgmt import sanitize_ssh_key
+
+    # already clean keys are left untouched
+    assert sanitize_ssh_key(FAKE_PRIVATE_KEY) == FAKE_PRIVATE_KEY
+    # windows line endings
+    assert (
+        sanitize_ssh_key(FAKE_PRIVATE_KEY.replace("\n", "\r\n"))
+        == FAKE_PRIVATE_KEY
+    )
+    # indented key with data before and after the markers, see #577
+    indented = "\njunk\n" + FAKE_PRIVATE_KEY.replace("\n", "\n    ") + "junk\n"
+    assert sanitize_ssh_key(indented) == FAKE_PRIVATE_KEY
+    # keys without markers are stripped, not discarded
+    assert sanitize_ssh_key("  no markers \n here  ") == "no markers\nhere\n"
+
+
 class TestRepositoryErrorNotifications:
     """Test repository error notification system."""
 

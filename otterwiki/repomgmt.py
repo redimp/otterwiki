@@ -7,6 +7,24 @@ import stat
 from threading import Thread, Lock
 
 
+def sanitize_ssh_key(private_key):
+    """
+    Strip indentation, normalize line endings and remove data before the
+    BEGIN and after the END marker of a PEM style key, see RFC 7468 section 2.
+    """
+    lines = [line.strip() for line in private_key.splitlines()]
+    begin = next(
+        (i for i, l in enumerate(lines) if l.startswith('-----BEGIN ')), None
+    )
+    end = next(
+        (i for i, l in enumerate(lines) if l.startswith('-----END ')), None
+    )
+    if begin is not None and end is not None and begin < end:
+        lines = lines[begin : end + 1]
+    # SSH key must use unix line endings and a newline at the end
+    return '\n'.join(lines).strip() + '\n'
+
+
 class RepositoryManager:
     """
     Repository management functionality for Git operations including
@@ -30,13 +48,7 @@ class RepositoryManager:
         fd, key_path = tempfile.mkstemp(prefix='otterwiki_ssh_', suffix='.key')
         try:
             with os.fdopen(fd, 'w') as f:
-                # SSH key must use unix line endings only
-                key_content = private_key.replace('\r\n', '\n').replace(
-                    '\r', '\n'
-                )
-                # and a newline at the end
-                key_content = key_content.rstrip() + '\n'
-                f.write(key_content)
+                f.write(sanitize_ssh_key(private_key))
 
             # the key should be readable only by the owner
             os.chmod(key_path, stat.S_IRUSR | stat.S_IWUSR)
