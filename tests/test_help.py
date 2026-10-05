@@ -119,3 +119,28 @@ def test_help_admin_page(test_client):
         for s in settings_spans
     )
     assert found, 'Settings button span with cog icon not found in admin help'
+
+
+def test_help_sidebar_active(test_client):
+    expected = {
+        '/-/help': '/-/help',
+        '/-/help/syntax': '/-/help/syntax',
+        '/-/help/plugins': '/-/help/plugins',
+        '/-/help/admin': '/-/help/admin',
+        '/-/about': '/-/about',
+    }
+    for url, active_href in expected.items():
+        rv = test_client.get(url)
+        assert rv.status_code == 200
+        soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+        active = soup.select('.sidebar-menu a.sidebar-link.active')
+        assert [a['href'] for a in active] == [active_href], url
+    # the back link leads to the wiki
+    rv = test_client.get('/-/help')
+    soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+    back = [
+        a
+        for a in soup.select('.sidebar-menu a.sidebar-link')
+        if 'Back to the wiki' in a.get_text()
+    ]
+    assert [a['href'] for a in back] == ['/']
