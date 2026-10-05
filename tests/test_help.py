@@ -141,6 +141,25 @@ def test_help_sidebar_active(test_client):
     back = [
         a
         for a in soup.select('.sidebar-menu a.sidebar-link')
-        if 'Back to the wiki' in a.get_text()
+        if 'Back to TEST WIKI' in a.get_text()
     ]
     assert [a['href'] for a in back] == ['/']
+    # the about page shows only the help sidebar, not the wiki shortcuts
+    rv = test_client.get('/-/about')
+    soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+    hrefs = [a['href'] for a in soup.select('.sidebar-menu a.sidebar-link')]
+    assert '/-/changelog' not in hrefs
+    assert '/-/index' not in hrefs
+
+
+def test_help_below_dropdown_divider(test_client):
+    rv = test_client.get('/')
+    assert rv.status_code == 200
+    soup = BeautifulSoup(rv.data.decode(), 'html.parser')
+    dropdown = soup.select_one('.dropdown-menu')
+    assert dropdown is not None
+    help_link = dropdown.find('a', href='/-/help')
+    assert help_link is not None
+    previous = help_link.find_previous_sibling()
+    assert previous is not None
+    assert 'dropdown-divider' in previous.get('class', [])
