@@ -103,7 +103,7 @@
     <label for="password" class="required">New Password</label>
     <input name="password1" type="password" class="form-control" id="password" placeholder="Password">
     <div class="form-text-plain">
-      Must be at least 8 characters long.
+      Must be at least {{ config["PASSWORD_MIN_LENGTH"] }}  characters long.
     </div>
   </div>
   <div class="form-group">
