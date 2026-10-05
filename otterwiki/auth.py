@@ -376,8 +376,16 @@ class SimpleAuth:
             toast(f"Error: Your {name_check[1]}", "error")
         elif password1 != password2:
             toast("The passwords do not match.", "error")
-        elif password1 is None or len(password1) < 8:
-            toast("The password must be at least 8 characters long.", "error")
+        elif (
+            password1 is None
+            or len(password1) < app.config['PASSWORD_MIN_LENGTH']
+        ):
+            toast(
+                "The password must be at least {} characters long.".format(
+                    app.config['PASSWORD_MIN_LENGTH']
+                ),
+                "error",
+            )
         else:
             # register account
             self.create_user(email, name, password=password1)
@@ -434,9 +442,14 @@ class SimpleAuth:
         ):
             if form.get("password1") != form.get("password2"):
                 toast("The passwords do not match.", "error")
-            elif len(form.get("password1")) < 8:
+            elif (
+                len(form.get("password1")) < app.config['PASSWORD_MIN_LENGTH']
+            ):
                 toast(
-                    "The password must be at least 8 characters long.", "error"
+                    "The password must be at least {} characters long.".format(
+                        app.config['PASSWORD_MIN_LENGTH']
+                    ),
+                    "error",
                 )
             else:
                 # update password

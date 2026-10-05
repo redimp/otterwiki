@@ -122,15 +122,18 @@ def test_settings_change_password(app_with_user, test_client):
     assert 200 == rv.status_code
     assert 'Your password was updated successfully.' in rv.data.decode()
     # fail to change the password
+    pwminlen = app_with_user.config["PASSWORD_MIN_LENGTH"]
+    pw = "x" * (pwminlen - 1)
     rv = test_client.post(
         "/-/settings",
         data={
-            "password1": "1234",
-            "password2": "1234",
+            "password1": pw,
+            "password2": pw,
         },
         follow_redirects=True,
     )
     assert 200 == rv.status_code
     assert (
-        'The password must be at least 8 characters long.' in rv.data.decode()
+        'The password must be at least {} characters long.'.format(pwminlen)
+        in rv.data.decode()
     )

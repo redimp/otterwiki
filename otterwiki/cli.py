@@ -366,6 +366,7 @@ def user_password(
         sys.exit(1)
 
     user = _get_user(email)
+    pwminlen = current_app.config["PASSWORD_MIN_LENGTH"]
 
     if delete:
         user.password_hash = None
@@ -378,7 +379,9 @@ def user_password(
         import string
 
         alphabet = string.ascii_letters + string.digits + string.punctuation
-        password = "".join(secrets.choice(alphabet) for _ in range(12))
+        password = "".join(
+            secrets.choice(alphabet) for _ in range(pwminlen + 4)
+        )
         user.password_hash = generate_password_hash(password, method="scrypt")
         db.session.add(user)
         db.session.commit()
@@ -395,9 +398,11 @@ def user_password(
                     "Error: Passwords do not match. Try again.", err=True
                 )
                 continue
-            if len(password1) < 8:
+            if len(password1) < pwminlen:
                 click.echo(
-                    "Error: Password must be at least 8 characters long. Try again.",
+                    "Error: Password must be at least {} characters long. Try again.".format(
+                        pwminlen
+                    ),
                     err=True,
                 )
                 continue

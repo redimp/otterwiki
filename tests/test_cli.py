@@ -330,6 +330,17 @@ def test_password_interactive(runner_with_user, cli_app_with_user):
     assert check_password_hash(user.password_hash, "newpassword123")
 
 
+def test_shortpassword_interactive_fails(runner_with_user, cli_app_with_user):
+    """Short password fails interactively."""
+    cli_app_with_user.config["PASSWORD_MIN_LENGTH"] = 100
+    result = runner_with_user.invoke(
+        args=["user", "password", "existing@example.com", "-i"],
+        input="newpassword123\nnewpassword123\n",
+    )
+    assert result.exit_code != 0
+    assert "must be at least" in result.output
+
+
 def test_password_interactive_mismatch_retries(runner_with_user):
     """Mismatched passwords prompt again."""
     result = runner_with_user.invoke(
@@ -404,7 +415,9 @@ def test_password_generate_password(runner_with_user, cli_app_with_user):
     assert "set to:" in result.output
 
     generated = result.output.strip().split("set to:")[-1].strip()
-    assert len(generated) == 12
+    assert (
+        len(generated) == cli_app_with_user.config["PASSWORD_MIN_LENGTH"] + 4
+    )
 
     user = SimpleAuth.User.query.filter_by(
         email="existing@example.com"

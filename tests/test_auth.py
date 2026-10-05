@@ -845,19 +845,40 @@ def test_register_errors(app_with_user, test_client, req_ctx):
     assert "passwords do not match" in rv.data.decode()
     assert "account has been created" not in rv.data.decode()
     assert "account is waiting for approval" not in rv.data.decode()
-    # passwords not match
+
+    # password not long enough (default)
+    pw = "x" * (app_with_user.config["PASSWORD_MIN_LENGTH"] - 1)
     rv = test_client.post(
         "/-/register",
         data={
             "email": "mail@example.com",
             "name": "John Doe",
-            "password1": "1234567",
-            "password2": "1234567",
+            "password1": pw,
+            "password2": pw,
         },
         follow_redirects=True,
     )
     assert rv.status_code == 200
     assert "password must be at least" in rv.data.decode()
+    assert "account has been created" not in rv.data.decode()
+    assert "account is waiting for approval" not in rv.data.decode()
+
+    # password not long enough (nondefault)
+    app_with_user.config["PASSWORD_MIN_LENGTH"] = 10
+    pw = "x" * (app_with_user.config["PASSWORD_MIN_LENGTH"] - 1)
+    rv = test_client.post(
+        "/-/register",
+        data={
+            "email": "mail@example.com",
+            "name": "John Doe",
+            "password1": pw,
+            "password2": pw,
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert "password must be at least" in rv.data.decode()
+    assert "password must be at least 8" not in rv.data.decode()
     assert "account has been created" not in rv.data.decode()
     assert "account is waiting for approval" not in rv.data.decode()
 
