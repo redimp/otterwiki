@@ -116,6 +116,8 @@ for key in app.config:
                 "on",
                 "1",
             ]
+        elif type(app.config[key]) == int:
+            app.config[key] = int(os.environ[key])
         else:
             app.config[key] = os.environ[key]
         config_from_environment[key] = app.config[key]
