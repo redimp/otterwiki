@@ -1,34 +1,42 @@
-<h5 class="sidebar-title">Documentation</h5>
+{%- set help_topic = request.view_args.get("topic") if request.endpoint == "help" else None %}
+<a href="{{ url_for("index") }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+      <i class="fas fa-arrow-left"></i>
+    </span>
+    Back to {{ config.SITE_NAME or "the wiki" }}
+</a>
 <div class="sidebar-divider"></div>
-<a href="{{ url_for("help") }}" class="sidebar-link sidebar-link-with-icon">
+<h5 class="sidebar-title">Help</h5>
+<div class="sidebar-divider"></div>
+<a href="{{ url_for("help") }}" class="sidebar-link sidebar-link-with-icon{% if request.endpoint == "help" and not help_topic %} active{% endif %}">
     <span class="sidebar-icon">
       <i class="fas fa-book"></i>
     </span>
     User Guide
 </a>
 {# ### #}
-<a href="{{ url_for("help", topic="syntax") }}" class="sidebar-link sidebar-link-with-icon">
+<a href="{{ url_for("help", topic="syntax") }}" class="sidebar-link sidebar-link-with-icon{% if help_topic == "syntax" %} active{% endif %}">
     <span class="sidebar-icon">
       <i class="fab fa-markdown"></i>
     </span>
     Markdown Syntax
 </a>
 {# ### #}
-<a href="{{ url_for("help", topic="plugins") }}" class="sidebar-link sidebar-link-with-icon">
+<a href="{{ url_for("help", topic="plugins") }}" class="sidebar-link sidebar-link-with-icon{% if help_topic == "plugins" %} active{% endif %}">
     <span class="sidebar-icon">
       <i class="fas fa-fire"></i>
     </span>
     Plugin Guide
 </a>
 {# ### #}
-<a href="{{ url_for("help", topic="admin") }}" class="sidebar-link sidebar-link-with-icon">
+<a href="{{ url_for("help", topic="admin") }}" class="sidebar-link sidebar-link-with-icon{% if help_topic == "admin" %} active{% endif %}">
     <span class="sidebar-icon">
       <i class="fas fa-cogs"></i>
     </span>
     Admin Guide
 </a>
 {# ### #}
-<a href="{{ url_for("about") }}" class="sidebar-link sidebar-link-with-icon">
+<a href="{{ url_for("about") }}" class="sidebar-link sidebar-link-with-icon{% if request.endpoint == "about" %} active{% endif %}">
     <span class="sidebar-icon">
       <img width="26" src="{{ url_for("static", filename="img/otterhead.png") }}" >
     </span>

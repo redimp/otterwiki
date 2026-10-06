@@ -156,6 +156,12 @@
 {%- if has_permission('READ') %}
                     <div class="dropdown-divider mt-5 mb-5"></div>
 {%- endif %}
+                    <a href="{{ url_for("help") }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </span>
+                        Help
+                    </a>
                     <a href="#" class="dropdown-item-with-icon" onclick="halfmoon.toggleDarkMode()">
                         <span class="dropdown-icon">
                             <i class="far fa-moon"></i>
