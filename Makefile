@@ -84,12 +84,15 @@ docker-test:
 	docker run -it --rm otterwiki:_test
 
 docker-run:
-	docker build -t otterwiki:_build .
+	docker build -t otterwiki:_build \
+		--build-arg VERSION="$(VERSION)-local" \
+		.
 	docker run -p 8080:80 otterwiki:_build
 
 docker-run-slim:
 	docker build -t otterwiki:_build-slim \
 		-f docker/Dockerfile.slim \
+		--build-arg VERSION="$(VERSION)-local" \
 		.
 	docker run -p 8080:8080 otterwiki:_build-slim
 
@@ -113,6 +116,7 @@ endif
 		-t redimp/otterwiki:$(VERSION_MAJOR)-slim \
 		-t redimp/otterwiki:$(VERSION_MAJOR_MINOR)-slim \
 		--build-arg GIT_TAG="$(shell git describe --long)" \
+		--build-arg VERSION="$(VERSION)" \
 		--push .
 else
 	@echo ""
@@ -122,6 +126,7 @@ else
 		-f docker/Dockerfile.slim \
 		-t redimp/otterwiki:dev-$(BRANCH_TAG)-slim \
 		--build-arg GIT_TAG="$(shell git describe --long)_$(BRANCH)" \
+		--build-arg VERSION="$(VERSION)-dev-$(BRANCH_TAG)" \
 		--push .
 	@echo ""
 	@echo "-- Done dev-image: redimp/otterwiki:dev-$(BRANCH_TAG)-slim"
@@ -141,6 +146,7 @@ endif
 		-t redimp/otterwiki:$(VERSION_MAJOR) \
 		-t redimp/otterwiki:$(VERSION_MAJOR_MINOR) \
 		--build-arg GIT_TAG="$(shell git describe --long)" \
+		--build-arg VERSION="$(VERSION)" \
 		--push .
 else
 	@echo ""
@@ -149,6 +155,7 @@ else
 	docker buildx build --platform $(PLATFORM_QUICK) \
 		-t redimp/otterwiki:dev-$(BRANCH_TAG) \
 		--build-arg GIT_TAG="$(shell git describe --long)_$(BRANCH)" \
+		--build-arg VERSION="$(VERSION)-dev-$(BRANCH_TAG)" \
 		--push .
 	@echo ""
 	@echo "-- Done dev-image: redimp/otterwiki:dev-$(BRANCH_TAG)"

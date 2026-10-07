@@ -55,6 +55,9 @@ CMD ["tox"]
 FROM debian:12.14-slim
 LABEL maintainer="Ralph Thesen <mail@redimp.de>"
 LABEL org.opencontainers.image.source="https://github.com/redimp/otterwiki"
+# version of An Otter Wiki, passed via the Makefile
+ARG VERSION
+LABEL org.opencontainers.image.version=$VERSION
 # arg for marking dev images
 ARG GIT_TAG
 ENV GIT_TAG=$GIT_TAG
