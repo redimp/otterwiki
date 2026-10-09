@@ -8,7 +8,7 @@
 # - users read `from otterwiki import __version__` (see #586)
 #
 # version_info managed by tbump
-version_info = (2, 25, 0, "")
+version_info = (2, 25, 1, "")
 
 # build version string from version_info
 __version__ = f"{version_info[0]}.{version_info[1]}.{version_info[2]}" + (
