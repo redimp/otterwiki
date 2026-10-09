@@ -82,6 +82,7 @@ img.sidebar-logo {
   --radius  : 1rem;
 }
 
+.extra-nav,
 .sidebar-toc {
   --toc-base: calc(2 * var(--spacing) - var(--radius)); /* 20px */
   --toc-step: 0.8rem;                                   /* 8px  */
