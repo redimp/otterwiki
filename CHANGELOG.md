@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.25.1](https://github.com/redimp/otterwiki/releases/tag/v2.25.1) - 2026-10-09
+
+<small>[Compare with v2.25.0](https://github.com/redimp/otterwiki/compare/v2.25.0...v2.25.1)</small>
+
+### Features
+
+- Add a configurable minimum password length via PASSWORD_MIN_LENGTH, see #579
+  #584 ([6f385fb](https://github.com/redimp/otterwiki/commit/6f385fb) by @jclxx).
+- Convert settings overridden by environment variables to int and boolean, and
+  keep the default with a warning if an int value is invalid, see #584
+  ([434bc79](https://github.com/redimp/otterwiki/commit/434bc79) by @jclxx,
+  [5472a65](https://github.com/redimp/otterwiki/commit/5472a65)).
+- Highlight the current page in the help sidebar, see #583
+  ([8a27001](https://github.com/redimp/otterwiki/commit/8a27001)).
+
+### Bug Fixes
+
+- Restore per-level indentation of the right-hand table of contents, see #589
+  ([1daa6a0](https://github.com/redimp/otterwiki/commit/1daa6a0) by
+  @iociveteres).
+- Strip indentation and surrounding data from SSH private keys, see #577
+  ([23456ec](https://github.com/redimp/otterwiki/commit/23456ec)).
+- Rename Documentation to Help, move it below the dropdown divider and add a
+  link back to the wiki that shows the site name, see #583
+  ([ceadb5f](https://github.com/redimp/otterwiki/commit/ceadb5f),
+  [c16af95](https://github.com/redimp/otterwiki/commit/c16af95)).
+
+### Misc
+
+- Add the org.opencontainers.image.version label to the docker images, see #586
+  ([394a1f0](https://github.com/redimp/otterwiki/commit/394a1f0)).
+
+### Dependencies
+
+- Bump werkzeug from 3.1.6 to 3.1.9, see #587
+  ([a5d25f1](https://github.com/redimp/otterwiki/commit/a5d25f1) by @dependabot).
+- Bump gitpython from 3.1.59 to 3.1.62, see #585
+  ([b26f670](https://github.com/redimp/otterwiki/commit/b26f670) by @dependabot).
+
 ## [v2.25.0](https://github.com/redimp/otterwiki/releases/tag/v2.25.0) - 2026-10-03
 
 <small>[Compare with v2.24.1](https://github.com/redimp/otterwiki/compare/v2.24.1...v2.25.0)</small>
