@@ -306,7 +306,7 @@ def user_edit(email, new_email, new_name, flags, permissions):
     "-g",
     is_flag=True,
     default=False,
-    help="Generate a secure 12-character password and print it.",
+    help="Generate a secure password and print it.",
 )
 def user_password(
     email,

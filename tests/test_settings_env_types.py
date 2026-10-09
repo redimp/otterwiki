@@ -2,7 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 """
-Tests for setting configuration from enviroment
+Tests for setting configuration from environment
 and getting correct type in app.config[XX]
 1. Booleans
 2. Strings
@@ -12,7 +12,6 @@ and getting correct type in app.config[XX]
 import pytest
 import os
 import otterwiki.gitstorage
-from flask import url_for
 
 
 @pytest.fixture
@@ -36,7 +35,6 @@ def create_app_with_env_setting(tmpdir):
     def _create_app(envdict):
         for k in envdict:
             origenvval[k] = os.environ.get(k)
-            print("KEEPING", k, repr(origenvval[k]))
         origenvval["OTTERWIKI_SETTINGS"] = os.environ.get("OTTERWIKI_SETTINGS")
 
         tmpdir.mkdir("repo")
@@ -59,7 +57,6 @@ def create_app_with_env_setting(tmpdir):
 
         for k in envdict:
             os.environ[k] = envdict[k]
-            print("SETTING", k, repr(envdict[k]))
 
         os.environ["OTTERWIKI_SETTINGS"] = settings_cfg
 
@@ -70,7 +67,7 @@ def create_app_with_env_setting(tmpdir):
         for mod in modules_to_remove:
             del sys.modules[mod]
 
-        from otterwiki.server import app, db, storage
+        from otterwiki.server import app, storage
 
         app._otterwiki_tempdir = storage.path
         app.storage = storage
@@ -83,7 +80,6 @@ def create_app_with_env_setting(tmpdir):
 
     # cleanup: restore original environment variables and reimport modules
     for k in origenvval:
-        print("RESTORE", k, repr(origenvval[k]))
         if origenvval[k] is not None:
             os.environ[k] = origenvval[k]
         elif k in os.environ:
@@ -134,3 +130,14 @@ def test_initialization_type_by_env(create_app_with_env_setting):
         value = app.config[name]
         assert type(value) is type(rightvalue)
         assert value == rightvalue
+
+
+def test_invalid_int_by_env(create_app_with_env_setting, caplog):
+    """
+    An invalid int in the environment logs a warning
+    and keeps the default value.
+    """
+    app = create_app_with_env_setting({"PASSWORD_MIN_LENGTH": "abc"})
+
+    assert app.config["PASSWORD_MIN_LENGTH"] == 8
+    assert "PASSWORD_MIN_LENGTH='abc'" in caplog.text

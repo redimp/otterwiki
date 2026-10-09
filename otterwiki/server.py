@@ -117,7 +117,16 @@ for key in app.config:
                 "1",
             ]
         elif type(app.config[key]) == int:
-            app.config[key] = int(os.environ[key])
+            try:
+                app.config[key] = int(os.environ[key])
+            except ValueError:
+                app.logger.warning(
+                    "server: Ignored invalid value in environment variable"
+                    " {}={!r}, using default {}".format(
+                        key, os.environ[key], app.config[key]
+                    )
+                )
+                continue
         else:
             app.config[key] = os.environ[key]
         config_from_environment[key] = app.config[key]
