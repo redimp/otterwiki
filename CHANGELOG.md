@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.25.2](https://github.com/redimp/otterwiki/releases/tag/v2.25.2) - 2026-10-11
+
+<small>[Compare with v2.25.1](https://github.com/redimp/otterwiki/compare/v2.25.1...v2.25.2)</small>
+
+### Security Fixes
+
+- Prevent reading and writing files via symlinks outside the repository, add
+  GIT_ALLOW_EXTERNAL_SYMLINKS to allow external symlinks if needed
+  ([0c2e44a](https://github.com/redimp/otterwiki/commit/0c2e44a)).
+  Thanks to @Artur12555 for responsibly disclosing this issue and bringing it
+  to our attention.
+
+### Bug Fixes
+
+- Highlight only changed words in partially changed diff lines, see #567
+  ([643f597](https://github.com/redimp/otterwiki/commit/643f597)).
+
 ## [v2.25.1](https://github.com/redimp/otterwiki/releases/tag/v2.25.1) - 2026-10-09
 
 <small>[Compare with v2.25.0](https://github.com/redimp/otterwiki/compare/v2.25.0...v2.25.1)</small>
