@@ -31,7 +31,11 @@ from feedgen.feed import FeedGenerator
 from bs4 import BeautifulSoup
 
 from otterwiki.auth import current_user, has_permission
-from otterwiki.gitstorage import StorageError, StorageNotFound
+from otterwiki.gitstorage import (
+    StorageError,
+    StorageNotFound,
+    StorageUnsafePath,
+)
 from otterwiki.helper import (
     url_for,
     auto_url,
@@ -915,12 +919,15 @@ class Page:
             )
 
         # store page
-        changed = storage.store(
-            filename=self.filename,
-            content=content,
-            message=commit,
-            author=author,
-        )
+        try:
+            changed = storage.store(
+                filename=self.filename,
+                content=content,
+                message=commit,
+                author=author,
+            )
+        except StorageUnsafePath as e:
+            abort(403, description=str(e))
         if not changed:
             toast("Nothing changed.", "warning")
         else:

@@ -27,6 +27,17 @@ class StorageNotFound(StorageError):
     pass
 
 
+class StorageUnsafePath(StorageNotFound):
+    """
+    Raised when a path resolves (e.g. via a symlink pushed into the
+    repository) to a location outside the repository or into .git. It
+    subclasses StorageNotFound, so reads of such a path are handled like
+    a missing file.
+    """
+
+    pass
+
+
 try:
     FileNotFoundError
 except NameError:
@@ -39,9 +50,12 @@ _REVISION_RE = re.compile(r"\A(?:HEAD|[0-9a-fA-F]{4,64})\Z")
 
 
 class GitStorage(object):
-    def __init__(self, path, initialize=False):
+    def __init__(self, path, initialize=False, allow_external_symlinks=False):
         # make path absolute
         self.path = str(pathlib.Path(path).absolute())
+        # allow symlinks in the working tree that point outside the
+        # repository, see _abspath()
+        self.allow_external_symlinks = allow_external_symlinks
         if initialize:
             self.repo = git.Repo.init(self.path)
         self.repo = self._read_repo()
@@ -60,6 +74,33 @@ class GitStorage(object):
         if os.path.exists(os.path.join(self.path, ".git/RELOAD_GIT")):
             os.remove(os.path.join(self.path, ".git/RELOAD_GIT"))
             self.repo = self._read_repo()
+
+    def _abspath(self, filename):
+        """
+        Join filename with the repository path and make sure the resolved
+        path, after following any symlinks, stays inside the repository.
+
+        Symlinks can be pushed into the working tree via the git http
+        server (or a pull). Opening them blindly would allow reading and
+        writing arbitrary files the wiki process has access to. A path
+        resolving into .git is always rejected, since writing e.g.
+        .git/config allows code execution. Paths outside the repository
+        can be allowed via allow_external_symlinks.
+        """
+        abspath = os.path.join(self.path, filename)
+        root = os.path.realpath(self.path)
+        resolved = os.path.realpath(abspath)
+        gitdir = os.path.join(root, ".git")
+        if os.path.commonpath([gitdir, resolved]) == gitdir or (
+            not self.allow_external_symlinks
+            and os.path.commonpath([root, resolved]) != root
+        ):
+            raise StorageUnsafePath(
+                "{} resolves to a path outside the repository.".format(
+                    filename
+                )
+            )
+        return abspath
 
     def _validate_revision(self, revision):
         """
@@ -101,18 +142,21 @@ class GitStorage(object):
                 pass
 
     def exists(self, filename):
-        return os.path.exists(os.path.join(self.path, filename))
+        try:
+            return os.path.exists(self._abspath(filename))
+        except StorageUnsafePath:
+            return False
 
     def mtime(self, filename):
         return datetime.fromtimestamp(
-            os.path.getmtime(os.path.join(self.path, filename))
+            os.path.getmtime(self._abspath(filename))
         )
 
     def size(self, filename: str) -> int:
         """
         Get the filesize in bytes
         """
-        return os.path.getsize(os.path.join(self.path, filename))
+        return os.path.getsize(self._abspath(filename))
 
     def isdir(self, dirname):
         return os.path.isdir(os.path.join(self.path, dirname))
@@ -142,8 +186,9 @@ class GitStorage(object):
                     "{} could not be decoded as text.".format(filename)
                 )
             return content
+        abspath = self._abspath(filename)
         try:
-            with open(os.path.join(self.path, filename), mode=mode) as f:
+            with open(abspath, mode=mode) as f:
                 content = f.read(size)
         except (IOError, FileNotFoundError):
             raise StorageNotFound("{} not found.".format(filename))
@@ -354,13 +399,16 @@ class GitStorage(object):
         content,
         mode="w",
     ):
+        # check before creating any directory, a symlinked parent
+        # directory would otherwise be followed by makedirs
+        abspath = self._abspath(filename)
         dirname = os.path.dirname(filename)
         if dirname != "":
             os.makedirs(
                 os.path.join(self.path, dirname), mode=0o775, exist_ok=True
             )
         # store file on filesystem
-        with open(os.path.join(self.path, filename), mode) as f:
+        with open(abspath, mode) as f:
             f.write(content)
         # check if file has changed
         diff = self.repo.index.diff(None, paths=filename)

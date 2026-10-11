@@ -69,6 +69,7 @@ app.config.update(
     COMMIT_MESSAGE="REQUIRED",  # OPTIONAL DISABLED
     DEFAULT_COMMIT_MESSAGE="",
     GIT_WEB_SERVER=False,
+    GIT_ALLOW_EXTERNAL_SYMLINKS=False,
     GIT_REMOTE_PUSH_ENABLED=False,
     GIT_REMOTE_PUSH_URL="",
     GIT_REMOTE_PUSH_PRIVATE_KEY="",
@@ -161,7 +162,10 @@ elif not os.path.exists(app.config["REPOSITORY"]):
     )
 else:
     try:
-        storage = otterwiki.gitstorage.GitStorage(app.config["REPOSITORY"])
+        storage = otterwiki.gitstorage.GitStorage(
+            app.config["REPOSITORY"],
+            allow_external_symlinks=app.config["GIT_ALLOW_EXTERNAL_SYMLINKS"],
+        )
     except otterwiki.gitstorage.StorageError as e:
         fatal_error(e)
 

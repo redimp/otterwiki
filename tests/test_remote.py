@@ -238,3 +238,41 @@ def test_git_pack_auth_user(app_with_user):
     app_with_user.config["READ_ACCESS"] = "ANONYMOUS"
     app_with_user.config["WRITE_ACCESS"] = "ANONYMOUS"
     app_with_user.config["ATTACHMENT_ACCESS"] = "ANONYMOUS"
+
+
+def test_git_push_symlink_outside_repository(
+    create_app_with_git, admin_client, tmpdir
+):
+    import os
+    import subprocess
+    from otterwiki.server import storage
+    from otterwiki.remote import GitHttpServer
+
+    def git(*args, cwd=None):
+        subprocess.run(
+            ["git", "-c", "user.name=x", "-c", "user.email=x@x", *args],
+            cwd=cwd,
+            check=True,
+            capture_output=True,
+        )
+
+    # configures receive.denyCurrentBranch=updateInstead
+    GitHttpServer(storage.path)
+    secret = tmpdir.join("secret.txt")
+    secret.write("secret\n")
+    clone = str(tmpdir.join("clone"))
+    git("clone", storage.path, clone)
+    os.symlink(str(secret), os.path.join(clone, "leak.md"))
+    git("add", "leak.md", cwd=clone)
+    git("commit", "-m", "symlink", cwd=clone)
+    git("push", "origin", "HEAD", cwd=clone)
+    assert os.path.islink(os.path.join(storage.path, "leak.md"))
+
+    rv = admin_client.get("/Leak/source?raw")
+    assert rv.status_code == 404
+    assert "secret" not in rv.data.decode()
+    rv = admin_client.post(
+        "/Leak/save", data={"content": "overwritten", "commit": "x"}
+    )
+    assert rv.status_code == 403
+    assert secret.read() == "secret\n"

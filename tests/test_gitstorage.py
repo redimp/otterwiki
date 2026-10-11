@@ -617,3 +617,70 @@ def test_restore_handles_non_ascii_paths(storage):
     storage.restore([filename])
 
     assert storage.load(filename) == "original\n"
+
+
+@pytest.fixture
+def outside_file():
+    with tempfile.TemporaryDirectory() as d:
+        path = os.path.join(d, "secret.txt")
+        with open(path, "w") as f:
+            f.write("secret\n")
+        yield path
+
+
+def test_symlink_outside_repository(storage, outside_file):
+    author = ("Example Author", "mail@example.com")
+    os.symlink(outside_file, os.path.join(storage.path, "leak.md"))
+    assert storage.exists("leak.md") is False
+    with pytest.raises(gitstorage.StorageNotFound):
+        storage.load("leak.md")
+    with pytest.raises(gitstorage.StorageUnsafePath):
+        storage.size("leak.md")
+    with pytest.raises(gitstorage.StorageUnsafePath):
+        storage.store("leak.md", content="overwritten\n", author=author)
+    with open(outside_file) as f:
+        assert f.read() == "secret\n"
+
+
+def test_symlinked_directory_outside_repository(storage, outside_file):
+    author = ("Example Author", "mail@example.com")
+    os.symlink(
+        os.path.dirname(outside_file), os.path.join(storage.path, "subdir")
+    )
+    with pytest.raises(gitstorage.StorageNotFound):
+        storage.load("subdir/secret.txt")
+    with pytest.raises(gitstorage.StorageUnsafePath):
+        storage.store("subdir/new.md", content="new\n", author=author)
+    assert not os.path.exists(
+        os.path.join(os.path.dirname(outside_file), "new.md")
+    )
+
+
+def test_symlink_into_git_directory(storage):
+    author = ("Example Author", "mail@example.com")
+    storage.store("page.md", content="page\n", author=author)
+    os.symlink(".git/config", os.path.join(storage.path, "config.md"))
+    with pytest.raises(gitstorage.StorageNotFound):
+        storage.load("config.md")
+    with pytest.raises(gitstorage.StorageUnsafePath):
+        storage.store("config.md", content="[core]\n", author=author)
+    with pytest.raises(gitstorage.StorageNotFound):
+        storage.load(".git/config")
+    # .git stays protected even if external symlinks are allowed
+    storage.allow_external_symlinks = True
+    with pytest.raises(gitstorage.StorageNotFound):
+        storage.load("config.md")
+
+
+def test_symlink_inside_repository(storage):
+    author = ("Example Author", "mail@example.com")
+    storage.store("target.md", content="target\n", author=author)
+    os.symlink("target.md", os.path.join(storage.path, "link.md"))
+    assert storage.exists("link.md") is True
+    assert storage.load("link.md") == "target\n"
+
+
+def test_allow_external_symlinks(storage, outside_file):
+    storage.allow_external_symlinks = True
+    os.symlink(outside_file, os.path.join(storage.path, "shared.md"))
+    assert storage.load("shared.md") == "secret\n"
