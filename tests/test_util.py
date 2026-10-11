@@ -363,30 +363,64 @@ def test_diff_side_by_side_html():
     assert rows[0] == {"hunk": "@@ 1,3 1,2 @@"}
     # unchanged lines use the highlighted html if given
     assert rows[1] == {
-        "left": {"number": 1, "style": "", "html": "A"},
-        "right": {"number": 1, "style": "", "html": "a &lt;b&gt;"},
+        "left": {"number": 1, "style": "", "html": "A", "partial": False},
+        "right": {
+            "number": 1,
+            "style": "",
+            "html": "a &lt;b&gt;",
+            "partial": False,
+        },
         "context": True,
     }
-    # changed lines are compared word by word
+    # changed lines are compared word by word and marked as partial
     assert rows[2]["context"] is False
     assert rows[2]["left"]["html"] == "some text"
     assert rows[2]["right"]["html"] == (
-        'some <span class="diff-word">new </span>text'
+        'some <span class="diff-word added">new </span>text'
     )
+    assert rows[2]["left"]["partial"] is True
+    assert rows[2]["right"]["partial"] is True
     # removed lines without a counterpart
-    assert rows[3]["left"] == {"number": 3, "style": "removed", "html": "C"}
+    assert rows[3]["left"] == {
+        "number": 3,
+        "style": "removed",
+        "html": "C",
+        "partial": False,
+    }
     assert rows[3]["right"] is None
+
+
+def test_diff_side_by_side_html_replaced_line():
+    lines = diff_content(
+        "This line will be replaced completely.\n",
+        "Something totally different written here instead.\n",
+    )
+    rows = diff_side_by_side_html(lines)
+    # a completely changed line is not compared word by word
+    assert rows[1]["left"]["partial"] is False
+    assert rows[1]["right"]["partial"] is False
+    assert "diff-word" not in rows[1]["left"]["html"]
+    assert "diff-word" not in rows[1]["right"]["html"]
 
 
 def test_diff_words():
     assert diff_words("a <b> simple wiki", "a <b> small wiki") == (
-        'a &lt;b&gt; <span class="diff-word">simple</span> wiki',
-        'a &lt;b&gt; <span class="diff-word">small</span> wiki',
+        'a &lt;b&gt; <span class="diff-word removed">simple</span> wiki',
+        'a &lt;b&gt; <span class="diff-word added">small</span> wiki',
     )
     # only the added words are marked, the removed side has none
     assert diff_words("Donec arcu vel.", "Donec arcu vel. Abc.") == (
         "Donec arcu vel.",
-        'Donec arcu vel.<span class="diff-word"> Abc.</span>',
+        'Donec arcu vel.<span class="diff-word added"> Abc.</span>',
     )
     # lines without much in common are not compared word by word
     assert diff_words("completely different", "nothing alike here") is None
+    # matching whitespace doesn't make different lines look alike
+    assert (
+        diff_words(
+            "This line will be removed entirely.",
+            "A brand new line added by the draft.",
+        )
+        is None
+    )
+    assert diff_words("", "") is None

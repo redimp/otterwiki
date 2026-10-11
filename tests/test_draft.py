@@ -439,7 +439,11 @@ def test_draft_diff_words_and_context(app_with_user, test_client):
     html = rv.data.decode()
     diff = html.split('id="draft-diff"')[1].split("</table>")[0]
     # the changed words are marked and escaped
-    assert '<span class="diff-word"> &lt;Abc&gt;</span>' in diff
+    assert '<span class="diff-word added"> &lt;Abc&gt;</span>' in diff
+    # the partially changed line is marked by its line number only
+    assert 'linenumber added partial">' in diff
+    assert 'class="value added"' not in diff
+    assert 'class="value removed"' not in diff
     # the unchanged paragraph is a shortened context line
     assert '<tr class="diff-context">' in diff
     assert '<div class="diff-clamp">' in diff

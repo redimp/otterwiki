@@ -74,6 +74,9 @@ table.diff-side-by-side td {
 table.diff-side-by-side td.linenumber {
     font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
     text-align: right;
+}
+/* dim only unchanged line numbers, changed ones match their line */
+table.diff-side-by-side td.linenumber:not(.added):not(.removed) {
     opacity: 0.6;
 }
 table.diff-side-by-side th.diff-header {
@@ -102,20 +105,20 @@ table.diff-side-by-side th.diff-buttons .btn {
         padding-left: 0.5rem;
     }
 }
-/* changed words in a changed line */
-td.removed .diff-word {
+/* changed words in a partially changed line */
+.diff-word.removed {
     background-color: rgba(237, 88, 108, 0.45);
     border-radius: 2px;
 }
-td.added .diff-word {
+.diff-word.added {
     background-color: rgba(11, 232, 129, 0.45);
     border-radius: 2px;
 }
-.dark-mode td.removed .diff-word {
+.dark-mode .diff-word.removed {
     color: #fff;
     background-color: rgba(255, 77, 79, 0.45);
 }
-.dark-mode td.added .diff-word {
+.dark-mode .diff-word.added {
     color: #fff;
     background-color: rgba(11, 232, 129, 0.35);
 }

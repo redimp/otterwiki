@@ -504,8 +504,10 @@ def test_diff_side_by_side(test_client):
     assert 'id="switch-side-by-side" autocomplete="off" checked' in html
     # markdown is highlighted, changed words are marked
     assert '<span class="gh"># Head</span>' in html
-    assert '<span class="diff-word">simple</span> &lt;b&gt;wiki' in html
-    assert '<span class="diff-word">small</span> &lt;b&gt;wiki' in html
+    assert (
+        '<span class="diff-word removed">simple</span> &lt;b&gt;wiki' in html
+    )
+    assert '<span class="diff-word added">small</span> &lt;b&gt;wiki' in html
     # the choice is remembered
     html = test_client.get(url).data.decode()
     assert '<table class="diff diff-side-by-side' in html

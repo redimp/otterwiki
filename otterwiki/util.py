@@ -301,25 +301,35 @@ _DIFF_WORDS_RE = re.compile(r"\w+|\s+|[^\w\s]")
 def diff_words(line_a, line_b, min_ratio=0.4):
     """
     Compare two versions of a line word by word. Returns the html of both
-    lines with the changed words wrapped in <span class="diff-word">, or
-    None if the lines are too different for a word diff to be helpful.
+    lines with the changed words wrapped in
+    <span class="diff-word removed|added">, or None if the lines are too
+    different for a word diff to be helpful.
     """
     words_a = _DIFF_WORDS_RE.findall(line_a)
     words_b = _DIFF_WORDS_RE.findall(line_b)
     matcher = difflib.SequenceMatcher(None, words_a, words_b, autojunk=False)
-    if matcher.ratio() < min_ratio:
+    # the similarity ignores whitespace, which matches between any two
+    # lines and makes completely different lines look alike
+    matched = sum(
+        1
+        for a, _, size in matcher.get_matching_blocks()
+        for word in words_a[a : a + size]
+        if not word.isspace()
+    )
+    total = sum(1 for word in words_a + words_b if not word.isspace())
+    if not total or 2 * matched / total < min_ratio:
         return None
 
-    def _html(words, changed):
+    def _html(words, changed, style):
         text = str(escape("".join(words)))
         if changed and text:
-            return f'<span class="diff-word">{text}</span>'
+            return f'<span class="diff-word {style}">{text}</span>'
         return text
 
     html_a, html_b = [], []
     for op, a1, a2, b1, b2 in matcher.get_opcodes():
-        html_a.append(_html(words_a[a1:a2], op != "equal"))
-        html_b.append(_html(words_b[b1:b2], op != "equal"))
+        html_a.append(_html(words_a[a1:a2], op != "equal", "removed"))
+        html_b.append(_html(words_b[b1:b2], op != "equal", "added"))
     return "".join(html_a), "".join(html_b)
 
 
@@ -370,7 +380,9 @@ def diff_side_by_side_html(lines, html_a=None, html_b=None):
     are the highlighted lines of both versions, see pygments_render_lines(),
     lines without highlighting are escaped. Returns a list of rows, either
     {"hunk": value} or {"left": cell, "right": cell, "context": bool} with
-    a cell being None or {"number": .., "style": .., "html": ..}.
+    a cell being None or {"number": .., "style": .., "html": .., "partial":
+    ..}. partial marks a changed line with only the changed words
+    highlighted.
     """
 
     def _cell(line, number, html_lines):
@@ -380,7 +392,12 @@ def diff_side_by_side_html(lines, html_a=None, html_b=None):
             html = html_lines[number - 1]
         else:
             html = str(escape(line["value"].rstrip("\n")))
-        return {"number": number, "style": line["style"], "html": html}
+        return {
+            "number": number,
+            "style": line["style"],
+            "html": html,
+            "partial": False,
+        }
 
     rows = []
     for row in diff_side_by_side(lines):
@@ -398,6 +415,7 @@ def diff_side_by_side_html(lines, html_a=None, html_b=None):
             )
             if words is not None:
                 left_cell["html"], right_cell["html"] = words
+                left_cell["partial"] = right_cell["partial"] = True
         rows.append(
             {
                 "left": left_cell,
