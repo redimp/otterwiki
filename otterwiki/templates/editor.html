@@ -11,6 +11,45 @@
 #preview_block:focus {
     outline: none;
 }
+#preview_block {
+    position: relative;
+}
+/* the preview is rendered off-screen and swapped in when it is complete */
+#preview_buffer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
+#editor_split.split {
+    display: flex;
+}
+#editor_split.split > #editor_block {
+    flex: 1 1 0;
+    min-width: 0;
+}
+#editor_split.split > #preview_block {
+    flex: 1 1 0;
+    min-width: 0;
+    height: calc(100vh - 8rem);
+    overflow-y: auto;
+    border-left: 1px solid rgba(0, 0, 0, 0.15);
+}
+.dark-mode #editor_split.split > #preview_block {
+    border-left-color: rgba(255, 255, 255, 0.15);
+}
+#editor_split.split > #preview_block > .content {
+    margin-top: 1rem;
+}
+/* the split button is hidden on small screens, so is the live preview */
+@media (max-width: 991.98px) {
+    #editor_split.split > #preview_block {
+        display: none !important;
+    }
+}
 #thumbnail-size {
     width: 120px;
 }
@@ -408,8 +447,10 @@
 {# FIXME #}
 <textarea id="content_editor" name="content_editor">{{ content_editor }}</textarea>
 </form>
+<div id="editor_split">
 <div id="editor_block" style="display: block;"></div>
 <div id="preview_block" tabindex="-1" style="display: none;"></div>
+</div>
 <div id="editor-bottom-panel" class="editor-bottom-panel" style="display:none;">
     <a href="#" onclick="otterwiki.toggleMarkdownHelp()" class="btn btn-xsm"><i class="fab fa-markdown"></i> Markdown Syntax</a>
     <div id="editor-help-markdown" class="content card border rounded-top p-5" style="display: none;">
@@ -443,8 +484,9 @@
 {% else %}
 <button id="save-page-btn" class="btn btn-success mr-5" onclick="otterwiki.toggleModal('modal-commit')" title="Save"><i class="fas fa-save"></i></button>
 {% endif %}
-<button id="preview_btn" class="btn btn-primary" style="width: 1rem;" title="Preview"><i class="far fa-eye" ></i></button>
-<button id="editor_btn" class="btn btn-primary" style="width: 1rem; display:none;" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+<button id="preview_btn" class="btn btn-primary mr-5" style="width: 1rem;" title="Preview"><i class="far fa-eye" ></i></button>
+<button id="editor_btn" class="btn btn-primary mr-5" style="width: 1rem; display:none;" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+<button id="split_btn" class="btn hidden-md-and-down" style="width: 1rem;" title="Edit with live preview"><i class="fas fa-columns"></i></button>
 {% endblock %}
 {#
     Javascript
@@ -533,6 +575,10 @@
     const content_wrapper = document.querySelector("#content-wrapper")
     const preview_btn = document.querySelector("#preview_btn");
     const editor_btn = document.querySelector("#editor_btn");
+    const split_btn = document.querySelector("#split_btn");
+    const editor_split = document.querySelector("#editor_split");
+    const column_main = document.querySelector("#column-main");
+    const column_extra = document.querySelector("#column-extra");
     const sidebar_toc = document.querySelector("#sidebar-toc");
     const extranav_toc = document.querySelector("#extranav-toc");
     const extranav_attachments = document.querySelector("#extranav-attachments");
@@ -635,7 +681,19 @@
             if (cm_save_timer == null) {
                 cm_save_timer = window.setTimeout(save_draft, 6000);
             }
+            if (editor_mode === 'split') {
+                schedule_preview();
+            }
         });
+        cm_editor.scrollDOM.addEventListener('scroll', handle_scroll);
+        // restore the last used editing mode
+        let stored_mode = null;
+        try {
+            stored_mode = localStorage.getItem('otterwiki_editor_mode');
+        } catch (e) {}
+        if (stored_mode === 'split' && window.matchMedia('(min-width: 992px)').matches) {
+            split_btn.click();
+        }
     }); // page load
 
     /* save */
@@ -787,94 +845,374 @@
                 leave_modal_error('The draft could not be discarded.');
             });
     };
-    /* preview */
-    preview_btn.onclick = function() {
-        {# toggle preview/edit #}
-        preview_block.style.display = 'block';
+    /*
+        preview modes: 'edit', 'preview' and 'split' (editing with a live
+        preview on the side)
+    */
+    var editor_mode = 'edit';
+    // the editing mode to return to from the preview
+    var editor_last_mode = 'edit';
+    const set_mode = function(mode) {
+        editor_mode = mode;
+        const split = mode === 'split';
+        editor_split.classList.toggle('split', split);
+        preview_block.style.display = mode === 'edit' ? 'none' : 'block';
         for (const editor_block of editor_blocks) {
-            editor_block.style.display = 'none';
+            editor_block.style.display = mode === 'preview' ? 'none' : 'block';
         }
-        editor_btn.style.display = '';
-        preview_btn.style.display = 'none';
-        extranav_attachments.style.display = 'none';
-        content_wrapper.classList.add("preview-background");
+        extranav_attachments.style.display = mode === 'edit' ? 'block' : 'none';
+        // make room for the live preview
+        if (column_extra) {
+            column_extra.style.display = split ? 'none' : '';
+            column_main.classList.toggle('col-xl-9', !split);
+        }
+        editor_btn.style.display = mode === 'preview' ? '' : 'none';
+        // the live preview makes the preview button redundant
+        preview_btn.style.display = mode === 'edit' ? '' : 'none';
+        // the live preview toggle is highlighted while it is on
+        split_btn.classList.toggle('btn-primary', split);
+        split_btn.title = split ? 'Edit without live preview' : 'Edit with live preview';
+        content_wrapper.classList.toggle('preview-background', mode === 'preview');
+        preview_block.classList.toggle('preview-background', split);
+        if (mode === 'edit') {
+            sidebar_toc.innerHTML = '';
+            extranav_toc.innerHTML = '';
+        }
+        if (mode !== 'preview') {
+            editor_last_mode = mode;
+            try {
+                localStorage.setItem('otterwiki_editor_mode', mode);
+            } catch (e) {}
+        }
+    }
 
+    /*
+        render the preview off-screen, so that the preview neither flickers
+        nor jumps while mermaid diagrams, math and images are processed
+    */
+    // rendered mermaid diagrams by source, unchanged diagrams are reused
+    var mermaid_cache = new Map();
+    const render_mermaid = async function(container) {
+        if (typeof mermaid === 'undefined' || mermaid == null) {
+            return;
+        }
+        const sources = new Map();
+        const pending = [];
+        for (const node of container.querySelectorAll('.mermaid')) {
+            const source = node.innerHTML;
+            sources.set(node, source);
+            if (mermaid_cache.has(source)) {
+                node.innerHTML = mermaid_cache.get(source);
+                node.setAttribute('data-processed', 'true');
+            } else {
+                pending.push(node);
+            }
+        }
+        if (pending.length > 0) {
+            try {
+                await mermaid.run({nodes: pending, suppressErrors: true});
+            } catch (e) {
+                console.log('Error rendering mermaid', e);
+            }
+        }
+        // only keep the diagrams currently in the preview
+        mermaid_cache = new Map();
+        for (const [node, source] of sources) {
+            if (node.querySelector('svg')) {
+                mermaid_cache.set(source, node.innerHTML);
+            }
+        }
+    }
+    const typeset_preview = async function(container) {
+        await render_mermaid(container);
+        if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+            try {
+                await MathJax.typesetPromise([container]);
+            } catch (e) {
+                console.log('Error rendering math', e);
+            }
+        }
+        // wait (not too long) for the images, to keep the layout stable
+        const images = Array.from(container.querySelectorAll('img'),
+            (img) => img.decode().catch(() => {}));
+        await Promise.race([
+            Promise.all(images),
+            new Promise((resolve) => window.setTimeout(resolve, 500)),
+        ]);
+    }
+
+    // the content of the last rendered preview
+    var preview_rendered = null;
+    const render_preview = async function(force) {
+        const content = cm_editor.state.doc.toString();
+        if (!force && content === preview_rendered) {
+            return;
+        }
+        // the full preview scrolls to the cursor
+        const with_cursor = editor_mode === 'preview';
         const formData = new FormData();
-        formData.append("content", cm_editor.state.doc.toString());
-        const previewSel = cm_editor.state.selection.main;
-        const previewLineAt = cm_editor.state.doc.lineAt(previewSel.head);
-        formData.append("cursor_line", previewLineAt.number - 1);
-        formData.append("cursor_ch", previewSel.head - previewLineAt.from);
+        formData.append("content", content);
+        if (with_cursor) {
+            const previewSel = cm_editor.state.selection.main;
+            const previewLineAt = cm_editor.state.doc.lineAt(previewSel.head);
+            formData.append("cursor_line", previewLineAt.number - 1);
+            formData.append("cursor_ch", previewSel.head - previewLineAt.from);
+        }
+        const response = await fetch({{ url_for('preview', path=pagepath) | tojson }}, {
+            method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
+            body: formData,
+        });
+        if (!response.ok) {
+            throw new Error(response.status);
+        }
+        const data = await response.json();
 
-        /* FIXME: display loader */
-        fetch({{ url_for('preview', path=pagepath) | tojson }}, {
-                method: 'POST',
-                headers: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
-                body: formData,
-            })
-            .then(function (response) {
-                return response.json();
-            })
-            .then(function (data) {
-                preview_block.innerHTML = data.preview_content;
-                sidebar_toc.innerHTML = data.preview_toc;
-                extranav_toc.innerHTML = data.preview_toc;
-                if (data.preview_js)
-                {
-                    try {
-                        eval(data.preview_js);
-                    }
-                    catch(e) {
-                        console.log("Error", e.stack);
-                        console.log("Error", e.name);
-                        console.log("Error", e.message);
-                    }
-                }
-            })
-            .then(function () {
-                cursor = document.getElementById("otterwiki_cursor");
-                // update MathJax if loaded
-                if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
-                    var preview = document.getElementById('preview_block');
-                    MathJax.typesetClear([preview]);
-                    MathJax.typesetPromise([preview]);
-                }
-                // update Mermaid if loaded
-                if (typeof mermaid !== 'undefined') {
-                    otterwiki.update_mermaid();
-                }
-                if (cursor) {
-                    cursor.scrollIntoView({
-                        behavior: 'instant',
-                        block: 'center',
-                        inline: 'nearest',
-                    });
-                }
-                // move focus to the preview so the reader can scroll it
-                // with page up/down (preventScroll keeps the position we
-                // just scrolled to)
-                preview_block.focus({preventScroll: true});
-            })
+        const buffer = document.createElement('div');
+        buffer.id = 'preview_buffer';
+        buffer.innerHTML = data.preview_content;
+        preview_block.appendChild(buffer);
+        try {
+            await typeset_preview(buffer);
+        } finally {
+            buffer.remove();
+        }
+        const old_content = Array.from(preview_block.children);
+        if (typeof MathJax !== 'undefined' && MathJax.typesetClear && old_content.length > 0) {
+            MathJax.typesetClear(old_content);
+        }
+        preview_block.replaceChildren(...buffer.childNodes);
+        // the live preview is rendered without the cursor
+        preview_rendered = with_cursor ? null : content;
+        preview_generation += 1;
+
+        if (editor_mode !== 'edit') {
+            sidebar_toc.innerHTML = data.preview_toc;
+            extranav_toc.innerHTML = data.preview_toc;
+        }
+        if (data.preview_js) {
+            try {
+                eval(data.preview_js);
+            }
+            catch(e) {
+                console.log("Error", e.stack);
+                console.log("Error", e.name);
+                console.log("Error", e.message);
+            }
+        }
+        if (editor_mode === 'split') {
+            sync_scroll(cm_editor.scrollDOM);
+        } else if (editor_mode === 'preview' && with_cursor) {
+            const cursor = document.getElementById("otterwiki_cursor");
+            if (cursor) {
+                cursor.scrollIntoView({
+                    behavior: 'instant',
+                    block: 'center',
+                    inline: 'nearest',
+                });
+            }
+            // move focus to the preview so the reader can scroll it
+            // with page up/down (preventScroll keeps the position we
+            // just scrolled to)
+            preview_block.focus({preventScroll: true});
+        }
+    }
+
+    // only one preview is rendered at a time
+    var preview_running = false;
+    var preview_queued = false;
+    var preview_timer = null;
+    const update_preview = function(force) {
+        if (preview_running) {
+            preview_queued = preview_queued || force || 'queued';
+            return;
+        }
+        preview_running = true;
+        render_preview(force)
             .catch(function () {
                 console.log('Error fetching preview ...');
+            })
+            .finally(function () {
+                preview_running = false;
+                if (preview_queued) {
+                    const queued_force = preview_queued === true;
+                    preview_queued = false;
+                    update_preview(queued_force);
+                }
             });
+    }
+    // update the live preview while typing, at most every 300ms
+    const schedule_preview = function() {
+        if (preview_timer != null) {
+            return;
+        }
+        preview_timer = window.setTimeout(function () {
+            preview_timer = null;
+            if (editor_mode === 'split') {
+                update_preview(false);
+            }
+        }, 300);
+    }
+
+    /*
+        scroll synchronization between the editor and the live preview,
+        headings in the source and in the preview are used as anchors
+        between which the scroll position is interpolated
+    */
+    var preview_generation = 0;
+    var heading_cache = {doc: null, generation: -1, pairs: []};
+    const normalize_heading = function(text) {
+        return text
+            .replace(/\[\[([^\]|]*)\|?[^\]]*\]\]/g, '$1')
+            .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+            .replace(/[*_`~=\\]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLowerCase();
+    }
+    // pairs of [position in the source, heading element in the preview]
+    const heading_pairs = function() {
+        const doc = cm_editor.state.doc;
+        if (heading_cache.doc === doc && heading_cache.generation === preview_generation) {
+            return heading_cache.pairs;
+        }
+        const source = [];
+        let fence = null;
+        for (let i = 1; i <= doc.lines; i++) {
+            const line = doc.line(i);
+            const f = line.text.match(/^ {0,3}(`{3,}|~{3,})/);
+            if (fence != null) {
+                if (f && f[1][0] === fence[0] && f[1].length >= fence.length
+                    && line.text.trim() === f[1]) {
+                    fence = null;
+                }
+                continue;
+            }
+            if (f) {
+                fence = f[1];
+                continue;
+            }
+            const h = line.text.match(/^ {0,3}#{1,6}[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/);
+            if (h) {
+                source.push([line.from, normalize_heading(h[1])]);
+            }
+        }
+        const rendered = Array.from(
+            preview_block.querySelectorAll('h1, h2, h3, h4, h5, h6'),
+            (el) => [el, normalize_heading(el.textContent)]);
+        // match in order, skip headings that exist only on one side
+        const pairs = [];
+        let j = 0;
+        for (const [pos, text] of source) {
+            for (let k = j; k < Math.min(j + 5, rendered.length); k++) {
+                if (rendered[k][1] === text) {
+                    pairs.push([pos, rendered[k][0]]);
+                    j = k + 1;
+                    break;
+                }
+            }
+        }
+        heading_cache = {doc: doc, generation: preview_generation, pairs: pairs};
+        return pairs;
+    }
+    // pairs of [editor y, preview y], increasing in both coordinates
+    const scroll_anchors = function() {
+        const scroller = cm_editor.scrollDOM;
+        const editor_offset = cm_editor.documentTop
+            - scroller.getBoundingClientRect().top + scroller.scrollTop;
+        const preview_offset = preview_block.scrollTop
+            - preview_block.getBoundingClientRect().top;
+        const anchors = [[0, 0]];
+        for (const [pos, el] of heading_pairs()) {
+            const ey = cm_editor.lineBlockAt(pos).top + editor_offset;
+            const py = el.getBoundingClientRect().top + preview_offset;
+            const last = anchors[anchors.length - 1];
+            if (ey > last[0] && py > last[1]) {
+                anchors.push([ey, py]);
+            }
+        }
+        anchors.push([
+            Math.max(scroller.scrollHeight, anchors[anchors.length - 1][0] + 1),
+            Math.max(preview_block.scrollHeight, anchors[anchors.length - 1][1] + 1),
+        ]);
+        return anchors;
+    }
+    const interpolate = function(anchors, y, from, to) {
+        for (let i = 1; i < anchors.length; i++) {
+            const a = anchors[i - 1];
+            const b = anchors[i];
+            if (y <= b[from] || i === anchors.length - 1) {
+                const t = (y - a[from]) / (b[from] - a[from]);
+                return a[to] + Math.min(1, Math.max(0, t)) * (b[to] - a[to]);
+            }
+        }
+        return 0;
+    }
+    // the scroll position set by sync_scroll, to ignore its scroll event
+    const scroll_expected = new Map();
+    var scroll_frame = null;
+    const sync_scroll = function(source) {
+        if (editor_mode !== 'split') {
+            return;
+        }
+        const target = source === preview_block ? cm_editor.scrollDOM : preview_block;
+        const [from, to] = source === preview_block ? [1, 0] : [0, 1];
+        // the reference line moves from the top of the viewport to the
+        // bottom while scrolling from the top to the bottom
+        const source_max = source.scrollHeight - source.clientHeight;
+        const ratio = source_max > 0 ? source.scrollTop / source_max : 0;
+        const y = interpolate(scroll_anchors(),
+            source.scrollTop + ratio * source.clientHeight, from, to);
+        const target_max = target.scrollHeight - target.clientHeight;
+        const top = Math.round(Math.min(target_max,
+            Math.max(0, y - ratio * target.clientHeight)));
+        if (Math.abs(target.scrollTop - top) >= 1) {
+            scroll_expected.set(target, top);
+            target.scrollTop = top;
+        }
+    }
+    const handle_scroll = function(event) {
+        const source = event.currentTarget;
+        const expected = scroll_expected.get(source);
+        scroll_expected.delete(source);
+        if (expected !== undefined && Math.abs(source.scrollTop - expected) <= 1) {
+            return;
+        }
+        if (scroll_frame != null) {
+            window.cancelAnimationFrame(scroll_frame);
+        }
+        scroll_frame = window.requestAnimationFrame(function () {
+            scroll_frame = null;
+            sync_scroll(source);
+        });
+    }
+    preview_block.addEventListener('scroll', handle_scroll);
+    window.addEventListener('resize', () => sync_scroll(cm_editor.scrollDOM));
+
+    /* preview */
+    preview_btn.onclick = function() {
+        set_mode('preview');
+        update_preview(true);
     }
     /* edit */
     editor_btn.onclick = function() {
-        {# toggle preview/edit #}
-        preview_block.style.display = 'none';
-        for (const editor_block of editor_blocks) {
-            editor_block.style.display = 'block';
+        set_mode(editor_last_mode);
+        if (editor_last_mode === 'split') {
+            update_preview(false);
+            sync_scroll(cm_editor.scrollDOM);
         }
-        extranav_attachments.style.display = 'block';
-        editor_btn.style.display = 'none';
-        preview_btn.style.display = '';
-        sidebar_toc.innerHTML = '';
-        extranav_toc.innerHTML = '';
-        content_wrapper.classList.remove("preview-background");
-        {# focus editor #}
-
-        cm_editor.focus()
+        cm_editor.focus();
+    }
+    /* edit with live preview */
+    split_btn.onclick = function() {
+        if (editor_mode === 'split') {
+            set_mode('edit');
+        } else {
+            set_mode('split');
+            update_preview(false);
+            sync_scroll(cm_editor.scrollDOM);
+        }
+        cm_editor.focus();
     }
 
     // handle thumbnail size field visibility

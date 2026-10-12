@@ -67,7 +67,8 @@ var otterwiki = {
     update_mermaid: function() {
         if (typeof(mermaid) == 'undefined' || mermaid == null) { return; }
 
-        var mm_diagrams = document.getElementsByClassName('mermaid');
+        // the diagrams of the editors preview are rendered by the editor
+        var mm_diagrams = document.querySelectorAll('.mermaid:not(#preview_block .mermaid)');
         for (var i = 0; i < mm_diagrams.length; ++i) {
             mm_diagrams[i].removeAttribute('data-processed');
         }

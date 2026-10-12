@@ -83,6 +83,10 @@ def test_create_page(test_client, req_ctx):
     # check textarea
     assert "<textarea" in html
     assert 'name="content_editor"' in html
+    # check the preview and the live preview buttons
+    assert 'id="preview_btn"' in html
+    assert 'id="split_btn"' in html
+    assert 'id="editor_split"' in html
     # test save
     html = test_client.post(
         "/{}/save".format(pagename),
@@ -118,6 +122,10 @@ def test_create_page_notlower(test_client, req_ctx):
     # check textarea
     assert "<textarea" in html
     assert 'name="content_editor"' in html
+    # check the preview and the live preview buttons
+    assert 'id="preview_btn"' in html
+    assert 'id="split_btn"' in html
+    assert 'id="editor_split"' in html
     # test save
     html = test_client.post(
         "/{}/save".format(pagename),
