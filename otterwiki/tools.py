@@ -26,6 +26,7 @@ from otterwiki.helper import (
 
 from otterwiki.util import (
     empty,
+    plural,
 )
 
 
@@ -344,6 +345,51 @@ def handle_housekeeping_brokenwikilinks(form):
     )
 
 
+def handle_housekeeping_gitgc(form):
+    """Run git gc to pack the loose objects of the repository."""
+    if not has_permission("ADMIN"):
+        abort(403)
+
+    t_start = timer()
+    try:
+        before = storage.count_objects()
+        storage.gc()
+        after = storage.count_objects()
+    except StorageError as e:
+        app.logger.error(f"housekeeping_gitgc failed: {e}")
+        return render_template("tools/housekeeping_gitgc.html", error=str(e))
+    duration = timer() - t_start
+    app.logger.info(f"housekeeping_gitgc took {duration:.3f} seconds.")
+
+    # 'git count-objects -v' reports one "key: value" per line
+    def parse(output):
+        return dict(
+            line.split(": ", 1) for line in output.splitlines() if ": " in line
+        )
+
+    before, after = parse(before), parse(after)
+    packed = max(0, int(after["in-pack"]) - int(before["in-pack"]))
+    duplicates = int(before["prune-packable"])
+    remaining = int(after["count"])
+
+    summary = (
+        f"Packed {plural(packed, 'loose object')} ({before['size']})"
+        if packed
+        else "No loose objects to pack"
+    )
+    if duplicates:
+        summary += f", removed {plural(duplicates, 'duplicate')}"
+    summary += f". Pack size {before['size-pack']} → {after['size-pack']}."
+    if remaining:
+        summary += f" {plural(remaining, 'loose object')} kept."
+
+    return render_template(
+        "tools/housekeeping_gitgc.html",
+        summary=summary,
+        duration=f"{duration:.3f}s",
+    )
+
+
 def handle_housekeeping(form):
     if form.get("task", None) == "drafts":
         return handle_housekeeping_drafts(form)
@@ -351,6 +397,8 @@ def handle_housekeeping(form):
         return handle_housekeeping_emptypages(form)
     if form.get("task", None) == "brokenwikilinks":
         return handle_housekeeping_brokenwikilinks(form)
+    if form.get("task", None) == "gitgc":
+        return handle_housekeeping_gitgc(form)
     # unkown task: display the form
     toast("Unkown task", "error")
     return redirect(url_for("housekeeping"))

@@ -50,6 +50,13 @@ def sizeof_fmt(num, suffix="B"):
     return "%.1f%s%s" % (num, "Yi", suffix)
 
 
+def plural(count, word):
+    """
+    Return the count followed by the word, e.g. "1 page" or "2 pages".
+    """
+    return f"{count} {word}{'s' if count != 1 else ''}"
+
+
 # from https://github.com/Python-Markdown/markdown/blob/master/markdown/extensions/toc.py
 def slugify(value, separator="-", keep_slashes=False):
     """Slugify a string, to make it URL friendly."""

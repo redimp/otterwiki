@@ -3,6 +3,7 @@
 
 import json
 import pytest
+from unittest.mock import patch
 
 
 class TestHousekeepingEmptyPages:
@@ -880,6 +881,121 @@ class TestHousekeepingSecurityCheck:
         # In test config, we expect at least some findings
         # (e.g., SERVER_NAME not set, anonymous write access)
         assert len(results["issues"]) > 0
+
+
+class TestHousekeepingGitGc:
+    """Tests for the git garbage collection functionality."""
+
+    def test_housekeeping_page_contains_gitgc_section(
+        self, app_with_user, admin_client
+    ):
+        rv = admin_client.get("/-/housekeeping")
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        assert "Git Garbage Collection" in html
+        assert 'value="gitgc"' in html
+
+    def test_housekeeping_page_hides_gitgc_for_non_admin(
+        self, app_with_user, other_client
+    ):
+        rv = other_client.get("/-/housekeeping")
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        assert "Git Garbage Collection" not in html
+        assert 'value="gitgc"' not in html
+
+    def test_gitgc_packs_loose_objects(self, app_with_user, admin_client):
+        from otterwiki.server import storage
+
+        storage.store(
+            "gitgc.md",
+            content="gitgc\n",
+            author=("Test User", "mail@example.org"),
+        )
+        assert "packs: 0" in storage.count_objects()
+
+        rv = admin_client.post("/-/housekeeping", data={"task": "gitgc"})
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        assert "Packed " in html
+        assert "Pack size 0 bytes → " in html
+        assert "Finished in" in html
+
+        stats = storage.count_objects()
+        assert "count: 0" in stats
+        assert "packs: 1" in stats
+
+    @pytest.mark.parametrize(
+        "before,after,summary",
+        [
+            (
+                (175, "852.00 KiB", 1383, "20.61 MiB", 28),
+                (0, "0 bytes", 1530, "20.80 MiB", 0),
+                "Packed 147 loose objects (852.00 KiB), removed 28"
+                " duplicates. Pack size 20.61 MiB → 20.80 MiB.",
+            ),
+            (
+                (1, "4.00 KiB", 10, "1.00 MiB", 0),
+                (0, "0 bytes", 11, "1.01 MiB", 0),
+                "Packed 1 loose object (4.00 KiB). Pack size 1.00 MiB"
+                " → 1.01 MiB.",
+            ),
+            (
+                (0, "0 bytes", 10, "1.00 MiB", 0),
+                (0, "0 bytes", 10, "1.00 MiB", 0),
+                "No loose objects to pack. Pack size 1.00 MiB → 1.00 MiB.",
+            ),
+            (
+                (5, "20.00 KiB", 10, "1.00 MiB", 1),
+                (2, "8.00 KiB", 12, "1.01 MiB", 0),
+                "Packed 2 loose objects (20.00 KiB), removed 1 duplicate."
+                " Pack size 1.00 MiB → 1.01 MiB. 2 loose objects kept.",
+            ),
+        ],
+    )
+    def test_gitgc_summary(
+        self, app_with_user, admin_client, before, after, summary
+    ):
+        def count_objects(stats):
+            count, size, in_pack, size_pack, prune_packable = stats
+            return (
+                f"count: {count}\nsize: {size}\nin-pack: {in_pack}\n"
+                f"packs: 1\nsize-pack: {size_pack}\n"
+                f"prune-packable: {prune_packable}\ngarbage: 0\n"
+                f"size-garbage: 0 bytes"
+            )
+
+        with (
+            patch(
+                "otterwiki.gitstorage.GitStorage.count_objects",
+                side_effect=[count_objects(before), count_objects(after)],
+            ),
+            patch("otterwiki.gitstorage.GitStorage.gc"),
+        ):
+            rv = admin_client.post("/-/housekeeping", data={"task": "gitgc"})
+        assert rv.status_code == 200
+        assert summary in rv.data.decode()
+
+    def test_gitgc_error(self, app_with_user, admin_client):
+        from otterwiki.gitstorage import StorageError
+
+        with patch(
+            "otterwiki.gitstorage.GitStorage.gc",
+            side_effect=StorageError("gc exploded"),
+        ):
+            rv = admin_client.post("/-/housekeeping", data={"task": "gitgc"})
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        assert "Git Garbage Collection failed" in html
+        assert "gc exploded" in html
+
+    def test_gitgc_requires_admin(self, app_with_user, other_client):
+        rv = other_client.post(
+            "/-/housekeeping",
+            data={"task": "gitgc"},
+            follow_redirects=False,
+        )
+        assert rv.status_code == 403
 
 
 class TestHousekeepingGeneral:

@@ -90,6 +90,13 @@
 {% if has_permission("ADMIN") %}
 <div class="card m-auto m-lg-20">
 <div class="mw-full">
+<h3 class="card-title">Git Garbage Collection</h3>
+{% include 'tools/housekeeping_gitgc.html' %}
+</div>
+</div>
+{#-#}
+<div class="card m-auto m-lg-20">
+<div class="mw-full">
 <h3 class="card-title">Security Check</h3>
 <p class="text-muted">The security check provides an overview of your wiki's security, highlighting potentially problematic issues. It is purely informational and safe to run in any environment at any time.</p>
 <div id="security-check-results" style="display:none;">

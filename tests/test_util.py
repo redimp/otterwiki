@@ -6,6 +6,7 @@ import pytest
 from otterwiki.util import (
     sha256sum,
     sizeof_fmt,
+    plural,
     slugify,
     split_path,
     join_path,
@@ -37,6 +38,12 @@ def test_sizeof_fmt():
     assert sizeof_fmt(8.5 * 1024**4) == "8.5TiB"
     assert sizeof_fmt(512) == "512.0B"
     assert sizeof_fmt(42 * 1024**8) == "42.0YiB"
+
+
+def test_plural():
+    assert plural(0, "page") == "0 pages"
+    assert plural(1, "page") == "1 page"
+    assert plural(2, "page") == "2 pages"
 
 
 def test_slugigy():

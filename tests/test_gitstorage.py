@@ -680,6 +680,18 @@ def test_symlink_inside_repository(storage):
     assert storage.load("link.md") == "target\n"
 
 
+def test_gc(storage):
+    author = ("Example Author", "mail@example.com")
+    storage.store("page.md", content="page\n", author=author)
+    assert "packs: 0" in storage.count_objects()
+    storage.gc()
+    stats = storage.count_objects()
+    assert "count: 0" in stats
+    assert "packs: 1" in stats
+    # the page is still there
+    assert storage.load("page.md") == "page\n"
+
+
 def test_allow_external_symlinks(storage, outside_file):
     storage.allow_external_symlinks = True
     os.symlink(outside_file, os.path.join(storage.path, "shared.md"))

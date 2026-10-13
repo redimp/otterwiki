@@ -674,6 +674,25 @@ class GitStorage(object):
         diff = self.repo.git.show(revision, format="%b")
         return metadata, diff
 
+    def count_objects(self):
+        """
+        Return the output of 'git count-objects -vH'.
+        """
+        try:
+            return self.repo.git.count_objects("-vH")
+        except git.exc.GitCommandError as e:
+            raise StorageError(str(e))
+
+    def gc(self):
+        """
+        Run 'git gc'. GitPython commits never trigger git's automatic
+        housekeeping, so loose objects pile up.
+        """
+        try:
+            return self.repo.git.gc()
+        except git.exc.GitCommandError as e:
+            raise StorageError(str(e))
+
     def get_parent_revision(self, filename, revision):
         """
         Walk the log for the given file to find the revision of the commit before the given one.
