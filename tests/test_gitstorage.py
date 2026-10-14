@@ -638,6 +638,8 @@ def test_symlink_outside_repository(storage, outside_file):
         storage.size("leak.md")
     with pytest.raises(gitstorage.StorageUnsafePath):
         storage.store("leak.md", content="overwritten\n", author=author)
+    with pytest.raises(gitstorage.StorageUnsafePath):
+        storage.canonical_filename("leak.md")
     with open(outside_file) as f:
         assert f.read() == "secret\n"
 
@@ -684,3 +686,24 @@ def test_allow_external_symlinks(storage, outside_file):
     storage.allow_external_symlinks = True
     os.symlink(outside_file, os.path.join(storage.path, "shared.md"))
     assert storage.load("shared.md") == "secret\n"
+    assert storage.canonical_filename("shared.md") == "shared.md"
+
+
+def test_canonical_filename_resolves_internal_symlink(storage):
+    author = ("Example Author", "mail@example.com")
+    storage.store(
+        "target/page.md",
+        content="target\n",
+        author=author,
+    )
+
+    os.makedirs(os.path.join(storage.path, "shortcuts"), exist_ok=True)
+    os.symlink(
+        "../target/page.md",
+        os.path.join(storage.path, "shortcuts/link.md"),
+    )
+
+    assert (
+        storage.canonical_filename("shortcuts/link.md")
+        == "target/page.md"
+    )

@@ -20,6 +20,7 @@ from otterwiki.wiki import (
     Changelog,
     Search,
     AutoRoute,
+    redirect_internal_page_symlink,
 )
 from otterwiki.sitemap import sitemap as generate_sitemap
 from otterwiki.pageindex import PageIndex
@@ -502,6 +503,11 @@ def view(path="Home"):
     # the editor is served via the ?edit query flag so it keeps the same base
     # url as the rendered page (POST is used by the draft handling form)
     if "edit" in request.values:
+        if request.method == "GET":
+            symlink_redirect = redirect_internal_page_symlink(path)
+            if symlink_redirect is not None:
+                return symlink_redirect
+
         p = Page(path, revision=request.values.get("revision"))
         return p.editor(
             author=otterwiki.auth.get_author(),
