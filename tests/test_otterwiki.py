@@ -26,6 +26,50 @@ def test_healthz(test_client):
     assert "ok" in result.data.decode()
 
 
+def test_internal_page_symlink_redirects_to_target(test_client, create_app):
+    storage = create_app.storage
+
+    storage.store(
+        "target/page.md",
+        content="# Target\n",
+        author=("Test", "test@example.org"),
+    )
+
+    os.makedirs(os.path.join(storage.path, "shortcuts"), exist_ok=True)
+    os.symlink(
+        "../target/page.md",
+        os.path.join(storage.path, "shortcuts/link.md"),
+    )
+
+    rv = test_client.get("/Shortcuts/Link")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Page"
+
+
+def test_internal_page_symlink_edit_redirects_to_target(
+    test_client, create_app
+):
+    storage = create_app.storage
+
+    storage.store(
+        "target/page.md",
+        content="# Target\n",
+        author=("Test", "test@example.org"),
+    )
+
+    os.makedirs(os.path.join(storage.path, "shortcuts"), exist_ok=True)
+    os.symlink(
+        "../target/page.md",
+        os.path.join(storage.path, "shortcuts/link.md"),
+    )
+
+    rv = test_client.get("/Shortcuts/Link?edit")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Page?edit"
+
+
 def test_create_form(test_client):
     result = test_client.get("/-/create")
     html = result.data.decode()
