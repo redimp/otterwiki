@@ -1,9 +1,14 @@
 # Default values for otterwiki.
+nameOverride: ""
+fullnameOverride: ""
+
 image:
   repository: redimp/otterwiki
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
+
+imagePullSecrets: []
 
 ## Configure the otterwiki using this mapping. The configuration will be stored
 ## in a configMap or for those variables considered as secret in a Secret.
@@ -19,15 +24,6 @@ config: {}
 ## these will we stored in a configMap and the secrets in a Secret.
 env: {}
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
 securityContext: {}
   # capabilities:
   #   drop:
@@ -35,6 +31,39 @@ securityContext: {}
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
+
+podAnnotations: {}
+
+podLabelsAdditional: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+persistence:
+  enabled: true
+  size: 512Mi
+  accessMode: ReadWriteOnce
+  annotations: {}
+  storageClass: ""
+  #subPath: path-within-volume
+  # sub-path to use for otterwiki's app-data volume
+  #existingClaim: name-of-existing-pvc
+  # To use an existing claim persistence.enabled must also be true.
+  # Other options are ignored.
+
+affinity: {}
+
+nodeSelector: {}
+
+tolerations: []
 
 service:
   type: ClusterIP
@@ -56,23 +85,19 @@ ingress:
   #    hosts:
   #      - otterwiki.local
 
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-persistence:
-  enabled: true
-  size: 512Mi
-  accessMode: ReadWriteOnce
+httproute:
+  enabled: false
   annotations: {}
-  storageClass: ""
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
+  hostnames:
+    - otterwiki.local
+  parentRefs: []
+  # See HTTPRoute.spec.parentRefs API specification.
+  # - group: gateway.networking.k8s.io
+  #   kind: Gateway
+  #   name: your-gateway-name
+  #   namespace: kube-system
+  rules: []
+  # See HTTPRoute.spec.rules API specification.
+  # Supported are filters, matches, and timeouts. Appropriate backendRefs are added automatically
+  # to each custom rule.
+  # Leaving this on default creates a default rule allowing access to OtterWiki.
