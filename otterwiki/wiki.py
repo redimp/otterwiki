@@ -1624,6 +1624,30 @@ class Page:
         }
 
 
+# Attachments are user supplied and served from the wiki origin. The sandbox
+# keeps any script inside them (e.g. an HTML or SVG file opened directly)
+# from running in that origin. Images embedded via <img> are not affected.
+ATTACHMENT_CSP = (
+    "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:"
+)
+# Browsers refuse to render PDFs or play media in a sandboxed document. These
+# types can not execute script in the wiki origin, so they skip the CSP.
+ATTACHMENT_CSP_EXEMPT_PREFIXES = ("application/pdf", "video/", "audio/")
+# Document types that browsers render as active content. They are never
+# rendered inline, but downloaded instead.
+ATTACHMENT_FORCE_DOWNLOAD = {
+    "text/html",
+    "application/xhtml+xml",
+    "application/xml",
+    "text/xml",
+    "text/xsl",
+    "application/xslt+xml",
+    "application/mathml+xml",
+    "application/rdf+xml",
+    "application/vnd.mozilla.xul+xml",
+}
+
+
 class Attachment:
     def __init__(self, pagepath, filename, revision=None):
         self.pagepath = pagepath
@@ -1807,11 +1831,19 @@ class Attachment:
             if not current_user.is_authenticated:
                 return redirect(url_for("login", next=request.full_path))
             abort(403)
+        # active document types are downloaded instead of rendered inline
+        as_attachment = self.mimetype in ATTACHMENT_FORCE_DOWNLOAD
         if self.revision is None:
             if not storage.exists(self.filepath):
                 return abort(404)
             # headers are already set correctly by send_file
-            response = make_response(send_file(self.abspath))
+            response = make_response(
+                send_file(
+                    self.abspath,
+                    as_attachment=as_attachment,
+                    download_name=self.filename,
+                )
+            )
         else:
             # revision is given
             try:
@@ -1834,7 +1866,10 @@ class Attachment:
             # create response
             response = make_response(
                 send_file(
-                    buffer, mimetype=self.mimetype, download_name=self.filename
+                    buffer,
+                    mimetype=self.mimetype,
+                    as_attachment=as_attachment,
+                    download_name=self.filename,
                 )
             )
             # set header, caching, etc
@@ -1842,6 +1877,12 @@ class Attachment:
             response.headers["Cache-Control"] = "max-age=604800, immutable"
             response.headers["Date"] = http_date(datetime.now(UTC))
 
+        return self._harden_response(response)
+
+    def _harden_response(self, response):
+        mimetype = self.mimetype or "application/octet-stream"
+        if not mimetype.startswith(ATTACHMENT_CSP_EXEMPT_PREFIXES):
+            response.headers["Content-Security-Policy"] = ATTACHMENT_CSP
         return response
 
     def get_thumbnail(self, size=80, width=None, height=None):
@@ -1924,7 +1965,7 @@ class Attachment:
         response.headers["Last-Modified"] = http_date(
             self.datetime.astimezone(UTC)
         )
-        return response
+        return self._harden_response(response)
 
 
 class Search:

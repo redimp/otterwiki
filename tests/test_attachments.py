@@ -260,3 +260,128 @@ def test_rename_page_with_attachment(app_with_attachments, test_client):
         f"/Testa/a/attachment0.txt?revision={log[1]['revision']}"
     )
     assert rv.status_code == 200
+
+
+ATTACHMENT_XSS_PAYLOAD = b"<script>alert(document.domain)</script>"
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "poc.html",
+        "poc.htm",
+        "poc.xhtml",
+        "poc.xml",
+        "poc.xsl",
+    ],
+)
+def test_attachment_active_content_is_downloaded(test_client, filename):
+    data = {"file": (BytesIO(ATTACHMENT_XSS_PAYLOAD), filename)}
+    rv = test_client.post(
+        "/Home/attachments",
+        data=data,
+        content_type="multipart/form-data",
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    rv = test_client.get(f"/Home/a/{filename}")
+    assert rv.status_code == 200
+    assert rv.data == ATTACHMENT_XSS_PAYLOAD
+    assert rv.headers["Content-Disposition"].startswith("attachment")
+    assert filename in rv.headers["Content-Disposition"]
+    assert "sandbox" in rv.headers["Content-Security-Policy"]
+    # the same applies to an attachment requested with a revision
+    revision = test_client.application.storage.log()[0]["revision"]
+    rv = test_client.get(f"/Home/a/{filename}/{revision}")
+    assert rv.status_code == 200
+    assert rv.headers["Content-Disposition"].startswith("attachment")
+    assert "sandbox" in rv.headers["Content-Security-Policy"]
+
+
+def test_attachment_svg_is_inline_and_sandboxed(test_client):
+    svg = (
+        b'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+        b'<script>alert(document.domain)</script>'
+        b'<rect width="10" height="10" fill="red"/></svg>'
+    )
+    data = {"file": (BytesIO(svg), "poc.svg")}
+    rv = test_client.post(
+        "/Home/attachments",
+        data=data,
+        content_type="multipart/form-data",
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    revision = test_client.application.storage.log()[0]["revision"]
+    for url in [
+        "/Home/a/poc.svg",
+        f"/Home/a/poc.svg/{revision}",
+        "/Home/t/poc.svg",
+    ]:
+        rv = test_client.get(url)
+        assert rv.status_code == 200, url
+        assert rv.content_type.startswith("image/svg+xml"), url
+        assert not rv.headers.get("Content-Disposition", "").startswith(
+            "attachment"
+        ), url
+        csp = rv.headers["Content-Security-Policy"]
+        assert "sandbox" in csp, url
+        assert "default-src 'none'" in csp, url
+        assert "script-src" not in csp, url
+
+
+def test_attachment_image_and_text_stay_inline(
+    app_with_attachments, test_client
+):
+    rv = test_client.get("/Test/a/attachment1.gif")
+    assert rv.status_code == 200
+    assert rv.content_type == "image/gif"
+    assert not rv.headers.get("Content-Disposition", "").startswith(
+        "attachment"
+    )
+    assert "sandbox" in rv.headers["Content-Security-Policy"]
+    rv = test_client.get("/Test/t/attachment1.gif")
+    assert rv.status_code == 200
+    assert "sandbox" in rv.headers["Content-Security-Policy"]
+    rv = test_client.get("/Test/a/attachment0.txt")
+    assert rv.status_code == 200
+    assert not rv.headers.get("Content-Disposition", "").startswith(
+        "attachment"
+    )
+
+
+def test_attachment_pdf_skips_sandbox(test_client):
+    data = {"file": (BytesIO(b"%PDF-1.4\n%%EOF\n"), "doc.pdf")}
+    rv = test_client.post(
+        "/Home/attachments",
+        data=data,
+        content_type="multipart/form-data",
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    rv = test_client.get("/Home/a/doc.pdf")
+    assert rv.status_code == 200
+    assert rv.content_type == "application/pdf"
+    assert "Content-Security-Policy" not in rv.headers
+    assert not rv.headers.get("Content-Disposition", "").startswith(
+        "attachment"
+    )
+
+
+def test_attachment_active_content_unicode_filename(test_client):
+    filename = "日本語.html"
+    data = {"file": (BytesIO(ATTACHMENT_XSS_PAYLOAD), filename)}
+    rv = test_client.post(
+        "/Home/attachments",
+        data=data,
+        content_type="multipart/form-data",
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    rv = test_client.get(f"/Home/a/{filename}")
+    assert rv.status_code == 200
+    disposition = rv.headers["Content-Disposition"]
+    assert disposition.startswith("attachment")
+    assert "filename*=UTF-8''" in disposition
+    # the header must be encodable for the WSGI server
+    disposition.encode("latin-1")
