@@ -702,7 +702,7 @@
         try {
             stored_mode = localStorage.getItem('otterwiki_editor_mode');
         } catch (e) {}
-        if (stored_mode === 'split' && window.matchMedia('(min-width: 992px)').matches) {
+        if (stored_mode === 'split' && wide_screen.matches) {
             split_btn.click();
         }
     }); // page load
@@ -863,7 +863,7 @@
     var editor_mode = 'edit';
     // the editing mode to return to from the preview
     var editor_last_mode = 'edit';
-    const set_mode = function(mode) {
+    const set_mode = function(mode, remember = true) {
         editor_mode = mode;
         const split = mode === 'split';
         editor_split.classList.toggle('split', split);
@@ -889,6 +889,8 @@
         }
         if (mode !== 'preview') {
             editor_last_mode = mode;
+        }
+        if (mode !== 'preview' && remember) {
             try {
                 localStorage.setItem('otterwiki_editor_mode', mode);
             } catch (e) {}
@@ -1223,6 +1225,24 @@
         }
         cm_editor.focus();
     }
+    /*
+        the live preview and the split button are hidden on small screens,
+        so the split mode is left when the window gets narrow and restored
+        when the window gets wide again
+    */
+    const wide_screen = window.matchMedia('(min-width: 992px)');
+    var split_suspended = false;
+    wide_screen.addEventListener('change', function(e) {
+        if (!e.matches && editor_mode === 'split') {
+            set_mode('edit', false);
+            split_suspended = true;
+        } else if (e.matches && split_suspended) {
+            split_suspended = false;
+            if (editor_mode === 'edit') {
+                split_btn.click();
+            }
+        }
+    });
 
     // handle thumbnail size field visibility
     function toggleThumbnailSizeField() {
