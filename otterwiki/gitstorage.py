@@ -102,6 +102,23 @@ class GitStorage(object):
             )
         return abspath
 
+    def canonical_filename(self, filename):
+        """
+        Return the repository-relative canonical path of an internal path.
+
+        Symlinks are resolved using the same safety checks as _abspath().
+        Paths outside the repository are left unchanged when external
+        symlinks are explicitly allowed.
+        """
+        abspath = self._abspath(filename)
+        root = os.path.realpath(self.path)
+        resolved = os.path.realpath(abspath)
+
+        if os.path.commonpath([root, resolved]) != root:
+            return filename
+
+        return os.path.relpath(resolved, root).replace(os.sep, "/")
+
     def _validate_revision(self, revision):
         """
         Accept only the revision forms otterwiki generates: a hex commit

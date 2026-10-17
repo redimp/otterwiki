@@ -2135,6 +2135,24 @@ class Search:
         )
 
 
+def redirect_internal_page_symlink(path):
+    filename = get_filename(path)
+
+    if not storage.exists(filename):
+        return None
+
+    canonical_filename = storage.canonical_filename(filename)
+    if canonical_filename == filename:
+        return None
+
+    _, target_url = auto_url(canonical_filename)
+
+    if request.query_string:
+        target_url += "?" + request.query_string.decode()
+
+    return redirect(target_url)
+
+
 class AutoRoute:
     def __init__(self, path, values={}):
         self.path = path
@@ -2195,6 +2213,11 @@ class AutoRoute:
             # if any of these are set the image should be scaled via the get_attachment_thumbnail function
             # this is an attachment
             return p.get_attachment(self.filename)
+
+        symlink_redirect = redirect_internal_page_symlink(self.path)
+        if symlink_redirect is not None:
+            return symlink_redirect
+
         try:
             revision = self.values['revision']
         except KeyError:
