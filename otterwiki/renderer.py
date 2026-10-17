@@ -6,6 +6,7 @@ import mistune
 import urllib.parse
 from html import unescape
 from bs4 import BeautifulSoup
+from bs4.element import Comment, PreformattedString
 from markupsafe import Markup, escape
 from mistune.plugins.formatting import strikethrough as plugin_strikethrough
 from mistune.plugins.table import table as plugin_table, table_in_list
@@ -343,7 +344,20 @@ def clean_html(
     soup = BeautifulSoup(html, 'html.parser')
     _escape = False
 
-    for element in soup.find_all(True):
+    # html is returned verbatim, so constructs where html.parser and the
+    # browser may disagree must not pass: cdata, doctype, declarations and
+    # processing instructions are never needed, comments only when they
+    # contain no angle brackets (e.g. <!--><script>..</script>-->)
+    for node in soup.descendants:
+        if type(node) is Comment:
+            if '<' in node or '>' in node:
+                _escape = True
+                break
+        elif isinstance(node, PreformattedString):
+            _escape = True
+            break
+
+    for element in [] if _escape else soup.find_all(True):
         if not hasattr(element, 'name') or element.name is None:
             continue
 

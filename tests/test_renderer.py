@@ -382,6 +382,26 @@ def test_clean_html_nested_xss():
     assert '&lt;iframe' in result
 
 
+def test_clean_html_parser_differential():
+    # constructs html.parser reads as non-tag nodes, but browsers
+    # parse as a bogus or empty comment followed by a live <script>
+    for vector in [
+        '<![CDATA[><script>alert(1)</script>]]>',
+        '<!--><script>alert(1)</script>-->',
+        '<!---><script>alert(1)</script>-->',
+        '<?x><script>alert(1)</script>?>',
+        '<!DOCTYPE x><script>alert(1)</script>',
+        '<!x><script>alert(1)</script>',
+    ]:
+        result = clean_html(vector)
+        assert '<script' not in result, vector
+        html, _, _ = render.markdown(vector)
+        assert '<script' not in html, vector
+    # harmless comments still pass
+    assert clean_html('<!-- note -->') == '<!-- note -->'
+    assert clean_html('<p>a</p><!-- b -->') == '<p>a</p><!-- b -->'
+
+
 def test_clean_html_script():
     assert clean_html("<script>") == "&lt;script&gt;"
     assert (
