@@ -100,6 +100,8 @@ testpaths = ["./tests", "./docs/plugin_examples/tests"]
 filterwarnings = [
     # venv/lib/python3.12/site-packages/flask_login/login_manager.py:488: DeprecationWarning: datetime.datetime.utcnow() is deprecated
     "ignore: datetime.datetime.utcnow\\(\\) is deprecated:DeprecationWarning",
+    # bs4 warns when rendered html looks like a filename or url
+    "ignore::bs4.MarkupResemblesLocatorWarning",
 ]
 
 [tool.pyright]
