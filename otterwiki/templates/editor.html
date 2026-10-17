@@ -44,6 +44,19 @@
 #editor_split.split > #preview_block > .content {
     margin-top: 1rem;
 }
+/*
+    the live preview needs the room of the right sidebar, only on very wide
+    screens the sidebar stays visible
+*/
+@media (max-width: 1919.98px) {
+    .editor-split #column-extra {
+        display: none !important;
+    }
+    .editor-split #column-main {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
 /* the split button is hidden on small screens, so is the live preview */
 @media (max-width: 991.98px) {
     #editor_split.split > #preview_block {
@@ -577,8 +590,6 @@
     const editor_btn = document.querySelector("#editor_btn");
     const split_btn = document.querySelector("#split_btn");
     const editor_split = document.querySelector("#editor_split");
-    const column_main = document.querySelector("#column-main");
-    const column_extra = document.querySelector("#column-extra");
     const sidebar_toc = document.querySelector("#sidebar-toc");
     const extranav_toc = document.querySelector("#extranav-toc");
     const extranav_attachments = document.querySelector("#extranav-attachments");
@@ -860,12 +871,10 @@
         for (const editor_block of editor_blocks) {
             editor_block.style.display = mode === 'preview' ? 'none' : 'block';
         }
-        extranav_attachments.style.display = mode === 'edit' ? 'block' : 'none';
-        // make room for the live preview
-        if (column_extra) {
-            column_extra.style.display = split ? 'none' : '';
-            column_main.classList.toggle('col-xl-9', !split);
-        }
+        // the toc of the preview replaces the attachments only in the preview
+        extranav_attachments.style.display = mode === 'preview' ? 'none' : 'block';
+        // make room for the live preview (see .editor-split in the css)
+        content_wrapper.classList.toggle('editor-split', split);
         editor_btn.style.display = mode === 'preview' ? '' : 'none';
         // the live preview makes the preview button redundant
         preview_btn.style.display = mode === 'edit' ? '' : 'none';
@@ -874,7 +883,7 @@
         split_btn.title = split ? 'Edit without live preview' : 'Edit with live preview';
         content_wrapper.classList.toggle('preview-background', mode === 'preview');
         preview_block.classList.toggle('preview-background', split);
-        if (mode === 'edit') {
+        if (mode !== 'preview') {
             sidebar_toc.innerHTML = '';
             extranav_toc.innerHTML = '';
         }
@@ -986,7 +995,7 @@
         preview_rendered = with_cursor ? null : content;
         preview_generation += 1;
 
-        if (editor_mode !== 'edit') {
+        if (editor_mode === 'preview') {
             sidebar_toc.innerHTML = data.preview_toc;
             extranav_toc.innerHTML = data.preview_toc;
         }
