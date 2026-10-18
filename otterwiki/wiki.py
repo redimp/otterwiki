@@ -2091,7 +2091,8 @@ class Search:
                 n,
                 fn,
                 get_pagename(fn, full=True),
-                get_pagename(fn, full=True),
+                # key[4] is rendered with |safe, so escape the pagename
+                str(html_escape(get_pagename(fn, full=True))),
             ]
             summary = []
             if fnmatch == 1:

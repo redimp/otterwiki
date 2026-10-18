@@ -596,6 +596,31 @@ def test_search(test_client):
     assert rv.status_code == 200
 
 
+@pytest.mark.parametrize("retain_case", [True, False])
+def test_search_pagename_xss(test_client, retain_case):
+    # the pagename in the search results must be escaped
+    saved = test_client.application.config["RETAIN_PAGE_NAME_CASE"]
+    test_client.application.config["RETAIN_PAGE_NAME_CASE"] = retain_case
+    try:
+        pagename = "<img src=x onerror=alert(1)>"
+        save_shortcut(test_client, pagename, "pocmarker", "xss test")
+        # match in the content
+        rv = test_client.get("/-/search/pocmarker")
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        assert "Search matched 1 page" in html
+        assert "<img src=x" not in html.lower()
+        assert "&lt;img src=x" in html.lower()
+        # match in the pagename, the highlight span must survive
+        rv = test_client.get("/-/search/onerror")
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        assert "<img src=x" not in html.lower()
+        assert '<span class="page-match">' in html
+    finally:
+        test_client.application.config["RETAIN_PAGE_NAME_CASE"] = saved
+
+
 def test_rename(test_client):
     old_pagename = "RenameTest"
     new_pagename = "RenameTestNew"
