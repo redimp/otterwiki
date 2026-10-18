@@ -68,6 +68,43 @@ def test_internal_page_symlink_edit_redirects_to_target(
     assert rv.headers["Location"] == "/Target/Page?edit"
 
 
+def test_internal_page_symlink_post_does_not_redirect(
+    test_client, internal_page_symlink
+):
+    rv = test_client.post("/Shortcuts/Link")
+
+    assert rv.status_code == 200
+    assert rv.headers.get("Location") is None
+
+
+def test_internal_page_symlink_preserves_percent_encoded_query(
+    test_client, internal_page_symlink
+):
+    rv = test_client.get("/Shortcuts/Link?raw=%FF&encoded=%FF+%20&a=1&a=2")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == (
+        "/Target/Page?raw=%FF&encoded=%FF+%20&a=1&a=2"
+    )
+
+
+def test_internal_page_symlink_encodes_raw_invalid_query_bytes(test_client):
+    from otterwiki.wiki import _redirect_internal_symlink_target
+
+    # Werkzeug parses request.values before routing. The raw-byte case
+    # therefore exercises only the redirect helper.
+    with test_client.application.test_request_context(
+        "/Shortcuts/Link",
+        environ_overrides={"QUERY_STRING": "raw=\xff&encoded=%FF+%20&a=1&a=2"},
+    ):
+        rv = _redirect_internal_symlink_target("Target/Page")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == (
+        "/Target/Page?raw=%FF&encoded=%FF+%20&a=1&a=2"
+    )
+
+
 def test_internal_page_symlink_revision_is_not_redirected(
     test_client, internal_page_symlink
 ):
@@ -84,7 +121,7 @@ def test_internal_page_symlink_empty_revision_is_not_redirected(
 ):
     rv = test_client.get("/Shortcuts/Link?revision=")
 
-    assert rv.status_code in (200, 404)
+    assert rv.status_code == 404
     assert rv.headers.get("Location") is None
 
 
@@ -98,6 +135,30 @@ def test_internal_page_symlink_does_not_leak_target_without_read_permission(
     assert rv.status_code == 302
     assert "/-/login" in rv.headers["Location"]
     assert "/Target/Page" not in rv.headers["Location"]
+
+
+def test_internal_page_symlink_sanitizes_before_redirect(
+    test_client, create_app, monkeypatch
+):
+    monkeypatch.setitem(create_app.config, "RETAIN_PAGE_NAME_CASE", False)
+    storage = create_app.storage
+    storage.store(
+        "foobar.md",
+        content="# Ordinary page\n",
+        author=("Test", "test@example.org"),
+    )
+    storage.store(
+        "target/page.md",
+        content="# Target page\n",
+        author=("Test", "test@example.org"),
+    )
+    os.symlink("target/page.md", os.path.join(storage.path, "foo.bar.md"))
+
+    rv = test_client.get("/Foo.Bar")
+
+    assert rv.status_code == 200
+    assert rv.headers.get("Location") is None
+    assert "Ordinary page" in rv.data.decode()
 
 
 def test_internal_page_symlink_with_noncanonical_case_is_not_redirected(
@@ -155,7 +216,26 @@ def test_internal_directory_symlink_is_not_redirected(test_client, create_app):
 
     rv = test_client.get("/Shortcuts/Directory")
 
-    assert rv.status_code != 302
+    assert rv.status_code == 404
+    assert rv.headers.get("Location") is None
+
+
+def test_internal_page_in_symlinked_directory_redirects(
+    test_client, create_app, monkeypatch
+):
+    monkeypatch.setitem(create_app.config, "RETAIN_PAGE_NAME_CASE", False)
+    storage = create_app.storage
+    storage.store(
+        "target/page.md",
+        content="# Target\n",
+        author=("Test", "test@example.org"),
+    )
+    os.symlink("target", os.path.join(storage.path, "alias"))
+
+    rv = test_client.get("/Alias/Page")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Page"
 
 
 def test_create_form(test_client):
