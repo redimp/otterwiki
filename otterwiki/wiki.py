@@ -2181,6 +2181,9 @@ def redirect_internal_page_symlink(path):
     if not has_permission("READ"):
         return None
 
+    if request.values.get("revision"):
+        return None
+
     filename = get_filename(path)
 
     if not storage.exists(filename):
