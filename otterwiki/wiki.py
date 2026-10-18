@@ -2245,6 +2245,50 @@ def redirect_internal_page_symlink(path):
     )
 
 
+def get_internal_directory_symlink_target(path):
+    if not _internal_symlink_redirect_allowed():
+        return None
+
+    filename = get_filename(path)
+
+    # A page at this path takes precedence over a directory, matching
+    # AutoRoute's existing page/directory behaviour.
+    if storage.exists(filename):
+        return None
+
+    directoryname = get_attachment_directoryname(filename)
+    if not storage.exists(directoryname) or not storage.isdir(directoryname):
+        return None
+
+    canonical_directory = storage.canonical_filename(directoryname)
+
+    # Ordinary directories and allowed external symlinks keep their existing
+    # behaviour. Only internal directory symlinks need a canonical redirect.
+    if canonical_directory == directoryname or not storage.isdir(
+        canonical_directory
+    ):
+        return None
+
+    target_pagepath = get_pagename(canonical_directory, full=True)
+
+    # Only redirect if Otter's normal URL -> storage mapping reaches the
+    # exact canonical directory. Otherwise the redirect could break a working
+    # symlink on case-sensitive filesystems.
+    normalized_directory = get_attachment_directoryname(
+        get_filename(target_pagepath)
+    )
+    if normalized_directory != canonical_directory:
+        return None
+
+    return target_pagepath
+
+
+def redirect_internal_directory_symlink(path):
+    return _redirect_internal_symlink_target(
+        get_internal_directory_symlink_target(path)
+    )
+
+
 class AutoRoute:
     def __init__(self, path, values={}):
         self.path = path
@@ -2310,6 +2354,10 @@ class AutoRoute:
             symlink_redirect = redirect_internal_page_symlink(self.path)
             if symlink_redirect is not None:
                 return symlink_redirect
+
+        symlink_redirect = redirect_internal_directory_symlink(self.path)
+        if symlink_redirect is not None:
+            return symlink_redirect
 
         try:
             revision = self.values['revision']

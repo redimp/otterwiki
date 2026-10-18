@@ -481,3 +481,54 @@ def test_sidebar_menutree_focus_off_unfolds_everything(
         assert d.has_attr(
             "open"
         ), f"folder {d.find('summary').get_text(strip=True)!r} should be open"
+
+
+def test_sidebar_menutree_lists_internal_directory_symlink_as_leaf(
+    create_app, req_ctx
+):
+    from otterwiki.sidebar import SidebarPageIndex
+
+    storage = create_app.storage
+    create_app.config["SIDEBAR_MENUTREE_FOCUS"] = "OFF"
+
+    storage.store(
+        "target/folder/page.md",
+        "# Target Page",
+        author=("Test", "test@example.org"),
+    )
+    os.makedirs(os.path.join(storage.path, "shortcuts"), exist_ok=True)
+    os.makedirs(os.path.join(storage.path, "empty"), exist_ok=True)
+    os.symlink(
+        "../target/folder",
+        os.path.join(storage.path, "shortcuts/folder"),
+    )
+
+    tree = SidebarPageIndex(path="/").query()
+
+    assert "shortcuts" in tree
+    assert "folder" in tree["shortcuts"].children
+
+    alias = tree["shortcuts"].children["folder"]
+    assert alias.path == "Shortcuts/Folder"
+    assert not alias.children
+
+    # Ordinary empty directories keep their existing behaviour: they are
+    # not added to the sidebar tree merely because storage.list() sees them.
+    assert "empty" not in tree
+
+    directories_only = SidebarPageIndex(path="/", mode="DIRECTORIES_ONLY").query()
+    assert "shortcuts" in directories_only
+    assert "folder" in directories_only["shortcuts"].children
+    directory_alias = directories_only["shortcuts"].children["folder"]
+    assert directory_alias.is_directory_symlink
+    assert not directory_alias.children
+    assert "page" not in directories_only["target"].children["folder"].children
+
+    # When a page shadows the alias, it remains a page (not a directory).
+    storage.store(
+        "shortcuts/folder.md",
+        "# Shadowing Page",
+        author=("Test", "test@example.org"),
+    )
+    directories_only = SidebarPageIndex(path="/", mode="DIRECTORIES_ONLY").query()
+    assert "folder" not in directories_only["shortcuts"].children

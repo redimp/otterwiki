@@ -50,6 +50,34 @@ def internal_page_symlink(create_app):
     return storage
 
 
+@pytest.fixture
+def internal_directory_symlink(create_app):
+    storage = create_app.storage
+
+    storage.store(
+        "target/folder/page.md",
+        content="# Directory Target\n",
+        author=("Test", "test@example.org"),
+    )
+    os.makedirs(os.path.join(storage.path, "shortcuts"), exist_ok=True)
+    os.symlink(
+        "../target/folder",
+        os.path.join(storage.path, "shortcuts/folder"),
+    )
+
+    return storage
+
+
+def test_internal_symlinks_empty_revision_do_not_redirect(
+    test_client, internal_page_symlink, internal_directory_symlink
+):
+    for path in ("/Shortcuts/Link", "/Shortcuts/Folder"):
+        rv = test_client.get(f"{path}?revision=")
+
+        assert rv.status_code in (200, 404)
+        assert rv.headers.get("Location") is None
+
+
 def test_internal_page_symlink_redirects_to_target(
     test_client, internal_page_symlink
 ):
@@ -204,7 +232,9 @@ def test_internal_nonpage_symlink_is_not_redirected(test_client, create_app):
     assert "plain target" in rv.data.decode()
 
 
-def test_internal_directory_symlink_is_not_redirected(test_client, create_app):
+def test_internal_page_symlink_to_directory_is_not_redirected(
+    test_client, create_app
+):
     storage = create_app.storage
 
     os.makedirs(os.path.join(storage.path, "target/folder.md"), exist_ok=True)
@@ -236,6 +266,81 @@ def test_internal_page_in_symlinked_directory_redirects(
 
     assert rv.status_code == 302
     assert rv.headers["Location"] == "/Target/Page"
+
+
+def test_internal_directory_symlink_redirects_to_target(
+    test_client, internal_directory_symlink
+):
+    rv = test_client.get("/Shortcuts/Folder")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Folder"
+
+    rv = test_client.get("/Shortcuts/Folder", follow_redirects=True)
+
+    assert rv.status_code == 200
+    assert "/Target/Folder/Page" in rv.data.decode()
+
+
+def test_internal_directory_symlink_preserves_query_string(
+    test_client, internal_directory_symlink
+):
+    rv = test_client.get("/Shortcuts/Folder?x=1&x=2")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Folder?x=1&x=2"
+
+
+def test_internal_directory_symlink_revision_is_not_redirected(
+    test_client, internal_directory_symlink
+):
+    rv = test_client.get("/Shortcuts/Folder?revision=HEAD")
+
+    assert rv.headers.get("Location") is None
+
+
+def test_internal_directory_symlink_edit_redirects_to_target(
+    test_client, internal_directory_symlink
+):
+    rv = test_client.get("/Shortcuts/Folder?edit")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Folder?edit"
+
+
+def test_internal_directory_symlink_does_not_leak_target_without_read_permission(
+    test_client, create_app, internal_directory_symlink, monkeypatch
+):
+    monkeypatch.setitem(create_app.config, "READ_ACCESS", "REGISTERED")
+
+    rv = test_client.get("/Shortcuts/Folder")
+
+    assert rv.status_code == 302
+    assert "/-/login" in rv.headers["Location"]
+    assert "/Target/Folder" not in rv.headers["Location"]
+
+
+def test_internal_directory_symlink_with_noncanonical_case_is_not_redirected(
+    test_client, create_app, monkeypatch
+):
+    storage = create_app.storage
+    monkeypatch.setitem(create_app.config, "RETAIN_PAGE_NAME_CASE", False)
+
+    storage.store(
+        "Upper/Folder/page.md",
+        content="# Upper Directory Target\n",
+        author=("Test", "test@example.org"),
+    )
+    os.makedirs(os.path.join(storage.path, "shortcuts"), exist_ok=True)
+    os.symlink(
+        "../Upper/Folder",
+        os.path.join(storage.path, "shortcuts/case"),
+    )
+
+    rv = test_client.get("/Shortcuts/Case")
+
+    assert rv.status_code == 200
+    assert "Page Index" in rv.data.decode()
 
 
 def test_create_form(test_client):

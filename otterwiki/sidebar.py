@@ -105,6 +105,7 @@ class SidebarPageIndexEntry:
         self.children: OrderedDict[str, SidebarPageIndexEntry] = OrderedDict()
         self.path: str = path
         self.header: str = header
+        self.is_directory_symlink: bool = False
 
 
 class SidebarPageIndex:
@@ -220,7 +221,9 @@ class SidebarPageIndex:
 
         # filter entries
         if self.mode in ["DIRECTORIES_ONLY"]:
-            entries = [x for x in entries if len(x[1].children) > 0]
+            entries = [
+                x for x in entries if x[1].children or x[1].is_directory_symlink
+            ]
 
         call_hook(
             "sidebar_page_index_filter_entries",
@@ -264,6 +267,7 @@ class SidebarPageIndex:
         prefix: list[str],
         parts: list[str],
         header: str | None = None,
+        is_directory_symlink: bool = False,
     ):
         """
         Add new nodes based of 'prefix' and 'parts' into the given position in the 'tree'
@@ -291,12 +295,15 @@ class SidebarPageIndex:
                 ),
             )
             tree[parts[0]] = new_entry
+        if len(parts) == 1 and is_directory_symlink:
+            tree[parts[0]].is_directory_symlink = True
         if len(parts) > 1:
             self.add_node(
                 tree[parts[0]].children,
                 prefix + [parts[0]],
                 parts[1:],
                 header,
+                is_directory_symlink,
             )
 
     def load(self, path: str):
@@ -307,13 +314,14 @@ class SidebarPageIndex:
             path: Path within storage from which to get entries
         """
         t_start = timer()
-        files, _ = storage.list(p=path)
+        files, directories = storage.list(p=path)
         app.logger.debug(
             f"SidebarPageIndex.load({path}) storage.list() files took {timer() - t_start:.3f} seconds."
         )
 
         t_start = timer()
         entries: list[str] = []
+        directory_symlinks: set[str] = set()
         for filename in [
             f for f in files if f.endswith(".md")
         ]:  # filter .md files
@@ -324,6 +332,32 @@ class SidebarPageIndex:
                 pp = join_path(parents[0 : i + 1])
                 entries.append(pp)
             entries.append(filename)
+
+        # Directory entries are normally derived from the paths of pages.
+        # Add only internal directory symlinks explicitly so they can act as
+        # navigation shortcuts without traversing or duplicating their target.
+        for directory in directories:
+            directory = os.path.join(path, directory)
+            if not storage.islink(directory):
+                continue
+
+            try:
+                canonical_directory = storage.canonical_filename(directory)
+            except StorageError:
+                continue
+
+            if canonical_directory == directory or not storage.isdir(
+                canonical_directory
+            ):
+                continue
+
+            # A page at the alias path takes precedence over the directory.
+            if storage.exists(directory + ".md"):
+                continue
+
+            entries.append(directory)
+            directory_symlinks.add(directory)
+
         entries = list(set(entries))
         entries.sort()
 
@@ -334,7 +368,13 @@ class SidebarPageIndex:
                 entry = entry[:-3]
             self.filenames_and_header.append((entry, header))
             parts = split_path(entry)
-            self.add_node(self.tree, [], parts, header)
+            self.add_node(
+                self.tree,
+                [],
+                parts,
+                header,
+                is_directory_symlink=entry in directory_symlinks,
+            )
         app.logger.debug(
             f"SidebarPageIndex.load({path}) reading entries, adding nodes took {timer() - t_start:.3f} seconds."
         )
