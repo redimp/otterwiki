@@ -516,7 +516,9 @@ def test_sidebar_menutree_lists_internal_directory_symlink_as_leaf(
     # not added to the sidebar tree merely because storage.list() sees them.
     assert "empty" not in tree
 
-    directories_only = SidebarPageIndex(path="/", mode="DIRECTORIES_ONLY").query()
+    directories_only = SidebarPageIndex(
+        path="/", mode="DIRECTORIES_ONLY"
+    ).query()
     assert "shortcuts" in directories_only
     assert "folder" in directories_only["shortcuts"].children
     directory_alias = directories_only["shortcuts"].children["folder"]
@@ -530,5 +532,7 @@ def test_sidebar_menutree_lists_internal_directory_symlink_as_leaf(
         "# Shadowing Page",
         author=("Test", "test@example.org"),
     )
-    directories_only = SidebarPageIndex(path="/", mode="DIRECTORIES_ONLY").query()
+    directories_only = SidebarPageIndex(
+        path="/", mode="DIRECTORIES_ONLY"
+    ).query()
     assert "folder" not in directories_only["shortcuts"].children

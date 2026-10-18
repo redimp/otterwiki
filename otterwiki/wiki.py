@@ -2249,7 +2249,11 @@ def get_internal_directory_symlink_target(path):
     if not _internal_symlink_redirect_allowed():
         return None
 
-    filename = get_filename(path)
+    normalized_path = sanitize_pagename(path, handle_md=True)
+    if not normalized_path:
+        return None
+
+    filename = get_filename(normalized_path)
 
     # A page at this path takes precedence over a directory, matching
     # AutoRoute's existing page/directory behaviour.
@@ -2355,9 +2359,9 @@ class AutoRoute:
             if symlink_redirect is not None:
                 return symlink_redirect
 
-        symlink_redirect = redirect_internal_directory_symlink(self.path)
-        if symlink_redirect is not None:
-            return symlink_redirect
+            symlink_redirect = redirect_internal_directory_symlink(self.path)
+            if symlink_redirect is not None:
+                return symlink_redirect
 
         try:
             revision = self.values['revision']
