@@ -41,6 +41,12 @@ def internal_page_symlink(create_app):
         os.path.join(storage.path, "shortcuts/link.md"),
     )
 
+    storage.commit(
+        ["shortcuts/link.md"],
+        message="Add shortcut",
+        author=("Test", "test@example.org"),
+    )
+
     return storage
 
 
@@ -60,6 +66,17 @@ def test_internal_page_symlink_edit_redirects_to_target(
 
     assert rv.status_code == 302
     assert rv.headers["Location"] == "/Target/Page?edit"
+
+
+def test_internal_page_symlink_revision_is_not_redirected(
+    test_client, internal_page_symlink
+):
+    revision = internal_page_symlink.log("shortcuts/link.md")[0]["revision"]
+
+    rv = test_client.get(f"/Shortcuts/Link?revision={revision}")
+
+    assert rv.status_code == 200
+    assert rv.headers.get("Location") is None
 
 
 def test_internal_page_symlink_does_not_leak_target_without_read_permission(
