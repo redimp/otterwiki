@@ -9,7 +9,7 @@ from io import BytesIO
 from time import strftime
 from timeit import default_timer as timer
 from typing import List, cast
-from urllib.parse import unquote
+from urllib.parse import quote_from_bytes, unquote
 import textwrap
 
 import PIL.Image
@@ -2195,7 +2195,8 @@ def get_internal_page_symlink_target(path):
     if not _internal_symlink_redirect_allowed():
         return None
 
-    filename = get_filename(path)
+    # Match the filename used by Page(path) before resolving a symlink.
+    filename = get_filename(sanitize_pagename(path, handle_md=True))
 
     if not storage.exists(filename):
         return None
@@ -2212,7 +2213,7 @@ def get_internal_page_symlink_target(path):
     ):
         return None
 
-    target_pagepath, _ = auto_url(canonical_filename)
+    target_pagepath = get_pagename(canonical_filename, full=True)
 
     # When page names are normalized for storage, only redirect if the URL
     # maps back to the exact canonical filename. Otherwise the redirect could
@@ -2230,13 +2231,18 @@ def _redirect_internal_symlink_target(target_pagepath):
     target_url = url_for("view", path=target_pagepath)
 
     if request.query_string:
-        target_url += "?" + request.query_string.decode()
+        # Preserve the original bytes without decoding possibly invalid UTF-8.
+        target_url += "?" + quote_from_bytes(
+            request.query_string, safe="%!$&'()*+,/:;=?@"
+        )
 
     return redirect(target_url)
 
 
 def redirect_internal_page_symlink(path):
-    return _redirect_internal_symlink_target(get_internal_page_symlink_target(path))
+    return _redirect_internal_symlink_target(
+        get_internal_page_symlink_target(path)
+    )
 
 
 class AutoRoute:
@@ -2300,9 +2306,10 @@ class AutoRoute:
             # this is an attachment
             return p.get_attachment(self.filename)
 
-        symlink_redirect = redirect_internal_page_symlink(self.path)
-        if symlink_redirect is not None:
-            return symlink_redirect
+        if request.method == "GET":
+            symlink_redirect = redirect_internal_page_symlink(self.path)
+            if symlink_redirect is not None:
+                return symlink_redirect
 
         try:
             revision = self.values['revision']
