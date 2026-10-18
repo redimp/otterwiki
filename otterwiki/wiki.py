@@ -2180,16 +2180,34 @@ class Search:
 
 
 def redirect_internal_page_symlink(path):
+    # Do not disclose the symlink target to users who cannot read the wiki.
+    if not has_permission("READ"):
+        return None
+
     filename = get_filename(path)
 
     if not storage.exists(filename):
         return None
 
     canonical_filename = storage.canonical_filename(filename)
+
     if canonical_filename == filename:
         return None
 
-    _, target_url = auto_url(canonical_filename)
+    # Only page symlinks are redirected. Attachments and directories keep
+    # their existing behaviour.
+    if not canonical_filename.endswith(".md") or storage.isdir(
+        canonical_filename
+    ):
+        return None
+
+    target_pagepath, target_url = auto_url(canonical_filename)
+
+    # When page names are normalized for storage, only redirect if the URL
+    # maps back to the exact canonical filename. Otherwise the redirect could
+    # turn a working symlink into a broken page on case-sensitive filesystems.
+    if get_filename(target_pagepath) != canonical_filename:
+        return None
 
     if request.query_string:
         target_url += "?" + request.query_string.decode()
