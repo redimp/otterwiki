@@ -222,7 +222,9 @@ class SidebarPageIndex:
         # filter entries
         if self.mode in ["DIRECTORIES_ONLY"]:
             entries = [
-                x for x in entries if x[1].children or x[1].is_directory_symlink
+                x
+                for x in entries
+                if x[1].children or x[1].is_directory_symlink
             ]
 
         call_hook(

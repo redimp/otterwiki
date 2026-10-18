@@ -282,6 +282,15 @@ def test_internal_directory_symlink_redirects_to_target(
     assert "/Target/Folder/Page" in rv.data.decode()
 
 
+def test_internal_directory_symlink_post_does_not_redirect(
+    test_client, internal_directory_symlink
+):
+    rv = test_client.post("/Shortcuts/Folder")
+
+    assert rv.status_code == 200
+    assert rv.headers.get("Location") is None
+
+
 def test_internal_directory_symlink_preserves_query_string(
     test_client, internal_directory_symlink
 ):
@@ -341,6 +350,85 @@ def test_internal_directory_symlink_with_noncanonical_case_is_not_redirected(
 
     assert rv.status_code == 200
     assert "Page Index" in rv.data.decode()
+
+
+def test_internal_directory_symlink_sanitizes_before_redirect(
+    test_client, create_app, monkeypatch
+):
+    monkeypatch.setitem(create_app.config, "RETAIN_PAGE_NAME_CASE", False)
+    storage = create_app.storage
+    storage.store(
+        "foobar.md",
+        content="# Ordinary page\n",
+        author=("Test", "test@example.org"),
+    )
+    storage.store(
+        "target/folder/page.md",
+        content="# Directory target\n",
+        author=("Test", "test@example.org"),
+    )
+    os.symlink("target/folder", os.path.join(storage.path, "foo.bar"))
+
+    rv = test_client.get("/Foo.Bar")
+
+    assert rv.status_code == 200
+    assert rv.headers.get("Location") is None
+    assert "Ordinary page" in rv.data.decode()
+
+
+def test_internal_directory_symlink_trailing_slash_redirects(
+    test_client, internal_directory_symlink
+):
+    rv = test_client.get("/Shortcuts/Folder/")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Folder"
+
+
+def test_internal_directory_symlink_page_takes_precedence(
+    test_client, internal_directory_symlink
+):
+    internal_directory_symlink.store(
+        "shortcuts/folder.md",
+        content="# Shadowing Page\n",
+        author=("Test", "test@example.org"),
+    )
+
+    rv = test_client.get("/Shortcuts/Folder")
+
+    assert rv.status_code == 200
+    assert rv.headers.get("Location") is None
+    assert "Shadowing Page" in rv.data.decode()
+
+
+@pytest.mark.parametrize("path", ["!", ".", ".md", "///"])
+def test_internal_directory_symlink_ignores_empty_sanitized_paths(
+    create_app, path
+):
+    from otterwiki.auth import has_permission
+    from otterwiki.wiki import get_internal_directory_symlink_target
+
+    with create_app.test_request_context("/"):
+        assert has_permission("READ")
+        assert get_internal_directory_symlink_target(path) is None
+
+
+def test_internal_directory_symlink_external_target_does_not_redirect(
+    test_client, create_app, tmp_path
+):
+    outside_directory = tmp_path / "external"
+    outside_directory.mkdir()
+    storage = create_app.storage
+    os.makedirs(os.path.join(storage.path, "shortcuts"), exist_ok=True)
+    os.symlink(
+        str(outside_directory),
+        os.path.join(storage.path, "shortcuts", "external"),
+    )
+
+    rv = test_client.get("/Shortcuts/External")
+
+    assert rv.status_code == 404
+    assert rv.headers.get("Location") is None
 
 
 def test_create_form(test_client):
