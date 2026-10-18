@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.26.0](https://github.com/redimp/otterwiki/releases/tag/v2.26.0) - 2026-10-18
+
+<small>[Compare with v2.25.2](https://github.com/redimp/otterwiki/compare/v2.25.2...v2.26.0)</small>
+
+### Security Fixes
+
+- Prevent clean_html bypass via comments and CDATA
+  ([1a934ad](https://github.com/redimp/otterwiki/commit/1a934ad)).
+- Sandbox attachment responses and force download of active content
+  ([16d5dbf](https://github.com/redimp/otterwiki/commit/16d5dbf)).
+- Generate SECRET_KEY with a secure random source in the docker entrypoints
+  ([7d99d41](https://github.com/redimp/otterwiki/commit/7d99d41)).
+
+Thanks to @redhotchilihacker1 for responsibly disclosing these issues and
+bringing them to our attention.
+
+### Features
+
+- Add an editor mode with live preview side by side, show the attachments
+  sidebar in split mode on wide screens, and leave split mode on narrow
+  screens ([11b2f90](https://github.com/redimp/otterwiki/commit/11b2f90),
+  [4e5b1ef](https://github.com/redimp/otterwiki/commit/4e5b1ef),
+  [9cbcb85](https://github.com/redimp/otterwiki/commit/9cbcb85)).
+- Add Git Garbage Collection to housekeeping
+  ([27e3023](https://github.com/redimp/otterwiki/commit/27e3023)).
+
 ## [v2.25.2](https://github.com/redimp/otterwiki/releases/tag/v2.25.2) - 2026-10-11
 
 <small>[Compare with v2.25.1](https://github.com/redimp/otterwiki/compare/v2.25.1...v2.25.2)</small>
