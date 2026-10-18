@@ -715,7 +715,4 @@ def test_canonical_filename_resolves_internal_symlink(storage):
         os.path.join(storage.path, "shortcuts/link.md"),
     )
 
-    assert (
-        storage.canonical_filename("shortcuts/link.md")
-        == "target/page.md"
-    )
+    assert storage.canonical_filename("shortcuts/link.md") == "target/page.md"
