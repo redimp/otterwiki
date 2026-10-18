@@ -79,6 +79,15 @@ def test_internal_page_symlink_revision_is_not_redirected(
     assert rv.headers.get("Location") is None
 
 
+def test_internal_page_symlink_empty_revision_is_not_redirected(
+    test_client, internal_page_symlink
+):
+    rv = test_client.get("/Shortcuts/Link?revision=")
+
+    assert rv.status_code in (200, 404)
+    assert rv.headers.get("Location") is None
+
+
 def test_internal_page_symlink_does_not_leak_target_without_read_permission(
     test_client, create_app, internal_page_symlink, monkeypatch
 ):
