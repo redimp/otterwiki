@@ -2176,12 +2176,20 @@ class Search:
         )
 
 
-def redirect_internal_page_symlink(path):
+def _internal_symlink_redirect_allowed():
     # Do not disclose the symlink target to users who cannot read the wiki.
     if not has_permission("READ"):
-        return None
+        return False
 
-    if request.values.get("revision"):
+    # Historical revisions belong to the alias, not its current target.
+    if "revision" in request.values:
+        return False
+
+    return True
+
+
+def get_internal_page_symlink_target(path):
+    if not _internal_symlink_redirect_allowed():
         return None
 
     filename = get_filename(path)
@@ -2201,7 +2209,7 @@ def redirect_internal_page_symlink(path):
     ):
         return None
 
-    target_pagepath, target_url = auto_url(canonical_filename)
+    target_pagepath, _ = auto_url(canonical_filename)
 
     # When page names are normalized for storage, only redirect if the URL
     # maps back to the exact canonical filename. Otherwise the redirect could
@@ -2209,10 +2217,23 @@ def redirect_internal_page_symlink(path):
     if get_filename(target_pagepath) != canonical_filename:
         return None
 
+    return target_pagepath
+
+
+def _redirect_internal_symlink_target(target_pagepath):
+    if target_pagepath is None:
+        return None
+
+    target_url = url_for("view", path=target_pagepath)
+
     if request.query_string:
         target_url += "?" + request.query_string.decode()
 
     return redirect(target_url)
+
+
+def redirect_internal_page_symlink(path):
+    return _redirect_internal_symlink_target(get_internal_page_symlink_target(path))
 
 
 class AutoRoute:
