@@ -579,7 +579,9 @@ class Page:
                 breadcrumbs=self.breadcrumbs(),
                 danger_alert=[
                     "Storage error",
-                    self.storage_error,
+                    # danger_alert[1] is rendered with |safe, the error may
+                    # contain the filename, so escape it
+                    str(html_escape(self.storage_error)),
                 ],
                 menutree=menutree.query(),
                 custom_menu=SidebarMenu().query(),
@@ -595,7 +597,7 @@ class Page:
         if not self.metadata:
             danger_alert = [
                 "Not under version control",
-                f"""This page was loaded from the repository but is not added under git version control. Make a commit on the <a href="/{self.pagepath}/edit" class="alert-link">Edit page</a> to add it.""",
+                f"""This page was loaded from the repository but is not added under git version control. Make a commit on the <a href="{url_for('edit', path=self.pagepath)}" class="alert-link">Edit page</a> to add it.""",
             ]
 
         # send context of the page rendered to plugins

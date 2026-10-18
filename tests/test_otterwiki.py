@@ -947,6 +947,20 @@ def test_page_view_broken_utf8(test_client, create_app):
     assert "could not be decoded as text" in html
 
 
+def test_page_view_broken_utf8_escapes_filename(test_client, create_app):
+    """The filename in the storage error alert is HTML escaped."""
+    _create_broken_utf8_page(
+        create_app.storage, pagename="poc/<img src=x onerror=alert(1)>"
+    )
+    rv = test_client.get("/Poc/%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    assert "Storage error" in html
+    assert "could not be decoded as text" in html
+    assert "<img src=x onerror=alert(1)>" not in html
+    assert "&lt;img src=x onerror=alert(1)&gt;" in html
+
+
 def test_page_view_broken_utf8_revision(test_client, create_app):
     """Viewing a broken UTF-8 page at a specific revision shows the error."""
     broken_rev, valid_rev = _create_broken_utf8_page(create_app.storage)
