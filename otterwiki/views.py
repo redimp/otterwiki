@@ -20,6 +20,7 @@ from otterwiki.wiki import (
     Changelog,
     Search,
     AutoRoute,
+    get_internal_page_symlink_target,
     redirect_internal_page_symlink,
     redirect_internal_directory_symlink,
 )
@@ -494,6 +495,11 @@ def request_confirmation_link(email):
 @app.route("/<path:path>/view/<string:revision>")
 @app.route("/<path:path>/view")
 def pageview(path="Home", revision=None):
+    if revision is None:
+        symlink_redirect = redirect_internal_page_symlink(path)
+        if symlink_redirect is not None:
+            return symlink_redirect
+
     p = Page(path, revision=revision)
     return p.view()
 
@@ -575,6 +581,11 @@ def delete(path):
 @app.route("/<path:path>/blame", methods=["GET"])
 @app.route("/<path:path>/blame/<string:revision>", methods=["GET"])
 def blame(path, revision=None):
+    if revision is None:
+        target_pagepath = get_internal_page_symlink_target(path)
+        if target_pagepath is not None:
+            return redirect(url_for("blame", path=target_pagepath))
+
     p = Page(path, revision=revision)
     return p.blame()
 
@@ -582,6 +593,10 @@ def blame(path, revision=None):
 @app.route("/<path:path>/edit", methods=["POST", "GET"])
 @app.route("/<path:path>/edit/<string:revision>", methods=["GET"])
 def edit(path, revision=None):
+    if request.method == "GET" and revision is None:
+        target_pagepath = get_internal_page_symlink_target(path)
+        if target_pagepath is not None:
+            return redirect(url_for("view", path=target_pagepath) + "?edit")
 
     p = Page(path, revision=revision)
     return p.editor(
