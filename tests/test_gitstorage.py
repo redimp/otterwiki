@@ -716,3 +716,32 @@ def test_canonical_filename_resolves_internal_symlink(storage):
     )
 
     assert storage.canonical_filename("shortcuts/link.md") == "target/page.md"
+
+
+def test_islink(storage, outside_file):
+    author = ("Test", "test@example.org")
+
+    storage.store("target.md", content="target\n", author=author)
+    os.mkdir(os.path.join(storage.path, "folder"))
+
+    os.symlink("target.md", os.path.join(storage.path, "link.md"))
+    os.symlink("folder", os.path.join(storage.path, "dirlink"))
+    os.symlink("missing.md", os.path.join(storage.path, "broken.md"))
+    os.symlink(".git/config", os.path.join(storage.path, "gitlink"))
+    os.symlink(outside_file, os.path.join(storage.path, "external"))
+
+    assert storage.islink("link.md") is True
+    assert storage.islink("dirlink") is True
+    assert storage.islink("broken.md") is True
+
+    assert storage.islink("target.md") is False
+    assert storage.islink("folder") is False
+    assert storage.islink("missing.md") is False
+
+    assert storage.islink("gitlink") is False
+    assert storage.islink("external") is False
+
+    storage.allow_external_symlinks = True
+
+    assert storage.islink("external") is True
+    assert storage.islink("gitlink") is False

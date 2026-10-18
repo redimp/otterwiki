@@ -21,6 +21,7 @@ from otterwiki.wiki import (
     Search,
     AutoRoute,
     redirect_internal_page_symlink,
+    redirect_internal_directory_symlink,
 )
 from otterwiki.sitemap import sitemap as generate_sitemap
 from otterwiki.pageindex import PageIndex
@@ -505,6 +506,10 @@ def view(path="Home"):
     if "edit" in request.values:
         if request.method == "GET":
             symlink_redirect = redirect_internal_page_symlink(path)
+            if symlink_redirect is not None:
+                return symlink_redirect
+
+            symlink_redirect = redirect_internal_directory_symlink(path)
             if symlink_redirect is not None:
                 return symlink_redirect
 

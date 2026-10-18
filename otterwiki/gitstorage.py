@@ -164,6 +164,12 @@ class GitStorage(object):
         except StorageUnsafePath:
             return False
 
+    def islink(self, filename):
+        try:
+            return os.path.islink(self._abspath(filename))
+        except StorageUnsafePath:
+            return False
+
     def mtime(self, filename):
         return datetime.fromtimestamp(
             os.path.getmtime(self._abspath(filename))
