@@ -622,6 +622,7 @@ class GitStorage(object):
         author=None,
         no_commit=False,
         files_updated=None,
+        preserve_symlink_target=False,
     ):
         if self.exists(new_filename):
             raise StorageError(
@@ -633,6 +634,24 @@ class GitStorage(object):
             os.makedirs(
                 os.path.join(self.path, dirname), mode=0o775, exist_ok=True
             )
+
+        # git mv preserves the link text, which breaks relative symlinks
+        # moved to another directory. Recalculate only when requested.
+        new_link_target = None
+        if (
+            preserve_symlink_target
+            and os.path.dirname(old_filename) != dirname
+        ):
+            old_path = os.path.join(self.path, old_filename)
+            if os.path.islink(old_path):
+                old_link_target = os.readlink(old_path)
+                if not os.path.isabs(old_link_target):
+                    new_link_target = os.path.relpath(
+                        os.path.join(
+                            os.path.dirname(old_path), old_link_target
+                        ),
+                        os.path.join(self.path, dirname),
+                    )
         try:
             self.repo.git.mv(old_filename, new_filename)
         except Exception as e:
@@ -641,6 +660,12 @@ class GitStorage(object):
                     old_filename, new_filename, e
                 )
             )
+        if new_link_target is not None:
+            new_path = os.path.join(self.path, new_filename)
+            os.unlink(new_path)
+            os.symlink(new_link_target, new_path)
+            # git mv staged the old link text; stage the corrected one too.
+            self.repo.git.add("--", new_filename)
         if message is None:
             message = "{} renamed to {}.".format(old_filename, new_filename)
         if not no_commit:

@@ -1253,6 +1253,7 @@ class Page:
                     message=message,
                     author=author,
                     no_commit=True,
+                    preserve_symlink_target=True,
                 )
                 changed_files.append(new_filename)
 

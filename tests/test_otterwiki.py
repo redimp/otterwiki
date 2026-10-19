@@ -511,6 +511,46 @@ def test_internal_page_symlink_rename_renames_alias_only(
     assert storage.exists("target/page.md")
 
 
+@pytest.mark.parametrize(
+    ("new_pagename", "new_filename", "expected_target"),
+    [
+        ("Moved", "moved.md", "target/page.md"),
+        (
+            "Archive/Nested/Moved",
+            "archive/nested/moved.md",
+            "../../target/page.md",
+        ),
+    ],
+)
+def test_internal_page_symlink_rename_across_directories_preserves_target(
+    test_client,
+    internal_page_symlink,
+    new_pagename,
+    new_filename,
+    expected_target,
+):
+    storage = internal_page_symlink
+    old_alias = os.path.join(storage.path, "shortcuts/link.md")
+    new_alias = os.path.join(storage.path, new_filename)
+
+    rv = test_client.post(
+        "/Shortcuts/Link/rename",
+        data={"new_pagename": new_pagename, "message": "Move shortcut"},
+    )
+
+    assert rv.status_code == 302
+    assert not os.path.lexists(old_alias)
+    assert os.path.islink(new_alias)
+    assert os.readlink(new_alias) == expected_target
+    assert storage.load(new_filename) == "# Target\n"
+    assert storage.repo.git.show(f"HEAD:{new_filename}") == expected_target
+    assert storage.exists("target/page.md")
+
+    rv = test_client.get(f"/{new_pagename}")
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Page"
+
+
 def test_internal_page_symlink_delete_deletes_alias_only(
     test_client, internal_page_symlink
 ):
