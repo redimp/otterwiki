@@ -1091,11 +1091,11 @@ class mistunePluginEmbeddings:
             )
         except Exception as e:
             # render exceptions in the output
-            output = f"<p class=\"text-danger\"><tt>{embedding_name}</tt> Error: {e}</p>"
+            output = f"<p class=\"text-danger\"><tt>{mistune.escape(embedding_name)}</tt> Error: {mistune.escape(str(e))}</p>"
 
         if output is None:
             # no ouput means either no embedding has been found or nothing was rendered.
-            output = f"<p class=\"text-danger\">Unknown Embedding:&nbsp;<tt>{embedding_name}</tt></p>"
+            output = f"<p class=\"text-danger\">Unknown Embedding:&nbsp;<tt>{mistune.escape(embedding_name)}</tt></p>"
 
         if cursor:
             return cursormagicword + output

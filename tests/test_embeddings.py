@@ -2272,3 +2272,54 @@ def test_oneline_embedding_ordering_keeps_tables_working():
     html, _, _ = render.markdown(md)
     soup = BeautifulSoup(html, "html.parser")
     assert soup.find("table") is not None
+
+
+def test_embedding_error_is_escaped(create_app):
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "errorescape.md",
+        content="{{Datatable|src=<img src=x onerror=alert(1)>}}\n\n"
+        "{{Include|src=<img src=x onerror=alert(2)>}}\n",
+        author=author,
+        message="add error escape",
+    )
+    client = create_app.test_client()
+    response = client.get("/Errorescape/view")
+    assert response.status_code == 200
+    soup = BeautifulSoup(response.data.decode(), "html.parser")
+    errors = soup.find_all("p", class_="text-danger")
+    assert len(errors) == 2
+    for error in errors:
+        assert error.find("img") is None
+    assert "onerror=alert(1)" in errors[0].get_text()
+    assert "onerror=alert(2)" in errors[1].get_text()
+
+
+def test_pageindex_embedding_style_list_is_escaped(create_app):
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "listescape.md",
+        content="# Index\n{{PageIndex\n|style=list\n|toc=true\n}}\n",
+        author=author,
+        message="add list escape index",
+    )
+    create_app.storage.store(
+        "listescape/page.md",
+        content="# Page\n## &lt;img src=x onerror=alert(3)&gt;\n",
+        author=author,
+        message="add page",
+    )
+    create_app.storage.store(
+        "listescape/<img src=x onerror=alert(4)>.md",
+        content="# Other\n",
+        author=author,
+        message="add page",
+    )
+    client = create_app.test_client()
+    response = client.get("/Listescape/view")
+    assert response.status_code == 200
+    soup = BeautifulSoup(response.data.decode(), "html.parser")
+    pi_div = soup.find("div", class_="pageindex-embedding")
+    assert pi_div is not None
+    assert pi_div.find("img") is None
+    assert "onerror=alert(3)" in pi_div.get_text()

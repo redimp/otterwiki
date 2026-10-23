@@ -1219,10 +1219,10 @@ Options:
             items = []
             for letter in sorted(pages.keys()):
                 for entry in pages[letter]:
-                    item = f'<li><a href="{entry.url}">{entry.title}</a>'
+                    item = f'<li><a href="{mistune.escape(entry.url)}">{mistune.escape(entry.title)}</a>'
                     if show_toc and entry.toc:
                         sub = ''.join(
-                            f'<li><a href="{url}">{header}</a></li>'
+                            f'<li><a href="{mistune.escape(url)}">{mistune.escape(header)}</a></li>'
                             for _, header, url in entry.toc
                         )
                         item += f'<ul>{sub}</ul>'
