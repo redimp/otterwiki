@@ -291,6 +291,44 @@ def test_internal_directory_symlink_post_does_not_redirect(
     assert rv.headers.get("Location") is None
 
 
+def test_internal_page_symlink_explicit_view_redirects_to_target(
+    test_client, internal_page_symlink
+):
+    rv = test_client.get("/Shortcuts/Link/view")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Page"
+
+
+def test_internal_page_symlink_explicit_edit_redirects_to_target(
+    test_client, internal_page_symlink
+):
+    rv = test_client.get("/Shortcuts/Link/edit")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Page?edit"
+
+
+def test_internal_page_symlink_blame_redirects_to_target(
+    test_client, internal_page_symlink
+):
+    rv = test_client.get("/Shortcuts/Link/blame")
+
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Page/blame"
+
+
+def test_internal_page_symlink_explicit_view_query_revision_stays_on_alias(
+    test_client, internal_page_symlink
+):
+    revision = internal_page_symlink.log("shortcuts/link.md")[0]["revision"]
+
+    rv = test_client.get(f"/Shortcuts/Link/view?revision={revision}")
+
+    assert rv.status_code == 200
+    assert rv.headers.get("Location") is None
+
+
 def test_internal_directory_symlink_preserves_query_string(
     test_client, internal_directory_symlink
 ):
@@ -429,6 +467,104 @@ def test_internal_directory_symlink_external_target_does_not_redirect(
 
     assert rv.status_code == 404
     assert rv.headers.get("Location") is None
+
+
+def test_internal_page_symlink_explicit_revision_stays_on_alias(
+    test_client, internal_page_symlink
+):
+    revision = internal_page_symlink.log("shortcuts/link.md")[0]["revision"]
+
+    rv = test_client.get(f"/Shortcuts/Link/view/{revision}")
+
+    assert rv.status_code == 200
+    assert rv.headers.get("Location") is None
+
+
+def test_internal_page_symlink_history_stays_on_alias(
+    test_client, internal_page_symlink
+):
+    rv = test_client.get("/Shortcuts/Link/history")
+
+    assert rv.status_code == 200
+    assert rv.headers.get("Location") is None
+
+
+def test_internal_page_symlink_rename_renames_alias_only(
+    test_client, internal_page_symlink
+):
+    storage = internal_page_symlink
+    old_alias = os.path.join(storage.path, "shortcuts/link.md")
+    new_alias = os.path.join(storage.path, "shortcuts/renamed.md")
+
+    rv = test_client.post(
+        "/Shortcuts/Link/rename",
+        data={
+            "new_pagename": "Shortcuts/Renamed",
+            "message": "Rename shortcut",
+        },
+    )
+
+    assert rv.status_code == 302
+    assert not os.path.lexists(old_alias)
+    assert os.path.islink(new_alias)
+    assert os.readlink(new_alias) == "../target/page.md"
+    assert storage.exists("target/page.md")
+
+
+@pytest.mark.parametrize(
+    ("new_pagename", "new_filename", "expected_target"),
+    [
+        ("Moved", "moved.md", "target/page.md"),
+        (
+            "Archive/Nested/Moved",
+            "archive/nested/moved.md",
+            "../../target/page.md",
+        ),
+    ],
+)
+def test_internal_page_symlink_rename_across_directories_preserves_target(
+    test_client,
+    internal_page_symlink,
+    new_pagename,
+    new_filename,
+    expected_target,
+):
+    storage = internal_page_symlink
+    old_alias = os.path.join(storage.path, "shortcuts/link.md")
+    new_alias = os.path.join(storage.path, new_filename)
+
+    rv = test_client.post(
+        "/Shortcuts/Link/rename",
+        data={"new_pagename": new_pagename, "message": "Move shortcut"},
+    )
+
+    assert rv.status_code == 302
+    assert not os.path.lexists(old_alias)
+    assert os.path.islink(new_alias)
+    assert os.readlink(new_alias) == expected_target
+    assert storage.load(new_filename) == "# Target\n"
+    assert storage.repo.git.show(f"HEAD:{new_filename}") == expected_target
+    assert storage.exists("target/page.md")
+
+    rv = test_client.get(f"/{new_pagename}")
+    assert rv.status_code == 302
+    assert rv.headers["Location"] == "/Target/Page"
+
+
+def test_internal_page_symlink_delete_deletes_alias_only(
+    test_client, internal_page_symlink
+):
+    storage = internal_page_symlink
+    alias = os.path.join(storage.path, "shortcuts/link.md")
+
+    rv = test_client.post(
+        "/Shortcuts/Link/delete",
+        data={"message": "Delete shortcut"},
+    )
+
+    assert rv.status_code == 302
+    assert not os.path.lexists(alias)
+    assert storage.exists("target/page.md")
 
 
 def test_create_form(test_client):
