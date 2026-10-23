@@ -854,23 +854,23 @@ class OtterwikiRenderer:
             lines = html.splitlines(True)
             for i, line in enumerate(lines):
                 if cursormagicword in line:
-                    # parse with bs4
-                    soup = BeautifulSoup(line, 'html.parser')
-                    prepend_cursor = False
-                    for element in soup.find_all():
-                        for attr_key, attr_value in element.attrs.items():
-                            if cursormagicword in attr_value:
-                                prepend_cursor = True
-                                # remove cursormagicword from attr
-                                element.attrs[attr_key] = attr_value.replace(
-                                    cursormagicword, ""
-                                )
-                        if prepend_cursor:
-                            element.insert_before(cursormagicword)
-                    # only use the bs4 string if it has been used
-                    if prepend_cursor:
-                        line = str(soup)
-                    lines[i] = line.replace(cursormagicword, self.htmlcursor)
+                    # the magic word can end up inside a tag, e.g. in the
+                    # href of an autolink. Remove it everywhere and place
+                    # the cursor in front of that tag. The line is not
+                    # re-serialized, since it may hold unbalanced tags.
+                    tag = re.compile(r"<[^<>]*" + cursormagicword + r"[^<>]*>")
+                    if tag.search(line):
+                        line = tag.sub(
+                            lambda m: self.htmlcursor + m.group(0),
+                            line,
+                            count=1,
+                        )
+                        line = line.replace(cursormagicword, "")
+                    else:
+                        line = line.replace(
+                            cursormagicword, self.htmlcursor, 1
+                        )
+                    lines[i] = line
                     # dont check other lines, there is only one cursor.
                     break
 

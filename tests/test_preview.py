@@ -232,3 +232,29 @@ Some intro paragraph.
     assert cursor
     parent = cursor.find_parent("li")
     assert parent and parent.find("a")
+
+
+def test_preview_cursor_autolink_in_alert(create_app, req_ctx):
+    from otterwiki.wiki import Page
+
+    p = Page("test")
+    # the cursor magic word ends up in the href of the autolink, which
+    # must not break the closing tags of the alert block (issue #595)
+    content = """# Alert block issue
+
+> [!NOTE]
+> Some note.
+>
+> See: https://otterwiki.com
+
+Some text.
+"""
+    data = p.preview(content=content, cursor_line=4)
+    assert data and data['preview_content']
+    html = str(data['preview_content'])
+    assert html.count(render.htmlcursor) == 1
+    soup = bs4.BeautifulSoup(html, "html.parser")
+    alert = soup.find("div", {"class": "quote-alert"})
+    assert alert
+    assert "Some text." not in alert.text
+    assert alert.find("a", {"href": "https://otterwiki.com"})
