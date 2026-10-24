@@ -72,7 +72,7 @@ that can be configured during installation.
 | `podLabelsAdditional`             | Specify additional labels to add to the pods         | `{}`                                        |
 
 
-The parameters can be specified using `--set key=value[,key=value]` as argument to `helm install`, e.g.
+The parameters can be specified using `--set key=value[,key=value]` as argument to `helm install`, e.g. for setting up An Otter Wiki with ingress:
 
 ```bash
 helm install my-otterwiki \
@@ -83,7 +83,7 @@ helm install my-otterwiki \
   otterwiki/otterwiki
 ```
 
-Alternatively, you can use a yaml-file to set the parameters, for example when creating a `values.yaml` with
+Alternatively, you can use a yaml-file to set the parameters. For example when creating a `values.yaml` for the same config as above with
 
 ```yaml
 config:
@@ -92,6 +92,21 @@ ingress:
   enabled: true
   hosts:
   - helm.otterwiki.com
+```
+
+or when using a Gateway HTTPRoute instead of ingress
+
+```yaml
+config:
+  SITE_DESCRIPTION: "An Otter Wiki deployed with Helm"
+httproute:
+  enabled: true
+  hostnames:
+  - helm.otterwiki.com
+  parentRefs:
+  # This has to be matched to your setup. This example assumes a default k3s cluster install
+  - name: traefik-gateway
+    namespace: kube-system
 ```
 
 and deploy it with
