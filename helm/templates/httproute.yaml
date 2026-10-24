@@ -50,5 +50,9 @@ spec:
         - name: {{ $fullName }}
           kind: Service
           port: {{ $svcPort }}
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
   {{- end }}
 {{- end }}
