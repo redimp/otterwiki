@@ -91,7 +91,8 @@ httproute:
   hostnames:
     - otterwiki.local
   parentRefs: []
-  # See HTTPRoute.spec.parentRefs API specification.
+  # See Kubernetes HTTPRoute.spec.parentRefs API specification.
+  # For instance:
   # - group: gateway.networking.k8s.io
   #   kind: Gateway
   #   name: your-gateway-name
