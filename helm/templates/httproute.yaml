@@ -4,6 +4,10 @@
 {{- end -}}
 {{- $fullName := include "otterwiki.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
+{{- $parentRefs := .Values.httproute.parentRefs | required "httproute.parentRefs is required" -}}
+{{- if eq (len $parentRefs) 0 -}}
+{{- fail "httproute.parentRefs has to contain at least one gateway reference" -}}
+{{- end -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -20,7 +24,7 @@ spec:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   parentRefs:
-    {{- toYaml .Values.httproute.parentRefs | nindent 4 }}
+    {{- toYaml $parentRefs | nindent 4 }}
   rules:
   {{- if gt (len .Values.httproute.rules) 0 }}
     {{- range .Values.httproute.rules }}
