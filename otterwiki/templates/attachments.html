@@ -7,7 +7,7 @@
 {% block extra_nav %}{% endblock %}
 {% block content %}
 <div class="w-full mw-full p-0 clearfix">
-    <h2 class="float-left">Attachments</h2>
+    <h2 class="float-left">{{ _("Attachments") }}</h2>
 </div>
 {# upload form #}
 {% if has_permission("UPLOAD") %}
@@ -16,13 +16,13 @@
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="custom-file">
     <input name="file" type="file" id="file-upload" multiple="multiple">
-    <label for="file-upload">Choose files to upload</label>
+    <label for="file-upload">{{ _("Choose files to upload") }}</label>
   </div>
   <div class="form-group">
-      <input type="text" class="form-control" name="message" id="message" placeholder="Commit message" value="{{message}}">
+      <input type="text" class="form-control" name="message" id="message" placeholder="{{ _("Commit message") }}" value="{{message}}">
   </div>
   <div class="form-group m-0">
-    <input class="btn btn-primary" type="submit" value="Upload">
+    <input class="btn btn-primary" type="submit" value="{{ _("Upload") }}">
   </div>
   </form>
 </div>
@@ -33,12 +33,12 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Thumbail</th>
-          <th>Filename</th>
-          <th>Size</th>
-          <th>Date</th>
-          <th>Author</th>
-          <th class="w-half">Comment</th>
+          <th>{{ _("Thumbail") }}</th>
+          <th>{{ _("Filename") }}</th>
+          <th>{{ _("Size") }}</th>
+          <th>{{ _("Date") }}</th>
+          <th>{{ _("Author") }}</th>
+          <th class="w-half">{{ _("Comment") }}</th>
 {% if has_permission("READ") %}
           <th></th>
 {% endif %}

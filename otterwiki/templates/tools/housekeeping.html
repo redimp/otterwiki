@@ -1,15 +1,15 @@
 {# vim: set et ts=8 sts=4 sw=4 ai ft=jinja.html: #}
 {% extends "settings.html" %}
 {% block content %}
-<h2 id="settings">Housekeeping</h2>
+<h2 id="settings">{{ _("Housekeeping") }}</h2>
 <div class="card m-auto m-lg-20">
 <div class="mw-full">
-<h3 class="card-title">Drafts</h3>
+<h3 class="card-title">{{ _("Drafts") }}</h3>
 {% if drafts %}
 <form action="{{ url_for("housekeeping") }}" method="POST" autocomplete="off">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <input type="hidden" name="task" value="drafts">
-<p>This is the list of your drafts in the wiki. You can review each one or delete any you no longer need.
+<p>{{ _("This is the list of your drafts in the wiki. You can review each one or delete any you no longer need.") }}
 <div class="table-responsive table-striped">
 <table class="table compact">
     <thead>
@@ -20,10 +20,10 @@
                   <label for="checkbox-a-all" onclick="otterwiki.toggle_invert_by_name('delete_draft');"></label>
                 </div>
             </td>
-            <td><strong>Page</strong></td>
-            <td><strong>Draft created</strong></td>
-            <td><strong>Revision</strong></td>
-            <td><strong>Page last changed</strong></td>
+            <td><strong>{{ _("Page") }}</strong></td>
+            <td><strong>{{ _("Draft created") }}</strong></td>
+            <td><strong>{{ _("Revision") }}</strong></td>
+            <td><strong>{{ _("Page last changed") }}</strong></td>
         </tr>
     </thead>
     <tbody>
@@ -62,11 +62,11 @@
 </table>
 </div>
 <div class="mt-10">
-    <input class="btn btn-danger" type="submit" value="Delete selected drafts"/>
+    <input class="btn btn-danger" type="submit" value="{{ _("Delete selected drafts") }}"/>
 </div>
 </form>
 {% else %}
-<p><em>No drafts found.</em></p>
+<p><em>{{ _("No drafts found.") }}</em></p>
 {% endif %}
 </div>
 </div>
@@ -74,14 +74,14 @@
 {% if has_permission("WRITE") %}
 <div class="card m-auto m-lg-20">
 <div class="mw-full">
-<h3 class="card-title">Empty Pages</h3>
+<h3 class="card-title">{{ _("Empty Pages") }}</h3>
 {% include 'tools/housekeeping_emptypages.html' %}
 </div>
 </div>
 {#-#}
 <div class="card m-auto m-lg-20">
 <div class="mw-full">
-<h3 class="card-title">Broken WikiLinks</h3>
+<h3 class="card-title">{{ _("Broken WikiLinks") }}</h3>
 {% include 'tools/housekeeping_brokenwikilinks.html' %}
 </div>
 </div>
@@ -90,22 +90,22 @@
 {% if has_permission("ADMIN") %}
 <div class="card m-auto m-lg-20">
 <div class="mw-full">
-<h3 class="card-title">Git Garbage Collection</h3>
+<h3 class="card-title">{{ _("Git Garbage Collection") }}</h3>
 {% include 'tools/housekeeping_gitgc.html' %}
 </div>
 </div>
 {#-#}
 <div class="card m-auto m-lg-20">
 <div class="mw-full">
-<h3 class="card-title">Security Check</h3>
-<p class="text-muted">The security check provides an overview of your wiki's security, highlighting potentially problematic issues. It is purely informational and safe to run in any environment at any time.</p>
+<h3 class="card-title">{{ _("Security Check") }}</h3>
+<p class="text-muted">{{ _("The security check provides an overview of your wiki's security, highlighting potentially problematic issues. It is purely informational and safe to run in any environment at any time.") }}</p>
 <div id="security-check-results" style="display:none;">
 <table class="table compact" style="table-layout: fixed; width: 100%;">
     <thead>
         <tr>
-            <th style="width: 200px;"><strong>Issue</strong></th>
-            <th style="width: 110px; text-align: center;"><strong>Severity</strong></th>
-            <th><strong>Description</strong></th>
+            <th style="width: 200px;"><strong>{{ _("Issue") }}</strong></th>
+            <th style="width: 110px; text-align: center;"><strong>{{ _("Severity") }}</strong></th>
+            <th><strong>{{ _("Description") }}</strong></th>
         </tr>
     </thead>
     <tbody id="security-check-tbody">
@@ -113,18 +113,18 @@
 </table>
 </div>
 <div id="security-check-empty" style="display:none;">
-<p class="text-muted"><em>No security issues found. Your wiki looks good!</em></p>
+<p class="text-muted"><em>{{ _("No security issues found. Your wiki looks good!") }}</em></p>
 </div>
 <div id="security-check-error" style="display:none;">
-<p class="text-danger"><em>An error occurred while running the security check.</em></p>
+<p class="text-danger"><em>{{ _("An error occurred while running the security check.") }}</em></p>
 </div>
 <details id="security-check-passed-wrapper" class="mt-10" style="display:none;">
-    <summary>Passed checks (<span id="security-check-passed-count">0</span>)</summary>
+    <summary>{% trans %}Passed checks (<span id="security-check-passed-count">0</span>){% endtrans %}</summary>
     <table class="table compact mt-10" style="table-layout: fixed; width: 100%;">
         <thead>
             <tr>
-                <th style="width: 200px;"><strong>Check</strong></th>
-                <th><strong>Description</strong></th>
+                <th style="width: 200px;"><strong>{{ _("Check") }}</strong></th>
+                <th><strong>{{ _("Description") }}</strong></th>
             </tr>
         </thead>
         <tbody id="security-check-passed-tbody">
@@ -132,7 +132,7 @@
     </table>
 </details>
 <div class="mt-10">
-    <button class="btn btn-primary" id="security-check-btn" onclick="otterwiki.run_security_check()">Perform security check</button>
+    <button class="btn btn-primary" id="security-check-btn" onclick="otterwiki.run_security_check()">{{ _("Perform security check") }}</button>
 </div>
 </div>
 </div>
@@ -155,9 +155,18 @@
         NOTICE:   'badge-notice',
     };
 
+    // Severity level to the label shown in the badge
+    var severityLabel = {
+        CRITICAL: {{ _("CRITICAL")|tojson }},
+        HIGH:     {{ _("HIGH")|tojson }},
+        MEDIUM:   {{ _("MEDIUM")|tojson }},
+        LOW:      {{ _("LOW")|tojson }},
+        NOTICE:   {{ _("NOTICE")|tojson }},
+    };
+
     function severityBadge(severity) {
         var cls = severityBadgeClass[severity] || severityBadgeClass.NOTICE;
-        return '<span class="badge badge-pill ' + cls + '">' + severity + '</span>';
+        return '<span class="badge badge-pill ' + cls + '">' + (severityLabel[severity] || severity) + '</span>';
     }
 
     function renderIssues(issues) {
@@ -230,7 +239,7 @@
         return false;
     }
 
-    var loopbackNote = ' <em>Severity reduced because the wiki was accessed via a loopback host; if this server is reachable from elsewhere, treat this as critical.</em>';
+    var loopbackNote = ' <em>' + {{ _('Severity reduced because the wiki was accessed via a loopback host; if this server is reachable from elsewhere, treat this as critical.')|tojson }} + '</em>';
 
     // Frontend security checks (runs alongside backend checks).
     // Returns {issues: [...], passed: [...]}.
@@ -241,17 +250,17 @@
         // HTTPS
         if (window.location.protocol !== 'https:') {
             var loopback = isLoopbackHost();
-            var description = 'SSL is not enabled for your wiki. Unless you are using the wiki in a local environment only, this is a major security risk. The easiest way to add SSL is via a reverse proxy, see <a href="https://otterwiki.com/Installation#reverse-proxy">the documentation</a>.';
+            var description = {{ _('SSL is not enabled for your wiki. Unless you are using the wiki in a local environment only, this is a major security risk. The easiest way to add SSL is via a reverse proxy, see <a href="https://otterwiki.com/Installation#reverse-proxy">the documentation</a>.')|tojson }};
             if (loopback) description += loopbackNote;
             issues.push({
-                issue: 'HTTPS not enabled',
+                issue: {{ _('HTTPS not enabled')|tojson }},
                 description: description,
                 severity: loopback ? 'MEDIUM' : 'CRITICAL'
             });
         } else {
             passed.push({
-                issue: 'HTTPS is enabled',
-                description: 'The wiki was loaded over an encrypted connection.'
+                issue: {{ _('HTTPS is enabled')|tojson }},
+                description: {{ _('The wiki was loaded over an encrypted connection.')|tojson }}
             });
         }
 
@@ -262,14 +271,14 @@
             var csp = backendResponse.headers.get('Content-Security-Policy');
             if (!csp) {
                 issues.push({
-                    issue: 'CSP header missing',
-                    description: 'The Content Security Policy header is not set, which means resources could be loaded from any origin. This makes the wiki more vulnerable to cross-site scripting attacks. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP">Learn more about CSP</a>.',
+                    issue: {{ _('CSP header missing')|tojson }},
+                    description: {{ _('The Content Security Policy header is not set, which means resources could be loaded from any origin. This makes the wiki more vulnerable to cross-site scripting attacks. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP">Learn more about CSP</a>.')|tojson }},
                     severity: 'LOW'
                 });
             } else {
                 passed.push({
-                    issue: 'CSP header is set',
-                    description: 'A Content Security Policy header was returned by the server.'
+                    issue: {{ _('CSP header is set')|tojson }},
+                    description: {{ _('A Content Security Policy header was returned by the server.')|tojson }}
                 });
             }
         }
@@ -284,7 +293,7 @@
         errorDiv.style.display = 'none';
 
         btn.disabled = true;
-        btn.textContent = 'Running security check\u2026';
+        btn.textContent = {{ _('Running security check…')|tojson }};
 
         fetch('/-/housekeeping/security-check', {
             method: 'GET',
@@ -306,7 +315,7 @@
             errorDiv.style.display = '';
         }).finally(function() {
             btn.disabled = false;
-            btn.textContent = 'Perform security check';
+            btn.textContent = {{ _('Perform security check')|tojson }};
         });
     };
 })();

@@ -2,7 +2,7 @@
 {% extends "page.html" %}
 {% block content %}
 <div class="w-full mw-full p-0 clearfix">
-    <h2 class="float-left">Edit <strong>{{filename}}</strong></h2>
+    <h2 class="float-left">{% trans %}Edit <strong>{{ filename }}</strong>{% endtrans %}</h2>
 </div>
 {# rename #}
 {% if has_permission("UPLOAD") %}
@@ -11,16 +11,16 @@
 <form action="{{ url_for("edit_attachment", pagepath=pagepath, filename=filename) }}" method="POST" class="form-inline">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="form-group">
-    <label for="new_filename" class="required w-150">New filename</label>
+    <label for="new_filename" class="required w-150">{{ _("New filename") }}</label>
     <input type="text" class="form-control" name="new_filename" id="new_filename" placeholder="{{filename}}" value="{{new_filename if new_filename else filename}}">
   </div>
   <div class="form-group">
-    <label for="message" class="w-150">Commit message</label>
+    <label for="message" class="w-150">{{ _("Commit message") }}</label>
     <input type="text" class="form-control" name="message" id="message" placeholder="Renamed {{filename}} to {{new_filename if new_filename else "..."}}" value="{{ message if message }}">
   </div>
   <div class="form-group position-relative m-0">
-    <input class="btn btn-primary" type="submit" value="Rename">
-    <input class="btn btn-danger position-absolute right-0" type="submit" name="delete" value="Delete">
+    <input class="btn btn-primary" type="submit" value="{{ _("Rename") }}">
+    <input class="btn btn-danger position-absolute right-0" type="submit" name="delete" value="{{ _("Delete") }}">
   </div>
 </form>
 </div>{# card #}
@@ -31,13 +31,13 @@
       <input name="filename" type="hidden" value="{{filename}}">
   <div class="custom-file">
     <input name="file" type="file" id="file-upload" multiple="multiple">
-    <label for="file-upload">Choose files to upload</label>
+    <label for="file-upload">{{ _("Choose files to upload") }}</label>
   </div>
   <div class="form-group">
-      <input type="text" class="form-control" name="message" id="message" placeholder="Commit message" value="{{message}}">
+      <input type="text" class="form-control" name="message" id="message" placeholder="{{ _("Commit message") }}" value="{{message}}">
   </div>
   <div class="form-group m-0">
-    <input class="btn btn-primary" type="submit" value="Replace">
+    <input class="btn btn-primary" type="submit" value="{{ _("Replace") }}">
   </div>
   </form>
 </div>{# card #}
@@ -49,9 +49,9 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Author</th>
-            <th class="w-half">Comment</th>
+            <th>{{ _("Date") }}</th>
+            <th>{{ _("Author") }}</th>
+            <th class="w-half">{{ _("Comment") }}</th>
           </tr>
         </thead>
         <tbody>
@@ -65,7 +65,7 @@
                                         revision=entry.revision,
                       ) }}" class="btn revision-small">{{entry.revision}}</a>
 {% if has_permission("UPLOAD") %}
-&nbsp;<a href="{{ url_for("revert", revision=entry.revision) }}"><i class="fas fa-undo" alt="revert" title="revert commit {{entry.revision}}"></i></a>
+&nbsp;<a href="{{ url_for("revert", revision=entry.revision) }}"><i class="fas fa-undo" alt="{{ _("revert") }}" title="{{ _("revert commit %(revision)s", revision=entry.revision) }}"></i></a>
 </td>
 {% endif %}
 {# author #}

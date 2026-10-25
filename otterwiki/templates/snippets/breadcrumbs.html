@@ -1,6 +1,6 @@
 {#- vim: set et ts=8 sts=4 sw=4 ai: -#}
 {% if breadcrumbs %}
-<nav aria-label="Breadcrumbs">
+<nav aria-label="{{ _("Breadcrumbs") }}">
   <ul class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="fas fa-home"></i></a></li>
 {% for bname, bpath in breadcrumbs %}

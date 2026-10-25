@@ -23,6 +23,7 @@ import string
 import yaml
 import base64
 import mistune
+from flask_babel import gettext as _
 
 from mistune.helpers import LINK_LABEL
 from mistune.util import unikey
@@ -30,7 +31,7 @@ import urllib.parse
 
 # ESCAPE_TEXT was removed from mistune.util in v3; reconstruct it locally
 ESCAPE_TEXT = r"\\" + r"[" + re.escape(string.punctuation) + r"]"
-from otterwiki.plugins import chain_hooks
+from otterwiki.plugins import chain_hooks, plugin_manager
 from otterwiki.util import slugify, cursormagicword
 from otterwiki.plugins import EmbeddingArgs, call_hook
 
@@ -713,7 +714,16 @@ class mistunePluginAlerts:
 
     def render_html_alert_block(self, text, type):
         text = text.strip()
-        return f'<div class="quote-alert quote-alert-{type.lower()}"><div class="quote-alert-header">{self.TYPE_ICONS[type]} {type.capitalize()}</div>{text}</div>\n'
+        # the header is a label of the interface, the type stays the key
+        labels = {
+            'NOTE': _('Note'),
+            'TIP': _('Tip'),
+            'IMPORTANT': _('Important'),
+            'WARNING': _('Warning'),
+            'CAUTION': _('Caution'),
+        }
+        label = mistune.escape(labels.get(type, type.capitalize()))
+        return f'<div class="quote-alert quote-alert-{type.lower()}"><div class="quote-alert-header">{self.TYPE_ICONS[type]} {label}</div>{text}</div>\n'
 
     def __call__(self, md):
         md.block.register(
@@ -771,6 +781,17 @@ class mistunePluginWikiLink:
 
         if not link.startswith(("/", "#")):
             link = f"/{link}"
+        # let the plugins change the target, e.g. to a page in the same
+        # language folder
+        target, sep, fragment = link.partition("#")
+        if target:
+            page = inline.env.get("PAGE")
+            resolved = plugin_manager.hook.resolve_wikilink(
+                link=target,
+                source_pagepath=getattr(page, "pagepath", None),
+            )
+            if resolved:
+                link = resolved + sep + fragment
         # parse link
         link_p = urllib.parse.urlparse(link)
         # slugify the fragment to match the anchors generate by OtterwikiMdRenderer.heading
@@ -835,7 +856,7 @@ class mistunePluginWikiLink:
                     wikilink_html,
                     link,
                     text,
-                    plugin.env.get('page'),
+                    plugin.env.get('PAGE'),
                 )
                 return processed_html
 
@@ -1091,11 +1112,22 @@ class mistunePluginEmbeddings:
             )
         except Exception as e:
             # render exceptions in the output
-            output = f"<p class=\"text-danger\"><tt>{mistune.escape(embedding_name)}</tt> Error: {mistune.escape(str(e))}</p>"
+            output = "<p class=\"text-danger\">{}</p>".format(
+                _(
+                    "%(embedding)s Error: %(error)s",
+                    embedding=f"<tt>{mistune.escape(embedding_name)}</tt>",
+                    error=mistune.escape(str(e)),
+                )
+            )
 
         if output is None:
             # no ouput means either no embedding has been found or nothing was rendered.
-            output = f"<p class=\"text-danger\">Unknown Embedding:&nbsp;<tt>{mistune.escape(embedding_name)}</tt></p>"
+            output = "<p class=\"text-danger\">{}</p>".format(
+                _(
+                    "Unknown Embedding:&nbsp;%(embedding)s",
+                    embedding=f"<tt>{mistune.escape(embedding_name)}</tt>",
+                )
+            )
 
         if cursor:
             return cursormagicword + output

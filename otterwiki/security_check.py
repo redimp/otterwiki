@@ -15,6 +15,7 @@ import ipaddress
 
 from bs4 import BeautifulSoup
 from flask import request
+from flask_babel import gettext as _
 from otterwiki.server import app
 from otterwiki.plugins import plugin_manager
 from otterwiki.util import empty
@@ -148,11 +149,15 @@ def _is_loopback_host():
         return False
 
 
-_LOOPBACK_NOTE = (
-    " <em>Severity reduced because the wiki was accessed via a loopback "
-    "host; if this server is reachable from elsewhere, treat this as "
-    "critical.</em>"
-)
+def _loopback_note():
+    # a function, not a constant: translated while handling the request
+    return " <em>{}</em>".format(
+        _(
+            "Severity reduced because the wiki was accessed via a loopback "
+            "host; if this server is reachable from elsewhere, treat this as "
+            "critical."
+        )
+    )
 
 
 #
@@ -165,23 +170,24 @@ def check_anonymous_write_access():
     """Check if anonymous users can edit the wiki."""
     if app.config.get("WRITE_ACCESS", "").upper() == "ANONYMOUS":
         loopback = _is_loopback_host()
-        description = (
+        description = _(
             "Anonymous users have write access to your wiki, allowing anyone "
             "to create or edit pages without logging in. Unless this is "
             "intentional, it is a significant security risk. "
-            'This can be changed on the <a href="/-/admin/permissions_and_registration">'
-            "Permissions and Registration</a> page."
+            'This can be changed on the <a href="%(url)s">'
+            "Permissions and Registration</a> page.",
+            url="/-/admin/permissions_and_registration",
         )
         if loopback:
-            description += _LOOPBACK_NOTE
+            description += _loopback_note()
         return SecurityCheckResult(
-            issue="Anonymous users can edit the wiki",
+            issue=_("Anonymous users can edit the wiki"),
             description=description,
             severity="MEDIUM" if loopback else "CRITICAL",
         )
     return SecurityCheckResult(
-        issue="Anonymous write access is disabled",
-        description="Write access requires an authenticated account.",
+        issue=_("Anonymous write access is disabled"),
+        description=_("Write access requires an authenticated account."),
         passed=True,
     )
 
@@ -191,23 +197,24 @@ def check_anonymous_upload_access():
     """Check if anonymous users can upload files."""
     if app.config.get("ATTACHMENT_ACCESS", "").upper() == "ANONYMOUS":
         loopback = _is_loopback_host()
-        description = (
+        description = _(
             "Anonymous users have file upload access to your wiki, allowing "
             "anyone to upload files without logging in. Unless this is "
             "intentional, it is a significant security risk. "
-            'This can be changed on the <a href="/-/admin/permissions_and_registration">'
-            "Permissions and Registration</a> page."
+            'This can be changed on the <a href="%(url)s">'
+            "Permissions and Registration</a> page.",
+            url="/-/admin/permissions_and_registration",
         )
         if loopback:
-            description += _LOOPBACK_NOTE
+            description += _loopback_note()
         return SecurityCheckResult(
-            issue="Anonymous users can upload files",
+            issue=_("Anonymous users can upload files"),
             description=description,
             severity="MEDIUM" if loopback else "CRITICAL",
         )
     return SecurityCheckResult(
-        issue="Anonymous upload access is disabled",
-        description="Attachment uploads require an authenticated account.",
+        issue=_("Anonymous upload access is disabled"),
+        description=_("Attachment uploads require an authenticated account."),
         passed=True,
     )
 
@@ -217,20 +224,24 @@ def check_server_name_not_set():
     """Check if SERVER_NAME is configured."""
     if not app.config.get("SERVER_NAME"):
         return SecurityCheckResult(
-            issue="Server name not configured",
-            description=(
+            issue=_("Server name not configured"),
+            description=_(
                 "The <code>SERVER_NAME</code> configuration variable is not set. "
                 "This may lead to issues depending on your reverse proxy configuration. "
-                'See <a href="https://flask.palletsprojects.com/en/stable/config/#SERVER_NAME">'
+                'See <a href="%(flask_url)s">'
                 "Flask documentation</a> for details. "
-                'This can be changed on the <a href="/-/admin">'
-                "Application Preferences</a> page."
+                'This can be changed on the <a href="%(url)s">'
+                "Application Preferences</a> page.",
+                flask_url="https://flask.palletsprojects.com/en/stable/config/#SERVER_NAME",
+                url="/-/admin",
             ),
             severity="NOTICE",
         )
     return SecurityCheckResult(
-        issue="Server name is configured",
-        description="The <code>SERVER_NAME</code> configuration variable is set.",
+        issue=_("Server name is configured"),
+        description=_(
+            "The <code>SERVER_NAME</code> configuration variable is set."
+        ),
         passed=True,
     )
 
@@ -244,20 +255,21 @@ def check_open_registrations():
         and app.config.get("AUTO_APPROVAL", True)
     ):
         return SecurityCheckResult(
-            issue="Fully open registrations",
-            description=(
+            issue=_("Fully open registrations"),
+            description=_(
                 "Your wiki allows unlimited registrations without requiring "
                 "email confirmation or manual approval. This means anyone can "
                 "create accounts without restrictions, potentially flooding the "
                 "wiki with spam users. "
-                'This can be changed on the <a href="/-/admin/permissions_and_registration">'
-                "Permissions and Registration</a> page."
+                'This can be changed on the <a href="%(url)s">'
+                "Permissions and Registration</a> page.",
+                url="/-/admin/permissions_and_registration",
             ),
             severity="HIGH",
         )
     return SecurityCheckResult(
-        issue="Registrations are restricted",
-        description=(
+        issue=_("Registrations are restricted"),
+        description=_(
             "New registrations are disabled or require email confirmation "
             "or manual approval."
         ),
@@ -270,15 +282,16 @@ def check_plugins_active():
     """Check if plugins are active."""
     plugin_info = plugin_manager.list_plugin_distinfo()
     if plugin_info:
-        plugin_names = [dist.project_name for _, dist in plugin_info]
+        plugin_names = [dist.project_name for _name, dist in plugin_info]
         return SecurityCheckResult(
-            issue="Plugins are active",
-            description=(
+            issue=_("Plugins are active"),
+            description=_(
                 "You are using wiki plugins. Note that there are "
                 "little to no restrictions on what a plugin can do, and "
                 "third-party plugins are not reviewed for security by an Otterwiki "
                 "developers. Your active plugins: "
-                f"<strong>{', '.join(plugin_names)}</strong>."
+                "<strong>%(plugins)s</strong>.",
+                plugins=', '.join(plugin_names),
             ),
             severity="NOTICE",
         )
@@ -296,8 +309,8 @@ def check_custom_css():
                 content = f.read()
             if _has_css_rules(content):
                 return SecurityCheckResult(
-                    issue="Custom CSS is being used",
-                    description=(
+                    issue=_("Custom CSS is being used"),
+                    description=_(
                         "You have custom CSS rules defined in "
                         "<code>custom.css</code>. If this is intentional, "
                         "this notice can be ignored."
@@ -320,8 +333,8 @@ def check_custom_js():
                 content = f.read()
             if _has_js_code(content):
                 return SecurityCheckResult(
-                    issue="Custom JavaScript is being used",
-                    description=(
+                    issue=_("Custom JavaScript is being used"),
+                    description=_(
                         "You have custom JavaScript code defined in "
                         "<code>custom.js</code>. If this is intentional, "
                         "this notice can be ignored."
@@ -367,11 +380,11 @@ def check_custom_html():
 
     if findings:
         return SecurityCheckResult(
-            issue="Custom HTML is being used",
-            description=(
-                "You have custom HTML defined in: <strong>"
-                + ", ".join(findings)
-                + "</strong>. If this is intentional, this notice can be ignored."
+            issue=_("Custom HTML is being used"),
+            description=_(
+                "You have custom HTML defined in: <strong>%(files)s</strong>. "
+                "If this is intentional, this notice can be ignored.",
+                files=", ".join(findings),
             ),
             severity="NOTICE",
         )
@@ -383,8 +396,8 @@ def check_html_whitelist():
     """Check if RENDERER_HTML_ALLOWLIST is configured."""
     if not empty(app.config.get("RENDERER_HTML_ALLOWLIST", "")):
         return SecurityCheckResult(
-            issue="Custom HTML allowlist is configured",
-            description=(
+            issue=_("Custom HTML allowlist is configured"),
+            description=_(
                 "Your <code>RENDERER_HTML_ALLOWLIST</code> is not empty, which "
                 "allows potentially unsafe additional HTML tags and attributes "
                 "in wiki content. If this is intentional, this notice can be "
@@ -415,24 +428,28 @@ def check_reverse_proxy():
         return None
 
     issues = []
-    issue_title = "Misconfigured reverse proxy"
+    issue_title = _("Misconfigured reverse proxy")
 
     # non-private IP with no proxy headers
     if not is_private and not has_proxy_headers:
-        issue_title = "Missing or misconfigured reverse proxy"
+        issue_title = _("Missing or misconfigured reverse proxy")
         issues.append(
-            "Your wiki is directly accessible from the internet without a "
-            "reverse proxy or the reverse proxy is misconfigured. "
-            "This is not recommended as it exposes the "
-            "application server directly."
+            _(
+                "Your wiki is directly accessible from the internet without a "
+                "reverse proxy or the reverse proxy is misconfigured. "
+                "This is not recommended as it exposes the "
+                "application server directly."
+            )
         )
 
     # X-Forwarded-For present but X-Forwarded-Proto missing
     if has_forwarded_for and not has_forwarded_proto:
         issues.append(
-            "<code>X-Forwarded-For</code> is present but "
-            "<code>X-Forwarded-Proto</code> is not, so the wiki cannot "
-            "determine the original protocol."
+            _(
+                "<code>X-Forwarded-For</code> is present but "
+                "<code>X-Forwarded-Proto</code> is not, so the wiki cannot "
+                "determine the original protocol."
+            )
         )
 
     if issues:
@@ -449,20 +466,26 @@ def check_reverse_proxy():
         return SecurityCheckResult(
             issue=issue_title,
             description=(
-                "Your wiki does not appear to be running behind a properly "
-                "configured reverse proxy:"
-                f"<ul>{issues_list}</ul>"
-                "Please consult the documentation for "
-                '<a href="https://otterwiki.com/Installation#reverse-proxy">'
-                "example reverse proxy configurations</a> and "
-                '<a href="https://otterwiki.com/Configuration#reverse-proxy-and-ips">'
-                "required wiki parameters</a>."
+                _(
+                    "Your wiki does not appear to be running behind a properly "
+                    "configured reverse proxy:"
+                )
+                + f"<ul>{issues_list}</ul>"
+                + _(
+                    "Please consult the documentation for "
+                    '<a href="%(installation_url)s">'
+                    "example reverse proxy configurations</a> and "
+                    '<a href="%(configuration_url)s">'
+                    "required wiki parameters</a>.",
+                    installation_url="https://otterwiki.com/Installation#reverse-proxy",
+                    configuration_url="https://otterwiki.com/Configuration#reverse-proxy-and-ips",
+                )
             ),
             severity=severity,
         )
 
     return SecurityCheckResult(
-        issue="Reverse proxy looks correctly configured",
-        description="Proxy headers appear consistent.",
+        issue=_("Reverse proxy looks correctly configured"),
+        description=_("Proxy headers appear consistent."),
         passed=True,
     )

@@ -3,27 +3,35 @@
                         <span class="dropdown-icon">
                             <i class="fa fa-paperclip"></i>
                         </span>
-                        Attachments
+                        {{ _("Attachments") }}
                     </a>
                     <a href="{{ url_for('history', path=pagepath) }}" class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="far fa-file-alt"></i>
                         </span>
-                        History
+                        {{ _("History") }}
                     </a>
                     <a href="{{ url_for('blame', path=pagepath, revision=revision) if revision else url_for('blame', path=pagepath) }}" class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="fas fa-people-arrows"></i>
                         </span>
-                        Blame
+                        {{ _("Blame") }}
                     </a>
 {%- if has_permission('READ') and not has_permission('WRITE') %}
                     <a href="{{ url_for('source', pagepath=pagepath) }}" class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="fab fa-markdown"></i>
                         </span>
-                        View Source
+                        {{ _("View Source") }}
                     </a>
 {%- endif %}
+{%- for entry in plugin_page_menu_entries(pagepath) %}
+                    <a href="{{ entry.url }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="{{ entry.icon or "fas fa-puzzle-piece" }}"></i>
+                        </span>
+                        {{ entry.label }}
+                    </a>
+{%- endfor %}
 {%- include 'snippets/navbardropdown_rename_remove.html' %}
                     <div class="dropdown-divider mt-5 mb-5"></div>

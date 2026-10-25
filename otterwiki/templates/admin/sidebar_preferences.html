@@ -5,44 +5,44 @@
 <div class="mw-full">
 <form action="{{ url_for("admin_sidebar_preferences") }}" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-<h2 class="card-title">Sidebar Preferences</h2>
-<h3 class="card-title">Shortcuts</h3>
+<h2 class="card-title">{{ _("Sidebar Preferences") }}</h2>
+<h3 class="card-title">{{ _("Shortcuts") }}</h3>
 
 <div class="mb-10">
-Shortcuts not listed in the sidebar are available via the <span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span> Menu.
+{% trans %}Shortcuts not listed in the sidebar are available via the <span class="btn btn-square btn-sm"><i class="fas fa-ellipsis-v"></i></span> Menu.{% endtrans %}
 </div>
-{% for name, description in [
-    ("home", '<span class="btn btn-square btn-sm"><i class="fas fa-home"></i></span> Home'),
-    ("pageindex", '<span class="btn btn-square btn-sm"><i class="fas fa-list"></i></span> A - Z'),
-    ("changelog", '<span class="btn btn-square btn-sm"><i class="fas fa-history"></i></span> Changelog'),
-    ("createpage", '<span class="btn btn-square btn-sm"><i class="far fa-file"></i></span> Create Page'),
+{% for name, icon, label in [
+    ("home", "fas fa-home", _("Home")),
+    ("pageindex", "fas fa-list", _("A - Z")),
+    ("changelog", "fas fa-history", _("Changelog")),
+    ("createpage", "far fa-file", _("Create Page")),
 ] %}
   <div class="form-group">
     <div class="custom-checkbox">
         <input {%if name in config.SIDEBAR_SHORTCUTS.lower().split() %}checked=checked{% endif %} type="checkbox" id="shortcut_{{name|lower}}" name="sidebar_shortcut_{{name|lower}}" value="True">
-        <label for="shortcut_{{name|lower}}">{{description|safe}}</label>
+        <label for="shortcut_{{name|lower}}"><span class="btn btn-square btn-sm"><i class="{{icon}}"></i></span> {{label}}</label>
     </div>
   </div>
 {% endfor %}
 {##}
 <div class="form-text pt-0 mt-0 mb-20"></div>
 {##}
-<h3 class="card-title">Custom Menu</h3>
+<h3 class="card-title">{{ _("Custom Menu") }}</h3>
 <div class="my-5">
-    The menu is used to display a menu of individual pages or external links within easy reach in the sidebar.
+    {{ _("The menu is used to display a menu of individual pages or external links within easy reach in the sidebar.") }}
 </div>
 <ul class="mb-20">
-    <li>To link a wiki page, enter the full path in the <code>Page/Link</code> field.</li>
-    <li>For external links, enter the URL in the <code>Page/Link</code> field and provide a title in the <code>Title</code> field.</li>
-    <li>You can add <a href="https://fontawesome.com/v5/search?q=link&ic=free-collection" target="_blank">FontAwesome 5 <i class="fas fa-external-link-alt"></i></a> icons by entering HTML like <code>&lt;i class="fas fa-question-circle"&gt;&lt;/i&gt;</code> in the <code>Icon</code> field.</li>
-    <li>To create a separator, set the <code>Page/Link</code> field to <code>---</code> and leave other fields empty.</li>
+    <li>{% trans %}To link a wiki page, enter the full path in the <code>Page/Link</code> field.{% endtrans %}</li>
+    <li>{% trans %}For external links, enter the URL in the <code>Page/Link</code> field and provide a title in the <code>Title</code> field.{% endtrans %}</li>
+    <li>{% trans %}You can add <a href="https://fontawesome.com/v5/search?q=link&ic=free-collection" target="_blank">FontAwesome 5 <i class="fas fa-external-link-alt"></i></a> icons by entering HTML like <code>&lt;i class="fas fa-question-circle"&gt;&lt;/i&gt;</code> in the <code>Icon</code> field.{% endtrans %}</li>
+    <li>{% trans %}To create a separator, set the <code>Page/Link</code> field to <code>---</code> and leave other fields empty.{% endtrans %}</li>
 </ul>
 <table>
     <thead>
         <th>&nbsp;</th>
-        <th>Page/Link</th>
-        <th>Title <em>(optional)</em></th>
-        <th>Icon <em>(optional)</em></th>
+        <th>{{ _("Page/Link") }}</th>
+        <th>{% trans %}Title <em>(optional)</em>{% endtrans %}</th>
+        <th>{% trans %}Icon <em>(optional)</em>{% endtrans %}</th>
         <th>&nbsp;</th>
     </thead>
     <tbody id="custom-page-index">
@@ -63,7 +63,7 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
     </tbody>
 </table>
 <div class="form-group">
-        <label for="find-page-select" class="mt-5" style="display:block;">Select page to add</label>
+        <label for="find-page-select" class="mt-5" style="display:block;">{{ _("Select page to add") }}</label>
         <select id="find-page-select" size="1" class="form-control w-400 mw-full" style="display:inline;">
         {%- for page in ["", "---"] + pages %}
             <option value="{{page}}">{{page if page else "..."}}</option>
@@ -74,11 +74,11 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
 {##}
 <div class="form-text pt-0 mt-0 mb-20"></div>
 {##}
-<h3 class="card-title">Page Index</h3>
+<h3 class="card-title">{{ _("Page Index") }}</h3>
     <div class="form-group">
-        <label for="sidebar_menutree_mode">Page Index Mode</label>
+        <label for="sidebar_menutree_mode">{{ _("Page Index Mode") }}</label>
         <select class="form-control w-md-400" id="sidebar_menutree_mode" name="sidebar_menutree_mode">
-{% for mode in [("", "Not displayed"),("SORTED","Directories and pages, sorted"),("DIRECTORIES_GROUPED","Directories and pages, with directories grouped first"),("DIRECTORIES_ONLY","Directories only")] %}
+{% for mode in [("", _("Not displayed")),("SORTED", _("Directories and pages, sorted")),("DIRECTORIES_GROUPED", _("Directories and pages, with directories grouped first")),("DIRECTORIES_ONLY", _("Directories only"))] %}
             <option value="{{mode[0]}}"{%if config.SIDEBAR_MENUTREE_MODE == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
 {% endfor %}
         </select>
@@ -88,14 +88,14 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
     <div class="form-group">
       <div class="custom-checkbox">
         <input {%if config.SIDEBAR_MENUTREE_IGNORE_CASE %}checked{% endif %} type="checkbox" id="menutree_ignore_case" name="sidebar_menutree_ignore_case" value="True">
-        <label for="menutree_ignore_case">Sort case insensitive</label>
+        <label for="menutree_ignore_case">{{ _("Sort case insensitive") }}</label>
       </div>
     </div>
 {% endif %}
     <div class="form-group">
-        <label for="sidebar_menutree_focus">Page Index Focus</label>
+        <label for="sidebar_menutree_focus">{{ _("Page Index Focus") }}</label>
         <select class="form-control w-md-400" id="sidebar_menutree_focus" name="sidebar_menutree_focus">
-{% for mode in [("SUBTREE", "Focus on current subtree"),("TOP","Always display all top folders and pages"),("OFF","Always display all pages, unfolded")] %}
+{% for mode in [("SUBTREE", _("Focus on current subtree")),("TOP", _("Always display all top folders and pages")),("OFF", _("Always display all pages, unfolded"))] %}
             <option value="{{mode[0]}}"{%if config.SIDEBAR_MENUTREE_FOCUS == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
 {% endfor %}
         </select>
@@ -103,17 +103,17 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
 {##}
 {##}
     <div class="form-group">
-        <label for="sidebar_menutree_maxdepth">Maximal depth of pages and directories listed.</label>
-        <input name="sidebar_menutree_maxdepth" type="text" placeholder="unlimited" class="form-control w-md-400" id="sidebar_menutree_maxdepth" value="{{ config.SIDEBAR_MENUTREE_MAXDEPTH or "" }}">
+        <label for="sidebar_menutree_maxdepth">{{ _("Maximal depth of pages and directories listed.") }}</label>
+        <input name="sidebar_menutree_maxdepth" type="text" placeholder="{{ _("unlimited") }}" class="form-control w-md-400" id="sidebar_menutree_maxdepth" value="{{ config.SIDEBAR_MENUTREE_MAXDEPTH or "" }}">
         <div class="mt-5">
-            With <code>MAXDEPTH=0</code> only the pages and directories of the same depth will be displayed. With <code>MAXDEPTH=n</code> children up to depth <code>n</code> will be displayed. Without <code>MAXDEPTH</code> all children will be displayed.
+            {% trans %}With <code>MAXDEPTH=0</code> only the pages and directories of the same depth will be displayed. With <code>MAXDEPTH=n</code> children up to depth <code>n</code> will be displayed. Without <code>MAXDEPTH</code> all children will be displayed.{% endtrans %}
         </div>
     </div>
 {##}
 <div class="form-text pt-0 mt-0 mb-20"></div>
 {##}
 <div class="mt-10">
-    <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
+    <input class="btn btn-primary" name="update_preferences" type="submit" value="{{ _("Save Preferences") }}">
 </div>
 </form>
 </div>

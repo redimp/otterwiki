@@ -299,6 +299,115 @@ class OtterWikiPluginSpec:
         """
 
     @hookspec
+    def translation_directories(self) -> str | list[str] | None:
+        """
+        Translations shipped by the plugin, e.g. a language pack.
+
+        Called once at startup, before the first request.
+
+        Returns:
+            The path of a folder holding `<lang>/LC_MESSAGES/messages.mo`
+            catalogs (the domain `messages`, made from
+            otterwiki/translations/messages.pot), a list of such paths,
+            or None. A message a catalog doesn't translate falls back to
+            the other installed catalogs, then to English.
+        """
+
+    @hookspec
+    def page_list_filter(self, filenames: list[str], context: str) -> None:
+        """
+        Filter a list of pages before it is shown: the page index (and the
+        page list of the editor), the search and the sitemap.
+
+        Plugins must mutate ``filenames`` in-place (e.g.
+        ``filenames[:] = [f for f in filenames if ...]``); return values
+        are ignored.
+
+        Args:
+            filenames: The markdown files, paths relative to the repository,
+                e.g. ``["home.md", "fr/home.md"]``.
+            context: ``"pageindex"``, ``"search"`` or ``"sitemap"``.
+        """
+
+    @hookspec
+    def breadcrumbs_filter(
+        self, breadcrumbs: list[tuple[str, str]], pagepath: str
+    ) -> None:
+        """
+        Change the breadcrumbs of a page, in-place.
+
+        Args:
+            breadcrumbs: ``(name, pagepath)`` of every parent and the page.
+            pagepath: The path of the page, e.g. ``"fr/Setup/Docker"``.
+        """
+
+    @hookspec
+    def admin_menu_entries(self) -> list[dict] | None:
+        """
+        Entries to add to the admin menu, e.g. the settings page of the
+        plugin, served by url_admin_request (/-/admin/plugin/<name>/<extra>).
+
+        Returns:
+            A list of ``{"url": ..., "label": ..., "icon": ...}`` dicts, or
+            None.
+        """
+
+    @hookspec
+    def page_menu_entries(self, pagepath: str) -> list[dict] | None:
+        """
+        Entries to add to the menu of a page (next to History, Blame…).
+
+        Args:
+            pagepath: The path of the page shown.
+
+        Returns:
+            A list of ``{"url": ..., "label": ..., "icon": ...}`` dicts,
+            ``icon`` being Font Awesome classes, e.g. ``"fas fa-language"``,
+            or None.
+        """
+
+    @hookspec(firstresult=True)
+    def page_language(self, pagepath: str) -> str | None:
+        """
+        The language a page is written in, e.g. "fr" for pages kept in a
+        fr/ folder. The first plugin returning a string wins; by default
+        it is SITE_LANG. Shown next to the table of contents when it isn't
+        the language of the interface.
+
+        Args:
+            pagepath: The path of the page, or None (a page without path).
+        """
+
+    @hookspec(firstresult=True)
+    def page_new_content(self, pagepath: str) -> str | None:
+        """
+        The content the editor starts with for a page that doesn't exist
+        yet. The first plugin returning a string wins; by default the page
+        starts with its name as heading.
+
+        Args:
+            pagepath: The path of the new page.
+        """
+
+    @hookspec(firstresult=True)
+    def resolve_wikilink(self, link: str, source_pagepath: str) -> str | None:
+        """
+        Where a WikiLink points to. Used when rendering ``[[Page]]`` and
+        when updating the links to a renamed page. The first plugin
+        returning a string wins.
+
+        Args:
+            link: The target as written, with a leading slash and without
+                the ``#anchor``, e.g. ``"/Setup"``.
+            source_pagepath: The path of the page holding the link, or None
+                when unknown (e.g. a preview of a new page).
+
+        Returns:
+            The target to use instead, with a leading slash, e.g.
+            ``"/fr/Setup"``, or None to keep ``link``.
+        """
+
+    @hookspec
     def page_renamed(
         self, old_pagepath, new_pagepath, author, message
     ) -> None:

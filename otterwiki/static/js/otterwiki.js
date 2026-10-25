@@ -126,7 +126,7 @@ var otterwiki = {
                 row.classList.toggle('clamped', clamped);
                 if (clamped) {
                     row.setAttribute('tabindex', '0');
-                    row.setAttribute('title', 'Show the full line');
+                    row.setAttribute('title', otterwiki_t('Show the full line'));
                     row.setAttribute('aria-expanded', 'false');
                 } else {
                     row.removeAttribute('tabindex');
@@ -142,7 +142,7 @@ var otterwiki = {
             const expanded = row.classList.toggle('expanded');
             row.classList.toggle('clamped', !expanded);
             row.setAttribute('aria-expanded', expanded);
-            row.setAttribute('title', expanded ? 'Shorten the line' : 'Show the full line');
+            row.setAttribute('title', otterwiki_t(expanded ? 'Shorten the line' : 'Show the full line'));
         };
         rows.forEach((row) => {
             row.addEventListener('click', () => {

@@ -8,6 +8,7 @@ import re
 import threading
 import urllib.parse
 import json
+from flask_babel import gettext as _
 
 from otterwiki.plugins import (
     hookimpl,
@@ -61,7 +62,7 @@ class DatatableEmbedding:
     def info(self):
         return (
             "DataTable",
-            "Renders sort-, search and pageable tables.",
+            _("Renders sort-, search and pageable tables."),
             "Syntax/Embeddings",
         )
 
@@ -69,27 +70,43 @@ class DatatableEmbedding:
     def help_category_prelude(self, category):
         if category != self.info()[2]:
             return None
+        # one msgid per paragraph, the example source stays untranslated
         return (
-            "Embeddings are additions to the standard markdown syntax"
-            " in An Otter Wiki. They provide capabilities beyond basic"
-            " markdown, such as special layout elements, enhanced"
-            " features, and entirely new functionality."
-            " <br/><span class=\"text-secondary-dm bg-secondary-lm\">"
-            "Embeddings are an experimental feature and subject to"
-            " change.</span>\n\n"
-            "<h4>Usage</h4>\n\n"
-            "An embedding starts with <code>{{"
-            "<em>EmbeddingName</em></code> and ends with"
-            " <code>}}</code>. Between the opening and closing"
-            " braces you can pass **options** and **args**.\n\n"
-            "**Options** are key-value pairs separated by"
-            " `|` in the form"
-            " `|key=value`. "
-            "Each option starts with a `|` followed by"
-            " the key, an `=` and the value.\n\n"
-            "**Args** are any remaining lines that are not options."
-            " They form the body content of the embedding and can"
-            " contain regular markdown.\n\n"
+            _(
+                "Embeddings are additions to the standard markdown syntax"
+                " in An Otter Wiki. They provide capabilities beyond basic"
+                " markdown, such as special layout elements, enhanced"
+                " features, and entirely new functionality."
+            )
+            + " <br/><span class=\"text-secondary-dm bg-secondary-lm\">"
+            + _(
+                "Embeddings are an experimental feature and subject to change."
+            )
+            + "</span>\n\n"
+            + "<h4>"
+            + _("Usage")
+            + "</h4>\n\n"
+            + _(
+                "An embedding starts with <code>{{"
+                "<em>EmbeddingName</em></code> and ends with"
+                " <code>}}</code>. Between the opening and closing"
+                " braces you can pass **options** and **args**."
+            )
+            + "\n\n"
+            + _(
+                "**Options** are key-value pairs separated by"
+                " `|` in the form"
+                " `|key=value`. "
+                "Each option starts with a `|` followed by"
+                " the key, an `=` and the value."
+            )
+            + "\n\n"
+            + _(
+                "**Args** are any remaining lines that are not options."
+                " They form the body content of the embedding and can"
+                " contain regular markdown."
+            )
+            + "\n\n"
             "```\n"
             "{{EmbeddingName\n"
             "|option1=value1\n"
@@ -97,10 +114,13 @@ class DatatableEmbedding:
             "args content (markdown)\n"
             "}}\n"
             "```\n"
-            "**Escaping:** Use <code>\\\\|</code> to include a"
-            " literal <code>|</code> in a key, value, or args."
-            " Use <code>\\\\=</code> to include a literal"
-            " <code>=</code> in a key.\n\n"
+            + _(
+                "**Escaping:** Use <code>\\\\|</code> to include a"
+                " literal <code>|</code> in a key, value, or args."
+                " Use <code>\\\\=</code> to include a literal"
+                " <code>=</code> in a key."
+            )
+            + "\n\n"
         )
 
     @hookimpl
@@ -108,9 +128,16 @@ class DatatableEmbedding:
         if plugin.lower() != "datatable":
             return None
 
-        return """
+        # the prose is translated, the examples stay as they are
+        return "".join(
+            [
+                """
 <div class="row mb-10">
-The DataTable Embedding is for turning markdown tables into datatables that can be paginated, search and sorted.
+""",
+                _(
+                    'The DataTable Embedding is for turning markdown tables into datatables that can be paginated, search and sorted.'
+                ),
+                """
 <div class="col-md-8 col-sm-12">
 
 ```
@@ -157,7 +184,9 @@ The DataTable Embedding is for turning markdown tables into datatables that can 
 </div></div>
 
 <div class="row mb-10">
-CSV attachments can also be rendered as datatables:
+""",
+                _('CSV attachments can also be rendered as datatables:'),
+                """
 <div class="col-md-8 col-sm-12">
 
 ```
@@ -174,17 +203,50 @@ CSV attachments can also be rendered as datatables:
 
 </div><div class="col-md-4 col-sm-12 pl-20">
 
-Options specific to CSV:
-- `src`: filename of a CSV attachment on the page
-- `delimiter` field delimiter, default `;`
-- `quotechar` character used to quote fields, default `"`
-- `header` use first row as column headers (default `true`)
-- `columns` comma-separated list of columns to include, given as 1-based indices (`1` = first column) or header names
-- `column0` same as `columns`, but using 0-based indices (`0` = first column); ignored if `columns` is set
-- `headers` comma-separated list of column header labels (overrides CSV headers)
+""",
+                _('Options specific to CSV:'),
+                """
+- `src`: """,
+                _('filename of a CSV attachment on the page'),
+                """
+- `delimiter` """,
+                _('field delimiter, default %(default)s', default='`;`'),
+                """
+- `quotechar` """,
+                _(
+                    'character used to quote fields, default %(default)s',
+                    default='`"`',
+                ),
+                """
+- `header` """,
+                _(
+                    'use first row as column headers (default %(default)s)',
+                    default='`true`',
+                ),
+                """
+- `columns` """,
+                _(
+                    'comma-separated list of columns to include, given as 1-based indices (%(one)s = first column) or header names',
+                    one='`1`',
+                ),
+                """
+- `column0` """,
+                _(
+                    'same as %(columns)s, but using 0-based indices (%(zero)s = first column); ignored if %(columns)s is set',
+                    columns='`columns`',
+                    zero='`0`',
+                ),
+                """
+- `headers` """,
+                _(
+                    'comma-separated list of column header labels (overrides CSV headers)'
+                ),
+                """
 
 </div></div>
-"""
+""",
+            ]
+        )
 
     str_options = ["caption"]
     int_options = ["perPage"]
@@ -213,8 +275,10 @@ Options specific to CSV:
         # component can only be an attempt to escape the repository.
         if '..' in src.replace('\\', '/').split('/'):
             raise ValueError(
-                f'datatable: invalid src "{src}", path traversal is not'
-                ' allowed.'
+                _(
+                    'datatable: invalid src "%(src)s", path traversal is not allowed.',
+                    src=src,
+                )
             )
 
         delimiter = args.options.get(
@@ -234,21 +298,23 @@ Options specific to CSV:
             parts = src.lstrip("/").rsplit("/", 1)
             if len(parts) != 2:
                 raise ValueError(
-                    f'datatable: invalid absolute src "{src}",'
-                    f' expected /pagepath/filename.'
+                    _(
+                        'datatable: invalid absolute src "%(src)s", expected /pagepath/filename.',
+                        src=src,
+                    )
                 )
             att_pagepath, att_filename = parts
         else:
             # relative: attachment on the current page
             page = getattr(self, 'page', None)
             if page is None:
-                raise ValueError('no page context available.')
+                raise ValueError(_('no page context available.'))
             att_pagepath = page.pagepath
             att_filename = src
 
         attachment = Attachment(att_pagepath, att_filename)
         if not attachment.exists():
-            raise ValueError(f'csv attachment "{src}" not found.')
+            raise ValueError(_('csv attachment "%(src)s" not found.', src=src))
         with open(attachment.abspath, 'r', encoding='utf-8', newline='') as f:
             content = f.read()
 
@@ -438,7 +504,9 @@ class ImageFrameEmbedding:
     def info(self):
         return (
             "ImageFrame",
-            "Render an image/images in a framed box next to the main content.",
+            _(
+                "Render an image/images in a framed box next to the main content."
+            ),
             "Syntax/Embeddings",
         )
 
@@ -447,9 +515,14 @@ class ImageFrameEmbedding:
         if plugin.lower() != "imageframe":
             return None
 
-        return """
+        # the prose is translated, the examples stay as they are
+        return "".join(
+            [
+                """
 <div class="row mb-10">
-Display images in frames on the wiki page.
+""",
+                _('Display images in frames on the wiki page.'),
+                """
 </div><div class="row mb-10">
 
 <div class="col-md-8 col-sm-12">
@@ -466,7 +539,13 @@ Display images in frames on the wiki page.
 }}
 ```
 
-Use `|src=` to embed an attachment directly, with an optional `|alt=` text:
+""",
+                _(
+                    'Use %(src)s to embed an attachment directly, with an optional %(alt)s text:',
+                    src='`|src=`',
+                    alt='`|alt=`',
+                ),
+                """
 
 ```
 {{ImageFrame
@@ -476,7 +555,11 @@ Use `|src=` to embed an attachment directly, with an optional `|alt=` text:
 }}
 ```
 
-Use an absolute path to embed an attachment from another page:
+""",
+                _(
+                    'Use an absolute path to embed an attachment from another page:'
+                ),
+                """
 
 ```
 {{ImageFrame
@@ -484,7 +567,9 @@ Use an absolute path to embed an attachment from another page:
 }}
 ```
 
-External images can be embedded via a full URL:
+""",
+                _('External images can be embedded via a full URL:'),
+                """
 
 ```
 {{ImageFrame
@@ -502,7 +587,9 @@ External images can be embedded via a full URL:
 [![](/static/img/otter.png)](/static/img/otter.png)
 }}
 </div></div>
-"""
+""",
+            ]
+        )
 
     @hookimpl
     def page_render_context(self, page, preview: bool):
@@ -581,8 +668,10 @@ div.imageframe {
                     parts = src.lstrip("/").rsplit("/", 1)
                     if len(parts) != 2:
                         raise ValueError(
-                            f'ImageFrame: invalid absolute src "{src}",'
-                            f' expected /pagepath/filename.'
+                            _(
+                                'ImageFrame: invalid absolute src "%(src)s", expected /pagepath/filename.',
+                                src=src,
+                            )
                         )
                     att_pagepath, att_filename = parts
                 else:
@@ -590,14 +679,17 @@ div.imageframe {
                     page = getattr(self, 'page', None)
                     if page is None:
                         raise ValueError(
-                            "ImageFrame |src= requires a page context."
+                            _("ImageFrame |src= requires a page context.")
                         )
                     att_pagepath = page.pagepath
                     att_filename = src
                 attachment = Attachment(att_pagepath, att_filename)
                 if not attachment.exists():
                     raise ValueError(
-                        f'ImageFrame: attachment "{src}" not found.'
+                        _(
+                            'ImageFrame: attachment "%(src)s" not found.',
+                            src=src,
+                        )
                     )
                 alt = alt or mistune.escape(att_filename)
                 img_url = attachment.get_url()
@@ -631,7 +723,7 @@ class VideoEmbedding:
     def info(self):
         return (
             "Video",
-            "Embed a video from an url or an attachment",
+            _("Embed a video from an url or an attachment"),
             "Syntax/Embeddings",
         )
 
@@ -640,9 +732,15 @@ class VideoEmbedding:
         if plugin.lower() != "video":
             return None
 
-        return """<div class="row mb-10">
-Embed a video player that supports video and audio playback in your document,
-or embed a YouTube video by providing a YouTube URL.
+        # the prose is translated, the examples stay as they are
+        return "".join(
+            [
+                """<div class="row mb-10">
+""",
+                _(
+                    'Embed a video player that supports video and audio playback in your document,\nor embed a YouTube video by providing a YouTube URL.'
+                ),
+                """
 <div class="col-md-8 col-sm-12">
 
 ```
@@ -657,7 +755,13 @@ or embed a YouTube video by providing a YouTube URL.
 }}
 ```
 
-YouTube URLs (`youtube.com/watch?v=…` or `youtu.be/…`) are rendered as embedded iframes:
+""",
+                _(
+                    'YouTube URLs (%(long_url)s or %(short_url)s) are rendered as embedded iframes:',
+                    long_url='`youtube.com/watch?v=…`',
+                    short_url='`youtu.be/…`',
+                ),
+                """
 
 ```
 {{Video
@@ -681,7 +785,9 @@ https://www.youtube.com/watch?v=dQw4w9WgXcQ
 }}
 
 </div></div>
-"""
+""",
+            ]
+        )
 
     @staticmethod
     def _get_youtube_id(url: str):
@@ -731,13 +837,15 @@ https://www.youtube.com/watch?v=dQw4w9WgXcQ
         src = [s.strip() for s in src if s.strip()]
 
         if len(src) < 1:
-            raise ValueError("No src given.")
+            raise ValueError(_("No src given."))
 
         yt_sources = [s for s in src if self._get_youtube_id(s)]
         file_sources = [s for s in src if not self._get_youtube_id(s)]
         if yt_sources and file_sources:
             raise ValueError(
-                "Cannot mix YouTube links and file sources in the same Video embedding."
+                _(
+                    "Cannot mix YouTube links and file sources in the same Video embedding."
+                )
             )
 
         # Build YouTube embed query params from options
@@ -763,7 +871,7 @@ https://www.youtube.com/watch?v=dQw4w9WgXcQ
                 html_parts.append(
                     f'<iframe width="{width}" height="315"'
                     f' src="https://www.youtube.com/embed/{yt_id}{qs}"'
-                    f' title="YouTube video player" frameborder="0"'
+                    f' title="{mistune.escape(_("YouTube video player"))}" frameborder="0"'
                     f' allow="accelerometer; autoplay; clipboard-write;'
                     f' encrypted-media; gyroscope; picture-in-picture; web-share"'
                     f' referrerpolicy="strict-origin-when-cross-origin"'
@@ -781,7 +889,7 @@ https://www.youtube.com/watch?v=dQw4w9WgXcQ
             html_parts.append(
                 f'<video width="{width}" {" ".join(flags)}>\n'
                 f'{video_sources}\n'
-                f'Your browser does not support the video tag.\n'
+                f'{mistune.escape(_("Your browser does not support the video tag."))}\n'
                 f'</video>'
             )
 
@@ -793,7 +901,9 @@ class InfoBoxEmbedding:
     def info(self):
         return (
             "InfoBox",
-            "Render structured information next to the main content in a standardized way",
+            _(
+                "Render structured information next to the main content in a standardized way"
+            ),
             "Syntax/Embeddings",
         )
 
@@ -802,9 +912,14 @@ class InfoBoxEmbedding:
         if plugin.lower() != "infobox":
             return None
 
-        return """
+        # the prose is translated, the examples stay as they are
+        return "".join(
+            [
+                """
 <div class="row mb-10">
-An element for displaying structured data in a document.
+""",
+                _('An element for displaying structured data in a document.'),
+                """
 <div class="col-md-8 col-sm-12">
 
 ````
@@ -827,8 +942,13 @@ markdown=True
 }}
 ````
 
-Note: On small screens the box automatically expands to full width regardless of the `width` option.
-The optional `|style=` allows additional inline CSS overrides.
+""",
+                _(
+                    'Note: On small screens the box automatically expands to full width regardless of the %(width)s option.\nThe optional %(style)s allows additional inline CSS overrides.',
+                    width='`width`',
+                    style='`|style=`',
+                ),
+                """
 
 </div><div class="col-md-4 col-sm-12" style="padding-top:5px;">
 
@@ -847,7 +967,9 @@ markdown=True
 ```
 }}
 </div></div>
-"""
+""",
+            ]
+        )
 
     @hookimpl
     def static_css(self):
@@ -967,7 +1089,7 @@ class AttachmentListEmbedding:
     def info(self):
         return (
             "AttachmentList",
-            "Render the attachments to the current page as table.",
+            _("Render the attachments to the current page as table."),
             "Syntax/Embeddings",
         )
 
@@ -1022,17 +1144,20 @@ class AttachmentListEmbedding:
 
         # build header and rows depending on format
         if fmt == 'minimal':
-            header = f'<th>Attachment</th>'
+            labels = [_('Attachment')]
         elif fmt == 'details':
-            header = f'<th>Filename</th><th>Size</th><th>Date</th>'
+            labels = [_('Filename'), _('Size'), _('Date')]
         else:  # full
-            header = (
-                f'<th>Attachment</th>'
-                f'<th>Size</th>'
-                f'<th>Date</th>'
-                f'<th>Author</th>'
-                f'<th>Comment</th>'
-            )
+            labels = [
+                _('Attachment'),
+                _('Size'),
+                _('Date'),
+                _('Author'),
+                _('Comment'),
+            ]
+        header = "".join(
+            f'<th>{mistune.escape(label)}</th>' for label in labels
+        )
 
         if show_icons:
             header = f'<th></th>' + header
@@ -1102,9 +1227,14 @@ class AttachmentListEmbedding:
         if plugin.lower() != "attachmentlist":
             return None
 
-        return """
+        # the prose is translated, the examples stay as they are
+        return "".join(
+            [
+                """
 <div class="row mb-10">
-Display attachments to the current page as list.
+""",
+                _('Display attachments to the current page as list.'),
+                """
 </div><div class="row mb-10">
 <div class="col">
 
@@ -1117,16 +1247,35 @@ Display attachments to the current page as list.
 }}
 ```
 
-With format you can decide what is displayed in the table: `minimal` shows only the filenames, `details` shows filename, date and size, `full` shows all information.
+""",
+                _(
+                    'With format you can decide what is displayed in the table: %(minimal)s shows only the filenames, %(details)s shows filename, date and size, %(full)s shows all information.',
+                    minimal='`minimal`',
+                    details='`details`',
+                    full='`full`',
+                ),
+                """
 </div>
 
 </div><div class="row mb-10">
 
-<table class="table"><thead><tr><th></th><th>Attachment</th><th>Size</th><th>Date</th><th>Author</th><th>Comment</th></tr></thead><tbody><tr><td width="1"><a href="#"><i class="far fa-file-pdf" style="font-size:48px;"></i></a></td><td><a href="#">example.pdf</a></td><td>110.0KiB</td><td>2026-03-08 11:26</td><td>Anonymous</td><td class="text-wrap">Added AttachmentList documentation.</td></tr>
+<table class="table"><thead><tr><th></th><th>""",
+                _('Attachment'),
+                """</th><th>""",
+                _('Size'),
+                """</th><th>""",
+                _('Date'),
+                """</th><th>""",
+                _('Author'),
+                """</th><th>""",
+                _('Comment'),
+                """</th></tr></thead><tbody><tr><td width="1"><a href="#"><i class="far fa-file-pdf" style="font-size:48px;"></i></a></td><td><a href="#">example.pdf</a></td><td>110.0KiB</td><td>2026-03-08 11:26</td><td>Anonymous</td><td class="text-wrap">Added AttachmentList documentation.</td></tr>
 </tbody></table>
 
 </div>
-"""
+""",
+            ]
+        )
 
 
 class PageIndexEmbedding:
@@ -1134,7 +1283,7 @@ class PageIndexEmbedding:
     def info(self):
         return (
             "PageIndex",
-            "Render a page index listing all pages below the" " current page.",
+            _("Render a page index listing all pages below the current page."),
             "Syntax/Embeddings",
         )
 
@@ -1147,10 +1296,16 @@ class PageIndexEmbedding:
         if plugin.lower() != "pageindex":
             return None
 
-        return """
+        # the prose is translated, the examples stay as they are
+        return "".join(
+            [
+                """
 <div class="row mb-10">
-Display a page index listing pages below the current page,
-optionally filtered by a glob pattern.
+""",
+                _(
+                    'Display a page index listing pages below the current page,\noptionally filtered by a glob pattern.'
+                ),
+                """
 <div class="col-md-8 col-sm-12">
 
 ```
@@ -1162,11 +1317,36 @@ optionally filtered by a glob pattern.
 }}
 ```
 
-Options:
-- `src`: glob pattern to filter pages by title (default `*`, matches all pages)
-- `style`: `pageindex` for the default letter-grouped layout, `list` for a plain unordered list (default `pageindex`)
-- `toc`: show page headings (default `false`; for `style=list` headings are rendered as nested sublists)
-- `toggle`: show the toggle for the page headings (default `true`, ignored for `style=list`)
+""",
+                _('Options:'),
+                """
+- `src`: """,
+                _(
+                    'glob pattern to filter pages by title (default %(default)s, matches all pages)',
+                    default='`*`',
+                ),
+                """
+- `style`: """,
+                _(
+                    '%(pageindex)s for the default letter-grouped layout, %(list)s for a plain unordered list (default %(pageindex)s)',
+                    pageindex='`pageindex`',
+                    list='`list`',
+                ),
+                """
+- `toc`: """,
+                _(
+                    'show page headings (default %(default)s; for %(style_list)s headings are rendered as nested sublists)',
+                    default='`false`',
+                    style_list='`style=list`',
+                ),
+                """
+- `toggle`: """,
+                _(
+                    'show the toggle for the page headings (default %(default)s, ignored for %(style_list)s)',
+                    default='`true`',
+                    style_list='`style=list`',
+                ),
+                """
 
 </div>
 <div class="col-md-4 col-sm-12">
@@ -1180,7 +1360,9 @@ Options:
 
 </div>
 </div>
-"""
+""",
+            ]
+        )
 
     @hookimpl
     def embedding_render(
@@ -1235,7 +1417,7 @@ Options:
             )
 
         togglediv = f"""<div class="d-inline-block custom-switch font-size-12 mb-10">
-    <input type="checkbox" id="switch-headings" {"checked" if show_toc else ""} value="" onchange="otterwiki.toggleClass(event.target.checked,'pagetoc')"><label for="switch-headings">Toggle page headings</label>
+    <input type="checkbox" id="switch-headings" {"checked" if show_toc else ""} value="" onchange="otterwiki.toggleClass(event.target.checked,'pagetoc')"><label for="switch-headings">{mistune.escape(_("Toggle page headings"))}</label>
 </div>"""
 
         return (
@@ -1255,7 +1437,7 @@ class FigureEmbedding:
     def info(self):
         return (
             "Figure",
-            "Wrap content in a figure with an optional caption.",
+            _("Wrap content in a figure with an optional caption."),
             "Syntax/Embeddings",
         )
 
@@ -1264,10 +1446,16 @@ class FigureEmbedding:
         if plugin.lower() != "figure":
             return None
 
-        return """
+        # the prose is translated, the examples stay as they are
+        return "".join(
+            [
+                """
 <div class="row mb-10">
-A container for emphasizing content blocks (code, tables, images, etc.)
-with an optional caption — similar to a LaTeX figure.
+""",
+                _(
+                    'A container for emphasizing content blocks (code, tables, images, etc.)\nwith an optional caption — similar to a LaTeX figure.'
+                ),
+                """
 <div class="col">
 
 ````
@@ -1297,7 +1485,9 @@ print("Hello, World!")
 }}
 
 </div></div>
-"""
+""",
+            ]
+        )
 
     @hookimpl
     def static_css(self):
@@ -1406,7 +1596,7 @@ class IncludeEmbedding:
     def info(self):
         return (
             "Include",
-            "Transclude another page or one of its sections.",
+            _("Transclude another page or one of its sections."),
             "Syntax/Embeddings",
         )
 
@@ -1414,10 +1604,16 @@ class IncludeEmbedding:
     def help(self, plugin):
         if plugin.lower() != "include":
             return None
-        return """
+        # the prose is translated, the examples stay as they are
+        return "".join(
+            [
+                """
 <div class="row mb-10">
-Include (transclude) the content of another page, or a single section of it,
-into the current page. The included content is rendered inline, seamlessly.
+""",
+                _(
+                    'Include (transclude) the content of another page, or a single section of it,\ninto the current page. The included content is rendered inline, seamlessly.'
+                ),
+                """
 <div class="col">
 
 ```
@@ -1426,33 +1622,68 @@ into the current page. The included content is rendered inline, seamlessly.
 {{include|src=/Absolute/Page|section=installation|children=false|heading=false}}
 ```
 
-Options:
-- `src`: path of the page to include. Relative to the current page unless it
-  starts with `/` (absolute from the wiki root).
-- `section`: the anchor slug of the heading to include, matched the same way
-  heading links (`[[Page#anchor]]`) are generated, independent of the heading
-  level. If omitted the whole page is included.
-- `children`: include sub-sections of the section (default `true`). With
-  `children=false` only the content directly under the heading is included.
-- `heading`: include the section's own heading line (default `true`).
+""",
+                _('Options:'),
+                """
+- `src`: """,
+                _(
+                    'path of the page to include. Relative to the current page unless it\n  starts with %(slash)s (absolute from the wiki root).',
+                    slash='`/`',
+                ),
+                """
+- `section`: """,
+                _(
+                    'the anchor slug of the heading to include, matched the same way\n  heading links (%(link)s) are generated, independent of the heading\n  level. If omitted the whole page is included.',
+                    link='`[[Page#anchor]]`',
+                ),
+                """
+- `children`: """,
+                _(
+                    'include sub-sections of the section (default %(default)s). With\n  %(children_false)s only the content directly under the heading is included.',
+                    default='`true`',
+                    children_false='`children=false`',
+                ),
+                """
+- `heading`: """,
+                _(
+                    "include the section's own heading line (default %(default)s).",
+                    default='`true`',
+                ),
+                """
 
-**Limitations:**
-- Relative links and attachments (e.g. `![](image.png)`) in the included
-  content resolve against the *including* page, not the source page, so they
-  may break. Use absolute paths (`/Source/Page/image.png`) in content that is
-  meant to be included.
-- Headings from included content do not appear in the including page's table
-  of contents.
-- Combining a stateful embedding such as `DataTable` with an `include` on the
-  same page may leave the page's own DataTable uninitialised. Put such
-  embeddings on separate pages.
-- Includes are limited to a nesting depth of 8, and include cycles (a page
-  including itself, directly or indirectly) are detected and reported instead
-  of being expanded.
+**""",
+                _('Limitations:'),
+                """**
+- """,
+                _(
+                    'Relative links and attachments (e.g. %(example)s) in the included\n  content resolve against the *including* page, not the source page, so they\n  may break. Use absolute paths (%(absolute)s) in content that is\n  meant to be included.',
+                    example='`![](image.png)`',
+                    absolute='`/Source/Page/image.png`',
+                ),
+                """
+- """,
+                _(
+                    "Headings from included content do not appear in the including page's table\n  of contents."
+                ),
+                """
+- """,
+                _(
+                    "Combining a stateful embedding such as %(datatable)s with an %(include)s on the\n  same page may leave the page's own DataTable uninitialised. Put such\n  embeddings on separate pages.",
+                    datatable='`DataTable`',
+                    include='`include`',
+                ),
+                """
+- """,
+                _(
+                    'Includes are limited to a nesting depth of 8, and include cycles (a page\n  including itself, directly or indirectly) are detected and reported instead\n  of being expanded.'
+                ),
+                """
 
 </div>
 </div>
-"""
+""",
+            ]
+        )
 
     @hookimpl
     def page_render_context(self, page, preview: bool):
@@ -1474,7 +1705,10 @@ Options:
         """
         if ".." in src.replace("\\", "/").split("/"):
             raise ValueError(
-                f'include: invalid src "{src}", path traversal is not allowed.'
+                _(
+                    'include: invalid src "%(src)s", path traversal is not allowed.',
+                    src=src,
+                )
             )
         if src.startswith("/"):
             return src.lstrip("/")
@@ -1511,7 +1745,7 @@ Options:
 
         src = args.options_raw.get("src")
         if not src:
-            raise ValueError("include: |src= is required.")
+            raise ValueError(_("include: |src= is required."))
         section = args.options_raw.get("section")
         include_children = _include_flag(args, "children", True)
         include_heading = _include_flag(args, "heading", True)
@@ -1522,7 +1756,7 @@ Options:
 
         page = Page(pagepath=pagepath)
         if not page.exists or page.content is None:
-            raise ValueError(f'include: page "{src}" not found.')
+            raise ValueError(_('include: page "%(src)s" not found.', src=src))
 
         markdown = page.content
         if section:
@@ -1543,10 +1777,14 @@ Options:
                 include_heading=include_heading,
             )
             if extracted is None:
-                available = ", ".join(list_anchors(markdown)) or "none"
+                available = ", ".join(list_anchors(markdown)) or _("none")
                 raise ValueError(
-                    f'include: section "{section}" not found in "{src}"'
-                    f' (available: {available}).'
+                    _(
+                        'include: section "%(section)s" not found in "%(src)s" (available: %(available)s).',
+                        section=section,
+                        src=src,
+                        available=available,
+                    )
                 )
             markdown = extracted
 
@@ -1554,10 +1792,15 @@ Options:
         key = f"{page.pagepath}#{section or ''}"
         stack = self._stack
         if key in stack:
-            raise ValueError(f'include: cycle detected including "{src}".')
+            raise ValueError(
+                _('include: cycle detected including "%(src)s".', src=src)
+            )
         if len(stack) >= self.MAX_DEPTH:
             raise ValueError(
-                f"include: maximum include depth ({self.MAX_DEPTH}) exceeded."
+                _(
+                    "include: maximum include depth (%(depth)s) exceeded.",
+                    depth=self.MAX_DEPTH,
+                )
             )
 
         host_page = getattr(self, "page", None)

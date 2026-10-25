@@ -5,6 +5,22 @@ import re
 import pytest
 import os
 import otterwiki.gitstorage
+from otterwiki.plugins import hookimpl, plugin_manager
+
+
+class FixtureTranslations:
+    """
+    A language pack for the tests: tests/translations holds a tiny French
+    catalog. Registered before otterwiki.server is imported, which reads
+    the translations folders once.
+    """
+
+    @hookimpl
+    def translation_directories(self):
+        return os.path.join(os.path.dirname(__file__), "translations")
+
+
+plugin_manager.register(FixtureTranslations())
 from datetime import datetime
 from flask.testing import FlaskClient
 

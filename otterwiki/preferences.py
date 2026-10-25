@@ -3,6 +3,7 @@
 
 import re
 import json
+from functools import reduce
 from datetime import datetime
 from typing import cast
 from otterwiki.models import User
@@ -15,6 +16,7 @@ from flask import (
 from flask_login import (
     current_user,
 )
+from flask_babel import gettext as _
 from otterwiki.server import app, db, update_app_config, Preferences
 from otterwiki.sidebar import SidebarPageIndex, SidebarMenu
 from otterwiki.helper import (
@@ -38,6 +40,19 @@ from otterwiki.auth import (
     delete_user,
     generate_password_hash,
 )
+
+
+def _join_and(parts):
+    """
+    "a and b and c", every "and" through gettext so a translation can
+    change the conjunction.
+    """
+    return reduce(
+        lambda first, second: _(
+            "%(first)s and %(second)s", first=first, second=second
+        ),
+        parts,
+    )
 
 
 def _update_preference(name, value, commit=False):
@@ -80,8 +95,9 @@ def handle_mail_preferences(form):
     error = 0
     if not is_valid_email(form.get("mail_sender") or ""):
         toast(
-            "'{}' is not a valid email address.".format(
-                form.get("mail_sender")
+            _(
+                "'%(email)s' is not a valid email address.",
+                email=form.get("mail_sender"),
             ),
             "error",
         )
@@ -91,7 +107,7 @@ def handle_mail_preferences(form):
             "MAIL_DEFAULT_SENDER", form.get("mail_sender").strip()
         )
     if empty(form.get("mail_server")):
-        toast("Mail Server must not be empty.", "error")
+        toast(_("Mail Server must not be empty."), "error")
         error += 1
     else:
         _update_preference("MAIL_SERVER", form.get("mail_server").strip())
@@ -103,7 +119,7 @@ def handle_mail_preferences(form):
         else:
             mail_port = ""
     except (ValueError, TypeError) as e:
-        toast("Mail port must be a valid port.", "error")
+        toast(_("Mail port must be a valid port."), "error")
         error += 1
     else:
         _update_preference("MAIL_PORT", mail_port)
@@ -122,7 +138,7 @@ def handle_mail_preferences(form):
         _update_preference("MAIL_USE_TLS", "False")
         _update_preference("MAIL_USE_SSL", "True")
     if error < 1:
-        toast("Mail Preferences updated.")
+        toast(_("Mail Preferences updated."))
 
     db.session.commit()
     update_app_config()
@@ -165,7 +181,9 @@ def handle_sidebar_preferences(form):
 
     if not re.match(r"^(|\d+)$", form.get("sidebar_menutree_maxdepth", "")):
         toast(
-            "Invalid value: SIDEBAR_MENUTREE_MAXDEPTH must be an integer or empty"
+            _(
+                "Invalid value: SIDEBAR_MENUTREE_MAXDEPTH must be an integer or empty"
+            )
         )
         return redirect(url_for("admin_sidebar_preferences"))
     else:
@@ -186,7 +204,7 @@ def handle_sidebar_preferences(form):
     # commit changes to the database
     db.session.commit()
     update_app_config()
-    toast("Sidebar Preferences updated.")
+    toast(_("Sidebar Preferences updated."))
     return redirect(url_for("admin_sidebar_preferences"))
 
 
@@ -205,13 +223,15 @@ def handle_app_preferences(form):
     for checkbox in [
         "hide_logo",
         "open_links_in_new_tab",
+        "language_from_browser",
+        "language_menu",
     ]:
         _update_preference(checkbox.upper(), form.get(checkbox, "False"))
 
     home_page = form.get("home_page", "").strip()
     if home_page and home_page.endswith(".md"):
         toast(
-            "Custom home page path should not include the .md extension.",
+            _("Custom home page path should not include the .md extension."),
             "error",
         )
         return redirect(url_for("admin"))
@@ -219,13 +239,15 @@ def handle_app_preferences(form):
     not_found_page = form.get("not_found_page", "").strip().strip("/")
     if not_found_page.endswith(".md"):
         toast(
-            "Custom 404 page path should not include the .md extension.",
+            _("Custom 404 page path should not include the .md extension."),
             "error",
         )
         return redirect(url_for("admin"))
     if not_found_page.startswith("-/"):
         toast(
-            "Custom 404 page must be a regular wiki page, not a special page.",
+            _(
+                "Custom 404 page must be a regular wiki page, not a special page."
+            ),
             "error",
         )
         return redirect(url_for("admin"))
@@ -242,7 +264,7 @@ def handle_app_preferences(form):
     # commit changes to the database
     db.session.commit()
     update_app_config()
-    toast("Application Preferences updated.")
+    toast(_("Application Preferences updated."))
     return redirect(url_for("admin"))
 
 
@@ -263,7 +285,7 @@ def handle_content_and_editing(form):
     # commit changes to the database
     db.session.commit()
     update_app_config()
-    toast("Content and Editing Preferences updated.")
+    toast(_("Content and Editing Preferences updated."))
     return redirect(url_for("admin_content_and_editing"))
 
 
@@ -302,7 +324,9 @@ def handle_repository_management(form):
             _update_preference_if_changed("GIT_REMOTE_PUSH_PRIVATE_KEY", "")
             _update_preference_if_changed("GIT_REMOTE_PUSH_URL", "")
             toast(
-                "SSH Remote URL is required when enabling automatic pushing.",
+                _(
+                    "SSH Remote URL is required when enabling automatic pushing."
+                ),
                 "error",
             )
         else:
@@ -332,7 +356,9 @@ def handle_repository_management(form):
             _update_preference_if_changed("GIT_REMOTE_PULL_PRIVATE_KEY", "")
             _update_preference_if_changed("GIT_REMOTE_PULL_URL", "")
             toast(
-                "SSH Remote URL is required when enabling automatic pulling.",
+                _(
+                    "SSH Remote URL is required when enabling automatic pulling."
+                ),
                 "error",
             )
         else:
@@ -367,7 +393,7 @@ def handle_repository_management(form):
     db.session.commit()
     update_app_config()
 
-    toast("Repository Management Preferences updated.")
+    toast(_("Repository Management Preferences updated."))
     return redirect(url_for("admin_repository_management"))
 
 
@@ -380,7 +406,7 @@ def _handle_git_push():
         return {
             "action": "push",
             "success": False,
-            "output": "Push functionality is not enabled",
+            "output": _("Push functionality is not enabled"),
         }
 
     remote_url = app.config.get('GIT_REMOTE_PUSH_URL')
@@ -391,7 +417,7 @@ def _handle_git_push():
         return {
             "action": "push",
             "success": False,
-            "output": "Repository manager not available",
+            "output": _("Repository manager not available"),
         }
 
     success, output = repo_manager.push_to_remote(
@@ -409,7 +435,7 @@ def _handle_git_force_push():
         return {
             "action": "force push",
             "success": False,
-            "output": "Push functionality is not enabled",
+            "output": _("Push functionality is not enabled"),
         }
 
     remote_url = app.config.get('GIT_REMOTE_PUSH_URL')
@@ -420,7 +446,7 @@ def _handle_git_force_push():
         return {
             "action": "force push",
             "success": False,
-            "output": "Repository manager not available",
+            "output": _("Repository manager not available"),
         }
 
     success, output = repo_manager.push_to_remote(
@@ -438,7 +464,7 @@ def _handle_git_pull():
         return {
             "action": "pull",
             "success": False,
-            "output": "Pull functionality is not enabled",
+            "output": _("Pull functionality is not enabled"),
         }
 
     remote_url = app.config.get('GIT_REMOTE_PULL_URL')
@@ -449,7 +475,7 @@ def _handle_git_pull():
         return {
             "action": "pull",
             "success": False,
-            "output": "Repository manager not available",
+            "output": _("Repository manager not available"),
         }
 
     success, output = repo_manager.pull_from_remote(remote_url, private_key)
@@ -465,7 +491,7 @@ def _handle_git_reset_remote():
         return {
             "action": "reset to remote",
             "success": False,
-            "output": "Pull functionality is not enabled",
+            "output": _("Pull functionality is not enabled"),
         }
 
     remote_url = app.config.get('GIT_REMOTE_PULL_URL')
@@ -476,7 +502,7 @@ def _handle_git_reset_remote():
         return {
             "action": "reset to remote",
             "success": False,
-            "output": "Repository manager not available",
+            "output": _("Repository manager not available"),
         }
 
     success, output = repo_manager.reset_to_remote(remote_url, private_key)
@@ -492,18 +518,18 @@ def handle_test_mail_preferences(form):
         recipient = current_user.email
     # check if mail is valid
     if is_valid_email(recipient):
-        body = """OtterWiki Test Mail"""
-        subject = "OtterWiki Test Mail"
+        body = _("OtterWiki Test Mail")
+        subject = _("OtterWiki Test Mail")
         try:
             send_mail(
                 subject, [recipient], body, _async=False, raise_on_error=True
             )
         except Exception as e:
-            toast("Error: {}".format(e), "error")
+            toast(_("Error: %(error)s", error=e), "error")
         else:
-            toast("Testmail sent to {}.".format(recipient))
+            toast(_("Testmail sent to %(email)s.", email=recipient))
     else:
-        toast("Invalid email address: {}".format(recipient), "error")
+        toast(_("Invalid email address: %(email)s", email=recipient), "error")
     return redirect(url_for("admin_mail_preferences"))
 
 
@@ -530,7 +556,7 @@ def handle_permissions_and_registration(form):
     # commit changes to the database
     db.session.commit()
     update_app_config()
-    toast("Preferences updated.")
+    toast(_("Preferences updated."))
     return redirect(url_for("admin_permissions_and_registration"))
 
 
@@ -541,8 +567,9 @@ def send_approvement_mail(user):
         name=user.name,
         url=url_for("login", _external=True),
     )
-    subject = "Your account has been approved - {} - An Otter Wiki".format(
-        app.config["SITE_NAME"]
+    subject = _(
+        "Your account has been approved - %(sitename)s - An Otter Wiki",
+        sitename=app.config["SITE_NAME"],
     )
     send_mail(subject=subject, recipients=[user.email], text_body=text_body)
 
@@ -558,9 +585,9 @@ def handle_user_management(form):
     # track users that have been approved to send a notification
     # Make sure that nobody accidentally locks themselves out.
     if len(is_admin) < 1:
-        toast("You can't remove all admins", "error")
+        toast(_("You can't remove all admins"), "error")
     elif len(is_approved) < 1:
-        toast("You can't disable all users", "error")
+        toast(_("You can't disable all users"), "error")
     else:
         # update users
         for user in get_all_user():
@@ -569,41 +596,47 @@ def handle_user_management(form):
             # approval
             if user.is_approved and not user.id in is_approved:
                 user.is_approved = False
-                msgs.append("disapproved")
+                msgs.append(_("disapproved"))
             elif not user.is_approved and user.id in is_approved:
                 user.is_approved = True
                 user_was_just_approved = True
-                msgs.append("approved")
+                msgs.append(_("approved"))
             # read
             if user.allow_read and not user.id in allow_read:
                 user.allow_read = False
-                msgs.append("disallowed read")
+                msgs.append(_("disallowed read"))
             elif not user.allow_read and user.id in allow_read:
                 user.allow_read = True
-                msgs.append("allowed read")
+                msgs.append(_("allowed read"))
             # write
             if user.allow_write and not user.id in allow_write:
                 user.allow_write = False
-                msgs.append("disallowed write")
+                msgs.append(_("disallowed write"))
             elif not user.allow_write and user.id in allow_write:
                 user.allow_write = True
-                msgs.append("allowed write")
+                msgs.append(_("allowed write"))
             # upload
             if user.allow_upload and not user.id in allow_upload:
                 user.allow_upload = False
-                msgs.append("disallowed upload")
+                msgs.append(_("disallowed upload"))
             elif not user.allow_upload and user.id in allow_upload:
                 user.allow_upload = True
-                msgs.append("allowed upload")
+                msgs.append(_("allowed upload"))
             # admin
             if user.is_admin and not user.id in is_admin:
                 user.is_admin = False
-                msgs.append("disabled admin")
+                msgs.append(_("disabled admin"))
             elif not user.is_admin and user.id in is_admin:
                 user.is_admin = True
-                msgs.append("enabled admin")
+                msgs.append(_("enabled admin"))
             if len(msgs):
-                toast("{} {} flag".format(user.email, " and ".join(msgs)))
+                toast(
+                    _(
+                        "%(email)s %(changes)s flag",
+                        email=user.email,
+                        changes=_join_and(msgs),
+                    )
+                )
                 app.logger.info(  # pyright: ignore
                     "{} updated {} <{}>: {}".format(
                         current_user, user.name, user.email, " and ".join(msgs)
@@ -626,7 +659,7 @@ def admin_form():
     # render form
     return render_template(
         "admin.html",
-        title="Admin",
+        title=_("Admin"),
         user_list=user_list,
     )
 
@@ -637,7 +670,7 @@ def mail_preferences_form():
     # query user
     return render_template(
         "admin/mail_preferences.html",
-        title="Mail preferences",
+        title=_("Mail preferences"),
     )
 
 
@@ -647,7 +680,7 @@ def content_and_editing_form():
     # query user
     return render_template(
         "admin/content_and_editing.html",
-        title="Content and Editing preferences",
+        title=_("Content and Editing preferences"),
     )
 
 
@@ -669,7 +702,7 @@ def repository_management_form(git_action_result=None):
             )
     return render_template(
         "admin/repository_management.html",
-        title="Repository Management",
+        title=_("Repository Management"),
         git_action_result=git_action_result,
         webhook_url=webhook_url,
     )
@@ -681,7 +714,7 @@ def permissions_and_registration_form():
     # render form
     return render_template(
         "admin/permissions_and_registration.html",
-        title="Permissions and Registration",
+        title=_("Permissions and Registration"),
     )
 
 
@@ -700,7 +733,7 @@ def sidebar_preferences_form():
     # render form
     return render_template(
         "admin/sidebar_preferences.html",
-        title="Sidebar Preferences",
+        title=_("Sidebar Preferences"),
         pages=pages,
         custom_menu=SidebarMenu().config,
     )
@@ -714,7 +747,7 @@ def user_management_form():
     # render form
     return render_template(
         "admin/user_management.html",
-        title="User Management",
+        title=_("User Management"),
         user_list=user_list,
     )
 
@@ -728,7 +761,7 @@ def user_edit_form(uid):
     # render form
     return render_template(
         "user.html",
-        title="User",
+        title=_("User"),
         user=user,
     )
 
@@ -742,7 +775,7 @@ def handle_user_add(form):
     user.name = form.get("name").strip()  # pyright: ignore
     user.email = form.get("email").strip()  # pyright: ignore
 
-    for value, _ in [
+    for value, _label in [
         ("email_confirmed", "email confirmed"),
         ("is_admin", "admin"),
         ("is_approved", "approved"),
@@ -757,15 +790,15 @@ def handle_user_add(form):
 
     error = []
     if empty(user.name):  # pyright: ignore
-        error.append("Name must not be empty")
+        error.append(_("Name must not be empty"))
     if get_user(email=user.email) is not None:  # pyright: ignore
-        error.append("User with this email exists")
+        error.append(_("User with this email exists"))
     if not is_valid_email(user.email):  # pyright: ignore
-        error.append("Invalid email address")
+        error.append(_("Invalid email address"))
     # handle password
     if len(form.get("password1", "")) or len(form.get("password2", "")):
         if form.get("password1", "") != form.get("password2", ""):
-            error.append("Passwords do not match")
+            error.append(_("Passwords do not match"))
         else:
             user.password_hash = generate_password_hash(
                 form.get("password1")
@@ -777,7 +810,7 @@ def handle_user_add(form):
             toast(msg, 'danger')
         return render_template(
             "user.html",
-            title="User",
+            title=_("User"),
             user=user,
         )
     # no error: store in database
@@ -787,10 +820,14 @@ def handle_user_add(form):
         user = update_user(user)
         # send_approvement_mail(user)
         app.logger.info(f"{user.name} <{user.email}> added")
-        toast(f"{user.name} <{user.email}> added")
+        toast(
+            _("%(name)s <%(email)s> added", name=user.name, email=user.email)
+        )
     except Exception as e:
         app.logger.error(f"Unable to update user: {e}")
-        toast('Unable to create user. Please check the server logs.', 'danger')
+        toast(
+            _('Unable to create user. Please check the server logs.'), 'danger'
+        )
     return redirect(url_for("user", uid=user.id))
 
 
@@ -806,9 +843,15 @@ def handle_user_edit(uid, form):
     # delete
     if form.get("delete", False):
         if user == current_user:
-            toast(f"Unable to delete yourself.", "error")
+            toast(_("Unable to delete yourself."), "error")
             return redirect(url_for("user", uid=user.id))
-        toast(f"User '{user.name} &lt;{user.email}&gt;' deleted.")
+        toast(
+            _(
+                "User '%(name)s &lt;%(email)s&gt;' deleted.",
+                name=user.name,
+                email=user.email,
+            )
+        )
         app.logger.info(f"deleted user '{user.name} <{user.email}>'")
         delete_user(user)
         return redirect(url_for("admin_user_management"))
@@ -818,49 +861,66 @@ def handle_user_edit(uid, form):
     if user.name != form.get("name").strip():
         new_name = form.get("name").strip()
         if len(new_name) > 0:
-            msgs.append(f"renamed '{user.name}' to '{new_name}'")
+            msgs.append(
+                _(
+                    "renamed '%(old)s' to '%(new)s'",
+                    old=user.name,
+                    new=new_name,
+                )
+            )
             user.name = new_name
         else:
-            toast("User name must not be empty.", "danger")
+            toast(_("User name must not be empty."), "danger")
     # email
     if user.email != form.get("email").strip():
         if is_valid_email(form.get("email").strip()):
-            msgs.append(f"updated {user.email} to {form.get('email').strip()}")
+            msgs.append(
+                _(
+                    "updated %(old)s to %(new)s",
+                    old=user.email,
+                    new=form.get('email').strip(),
+                )
+            )
             user.email = form.get("email").strip()
         else:
             toast(
-                f"'{form.get('email').strip()}' is not a valid email address",
+                _(
+                    "'%(email)s' is not a valid email address",
+                    email=form.get('email').strip(),
+                ),
                 "danger",
             )
     if len(form.get("password1", "")) or len(form.get("password2", "")):
         if form.get("password1", "") != form.get("password2", ""):
-            toast("Passwords do not match", "danger")
+            toast(_("Passwords do not match"), "danger")
         else:
             user.password_hash = generate_password_hash(form.get("password1"))
-            msgs.append("Updated password")
+            msgs.append(_("Updated password"))
     user_was_already_approved = user.is_approved
     # handle all the flags
     for value, label in [
-        ("email_confirmed", "email confirmed"),
-        ("is_admin", "admin"),
-        ("is_approved", "approved"),
-        ("allow_read", "read"),
-        ("allow_write", "write"),
-        ("allow_upload", "upload"),
+        ("email_confirmed", _("email confirmed")),
+        ("is_admin", _("admin")),
+        ("is_approved", _("approved")),
+        ("allow_read", _("read")),
+        ("allow_write", _("write")),
+        ("allow_upload", _("upload")),
     ]:
         if getattr(user, value) and not form.get(value):
             setattr(user, value, False)
-            flags.append(f"removed {label}")
+            flags.append(_("removed %(flag)s", flag=label))
         elif not getattr(user, value) and form.get(value):
             setattr(user, value, True)
-            flags.append(f"added {label}")
+            flags.append(_("added %(flag)s", flag=label))
     # all flags checked updated msgs
     if len(flags):
-        msgs.append("{} flag".format(" and ".join(flags)))
+        msgs.append(_("%(changes)s flag", changes=_join_and(flags)))
     if len(msgs):
-        msgs[0] = msgs[0].capitalize()
+        # upper-case the first letter only: capitalize() would lower-case
+        # the rest, user names and German nouns included
+        msgs[0] = msgs[0][:1].upper() + msgs[0][1:]
         msgs[-1] += "."
-        toast(" and ".join(msgs))
+        toast(_join_and(msgs))
         app.logger.info(
             "{} updated {} <{}>: {}".format(
                 current_user, user.name, user.email, " and ".join(msgs)
@@ -873,7 +933,7 @@ def handle_user_edit(uid, form):
     except Exception as e:
         app.logger.error(f"Unable to update user: {e}")
         toast(
-            'Unable to update the user. Please check the server logs.',
+            _('Unable to update the user. Please check the server logs.'),
             'danger',
         )
     return redirect(url_for("user", uid=user.id))

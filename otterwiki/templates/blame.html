@@ -7,7 +7,7 @@
 {% block extra_nav %}{% endblock %}
 {% block content %}
 <div class="w-full mw-full p-0 m-0 clearfix">
-    <h2>Blame {#{pagename}#}</h2>
+    <h2>{{ _("Blame") }} {#{pagename}#}</h2>
 </div>
 <table class="blame">
 {% for line in blame %}
@@ -16,7 +16,7 @@
     <td class="min" rowspan="{{ line[8] }}">
         <table>
             <tr>
-                <td class="min" style="white-space:nowrap"> {% if line[0] %}<a href="{{ url_for("show_commit", revision=line[0]) }}" class="btn revision-small" title="Show commit">{{line[0]}}</a>{% endif %}</td>
+                <td class="min" style="white-space:nowrap"> {% if line[0] %}<a href="{{ url_for("show_commit", revision=line[0]) }}" class="btn revision-small" title="{{ _("Show commit") }}">{{line[0]}}</a>{% endif %}</td>
                 <td class="min" style="white-space:nowrap"">{{line[1]}}</td>
                 <td class="min" style="white-space:nowrap"">{% if line[2] %}<a href="{{ url_for("view", path=pagepath, revision=line[0]) }}">{{line[2]|format_datetime}}</a>{% endif %}</td>
             </tr>

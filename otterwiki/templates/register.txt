@@ -1,9 +1,9 @@
-Hello {{name}},
+{% trans %}Hello {{name}},{% endtrans %}
 
-Thank you for registering your account at {{sitename}} (An Otter Wiki).
+{% trans %}Thank you for registering your account at {{sitename}} (An Otter Wiki).{% endtrans %}
 
-The password generated for you is: {{password}}
+{% trans %}The password generated for you is: {{password}}{% endtrans %}
 
-Please login here: {{url}}
+{% trans %}Please login here: {{url}}{% endtrans %}
 
-Cheers!
+{% trans %}Cheers!{% endtrans %}

@@ -2,6 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
+import re
 from timeit import default_timer as timer
 
 from flask import (
@@ -14,7 +15,14 @@ from flask import (
     jsonify,
     g,
 )
-from otterwiki.server import app, githttpserver
+from otterwiki.server import (
+    app,
+    githttpserver,
+    available_locales,
+    match_locale,
+    LANGUAGE_COOKIE,
+    get_locale,
+)
 from otterwiki.wiki import (
     Page,
     Changelog,
@@ -45,6 +53,7 @@ from otterwiki.util import (
 from otterwiki.plugins import call_hook, collect_hook
 import otterwiki.pluginmgmt
 
+from flask_babel import gettext as _
 from flask_login import login_required
 from otterwiki.server import csrf
 from flask_wtf.csrf import CSRFError
@@ -162,10 +171,10 @@ def healthz():
 def about():
     with open(os.path.join(app.root_path, "about.md")) as f:
         content = f.read()
-    htmlcontent, _, library_requirements = render.markdown(content)
+    htmlcontent, _toc, library_requirements = render.markdown(content)
     return render_template(
         "about.html",
-        title="About",
+        title=_("About"),
         htmlcontent=htmlcontent,
         __version__=__version__,
         library_requirements=library_requirements,
@@ -176,7 +185,7 @@ def about():
 def syntax():
     return render_template(
         "syntax.html",
-        title="Syntax",
+        title=_("Syntax"),
         in_help=True,
         pagepath="",
     )
@@ -193,22 +202,23 @@ def help(topic=None):
             md = f.read()
             content, toc, library_requirements = render.markdown(md)
     elif topic == "syntax":
+        # the label is translated, the anchor stays the English heading
         toc = [
-            (None, '', 2, s, s.lower())
-            for s in [
-                'Emphasis',
-                'Headings',
-                'Lists',
-                'Links',
-                'Quotes',
-                'Images',
-                'Tables',
-                'Code',
-                'Mathjax',
-                'Footnotes',
-                'Abbreviations',
-                'Blocks',
-                'Diagrams',
+            (None, '', 2, label, anchor)
+            for label, anchor in [
+                (_('Emphasis'), 'emphasis'),
+                (_('Headings'), 'headings'),
+                (_('Lists'), 'lists'),
+                (_('Links'), 'links'),
+                (_('Quotes'), 'quotes'),
+                (_('Images'), 'images'),
+                (_('Tables'), 'tables'),
+                (_('Code'), 'code'),
+                (_('Mathjax'), 'mathjax'),
+                (_('Footnotes'), 'footnotes'),
+                (_('Abbreviations'), 'abbreviations'),
+                (_('Blocks'), 'blocks'),
+                (_('Diagrams'), 'diagrams'),
             ]
         ]
         # embeddings info
@@ -218,7 +228,7 @@ def help(topic=None):
         )
         return render_template(
             "help_syntax.html",
-            title="Help - Syntax",
+            title=_("Help - Syntax"),
             toc=toc,
             in_help=True,
             embedding_info=embedding_info,
@@ -235,9 +245,16 @@ def help(topic=None):
     if len(extra_js):
         extra_js = f"<script type=\"text/javascript\">{extra_js}</script>"
     # default help
+    if topic:
+        topic_label = {"admin": _("Admin"), "plugins": _("Plugins")}.get(
+            topic, topic.capitalize()
+        )
+        title = _("Help - %(topic)s", topic=topic_label)
+    else:
+        title = _("Help")
     return render_template(
         "help.html",
-        title="Help - {}".format(topic.capitalize()) if topic else "Help",
+        title=title,
         content=content,
         toc=toc,
         library_requirements=library_requirements,
@@ -406,17 +423,17 @@ def create():
         # This is the default create page view
         return render_template(
             "create.html",
-            title="Create Page",
+            title=_("Create Page"),
             pagename_prefixes=get_pagename_prefixes(),
             menutree=SidebarPageIndex("/").query(),
             custom_menu=SidebarMenu().query(),
         )
     elif pagename != pagename_sanitized:
         if pagename is not None and pagename != pagename_sanitized:
-            toast("Please check the pagename ...", "warning")
+            toast(_("Please check the pagename ..."), "warning")
         return render_template(
             "create.html",
-            title="Create Page",
+            title=_("Create Page"),
             pagename=pagename_sanitized,
             pagename_prefixes=get_pagename_prefixes(),
             menutree=SidebarPageIndex("/").query(),
@@ -426,6 +443,31 @@ def create():
         # this is the creation of a new page
         p = Page(pagename=pagename)
         return p.create()
+
+
+#
+# language menu
+#
+@app.route("/-/language/<string:language>")
+def set_language(language):
+    if not app.config["LANGUAGE_MENU"]:
+        abort(404)
+    locale = match_locale(language, available_locales())
+    if not locale:
+        abort(404)
+    # back to the page the menu was opened on, a local path only
+    next_page = re.sub(r"[\t\n\r]", "", request.args.get("next", ""))
+    if not next_page.startswith("/") or next_page[1:2] in ("/", "\\"):
+        next_page = url_for("index")
+    response = make_response(redirect(next_page))
+    response.set_cookie(
+        LANGUAGE_COOKIE,
+        locale,
+        max_age=365 * 24 * 60 * 60,
+        httponly=True,
+        samesite="Lax",
+    )
+    return response
 
 
 #
@@ -879,9 +921,9 @@ def handle_csrf_error(e):
     app.logger.warning(f"CSRF Error: {e.description} url: {request.url}")
     return (
         f"""<!doctype html>
-<html lang=en>
-<title>400 Bad Request</title>
-<h1>Bad Request</h1>
+<html lang={get_locale().replace("_", "-")}>
+<title>400 {_("Bad Request")}</title>
+<h1>{_("Bad Request")}</h1>
 <p>{e.description}</p>
 """,
         400,

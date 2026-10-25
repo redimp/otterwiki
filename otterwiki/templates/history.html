@@ -7,7 +7,7 @@
 {% block extra_nav %}{% endblock %}
 {% block content %}
 <div class="w-full mw-full p-0 clearfix">
-    <h2>History {#{pagename}#}</h2>
+    <h2>{{ _("History") }} {#{pagename}#}</h2>
 {# pagination #}
 {#
 <nav aria-label="Pagination" class="float-right">
@@ -36,7 +36,7 @@
 <form action="{{ url_for('history', path=pagepath) }}" method="post">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <div class="w-full mw-full">
-  <button type="submit" class="btn btn-primary">Compare Revisions</button>
+  <button type="submit" class="btn btn-primary">{{ _("Compare Revisions") }}</button>
 </div>
 <div class="w-full mw-full my-15">
     <div class="table-responsive table-striped">
@@ -45,9 +45,9 @@
           <tr>
             <td></td>
             <td></td>
-            <th>Date</th>
-            <th>Author</th>
-            <th class="w-half">Commit Message</th>
+            <th>{{ _("Date") }}</th>
+            <th>{{ _("Author") }}</th>
+            <th class="w-half">{{ _("Commit Message") }}</th>
           </tr>
         </thead>
         <tbody>
@@ -65,7 +65,7 @@
                 <label for="radio-b-{{entry.revision}}"></label>
               </div>
             </td>
-            <td class="font-size-12 min text-nowrap"><a href="{{entry.url}}"><span class="datetime" title="{{entry.datetime|format_datetime("deltanow")}} ago">{{entry.datetime|format_datetime}}</span></a> <a href="{{ url_for("show_commit", revision=entry.revision) }}" title="Show commit {{entry.revision}}" class="btn revision-small">{{entry.revision}}</a>{% if has_permission('WRITE') %}<a href="{{ url_for("revert", revision=entry.revision) }}"> <i class="fas fa-undo" alt="revert" title="revert commit {{entry.revision}}"></i></a>{% endif %}
+            <td class="font-size-12 min text-nowrap"><a href="{{entry.url}}"><span class="datetime" title="{{ _("%(delta)s ago", delta=entry.datetime|format_datetime("deltanow")) }}">{{entry.datetime|format_datetime}}</span></a> <a href="{{ url_for("show_commit", revision=entry.revision) }}" title="{{ _("Show commit %(revision)s", revision=entry.revision) }}" class="btn revision-small">{{entry.revision}}</a>{% if has_permission('WRITE') %}<a href="{{ url_for("revert", revision=entry.revision) }}"> <i class="fas fa-undo" alt="{{ _("revert") }}" title="{{ _("revert commit %(revision)s", revision=entry.revision) }}"></i></a>{% endif %}
 </td>
 {# author #}
             <td class="min" style="white-space:nowrap">{%if not entry.author_email%}{{entry.author_name}}{%else%}<a href="mailto:{{entry.author_email}}">{{entry.author_name}}</a>{%endif%}</td>
@@ -78,7 +78,7 @@
     </div>
 </div>
 <div class="w-full mw-full my-15">
-  <button type="submit" class="btn btn-primary">Compare Revisions</button>
+  <button type="submit" class="btn btn-primary">{{ _("Compare Revisions") }}</button>
 </div>
 </form>
 {% endblock %}
