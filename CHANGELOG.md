@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.26.1](https://github.com/redimp/otterwiki/releases/tag/v2.26.1) - 2026-10-25
+
+<small>[Compare with v2.26.0](https://github.com/redimp/otterwiki/compare/v2.26.0...v2.26.1)</small>
+
+### Security Fixes
+
+- Escape pagenames in search results, filenames in the storage error alert,
+  embedding errors and PageIndex list entries
+  ([060df89](https://github.com/redimp/otterwiki/commit/060df89),
+  [d5ae6de](https://github.com/redimp/otterwiki/commit/d5ae6de),
+  [6ff9ac3](https://github.com/redimp/otterwiki/commit/6ff9ac3)).
+  Thanks to @mab2500 for responsibly disclosing these issues and bringing them
+  to our attention.
+- Refuse renames through symlinks outside the repository
+  ([fca6299](https://github.com/redimp/otterwiki/commit/fca6299)).
+
+### Features
+
+- Support internal directory symlink shortcuts and redirect them to canonical
+  paths, [#592](https://github.com/redimp/otterwiki/pull/592) by @cross7de
+  ([4a468cf](https://github.com/redimp/otterwiki/commit/4a468cf),
+  [a9562a9](https://github.com/redimp/otterwiki/commit/a9562a9)).
+
+### Bug Fixes
+
+- Redirect internal page symlinks to canonical paths,
+  [#591](https://github.com/redimp/otterwiki/pull/591) by @cross7de
+  ([8f3e859](https://github.com/redimp/otterwiki/commit/8f3e859),
+  [1de6620](https://github.com/redimp/otterwiki/commit/1de6620),
+  [099978e](https://github.com/redimp/otterwiki/commit/099978e),
+  [c5c8f85](https://github.com/redimp/otterwiki/commit/c5c8f85)).
+- Define internal page symlink route semantics and preserve relative symlink
+  targets when moving page aliases,
+  [#593](https://github.com/redimp/otterwiki/pull/593) by @cross7de
+  ([b17d58e](https://github.com/redimp/otterwiki/commit/b17d58e),
+  [de5f388](https://github.com/redimp/otterwiki/commit/de5f388)).
+- Keep closing tags when placing preview cursor in autolinks, see #595
+  ([48121e5](https://github.com/redimp/otterwiki/commit/48121e5)).
+
+### Dependencies
+
+- Upgrade mermaid 11.14.0 to 12.2.0, see #164
+  ([68f1057](https://github.com/redimp/otterwiki/commit/68f1057)).
+- Bump pillow from 12.3.0 to 13.0.0, see #596
+  ([2c33075](https://github.com/redimp/otterwiki/commit/2c33075) by @dependabot).
+- Bump gitpython from 3.1.62 to 3.2.1, see #597
+  ([7326bb6](https://github.com/redimp/otterwiki/commit/7326bb6) by @dependabot).
+
+### Misc
+
+- Helm chart: add Gateway API HTTPRoute support with sane default rules and a
+  check for the required CRD, add options for additional pod labels and
+  persistence.subPath, reorder and regroup the default values, fix the
+  fullName typo and a stray empty dict for unset pod labels, protect selector
+  labels, improve NOTES, exclude packaged charts from the chart package and
+  document missing values in the readme
+  ([#546](https://github.com/redimp/otterwiki/pull/546) by @nerothank).
+
 ## [v2.26.0](https://github.com/redimp/otterwiki/releases/tag/v2.26.0) - 2026-10-18
 
 <small>[Compare with v2.25.2](https://github.com/redimp/otterwiki/compare/v2.25.2...v2.26.0)</small>
