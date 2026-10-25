@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: An Otter Wiki VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/redimp/otterwiki/issues\n"
-"POT-Creation-Date: 2026-10-25 07:48+0100\n"
+"POT-Creation-Date: 2026-10-25 09:18+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1196,35 +1196,35 @@ msgstr ""
 msgid "Proxy headers appear consistent."
 msgstr ""
 
-#: otterwiki/server.py:461
+#: otterwiki/server.py:510
 #, python-format
 msgid "%(num)s week"
 msgid_plural "%(num)s weeks"
 msgstr[0] ""
 msgstr[1] ""
 
-#: otterwiki/server.py:462
+#: otterwiki/server.py:511
 #, python-format
 msgid "%(num)s day"
 msgid_plural "%(num)s days"
 msgstr[0] ""
 msgstr[1] ""
 
-#: otterwiki/server.py:463
+#: otterwiki/server.py:512
 #, python-format
 msgid "%(num)s hour"
 msgid_plural "%(num)s hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: otterwiki/server.py:464
+#: otterwiki/server.py:513
 #, python-format
 msgid "%(num)s min"
 msgid_plural "%(num)s mins"
 msgstr[0] ""
 msgstr[1] ""
 
-#: otterwiki/server.py:465
+#: otterwiki/server.py:514
 #, python-format
 msgid "%(num)s sec"
 msgid_plural "%(num)s secs"
@@ -3573,6 +3573,11 @@ msgstr ""
 
 #: otterwiki/templates/snippets/toc.html:5
 msgid "On this page"
+msgstr ""
+
+#: otterwiki/templates/snippets/toc.html:8
+#, python-format
+msgid "This page is in %(language)s"
 msgstr ""
 
 #: otterwiki/templates/syntax.html:4 otterwiki/templates/syntax.html:21

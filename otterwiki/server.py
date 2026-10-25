@@ -413,8 +413,40 @@ app.config["BABEL_TRANSLATION_DIRECTORIES"] = ";".join(
     translation_directories()
 )
 babel = Babel(app, locale_selector=get_locale)
+
+
+def content_language(pagepath=None):
+    """The language the pages are written in: SITE_LANG."""
+    return app.config.get("SITE_LANG") or None
+
+
+def content_language_badge(pagepath=None):
+    """
+    The language of a page when it isn't the language of the interface,
+    e.g. {"tag": "EN", "name": "anglais"} for an English page read with a
+    French interface, so that the reader is told; None otherwise.
+    """
+    from flask_babel import get_locale as current_locale
+
+    content = content_language(pagepath)
+    if not content:
+        return None
+    try:
+        content = Locale.parse(content.strip().replace("-", "_"))
+        interface = Locale.parse(str(current_locale() or "en"))
+    except (ValueError, UnknownLocaleError):
+        return None
+    if content.language == interface.language:
+        return None
+    return {
+        "tag": content.language.upper(),
+        "name": content.get_language_name(interface) or content.language,
+    }
+
+
 app.jinja_env.globals["get_locale"] = get_locale
 app.jinja_env.globals["language_choices"] = language_choices
+app.jinja_env.globals["content_language_badge"] = content_language_badge
 
 
 #

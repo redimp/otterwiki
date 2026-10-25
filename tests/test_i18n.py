@@ -232,3 +232,28 @@ def test_match_locale(create_app, language, expected):
 
     available = ["en", "fr", "de", "zh_Hans_CN"]
     assert match_locale(language, available) == expected
+
+
+def test_content_language_badge(create_app, test_client):
+    # the pages are in English (SITE_LANG), the interface in French: the
+    # table of contents says the page is in English
+    create_app.config["LANGUAGE_FROM_BROWSER"] = True
+    html = test_client.get(
+        "/Home", headers={"Accept-Language": "fr"}
+    ).data.decode()
+    assert '<span class="language-badge"' in html
+    assert ">EN</span>" in html
+    assert (
+        'title="This page is in anglais"' in html
+    )  # no French for it in the test catalog
+    # same language: no badge
+    html = test_client.get(
+        "/Home", headers={"Accept-Language": "en"}
+    ).data.decode()
+    assert "language-badge" not in html
+    # the language of the pages unknown: no badge
+    create_app.config["SITE_LANG"] = ""
+    html = test_client.get(
+        "/Home", headers={"Accept-Language": "fr"}
+    ).data.decode()
+    assert "language-badge" not in html

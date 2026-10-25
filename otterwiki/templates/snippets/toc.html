@@ -3,6 +3,10 @@
     <details class="collapse-panel" open>
         <summary class="collapse-header">
             {{ _("On this page") }}
+{%- set language_badge = content_language_badge(pagepath) %}
+{%- if language_badge %}
+            <span class="language-badge" title="{{ _("This page is in %(language)s", language=language_badge.name) }}">{{ language_badge.tag }}</span>
+{%- endif %}
         </summary>
 
         <div class="collapse-content">
