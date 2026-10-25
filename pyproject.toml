@@ -5,7 +5,8 @@ authors = [
     { name = "Ralph Thesen", email = "mail@redimp.de" }
     ]
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
@@ -33,7 +34,6 @@ dependencies = [
 keywords = ["wiki", "git", "markdown"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Wiki",
@@ -64,13 +64,13 @@ dev = [
 
 [build-system]
 requires = [
-    "setuptools",
+    "setuptools>=77",
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["otterwiki"]
+[tool.setuptools.packages.find]
+include = ["otterwiki*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "otterwiki.version.__version__"}
