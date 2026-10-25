@@ -367,6 +367,18 @@ class OtterWikiPluginSpec:
         """
 
     @hookspec(firstresult=True)
+    def page_language(self, pagepath: str) -> str | None:
+        """
+        The language a page is written in, e.g. "fr" for pages kept in a
+        fr/ folder. The first plugin returning a string wins; by default
+        it is SITE_LANG. Shown next to the table of contents when it isn't
+        the language of the interface.
+
+        Args:
+            pagepath: The path of the page, or None (a page without path).
+        """
+
+    @hookspec(firstresult=True)
     def page_new_content(self, pagepath: str) -> str | None:
         """
         The content the editor starts with for a page that doesn't exist

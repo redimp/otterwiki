@@ -50,6 +50,12 @@ class FolderPlugin:
         ]
 
     @hookimpl
+    def page_language(self, pagepath):
+        if pagepath.lower().startswith("fr/"):
+            return "fr"
+        return None
+
+    @hookimpl
     def page_new_content(self, pagepath):
         if pagepath.lower().startswith("de/"):
             return "# Neue Seite\n\n"
@@ -194,3 +200,15 @@ def test_admin_menu_entries(plugin, admin_client):
     html = admin_client.get("/-/admin").data.decode()
     assert 'href="/-/admin/plugin/folders/settings"' in html
     assert "Folder Settings" in html
+
+
+def test_page_language(plugin, test_client, create_app):
+    # SITE_LANG is en, the interface English: a page of fr/ gets a badge
+    storage = create_app.storage
+    storage.store(
+        "fr/guide.md", "# Guide\n\n## Partie\n", author=AUTHOR, message="g"
+    )
+    html = test_client.get("/fr/Guide").data.decode()
+    assert ">FR</span>" in html
+    html = test_client.get("/Home").data.decode()
+    assert "language-badge" not in html

@@ -416,7 +416,14 @@ babel = Babel(app, locale_selector=get_locale)
 
 
 def content_language(pagepath=None):
-    """The language the pages are written in: SITE_LANG."""
+    """
+    The language a page is written in: what a plugin says (page_language),
+    else SITE_LANG.
+    """
+    if pagepath:
+        language = plugin_manager.hook.page_language(pagepath=pagepath)
+        if language:
+            return language
     return app.config.get("SITE_LANG") or None
 
 
