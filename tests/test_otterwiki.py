@@ -567,6 +567,46 @@ def test_internal_page_symlink_delete_deletes_alias_only(
     assert storage.exists("target/page.md")
 
 
+@pytest.mark.parametrize(
+    ("path", "filename"),
+    [
+        ("Target/Page", "target/page.md"),
+        ("Shortcuts/Link", "shortcuts/link.md"),
+    ],
+)
+@pytest.mark.parametrize("with_attachment", [False, True])
+def test_rename_into_symlinked_directory_outside_repository(
+    test_client,
+    internal_page_symlink,
+    tmp_path,
+    path,
+    filename,
+    with_attachment,
+):
+    storage = internal_page_symlink
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    os.symlink(str(outside), os.path.join(storage.path, "out"))
+    if with_attachment:
+        storage.store(
+            filename[:-3] + "/file.txt",
+            content="attachment\n",
+            author=("Test", "test@example.org"),
+        )
+
+    rv = test_client.post(
+        f"/{path}/rename",
+        data={"new_pagename": "Out/Moved", "message": "Move"},
+    )
+
+    assert rv.status_code == 200
+    assert "Renaming failed" in rv.data.decode()
+    assert list(outside.iterdir()) == []
+    assert os.path.lexists(os.path.join(storage.path, filename))
+    assert storage.load("target/page.md") == "# Target\n"
+    assert not storage.repo.is_dirty()
+
+
 def test_create_form(test_client):
     result = test_client.get("/-/create")
     html = result.data.decode()

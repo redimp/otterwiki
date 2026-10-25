@@ -658,6 +658,46 @@ def test_symlinked_directory_outside_repository(storage, outside_file):
     )
 
 
+@pytest.mark.parametrize("preserve_symlink_target", [False, True])
+def test_rename_into_symlinked_directory_outside_repository(
+    storage, outside_file, preserve_symlink_target
+):
+    author = ("Example Author", "mail@example.com")
+    outside_dir = os.path.dirname(outside_file)
+    storage.store("target.md", content="target\n", author=author)
+    os.makedirs(os.path.join(storage.path, "folder"))
+    os.symlink("../target.md", os.path.join(storage.path, "folder/link.md"))
+    storage.commit(["folder/link.md"], message="link", author=author)
+    os.symlink(outside_dir, os.path.join(storage.path, "subdir"))
+    for filename in ["target.md", "folder/link.md"]:
+        with pytest.raises(gitstorage.StorageUnsafePath):
+            storage.rename(
+                filename,
+                "subdir/moved.md",
+                author=author,
+                preserve_symlink_target=preserve_symlink_target,
+            )
+    with pytest.raises(gitstorage.StorageUnsafePath):
+        storage.rename("folder", "subdir/folder", author=author)
+    # nothing was moved or created outside the repository
+    assert sorted(os.listdir(outside_dir)) == ["secret.txt"]
+    assert storage.load("target.md") == "target\n"
+    assert os.readlink(os.path.join(storage.path, "folder/link.md")) == (
+        "../target.md"
+    )
+    assert not storage.repo.is_dirty()
+
+
+def test_rename_into_git_directory(storage):
+    author = ("Example Author", "mail@example.com")
+    storage.store("page.md", content="page\n", author=author)
+    with pytest.raises(gitstorage.StorageUnsafePath):
+        storage.rename("page.md", ".git/hooks/page.md", author=author)
+    assert storage.load("page.md") == "page\n"
+    assert not os.path.exists(os.path.join(storage.path, ".git/hooks/page.md"))
+    assert not storage.repo.is_dirty()
+
+
 def test_symlink_into_git_directory(storage):
     author = ("Example Author", "mail@example.com")
     storage.store("page.md", content="page\n", author=author)

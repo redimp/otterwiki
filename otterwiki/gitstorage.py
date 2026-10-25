@@ -624,6 +624,10 @@ class GitStorage(object):
         files_updated=None,
         preserve_symlink_target=False,
     ):
+        # check before creating any directory or moving anything, a
+        # symlinked parent directory would otherwise be followed by
+        # makedirs and git mv. exists() hides unsafe paths.
+        self._abspath(new_filename)
         if self.exists(new_filename):
             raise StorageError(
                 f'The filename "{new_filename}" already exist. Please choose a new filename.'
