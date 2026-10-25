@@ -468,7 +468,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             src,
             alt,
             title,
-            self.env.get('page'),
+            self.env.get('PAGE'),
         )
         return processed_html
 
@@ -508,7 +508,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             link,
             text,
             title,
-            self.env.get('page'),
+            self.env.get('PAGE'),
         )
         return processed_html
 
@@ -588,7 +588,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             text,
             level,
             anchor,
-            self.env.get('page'),
+            self.env.get('PAGE'),
         )
 
         self.toc_tree.append((self.toc_count, text, level, raw, anchor))

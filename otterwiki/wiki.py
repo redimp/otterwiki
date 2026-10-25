@@ -51,6 +51,7 @@ from otterwiki.helper import (
     toast,
     update_ftoc_cache,
     upsert_pagecrumbs,
+    filter_page_list,
 )
 from otterwiki.models import Drafts
 from otterwiki.plugins import (
@@ -481,7 +482,7 @@ class Page:
         # send context of the page rendered to plugins
         call_hook("page_render_context", page=page, preview=False)
         htmlcontent, _toc, library_requirements = app_renderer.markdown(
-            page.content, page_url=page.page_view_url
+            page.content, page_url=page.page_view_url, page=page
         )
         htmlcontent = chain_hooks(
             "page_view_htmlcontent_postprocess", htmlcontent, page
@@ -627,7 +628,7 @@ class Page:
 
         # render markdown
         htmlcontent, toc, library_requirements = app_renderer.markdown(
-            self.content, page_url=self.page_view_url
+            self.content, page_url=self.page_view_url, page=self
         )
         update_ftoc_cache(self.filename, ftoc=toc)
 
@@ -739,7 +740,7 @@ class Page:
 
         # render preview html from markdown
         content_html, toc, library_requirements = app_renderer.markdown(
-            content, cursor=cursor_line, page_url=self.page_view_url
+            content, cursor=cursor_line, page_url=self.page_view_url, page=self
         )
         # update pagename from toc
         if len(toc) > 0:
@@ -1620,6 +1621,9 @@ class Page:
         db.session.commit()
 
     def _new_page_content(self):
+        content = plugin_manager.hook.page_new_content(pagepath=self.pagepath)
+        if content is not None:
+            return content
         return f"# {self.pagename}\n\n"
 
     def save_draft(
@@ -2053,6 +2057,7 @@ class Search:
         t_start = timer()
         files, _dirs = storage.list()
         md_files = [filename for filename in files if filename.endswith(".md")]
+        md_files = filter_page_list(md_files, "search")
         app.logger.debug(
             f"Search storage.list() and filter took {timer() - t_start:.3f} seconds."
         )

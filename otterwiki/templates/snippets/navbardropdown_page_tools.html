@@ -25,5 +25,13 @@
                         {{ _("View Source") }}
                     </a>
 {%- endif %}
+{%- for entry in plugin_page_menu_entries(pagepath) %}
+                    <a href="{{ entry.url }}" class="dropdown-item-with-icon">
+                        <span class="dropdown-icon">
+                            <i class="{{ entry.icon or "fas fa-puzzle-piece" }}"></i>
+                        </span>
+                        {{ entry.label }}
+                    </a>
+{%- endfor %}
 {%- include 'snippets/navbardropdown_rename_remove.html' %}
                     <div class="dropdown-divider mt-5 mb-5"></div>

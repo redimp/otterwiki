@@ -32,6 +32,7 @@ from otterwiki.util import (
     get_header,
 )
 from otterwiki.models import Cache
+from otterwiki.plugins import plugin_manager
 
 
 def url_for(endpoint, **values):
@@ -322,7 +323,26 @@ def get_breadcrumbs(pagepath):
                 crumbpath,
             )
         )
+    plugin_manager.hook.breadcrumbs_filter(
+        breadcrumbs=crumbs, pagepath=pagepath
+    )
     return crumbs
+
+
+def filter_page_list(filenames, context, base=None):
+    """
+    Let the plugins filter a list of markdown files (the page_list_filter
+    hook). With base, the filenames are relative to that folder; the
+    plugins always see paths relative to the repository.
+    """
+    if base:
+        full = [join_path([base, f]) for f in filenames]
+    else:
+        full = list(filenames)
+    kept = list(full)
+    plugin_manager.hook.page_list_filter(filenames=kept, context=context)
+    kept = set(kept)
+    return [f for f, path in zip(filenames, full) if path in kept]
 
 
 def upsert_pagecrumbs(pagepath):

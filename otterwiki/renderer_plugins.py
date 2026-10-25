@@ -31,7 +31,7 @@ import urllib.parse
 
 # ESCAPE_TEXT was removed from mistune.util in v3; reconstruct it locally
 ESCAPE_TEXT = r"\\" + r"[" + re.escape(string.punctuation) + r"]"
-from otterwiki.plugins import chain_hooks
+from otterwiki.plugins import chain_hooks, plugin_manager
 from otterwiki.util import slugify, cursormagicword
 from otterwiki.plugins import EmbeddingArgs, call_hook
 
@@ -781,6 +781,17 @@ class mistunePluginWikiLink:
 
         if not link.startswith(("/", "#")):
             link = f"/{link}"
+        # let the plugins change the target, e.g. to a page in the same
+        # language folder
+        target, sep, fragment = link.partition("#")
+        if target:
+            page = inline.env.get("PAGE")
+            resolved = plugin_manager.hook.resolve_wikilink(
+                link=target,
+                source_pagepath=getattr(page, "pagepath", None),
+            )
+            if resolved:
+                link = resolved + sep + fragment
         # parse link
         link_p = urllib.parse.urlparse(link)
         # slugify the fragment to match the anchors generate by OtterwikiMdRenderer.heading
@@ -845,7 +856,7 @@ class mistunePluginWikiLink:
                     wikilink_html,
                     link,
                     text,
-                    plugin.env.get('page'),
+                    plugin.env.get('PAGE'),
                 )
                 return processed_html
 

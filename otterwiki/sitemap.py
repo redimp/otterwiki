@@ -6,7 +6,12 @@ from xml.etree.ElementTree import Element, SubElement, tostring, indent
 from flask import make_response, abort
 from otterwiki.server import app, storage
 from otterwiki.auth import has_permission
-from otterwiki.helper import url_for, get_pagename, get_filename
+from otterwiki.helper import (
+    url_for,
+    get_pagename,
+    get_filename,
+    filter_page_list,
+)
 
 
 def sitemap():
@@ -20,6 +25,7 @@ def sitemap():
     # Get all markdown files from storage
     files, _dirs = storage.list()
     md_files = [f for f in files if f.endswith('.md')]
+    md_files = filter_page_list(md_files, "sitemap")
 
     # Add each wiki page to sitemap
     for filename in md_files:

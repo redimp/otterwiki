@@ -58,6 +58,14 @@
     </span>
     {{ _("Mail Preferences") }}
 </a>
+{%- for entry in plugin_admin_menu_entries() %}
+<a href="{{ entry.url }}" class="sidebar-link sidebar-link-with-icon">
+    <span class="sidebar-icon">
+        <i class="{{ entry.icon or "fas fa-puzzle-piece" }}"></i>
+    </span>
+    {{ entry.label }}
+</a>
+{%- endfor %}
 {% endif %}
 {% endblock %}
 {% block content %}

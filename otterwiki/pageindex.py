@@ -26,6 +26,7 @@ from otterwiki.helper import (
     get_pagename,
     get_pagename_for_title,
     upsert_pagecrumbs,
+    filter_page_list,
 )
 from otterwiki.server import app, storage
 from otterwiki.sidebar import SidebarMenu, SidebarPageIndex
@@ -89,8 +90,9 @@ class PageIndex:
         )
         # restart timer
         t_start = timer()
-        # filter .md files
+        # filter .md files, then let the plugins filter the pages
         md_files = [f for f in files if f.endswith(".md")]
+        md_files = filter_page_list(md_files, "pageindex", base=self.path)
         for fn in md_files:
             f = os.path.join(self.path or "", fn)
             page_depth = len(split_path(f)) - 1

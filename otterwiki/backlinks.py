@@ -62,7 +62,22 @@ def _split_link_title(inner, linktitle_style):
     return inner, None
 
 
-def _rewrite_inner(inner, old_key, new_pagepath, linktitle_style):
+def _resolve_wikilink(page, source_pagepath):
+    """
+    The page a WikiLink target points to, as the renderer resolves it (the
+    resolve_wikilink hook), e.g. "Setup" written in fr/Index -> "fr/Setup".
+    """
+    from otterwiki.plugins import plugin_manager
+
+    resolved = plugin_manager.hook.resolve_wikilink(
+        link="/" + page, source_pagepath=source_pagepath
+    )
+    return resolved.lstrip("/") if resolved else page
+
+
+def _rewrite_inner(
+    inner, old_key, new_pagepath, linktitle_style, source_pagepath=None
+):
     """Return the rewritten inner content, or None if it doesn't match."""
     from otterwiki.helper import get_filename
 
@@ -77,10 +92,18 @@ def _rewrite_inner(inner, old_key, new_pagepath, linktitle_style):
         return None
 
     # resolve the link target to its on-disk filename and compare.
-    if get_filename(page) != old_key:
+    resolved = _resolve_wikilink(page, source_pagepath)
+    if get_filename(resolved) != old_key:
         return None
 
-    new_link = ("/" if leading_slash else "") + new_pagepath
+    new_target = new_pagepath
+    # a link the hook prefixed (e.g. with a language folder) stays written
+    # without that prefix when the renamed page keeps it
+    if resolved != page and resolved.lower().endswith("/" + page.lower()):
+        prefix = resolved[: len(resolved) - len(page)]
+        if new_pagepath.lower().startswith(prefix.lower()):
+            new_target = new_pagepath[len(prefix) :]
+    new_link = ("/" if leading_slash else "") + new_target
     if hsep:
         new_link += "#" + anchor
 
@@ -185,11 +208,20 @@ def _rewrite_url(url, old_pagepath, new_pagepath):
 
 
 def _rewrite_content(
-    content, old_key, new_pagepath, linktitle_style, old_pagepath
+    content,
+    old_key,
+    new_pagepath,
+    linktitle_style,
+    old_pagepath,
+    source_pagepath=None,
 ):
     def repl(match):
         new_inner = _rewrite_inner(
-            match.group(1), old_key, new_pagepath, linktitle_style
+            match.group(1),
+            old_key,
+            new_pagepath,
+            linktitle_style,
+            source_pagepath,
         )
         if new_inner is None:
             return match.group(0)
@@ -239,7 +271,12 @@ def rename_backlinks(old_pagepath, new_pagepath):
         try:
             content = storage.load(md_file, mode="r")
             new_content = _rewrite_content(
-                content, old_key, new_pagepath, linktitle_style, old_pagepath
+                content,
+                old_key,
+                new_pagepath,
+                linktitle_style,
+                old_pagepath,
+                source_pagepath=md_file[: -len(".md")],
             )
             if new_content == content:
                 continue
