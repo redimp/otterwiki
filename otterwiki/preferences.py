@@ -205,6 +205,8 @@ def handle_app_preferences(form):
     for checkbox in [
         "hide_logo",
         "open_links_in_new_tab",
+        "language_from_browser",
+        "language_menu",
     ]:
         _update_preference(checkbox.upper(), form.get(checkbox, "False"))
 

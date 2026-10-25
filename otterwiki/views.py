@@ -2,6 +2,7 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import os
+import re
 from timeit import default_timer as timer
 
 from flask import (
@@ -14,7 +15,13 @@ from flask import (
     jsonify,
     g,
 )
-from otterwiki.server import app, githttpserver
+from otterwiki.server import (
+    app,
+    githttpserver,
+    available_locales,
+    match_locale,
+    LANGUAGE_COOKIE,
+)
 from otterwiki.wiki import (
     Page,
     Changelog,
@@ -426,6 +433,31 @@ def create():
         # this is the creation of a new page
         p = Page(pagename=pagename)
         return p.create()
+
+
+#
+# language menu
+#
+@app.route("/-/language/<string:language>")
+def set_language(language):
+    if not app.config["LANGUAGE_MENU"]:
+        abort(404)
+    locale = match_locale(language, available_locales())
+    if not locale:
+        abort(404)
+    # back to the page the menu was opened on, a local path only
+    next_page = re.sub(r"[\t\n\r]", "", request.args.get("next", ""))
+    if not next_page.startswith("/") or next_page[1:2] in ("/", "\\"):
+        next_page = url_for("index")
+    response = make_response(redirect(next_page))
+    response.set_cookie(
+        LANGUAGE_COOKIE,
+        locale,
+        max_age=365 * 24 * 60 * 60,
+        httponly=True,
+        samesite="Lax",
+    )
+    return response
 
 
 #

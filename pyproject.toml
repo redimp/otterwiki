@@ -29,6 +29,7 @@ dependencies = [
     "feedgen==1.0.0",
     "lxml==6.1.1",
     "flask-wtf==1.2.2",
+    "Flask-Babel==4.0.0",
 ]
 keywords = ["wiki", "git", "markdown"]
 classifiers = [

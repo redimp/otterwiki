@@ -1,6 +1,6 @@
 {#- vim: set et ts=8 sts=4 sw=4 ai: -#}
 <!DOCTYPE html>
-<html lang="{{config.SITE_LANG}}" class="auto-scaling-disabled">
+<html lang="{{config.SITE_LANG or get_locale()}}" class="auto-scaling-disabled">
 <head>
 {#- Meta tags #}
   <meta charset="utf-8" />
@@ -18,8 +18,8 @@
 {%- else %}
   <meta property="og:url" content="{{ url_for("index", _external=True) }}" />
 {%- endif %}
-  <meta property="og:description" content="{%if description%}{{description}}{%elif config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}A minimalistic wiki powered by python, markdown and git.{%endif%}" />
-  <meta name="description" content="{%if config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}A minimalistic wiki powered by python, markdown and git.{%endif%}" />
+  <meta property="og:description" content="{%if description%}{{description}}{%elif config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}{{ _("A minimalistic wiki powered by python, markdown and git.") }}{%endif%}" />
+  <meta name="description" content="{%if config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}{{ _("A minimalistic wiki powered by python, markdown and git.") }}{%endif%}" />
 {%- if canonical_url %}
   <link rel="canonical" href="{{ canonical_url }}" />
 {%- endif %}
@@ -37,7 +37,7 @@
   <meta property="og:image" content="{{ url_for("static", filename="img/otterwiki-meta.jpg", _external=True) }}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="An Otter Wiki Logo" />
+  <meta property="og:image:alt" content="{{ _("An Otter Wiki Logo") }}" />
 {%- endif %}
 {#- meta preview block ]] #}
 {#- Favicon and title #}
@@ -114,11 +114,11 @@
         {#- Navbar start #}
         <nav class="navbar">
             <div class="navbar-content relative">
-                <button id="toggle-sidebar-btn" class="btn btn-action" type="button" onclick="halfmoon.toggleSidebar()" title="Toggle Sidebar ([)">
+                <button id="toggle-sidebar-btn" class="btn btn-action" type="button" onclick="halfmoon.toggleSidebar()" title="{{ _("Toggle Sidebar") }} ([)">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
-            <a href="{{ url_for("index") }}" class="navbar-brand ml-10 ml-sm-20" title="{%if config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}A minimalistic wiki powered by python, markdown and git.{%endif%}">
+            <a href="{{ url_for("index") }}" class="navbar-brand ml-10 ml-sm-20" title="{%if config.SITE_DESCRIPTION %}{{config.SITE_DESCRIPTION}}{%else%}{{ _("A minimalistic wiki powered by python, markdown and git.") }}{%endif%}">
 {%- if config.SITE_LOGO %}
                 <img src="{{ config.SITE_LOGO }}" alt="" id="site_logo"/>
 {%- else %}
@@ -133,9 +133,34 @@
                 <form action="{{ url_for("search") }}" method="post" class="relative">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <span class="top-search">
-                <input id="search-query" name="query" type="text" class="form-control mr-5" placeholder="Search" style="padding-right: 3.5rem;">
+                <input id="search-query" name="query" type="text" class="form-control mr-5" placeholder="{{ _("Search") }}" style="padding-right: 3.5rem;">
                 </span>
                 </form>
+{%- endblock %}
+{%- block navbar_language %}
+{%- if config.LANGUAGE_MENU %}
+{%- set languages = language_choices() %}
+{%- if languages|length > 1 %}
+                <div class="dropdown">
+                  <button class="btn btn-action mr-5" data-toggle="dropdown" type="button" id="navbar-language-btn" title="{{ _("Language") }}" aria-label="{{ _("Language") }}">
+                    {{ get_locale().split("_")[0]|upper }}
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbar-language-btn">
+                    <h6 class="dropdown-header">{{ _("Language") }}</h6>
+{%- for locale, name in languages %}
+                    <a href="{{ url_for("set_language", language=locale, next=request.full_path.rstrip("?")) }}" class="dropdown-item-with-icon" rel="nofollow" lang="{{ locale|replace("_", "-") }}"{% if locale == get_locale() %} aria-current="true"{% endif %}>
+                        <span class="dropdown-icon">
+{%- if locale == get_locale() %}
+                            <i class="fas fa-check"></i>
+{%- endif %}
+                        </span>
+                        {{ name }}
+                    </a>
+{%- endfor %}
+                  </div>
+                </div>
+{%- endif %}
+{%- endif %}
 {%- endblock %}
 {%- block navbardropdown_outer %}
                 <div class="dropdown">
@@ -150,7 +175,7 @@
                         <span class="dropdown-icon">
                             <img width="26" src="{{ url_for("static", filename="img/otterhead.png") }}" >
                         </span>
-                        About An Otter Wiki
+                        {{ _("About An Otter Wiki") }}
                     </a>
 {%- endif %}
 {%- if has_permission('READ') %}
@@ -160,34 +185,34 @@
                         <span class="dropdown-icon">
                             <i class="fas fa-question-circle"></i>
                         </span>
-                        Help
+                        {{ _("Help") }}
                     </a>
                     <a href="#" class="dropdown-item-with-icon" onclick="halfmoon.toggleDarkMode()">
                         <span class="dropdown-icon">
                             <i class="far fa-moon"></i>
                         </span>
-                        Toggle dark mode
+                        {{ _("Toggle dark mode") }}
                     </a>
 {%- if not current_user.is_authenticated %}
                     <a href="{{ url_for("login") }} " class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="fas fa-sign-in-alt"></i>
                         </span>
-                        Login
+                        {{ _("Login") }}
                     </a>
 {%- else %}
                     <a href="{{ url_for("settings") }}" class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="fas fa-cog"></i>
                         </span>
-                        Settings
+                        {{ _("Settings") }}
                     </a>
 {%- if auth_supported_features['logout'] %}
                     <a href="{{ url_for("logout") }}"  class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="fas fa-sign-out-alt"></i>
                         </span>
-                        Logout
+                        {{ _("Logout") }}
                     </a>
 {%- endif %}
 {%- endif %}

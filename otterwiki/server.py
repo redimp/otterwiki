@@ -2,11 +2,14 @@
 # vim: set et ts=8 sts=4 sw=4 ai:
 
 import datetime
+import functools
 import os
 import sys
 import logging
 
-from flask import Flask
+from flask import Flask, has_request_context, request
+from babel import Locale
+from flask_babel import Babel
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
@@ -31,6 +34,8 @@ app.config.update(
     SITE_LOGO=None,
     SITE_ICON=None,
     SITE_LANG="en",
+    LANGUAGE_FROM_BROWSER=False,
+    LANGUAGE_MENU=False,
     HIDE_LOGO=False,
     OPEN_LINKS_IN_NEW_TAB=False,
     AUTH_METHOD="",
@@ -257,6 +262,8 @@ def update_app_config():
                 "GIT_REMOTE_PULL_ENABLED",
                 "GIT_REMOTE_PULL_URL_SECURE",
                 "HIDE_LOGO",
+                "LANGUAGE_FROM_BROWSER",
+                "LANGUAGE_MENU",
                 "OPEN_LINKS_IN_NEW_TAB",
                 "TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES",
             ] or item.name.upper().startswith("SIDEBAR_SHORTCUT_"):
@@ -297,6 +304,78 @@ update_app_config()
 #
 # initialize renderer
 app_renderer = OtterwikiRenderer(config=app.config)
+
+
+#
+# i18n
+#
+@functools.cache
+def available_locales():
+    """
+    The languages a compiled catalog exists for, and English. The
+    catalogs ship with the package, so the disk is read once.
+    """
+    return [str(locale) for locale in babel.list_translations()]
+
+
+# the cookie that keeps the language picked in the menu
+LANGUAGE_COOKIE = "otterwiki_language"
+
+
+def match_locale(language, available):
+    """
+    The available locale for a language tag: `fr-FR` and `fr_FR` match
+    `fr_FR` if there is a catalog for it, `fr` otherwise.
+    """
+    language = (language or "").strip().replace("-", "_")
+    for candidate in [language, language.split("_")[0]]:
+        if candidate and candidate in available:
+            return candidate
+    return None
+
+
+def get_locale():
+    """
+    The language of the interface, the first one available of:
+    - the language picked in the menu, when LANGUAGE_MENU is enabled,
+    - the browser's preferred language, when LANGUAGE_FROM_BROWSER is enabled,
+    - SITE_LANG,
+    - English, the language of the templates.
+    """
+    available = available_locales()
+    if has_request_context():
+        if app.config["LANGUAGE_MENU"]:
+            picked = match_locale(
+                request.cookies.get(LANGUAGE_COOKIE), available
+            )
+            if picked:
+                return picked
+        if app.config["LANGUAGE_FROM_BROWSER"]:
+            preferred = request.accept_languages.best_match(available)
+            if preferred:
+                return preferred
+    return match_locale(app.config.get("SITE_LANG"), available) or "en"
+
+
+def language_choices():
+    """
+    The languages of the menu, as (locale, name in that language).
+    """
+    return sorted(
+        [
+            (
+                locale,
+                Locale.parse(locale).get_display_name(locale).capitalize(),
+            )
+            for locale in available_locales()
+        ],
+        key=lambda choice: choice[1].lower(),
+    )
+
+
+babel = Babel(app, locale_selector=get_locale)
+app.jinja_env.globals["get_locale"] = get_locale
+app.jinja_env.globals["language_choices"] = language_choices
 
 
 #

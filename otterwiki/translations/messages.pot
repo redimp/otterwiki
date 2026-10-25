@@ -1,0 +1,89 @@
+# Translations template for An Otter Wiki.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the An Otter Wiki
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: An Otter Wiki VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/redimp/otterwiki/issues\n"
+"POT-Creation-Date: 2026-10-25 07:14+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: otterwiki/templates/layout.html:21 otterwiki/templates/layout.html:22
+#: otterwiki/templates/layout.html:121
+msgid "A minimalistic wiki powered by python, markdown and git."
+msgstr ""
+
+#: otterwiki/templates/layout.html:40
+msgid "An Otter Wiki Logo"
+msgstr ""
+
+#: otterwiki/templates/layout.html:117
+msgid "Toggle Sidebar"
+msgstr ""
+
+#: otterwiki/templates/layout.html:136
+msgid "Search"
+msgstr ""
+
+#: otterwiki/templates/layout.html:145 otterwiki/templates/layout.html:149
+msgid "Language"
+msgstr ""
+
+#: otterwiki/templates/layout.html:178
+msgid "About An Otter Wiki"
+msgstr ""
+
+#: otterwiki/templates/layout.html:188
+msgid "Help"
+msgstr ""
+
+#: otterwiki/templates/layout.html:194
+msgid "Toggle dark mode"
+msgstr ""
+
+#: otterwiki/templates/layout.html:201 otterwiki/templates/login.html:33
+msgid "Login"
+msgstr ""
+
+#: otterwiki/templates/layout.html:208
+msgid "Settings"
+msgstr ""
+
+#: otterwiki/templates/layout.html:215
+msgid "Logout"
+msgstr ""
+
+#: otterwiki/templates/login.html:14
+msgid "Resend confirmation link."
+msgstr ""
+
+#: otterwiki/templates/login.html:20
+msgid "eMail Address"
+msgstr ""
+
+#: otterwiki/templates/login.html:24 otterwiki/templates/login.html:25
+msgid "Password"
+msgstr ""
+
+#: otterwiki/templates/login.html:30
+msgid "Remember me"
+msgstr ""
+
+#: otterwiki/templates/login.html:36
+msgid "Register"
+msgstr ""
+
+#: otterwiki/templates/login.html:39
+msgid "Lost your password?"
+msgstr ""
+

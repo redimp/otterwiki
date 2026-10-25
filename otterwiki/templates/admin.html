@@ -44,10 +44,30 @@
 {##}
   <div class="form-group">
       <label for="site-lang">Site Language</label>
-    <input name="site_lang" type="text" placeholder="/static/img/otterhead.png" class="form-control" id="site-lang" value="{{ config.SITE_LANG or "" }}">
+    <input name="site_lang" type="text" placeholder="en" class="form-control" id="site-lang" value="{{ config.SITE_LANG or "" }}">
     <div class="form-text">
         Configures the <code>lang</code> attribute of the <code>&lt;html&gt;</code> lang used in the wiki. For example, <code>en</code> specifies English, but <code>en-GB</code> and <code>en-US</code> more precisely specify British English and American English, respectively.
-        <em>Note: This is not to be confused with configuring the lange and localization of the application. This is not yet supported.</em>
+        It is also the language of the interface when a translation is available, English otherwise.
+    </div>
+  </div>
+{##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.LANGUAGE_FROM_BROWSER %}checked{% endif %} type="checkbox" id="language_from_browser" name="language_from_browser" value="True">
+      <label for="language_from_browser">Show the interface in the language of the browser.</label>
+    </div>
+    <div class="form-text">
+        When a translation is available for the language the visitor's browser prefers, it is used instead of the Site Language.
+    </div>
+  </div>
+{##}
+  <div class="form-group">
+    <div class="custom-checkbox">
+      <input {%if config.LANGUAGE_MENU %}checked{% endif %} type="checkbox" id="language_menu" name="language_menu" value="True">
+      <label for="language_menu">Let visitors pick the language of the interface.</label>
+    </div>
+    <div class="form-text">
+        Adds the available languages to the menu on top of every page. The choice is kept in a cookie and wins over the browser and the Site Language.
     </div>
   </div>
 {##}
