@@ -26,7 +26,7 @@ spec:
   parentRefs:
     {{- toYaml $parentRefs | nindent 4 }}
   rules:
-  {{- if gt (len .Values.httproute.rules) 0 }}
+  {{- if .Values.httproute.rules }}
     {{- range .Values.httproute.rules }}
     - backendRefs:
         - name: {{ $fullName }}

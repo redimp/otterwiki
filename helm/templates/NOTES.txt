@@ -4,13 +4,25 @@ Open up your installation of An Otter Wiki via
 {{ range $host := .Values.ingress.hosts }}
     http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}
 {{- end }}
+{{- if .Values.httproute.enabled }}
+
+    NOTE: ingress and httproute are both enabled. The httproute URLs are not listed.
+{{- end }}
 {{- else if .Values.httproute.enabled }}
+{{- if .Values.httproute.hostnames }}
 
 Open up your installation of An Otter Wiki using one of the following URLs:
 {{ range $host := .Values.httproute.hostnames }}
     http://{{ $host }} | https://{{ $host }}
 {{- end}}
     NOTE: whether to use HTTP or HTTPS depends on your Gateway.
+{{- else }}
+
+No httproute.hostnames are configured. Open up your installation of An Otter Wiki
+using the address of your Gateway. Get the address by running this command:
+
+    kubectl get gateways.gateway.networking.k8s.io -A
+{{- end }}
 {{- else if contains "NodePort" .Values.service.type }}
 
 Get the application URL by running these commands:
