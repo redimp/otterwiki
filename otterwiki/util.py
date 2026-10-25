@@ -498,6 +498,7 @@ def is_valid_name(
     name: str,
     min_length: int = 1,
     max_length: int = 50,
+    gettext=None,
 ) -> Tuple[bool, str]:
     """
     Validates if a name meets security and usability requirements,
@@ -508,13 +509,20 @@ def is_valid_name(
         min_length: Minimum acceptable length
         max_length: Maximum acceptable length
 
+        gettext: Translates the reason, e.g. flask_babel.gettext;
+            English when omitted, so this module stays free of Flask
+
     Returns:
         A tuple containing (is_valid, reason_if_invalid)
     """
+    if gettext is None:
+
+        def gettext(message, **variables):
+            return message % variables if variables else message
 
     # Check if name is None or empty
     if not name or name.strip() == "":
-        return False, "name cannot be empty"
+        return False, gettext("name cannot be empty")
 
     # Trim whitespace
     name = name.strip()
@@ -523,10 +531,15 @@ def is_valid_name(
     if len(name) < min_length:
         return (
             False,
-            f"name must be at least {min_length} character(s) long",
+            gettext(
+                "name must be at least %(num)s character(s) long",
+                num=min_length,
+            ),
         )
     if len(name) > max_length:
-        return False, f"name cannot exceed {max_length} characters"
+        return False, gettext(
+            "name cannot exceed %(num)s characters", num=max_length
+        )
 
     # Normalize unicode characters
     name = unicodedata.normalize('NFC', name)
@@ -535,7 +548,7 @@ def is_valid_name(
     if any(unicodedata.category(char).startswith('C') for char in name):
         return (
             False,
-            f"name contains invisible or control characters",
+            gettext("name contains invisible or control characters"),
         )
 
     # Allow letters from any language, spaces, hyphens, apostrophes
@@ -545,29 +558,31 @@ def is_valid_name(
     if not regex.match(valid_chars, name, regex.UNICODE):
         return (
             False,
-            f"name can only contain letters, spaces, hyphens, apostrophes, and periods",
+            gettext(
+                "name can only contain letters, spaces, hyphens, apostrophes, and periods"
+            ),
         )
 
     # Check for reasonable spacing (no double spaces, etc.)
     if '  ' in name:
-        return False, f"name cannot contain consecutive spaces"
+        return False, gettext("name cannot contain consecutive spaces")
 
     # Check for reasonable use of special characters
     if re.search(r'[\'\-\.]{2,}', name):
         return (
             False,
-            f"name cannot contain consecutive special characters",
+            gettext("name cannot contain consecutive special characters"),
         )
 
     # Check for names that are just special characters
     if regex.match(r'^[\s\'\-\.]+$', name):
-        return False, f"name must contain at least one letter"
+        return False, gettext("name must contain at least one letter")
 
     # Check for names that are suspiciously repetitive
     if re.search(r'(.)\1{4,}', name):
         return (
             False,
-            f"name contains too many consecutive repeated characters",
+            gettext("name contains too many consecutive repeated characters"),
         )
 
     # Check for common placeholder names
@@ -587,13 +602,13 @@ def is_valid_name(
         "unknown",
     ]
     if name.lower() in placeholder_names:
-        return False, f"name appears to be a placeholder"
+        return False, gettext("name appears to be a placeholder")
 
     # Check for names with excessive capitalization
     if name.isupper() and len(name) > 2:
-        return False, f"name should not be all uppercase"
+        return False, gettext("name should not be all uppercase")
 
-    return True, f"name is valid"
+    return True, gettext("name is valid")
 
 
 def unquote_git_path(s: str) -> str:

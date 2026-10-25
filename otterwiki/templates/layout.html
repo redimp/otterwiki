@@ -292,6 +292,7 @@
 {%- endblock content_wrapper_outer %}
     </div>
     {#- Page wrapper end #}
+  {%- include "snippets/js_translations.html" %}
   {#- Halfmoon JS #}
   <script src="{{ url_for("static", filename="js/halfmoon.js") | debug_unixtime }}"></script>
 {%- block js %}

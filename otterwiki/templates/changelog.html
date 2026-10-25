@@ -3,8 +3,8 @@
 {%block head %}
 {{ super() }}
     <meta name="robots" content="noindex, nofollow"/>
-    <link rel="alternate" type="application/rss+xml" title="Changelog RSS Feed" href="{{url_for("changelog_feed_rss", _external=True)}}" />
-    <link rel="alternate" type="application/atom+xml" title="Changelog Atom Feed" href="{{url_for("changelog_feed_atom", _external=True)}}" />
+    <link rel="alternate" type="application/rss+xml" title="{{ _("Changelog RSS Feed") }}" href="{{url_for("changelog_feed_rss", _external=True)}}" />
+    <link rel="alternate" type="application/atom+xml" title="{{ _("Changelog Atom Feed") }}" href="{{url_for("changelog_feed_atom", _external=True)}}" />
 {% endblock %}
 {% block extra_nav %}{% endblock %}
 {% block menu %}
@@ -14,20 +14,20 @@
 {% endblock %}
 {% block content %}
 <div class="w-full mw-full p-0 clearfix">
-    <h2 class="float-left">Changelog</h2>
+    <h2 class="float-left">{{ _("Changelog") }}</h2>
 {# pagination #}
 {% if pages|length > 0 %}
-<nav aria-label="Pagination" class="float-right">
+<nav aria-label="{{ _("Pagination") }}" class="float-right">
 <div class="btn-group" role="group">
   <a class="btn btn-square" href="{{ url_for("changelog", revision=first_page) }}">
     <i class="fa fa-angle-double-left" aria-hidden="true"></i>
-    <span class="sr-only">First page</span> <!-- sr-only = only for screen readers -->
+    <span class="sr-only">{{ _("First page") }}</span> <!-- sr-only = only for screen readers -->
   </a>
   <!-- Previous page -->
   {% if previous_page %}
   <a class="btn btn-square" href="{{ url_for("changelog", revision=previous_page) }}">
     <i class="fa fa-angle-left" aria-hidden="true"></i>
-    <span class="sr-only">Previous page</span> <!-- sr-only = only for screen readers -->
+    <span class="sr-only">{{ _("Previous page") }}</span> <!-- sr-only = only for screen readers -->
   </a>
   {% else %}
   <span class="btn btn-square">
@@ -46,7 +46,7 @@
   <!-- Next page -->
   <a class="btn btn-square" href="{{ url_for("changelog", revision=next_page) }}">
     <i class="fa fa-angle-right" aria-hidden="true"></i>
-    <span class="sr-only">Next page</span> <!-- sr-only = only for screen readers -->
+    <span class="sr-only">{{ _("Next page") }}</span> <!-- sr-only = only for screen readers -->
   </a>
   {% else %}
   <span class="btn btn-square">
@@ -55,7 +55,7 @@
   {% endif %}
   <a class="btn btn-square" href="{{ url_for("changelog", revision=last_page) }}">
     <i class="fa fa-angle-double-right" aria-hidden="true"></i>
-    <span class="sr-only">Last page</span> <!-- sr-only = only for screen readers -->
+    <span class="sr-only">{{ _("Last page") }}</span> <!-- sr-only = only for screen readers -->
   </a>
 </div>
 <div class="text-right">
@@ -70,17 +70,17 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Author</th>
-            <th>Files</th>
-            <th class="w-half">Commit Message</th>
+            <th>{{ _("Date") }}</th>
+            <th>{{ _("Author") }}</th>
+            <th>{{ _("Files") }}</th>
+            <th class="w-half">{{ _("Commit Message") }}</th>
           </tr>
         </thead>
         <tbody>
 {% for entry in log %}
           <tr class="align-top">
-            <td class="font-size-12"><span class="datetime" title="{{entry.datetime|format_datetime("deltanow")}} ago">{{entry.datetime|format_datetime}}</span>
-                <a href="{{ url_for("show_commit", revision=entry.revision) }}" class="btn revision-small">{{entry.revision}}</a>{% if has_permission('WRITE') %} <a href="{{ url_for("revert", revision=entry.revision) }}"> <i class="fas fa-undo" alt="revert" title="revert commit {{entry.revision}}"></i></a>{% endif %}
+            <td class="font-size-12"><span class="datetime" title="{{ _("%(delta)s ago", delta=entry.datetime|format_datetime("deltanow")) }}">{{entry.datetime|format_datetime}}</span>
+                <a href="{{ url_for("show_commit", revision=entry.revision) }}" class="btn revision-small">{{entry.revision}}</a>{% if has_permission('WRITE') %} <a href="{{ url_for("revert", revision=entry.revision) }}"> <i class="fas fa-undo" alt="{{ _("revert") }}" title="{{ _("revert commit %(revision)s", revision=entry.revision) }}"></i></a>{% endif %}
             </td>
 {# author #}
             <td>{%if not entry.author_email%}{{entry.author_name}}{%else%}<a href="mailto:{{entry.author_email}}">{{entry.author_name}}</a>{%endif%}</td>

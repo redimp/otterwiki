@@ -56,22 +56,38 @@ Mark a string for translation:
 - in Python: `from flask_babel import gettext as _`, or `lazy_gettext` for
   strings defined at import time.
 
-Files, under `otterwiki/translations/`:
+Plurals: `ngettext("%(num)s page", "%(num)s pages", n)`, and in
+templates `{{ ngettext(...) }}`. A sentence with markup stays one message:
+`{% trans url=... %}See the <a href="{{ url }}">help</a>.{% endtrans %}`.
+What is written to the git repository (commit messages, initial pages) is
+content and stays in English.
 
-- `messages.pot`: every string to translate, extracted from the sources;
-- `<lang>/LC_MESSAGES/messages.po`: a catalog, what translators edit;
-- `<lang>/LC_MESSAGES/messages.mo`: the compiled catalog the app reads. It is
-  committed, so a plain `pip install` or a `docker build` needs no extra step.
+`otterwiki/translations/messages.pot` holds every string to translate. Run
+`make translations-extract` after adding or changing one, and commit it.
 
-Commands:
+The catalogs themselves are not part of the wiki: each language is a plugin,
+a *language pack*, released on its own schedule
+([otterwiki-translations](https://github.com/quazardous/otterwiki-translations)
+has one package per language and the tools to sync and check them). A
+language pack implements the `translation_directories` hook
+(`otterwiki/plugins.py`) and returns the folder of its catalogs:
 
-```sh
-make translations-extract   # refresh messages.pot from the sources
-make translations-update    # extract, merge into every .po, compile
-make translations-compile   # compile the .po files after editing them
-# start a new language, e.g. German
-venv/bin/pybabel init -i otterwiki/translations/messages.pot -d otterwiki/translations -l de
+```python
+import os
+from otterwiki.plugins import hookimpl, plugin_manager
+
+class LanguagePack:
+    @hookimpl
+    def translation_directories(self):
+        # holds <lang>/LC_MESSAGES/messages.mo, made from messages.pot
+        return os.path.join(os.path.dirname(__file__), "translations")
+
+plugin_manager.register(LanguagePack())
 ```
 
-Plugins can keep using English strings; translating them is up to each
-plugin, with its own catalog.
+The folders of every installed plugin are merged, so a pack may also
+complete or correct another one. The language menu and the browser
+detection offer every installed language.
+
+The tests use a tiny French catalog, `tests/translations`, registered the
+same way in `tests/conftest.py`.

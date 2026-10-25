@@ -1,7 +1,7 @@
-Hello {{name}},
+{% trans %}Hello {{name}},{% endtrans %}
 
-Your account at {{sitename}} (An Otter Wiki) has been approved.
+{% trans %}Your account at {{sitename}} (An Otter Wiki) has been approved.{% endtrans %}
 
-You can log in here: {{url}}
+{% trans %}You can log in here: {{url}}{% endtrans %}
 
-Cheers!
+{% trans %}Cheers!{% endtrans %}

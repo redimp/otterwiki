@@ -1,9 +1,9 @@
-Dear {{sitename}}-Admin,
+{% trans %}Dear {{sitename}}-Admin,{% endtrans %}
 
-A new user registered an account at {{sitename}} (An Otter Wiki):
+{% trans %}A new user registered an account at {{sitename}} (An Otter Wiki):{% endtrans %}
 
 {{name}} <{{email}}>
 
-Please check if the user needs to be approved here: {{url}}
+{% trans %}Please check if the user needs to be approved here: {{url}}{% endtrans %}
 
-Cheers!
+{% trans %}Cheers!{% endtrans %}

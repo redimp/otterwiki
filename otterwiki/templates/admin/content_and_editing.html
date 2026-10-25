@@ -6,20 +6,20 @@
 <div class="mw-full">
     <form action="{{ url_for("admin_content_and_editing") }}" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-<h2 class="card-title">Content and Editing Preferences</h2>
+<h2 class="card-title">{{ _("Content and Editing Preferences") }}</h2>
     <div class="form-group">
-        <label for="commit_message" class="required">Commit message</label>
+        <label for="commit_message" class="required">{{ _("Commit message") }}</label>
         <select class="form-control w-md-600" id="commit_message" name="commit_message">
-{% for mode in [("REQUIRED", "Required"),("OPTIONAL","Optional (empty commit messages are allowed)"),("DISABLED", "Disabled (Changes saved with the default commit message, which can be empty)")] %}
+{% for mode in [("REQUIRED", _("Required")),("OPTIONAL", _("Optional (empty commit messages are allowed)")),("DISABLED", _("Disabled (Changes saved with the default commit message, which can be empty)"))] %}
             <option value="{{mode[0]}}"{%if config.COMMIT_MESSAGE == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
 {% endfor %}
         </select>
     </div>
 {##}
   <div class="form-group">
-    <label for="default_commit_message">Default commit message</label>
+    <label for="default_commit_message">{{ _("Default commit message") }}</label>
     <input name="default_commit_message" type="text" class="form-control" id="default_commit_message" value="{{ config.DEFAULT_COMMIT_MESSAGE}}" placeholder="%P updated on %c">
-    <div class="form-text">When commit messages are disabled or optional, this provides the default value in these scenarios. <code>strftime</code> <a href="https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes">format codes</a> are parsed and formated, additionally <code>%P</code> is replaced with the name of the page.</div>
+    <div class="form-text">{% trans code="%P" %}When commit messages are disabled or optional, this provides the default value in these scenarios. <code>strftime</code> <a href="https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes">format codes</a> are parsed and formated, additionally <code>{{ code }}</code> is replaced with the name of the page.{% endtrans %}</div>
   </div>
 {##}
     <div class="form-group">
@@ -27,9 +27,9 @@
         <input {%if config.RETAIN_PAGE_NAME_CASE %}checked{% endif %} type="checkbox" id="retain_page_name_case"
           name="retain_page_name_case"
           value="True">
-        <label for="retain_page_name_case">Retain page name case.</label>
+        <label for="retain_page_name_case">{{ _("Retain page name case.") }}</label>
         <div class="mt-5">
-            Enable this to retain upper and lower case of the page name in the filename used for storing the page. <strong>Important:</strong> If pages are created while this mode is active, they may not be found as soon as the mode is deactivated again. Make sure to rename the pages to all lowercase before deactivation.
+            {% trans %}Enable this to retain upper and lower case of the page name in the filename used for storing the page. <strong>Important:</strong> If pages are created while this mode is active, they may not be found as soon as the mode is deactivated again. Make sure to rename the pages to all lowercase before deactivation.{% endtrans %}
         </div>
       </div>
     </div>
@@ -39,29 +39,29 @@
         <input {%if config.TREAT_UNDERSCORE_AS_SPACE_FOR_TITLES %}checked{% endif %} type="checkbox" id="treat_underscore_as_space_for_titles"
           name="treat_underscore_as_space_for_titles"
           value="True">
-        <label for="treat_underscore_as_space_for_titles">Treat underscore as space for titles.</label>
+        <label for="treat_underscore_as_space_for_titles">{{ _("Treat underscore as space for titles.") }}</label>
         <div class="mt-5">
-            Enable this to replace underscores (_) with spaces in page titles, breadcrumbs, and page index. For example, "Page_With_Underscores" will be displayed as "Page With Underscores".
+            {% trans %}Enable this to replace underscores (_) with spaces in page titles, breadcrumbs, and page index. For example, "Page_With_Underscores" will be displayed as "Page With Underscores".{% endtrans %}
         </div>
       </div>
     </div>
 {##}
     <div class="form-group">
-        <label for="sidebar_menutree_mode">WikiLink Style</label>
+        <label for="sidebar_menutree_mode">{{ _("WikiLink Style") }}</label>
         <select class="form-control w-md-600" id="wikilink_style" name="wikilink_style">
-{% for mode in [("", "[[Title | PageName]] - like Markdown links [Title](/PageName)"),("LINKTITLE","[[PageName | Title]] - compatibility mode"),] %}
+{% for mode in [("", _("%(syntax)s - like Markdown links %(example)s", syntax="[[Title | PageName]]", example="[Title](/PageName)")),("LINKTITLE", _("%(syntax)s - compatibility mode", syntax="[[PageName | Title]]")),] %}
             <option value="{{mode[0]}}"{%if config.WIKILINK_STYLE == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
 {% endfor %}
         </select>
         <div class="mt-5">
-            The WikiLink Style only changes the rendering of the <code>[[Wikilink]]</code>, no content will be changed. The compatibility mode is for imported content or matching the style users got used to.
+            {% trans %}The WikiLink Style only changes the rendering of the <code>[[Wikilink]]</code>, no content will be changed. The compatibility mode is for imported content or matching the style users got used to.{% endtrans %}
         </div>
     </div>
 {##}
 <div class="form-text pt-0 mt-0 mb-20"></div>
 {##}
   <div class="mt-10">
-    <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
+    <input class="btn btn-primary" name="update_preferences" type="submit" value="{{ _("Save Preferences") }}">
   </div>
 </form>
 </div>

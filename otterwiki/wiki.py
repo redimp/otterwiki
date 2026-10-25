@@ -23,6 +23,7 @@ from flask import (
     send_file,
     session,
 )
+from flask_babel import gettext as _, ngettext
 from markupsafe import escape as html_escape
 from werkzeug.http import http_date
 from werkzeug.utils import secure_filename
@@ -207,7 +208,7 @@ class Changelog:
         return render_template(
             "changelog.html",
             log=log,
-            title="Changelog",
+            title=_("Changelog"),
             pages=pages,
             first_page=first_page,
             last_page=last_page,
@@ -224,22 +225,25 @@ class Changelog:
             "revert.html",
             revision=revision,
             message=message,
-            title="Revert commit [{}]".format(revision),
+            title=_("Revert commit [%(revision)s]", revision=revision),
         )
 
     def revert(self, revision, message, author):
         if not has_permission("WRITE"):
             abort(403)
-        toast_message = "Reverted commit {}.".format(revision)
+        # the default commit message is wiki content and stays in English
         if empty(message):
-            message = toast_message
+            message = "Reverted commit {}.".format(revision)
         try:
             storage.revert(revision, message=message, author=author)
         except StorageError as e:
-            toast("Error: Unable to revert {}.".format(revision), "error")
+            toast(
+                _("Error: Unable to revert %(revision)s.", revision=revision),
+                "error",
+            )
             app.logger.error(f"Unable to revert {revision}: {e}")
         else:
-            toast(toast_message)
+            toast(_("Reverted commit %(revision)s.", revision=revision))
         return redirect(url_for("changelog"))
 
     def show_commit(self, revision):
@@ -266,7 +270,7 @@ class Changelog:
         file_diffs = patchset2filedict(patchset)
         return render_template(
             "diff.html",
-            title="commit {}".format(revision),
+            title=_("commit %(revision)s", revision=revision),
             metadata=metadata,
             url_map=url_map,
             file_diffs=file_diffs,
@@ -284,9 +288,10 @@ class Changelog:
         log = self.get(_external=True)
         fg = FeedGenerator()
         # Wiki Core information
-        fg.title(app.config["SITE_NAME"] or "An Otter Wiki" + " -  Changelog")
+        fg.title(app.config["SITE_NAME"] or _("An Otter Wiki - Changelog"))
         fg.description(
-            app.config["SITE_DESCRIPTION"] or "All recent changes to the wiki"
+            app.config["SITE_DESCRIPTION"]
+            or _("All recent changes to the wiki")
         )
         # Logo
         if app.config["SITE_LOGO"] and app.config["SITE_LOGO"].startswith("/"):
@@ -322,7 +327,7 @@ class Changelog:
                 permalink=True,
             )
             elements = []
-            for _, details in entry["files"].items():
+            for _filename, details in entry["files"].items():
                 elements.append(details["name"])
                 if details["url"] and details["mimetype"]:
                     if details["mimetype"] == "text/markdown":
@@ -333,7 +338,13 @@ class Changelog:
                             url=details["url"], type=details["mimetype"]
                         )
             title = ", ".join(elements)
-            fe.title(f"Commit " + entry["revision"] + ": " + title)
+            fe.title(
+                _(
+                    "Commit %(revision)s: %(files)s",
+                    revision=entry["revision"],
+                    files=title,
+                )
+            )
             fe.description(entry["message"] or "-/-")
             fe.published(entry["datetime"])
 
@@ -469,7 +480,7 @@ class Page:
             return None, None
         # send context of the page rendered to plugins
         call_hook("page_render_context", page=page, preview=False)
-        htmlcontent, _, library_requirements = app_renderer.markdown(
+        htmlcontent, _toc, library_requirements = app_renderer.markdown(
             page.content, page_url=page.page_view_url
         )
         htmlcontent = chain_hooks(
@@ -491,7 +502,9 @@ class Page:
             response404 = make_response(
                 render_template(
                     "page404.html",
-                    title="{} - not found".format(self.pagename_full),
+                    title=_(
+                        "%(pagename)s - not found", pagename=self.pagename_full
+                    ),
                     pagename=self.pagename_full,
                     pagepath=self.pagepath,
                     custom_404_html=custom_404_html,
@@ -550,15 +563,21 @@ class Page:
         if not has_permission("READ"):
             if current_user.is_authenticated and not current_user.is_approved:
                 toast(
-                    "You lack the permissions to access this wiki. Please wait for approval."
+                    _(
+                        "You lack the permissions to access this wiki. Please wait for approval."
+                    )
                 )
             elif current_user.is_authenticated and current_user.is_approved:
                 toast(
-                    "You are logged in but lack READ permissions. Please wait for an administrator to grant access."
+                    _(
+                        "You are logged in but lack READ permissions. Please wait for an administrator to grant access."
+                    )
                 )
             else:
                 toast(
-                    "You lack the permissions to access this wiki. Please login."
+                    _(
+                        "You lack the permissions to access this wiki. Please login."
+                    )
                 )
             return redirect(url_for("login", next=request.full_path))
         # handle case that page doesn't exists
@@ -578,7 +597,7 @@ class Page:
                 toc=[],
                 breadcrumbs=self.breadcrumbs(),
                 danger_alert=[
-                    "Storage error",
+                    _("Storage error"),
                     # danger_alert[1] is rendered with |safe, the error may
                     # contain the filename, so escape it
                     str(html_escape(self.storage_error)),
@@ -596,8 +615,11 @@ class Page:
         danger_alert = False
         if not self.metadata:
             danger_alert = [
-                "Not under version control",
-                f"""This page was loaded from the repository but is not added under git version control. Make a commit on the <a href="{url_for('edit', path=self.pagepath)}" class="alert-link">Edit page</a> to add it.""",
+                _("Not under version control"),
+                _(
+                    'This page was loaded from the repository but is not added under git version control. Make a commit on the <a href="%(url)s" class="alert-link">Edit page</a> to add it.',
+                    url=url_for('edit', path=self.pagepath),
+                ),
             ]
 
         # send context of the page rendered to plugins
@@ -799,9 +821,10 @@ class Page:
                 revision = draft_revision
                 if changes is None or len(changes) > 0:
                     toast(
-                        "{} has been changed since the draft was started. "
-                        "Saving the draft overwrites these changes.".format(
-                            self.pagename_full
+                        _(
+                            "%(pagename)s has been changed since the draft was started. "
+                            "Saving the draft overwrites these changes.",
+                            pagename=self.pagename_full,
                         ),
                         "warning",
                     )
@@ -825,7 +848,7 @@ class Page:
 
         return render_template(
             "editor.html",
-            title="{} - edit".format(self.pagename),
+            title=_("%(pagename)s - edit", pagename=self.pagename),
             pagename=self.pagename,
             pagepath=self.pagepath,
             content_editor=content,
@@ -868,7 +891,7 @@ class Page:
             base_content = self._new_page_content()
         elif changes is not None:
             try:
-                base_content, _ = self.load(revision=draft_revision)
+                base_content, _meta = self.load(revision=draft_revision)
             except StorageError:
                 pass
         # fall back to the stored version, if the base can not be loaded
@@ -895,7 +918,7 @@ class Page:
         )
         return render_template(
             "draft.html",
-            title="{} - draft".format(self.pagename),
+            title=_("%(pagename)s - draft", pagename=self.pagename),
             pagename=self.pagename,
             pagepath=self.pagepath,
             draft_datetime=draft.datetime.astimezone(UTC),
@@ -931,9 +954,9 @@ class Page:
         except StorageUnsafePath as e:
             abort(403, description=str(e))
         if not changed:
-            toast("Nothing changed.", "warning")
+            toast(_("Nothing changed."), "warning")
         else:
-            toast("{} saved.".format(self.pagename_full))
+            toast(_("%(pagename)s saved.", pagename=self.pagename_full))
             # notify plugins
             plugin_manager.hook.page_saved(
                 pagepath=self.pagepath,
@@ -951,7 +974,10 @@ class Page:
             abort(403)
 
         if self.exists:
-            toast("{} exists already.".format(self.pagename), "warning")
+            toast(
+                _("%(pagename)s exists already.", pagename=self.pagename),
+                "warning",
+            )
 
         return redirect(url_for("edit", path=self.pagepath))
 
@@ -1013,7 +1039,7 @@ class Page:
                 )
                 fdata[last_index][8] += 1
         menutree = SidebarPageIndex(self.pagepath)
-        title = "{} - blame".format(self.pagename)
+        title = _("%(pagename)s - blame", pagename=self.pagename)
         if self.revision is not None:
             title = "{} ({})".format(title, self.revision)
         return render_template(
@@ -1112,7 +1138,12 @@ class Page:
             metadata_b=log[index_b] if index_b is not None else None,
             prev_url=prev_url,
             next_url=next_url,
-            title="{} - diff {} {}".format(self.pagename, rev_a, rev_b),
+            title=_(
+                "%(pagename)s - diff %(rev_a)s %(rev_b)s",
+                pagename=self.pagename,
+                rev_a=rev_a,
+                rev_b=rev_b,
+            ),
             pagepath=self.pagepath,
             pagename=self.pagename,
             page_filenames=page_filenames,
@@ -1157,9 +1188,9 @@ class Page:
 
         if request.method == "POST":
             if rev_a is None or rev_b is None:
-                toast("Please select two revisions to compare.", "warning")
+                toast(_("Please select two revisions to compare."), "warning")
             elif rev_a == rev_b:
-                toast("Please select two different revisions.", "warning")
+                toast(_("Please select two different revisions."), "warning")
             else:
                 # the log is ordered newest first, make sure rev_a is the
                 # older revision, so that the diff shows old -> new
@@ -1192,7 +1223,7 @@ class Page:
         menutree = SidebarPageIndex(self.pagepath)
         return render_template(
             "history.html",
-            title="{} - History".format(self.pagename),
+            title=_("%(pagename)s - History", pagename=self.pagename),
             pagename=self.pagename,
             pagepath=self.pagepath,
             log=log,
@@ -1297,15 +1328,19 @@ class Page:
         if not has_permission("WRITE"):
             abort(403)
         if empty(new_pagename):
-            toast("Please provide a name.", "error")
+            toast(_("Please provide a name."), "error")
         elif sanitize_pagename(new_pagename) != new_pagename:
-            toast("Please check the pagename ...", "warning")
+            toast(_("Please check the pagename ..."), "warning")
             new_pagename = sanitize_pagename(new_pagename)
         elif get_pagename(new_pagename, full=True) == self.pagepath:
-            toast("New and old name are the same.", "error")
+            toast(_("New and old name are the same."), "error")
         elif Page(new_pagename).exists:
             toast(
-                f"Unable to rename: {new_pagename} already exists.", "warning"
+                _(
+                    "Unable to rename: %(pagename)s already exists.",
+                    pagename=new_pagename,
+                ),
+                "warning",
             )
         else:
             # rename
@@ -1322,7 +1357,7 @@ class Page:
                 # https://flask.palletsprojects.com/en/2.2.x/patterns/flashing/
                 #   "Note that browsers and sometimes web servers enforce a limit on cookie sizes. This means that
                 #    flashing messages that are too large for session cookies causes message flashing to fail silently."
-                toast("Renaming failed.", "error")
+                toast(_("Renaming failed."), "error")
                 app.logger.error(f"Renaming failed: {e}")
             else:
                 # notify plugins
@@ -1349,7 +1384,7 @@ class Page:
 
         return render_template(
             "rename.html",
-            title="Rename {}".format(self.pagename),
+            title=_("Rename %(pagename)s", pagename=self.pagename),
             pagepath=self.pagepath,
             pagename=get_pagename(self.pagepath, full=True),
             new_pagename=new_pagename,
@@ -1374,7 +1409,7 @@ class Page:
         if recursive:
             files.append(self.attachment_directoryname)
         if len(files) < 1:
-            toast("Nothing to delete.")
+            toast(_("Nothing to delete."))
             return redirect(url_for("view", path=self.pagepath))
         storage.delete(
             files,
@@ -1387,20 +1422,23 @@ class Page:
             author=author,
             message=message,
         )
-        toast("{} deleted.".format(self.pagename))
+        toast(_("%(pagename)s deleted.", pagename=self.pagename))
         return redirect(url_for("changelog"))
 
     def delete_form(self):
         if not has_permission("WRITE"):
             abort(403)
         # count attachments and subpages
-        files, _ = storage.list(self.attachment_directoryname)
+        files, _dirs = storage.list(self.attachment_directoryname)
         if len(files) > 0:
-            title = "Delete {} and the {} file(s) attached?".format(
-                self.pagename, len(files)
+            title = ngettext(
+                "Delete %(pagename)s and the %(num)s file attached?",
+                "Delete %(pagename)s and the %(num)s files attached?",
+                len(files),
+                pagename=self.pagename,
             )
         else:
-            title = "Delete {} ?".format(self.pagename)
+            title = _("Delete %(pagename)s ?", pagename=self.pagename)
         menutree = SidebarPageIndex(self.pagepath)
         return render_template(
             "delete.html",
@@ -1412,7 +1450,7 @@ class Page:
         )
 
     def _attachments(self, maximum=None, exclude_extensions=None):
-        files, _ = storage.list(self.attachment_directoryname, depth=0)
+        files, _dirs = storage.list(self.attachment_directoryname, depth=0)
         if exclude_extensions:
             files = [f for f in files if not f.endswith(exclude_extensions)]
         if maximum:
@@ -1440,7 +1478,7 @@ class Page:
         menutree = SidebarPageIndex(self.pagepath)
         return render_template(
             "attachments.html",
-            title="{} - Attachments".format(self.pagename),
+            title=_("%(pagename)s - Attachments", pagename=self.pagename),
             pagepath=self.pagepath,
             pagename=self.pagename,
             files=files,
@@ -1474,17 +1512,21 @@ class Page:
             to_commit.append(attachment)
             last_uploaded_filename = fn
         if len(to_commit) > 0:
+            filenames = ", ".join([c.filename for c in to_commit])
             if filename is None:
-                toastmsg = "Added attachment(s): {}.".format(
-                    ", ".join([c.filename for c in to_commit])
+                commitmsg = "Added attachment(s): {}.".format(filenames)
+                toastmsg = ngettext(
+                    "Added attachment: %(files)s.",
+                    "Added attachments: %(files)s.",
+                    len(to_commit),
+                    files=filenames,
                 )
             else:
-                toastmsg = "Updated attachment: {}.".format(
-                    ", ".join([c.filename for c in to_commit])
-                )
-            # default message
+                commitmsg = "Updated attachment: {}.".format(filenames)
+                toastmsg = _("Updated attachment: %(files)s.", files=filenames)
+            # default message, wiki content: stays in English
             if empty(message):
-                message = toastmsg
+                message = commitmsg
             storage.commit(
                 [a.filepath for a in to_commit], message=message, author=author
             )
@@ -1770,18 +1812,24 @@ class Attachment:
     def rename(self, new_filename, message, author):
         if not has_permission("UPLOAD"):
             abort(403)
-        toast_message = "Renamed {} to {}".format(self.filename, new_filename)
         new_filepath = os.path.join(self.directory, new_filename)
+        # the default commit message is wiki content and stays in English
         if empty(message):
-            message = toast_message
+            message = "Renamed {} to {}".format(self.filename, new_filename)
         try:
             storage.rename(
                 self.filepath, new_filepath, message=message, author=author
             )
         except StorageError:
-            toast("Renaming failed", "error")
+            toast(_("Renaming failed"), "error")
             return redirect(url_for("attachments", pagepath=self.pagepath))
-        toast(toast_message)
+        toast(
+            _(
+                "Renamed %(old)s to %(new)s",
+                old=self.filename,
+                new=new_filename,
+            )
+        )
         return redirect(
             url_for(
                 "edit_attachment",
@@ -1793,14 +1841,14 @@ class Attachment:
     def delete(self, message, author):
         if not has_permission("WRITE"):
             abort(403)
-        toast_message = "Deleted {}".format(self.filename)
+        # the default commit message is wiki content and stays in English
         if empty(message):
-            message = toast_message
+            message = "Deleted {}".format(self.filename)
         try:
             storage.delete(self.filepath, message=message, author=author)
-            toast(toast_message)
+            toast(_("Deleted %(filename)s", filename=self.filename))
         except StorageError:
-            toast("Deleting failed", "error")
+            toast(_("Deleting failed"), "error")
         return redirect(url_for("attachments", pagepath=self.pagepath))
 
     def edit(self):
@@ -1821,7 +1869,7 @@ class Attachment:
             log.append(entry)
         return render_template(
             "edit_attachment.html",
-            title="Edit {}".format(self.filename),
+            title=_("Edit %(filename)s", filename=self.filename),
             pagepath=self.pagepath,
             filename=self.filename,
             log=log,
@@ -1995,7 +2043,7 @@ class Search:
                 self.re = regex.compile(self.needle, regex.IGNORECASE)
             self.rei = regex.compile(self.needle, regex.IGNORECASE)
         except Exception as e:
-            toast("Error in search term: {}".format(e), "error")
+            toast(_("Error in search term: %(error)s", error=e), "error")
             return
 
     def search(self):
@@ -2003,7 +2051,7 @@ class Search:
             return {}
         # find all markdown files
         t_start = timer()
-        files, _ = storage.list()
+        files, _dirs = storage.list()
         md_files = [filename for filename in files if filename.endswith(".md")]
         app.logger.debug(
             f"Search storage.list() and filter took {timer() - t_start:.3f} seconds."
@@ -2149,7 +2197,7 @@ class Search:
         )
         if _regex_timed_out:
             toast(
-                "Search regex timed out. Results may be incomplete.",
+                _("Search regex timed out. Results may be incomplete."),
                 "warning",
             )
 
@@ -2167,9 +2215,9 @@ class Search:
         return render_template(
             "search.html",
             title=(
-                "Search '{}'".format(self.query)
+                _("Search '%(query)s'", query=self.query)
                 if not empty(self.query)
-                else "Search"
+                else _("Search")
             ),
             query=self.query,
             is_regexp=self.is_regexp,
@@ -2371,7 +2419,7 @@ class AutoRoute:
         p = Page(self.path, revision=revision)
         # if the pagename is empty because it has been sanitized, redirect to /
         if not empty(self.path) and empty(p.pagepath):
-            toast("Invalid pagename.", "error")
+            toast(_("Invalid pagename."), "error")
             return redirect(url_for("index"))
         # if page md doesn't exist, but the folder exists, show index
         if not storage.exists(p.filename) and storage.exists(

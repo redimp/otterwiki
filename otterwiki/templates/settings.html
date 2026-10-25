@@ -7,77 +7,77 @@
     <span class="sidebar-icon">
         <i class="fas fa-address-card"></i>
     </span>
-    Settings
+    {{ _("Settings") }}
 </a>
 <a href="{{ url_for("housekeeping") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon">
         <i class="fas fa-broom"></i>
     </span>
-    Housekeeping
+    {{ _("Housekeeping") }}
 </a>
 {% if has_permission("ADMIN") %}
 <a href="{{ url_for("admin") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon" style="min-width: 3rem;">
         <i class="fas fa-cogs"></i>
     </span>
-    Application Preferences
+    {{ _("Application Preferences") }}
 </a>
 <a href="{{ url_for("admin_sidebar_preferences") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon" style="min-width: 3rem;">
         <i class="fas fa-columns"></i>
     </span>
-    Sidebar Preferences
+    {{ _("Sidebar Preferences") }}
 </a>
 <a href="{{ url_for("admin_content_and_editing") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon" style="min-width: 3rem;">
         <i class="fas fa-drafting-compass"></i>
     </span>
-    Content and Editing
+    {{ _("Content and Editing") }}
 </a>
 <a href="{{ url_for("admin_repository_management") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon" style="min-width: 3rem;">
         <i class="fas fa-code-branch"></i>
     </span>
-    Repository Management
+    {{ _("Repository Management") }}
 </a>
 <a href="{{ url_for("admin_user_management") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon" style="min-width: 3rem;">
         <i class="fas fa-users"></i>
     </span>
-    User Management
+    {{ _("User Management") }}
 </a>
 <a href="{{ url_for("admin_permissions_and_registration") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon" style="min-width: 3rem;">
         <i class="fas fa-users-cog"></i>
     </span>
-    Permissions and Registration
+    {{ _("Permissions and Registration") }}
 </a>
 <a href="{{ url_for("admin_mail_preferences") }}" class="sidebar-link sidebar-link-with-icon">
     <span class="sidebar-icon">
         <i class="far fa-envelope"></i>
     </span>
-    Mail Preferences
+    {{ _("Mail Preferences") }}
 </a>
 {% endif %}
 {% endblock %}
 {% block content %}
-<h2 id="settings">Settings</h2>
+<h2 id="settings">{{ _("Settings") }}</h2>
 {#
 #}
 <div class="card">
 <div class="mw-full w-600">
-<h2 class="card-title">Change Name</h2>
+<h2 class="card-title">{{ _("Change Name") }}</h2>
 <form action="{{url_for("settings")}}" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="form-group">
-  <label for="name" class="required">First and Lastname</label>
+  <label for="name" class="required">{{ _("First and Lastname") }}</label>
   <input name="name" type="text" class="form-control" id="name" value="{{current_user.name if current_user.name}}" {% if
     not auth_supported_features['editing'] %}disabled{% endif %}>
     <div class="form-text-plain">
-      Please note that changing the Name doesn't not change anything in the edit history.
+      {{ _("Please note that changing the Name doesn't not change anything in the edit history.") }}
     </div>
   </div>
-  <input class="btn btn-primary" type="submit" value="Update Name" {% if not auth_supported_features['editing']
+  <input class="btn btn-primary" type="submit" value="{{ _("Update Name") }}" {% if not auth_supported_features['editing']
     %}disabled{% endif %}>
 </form>
 </div>
@@ -87,30 +87,30 @@
 {% if auth_supported_features['passwords'] %}
 <div class="card">
 <div class="mw-full w-600">
-<h2 class="card-title">Change Password</h2>
+<h2 class="card-title">{{ _("Change Password") }}</h2>
 <form action="{{url_for("settings")}}" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 {% if current_user.password_hash and current_user.password_hash.startswith("sha256$") %}
   <div class="form-group">
 <div class="alert alert-secondary" role="alert">
-  <h4 class="alert-heading">Please update your password</h4>
-  The hash method used to store your password is deprecated. Updating your
-  password will fix that.
+  <h4 class="alert-heading">{{ _("Please update your password") }}</h4>
+  {% trans trimmed %}The hash method used to store your password is deprecated. Updating your
+  password will fix that.{% endtrans %}
 </div>
   </div>
 {% endif %}
   <div class="form-group">
-    <label for="password" class="required">New Password</label>
-    <input name="password1" type="password" class="form-control" id="password" placeholder="Password">
+    <label for="password" class="required">{{ _("New Password") }}</label>
+    <input name="password1" type="password" class="form-control" id="password" placeholder="{{ _("Password") }}">
     <div class="form-text-plain">
-      Must be at least {{ config["PASSWORD_MIN_LENGTH"] }}  characters long.
+      {{ _("Must be at least %(num)s characters long.", num=config["PASSWORD_MIN_LENGTH"]) }}
     </div>
   </div>
   <div class="form-group">
-    <label for="confirm-password" class="required">Confirm password</label>
-    <input name="password2" type="password" class="form-control" id="confirm-password" placeholder="Confirm password">
+    <label for="confirm-password" class="required">{{ _("Confirm password") }}</label>
+    <input name="password2" type="password" class="form-control" id="confirm-password" placeholder="{{ _("Confirm password") }}">
   </div>
-  <input class="btn btn-primary" type="submit" value="Update Password">
+  <input class="btn btn-primary" type="submit" value="{{ _("Update Password") }}">
 </form>
 </div>
 </div>
@@ -120,7 +120,7 @@
 {% if config.GIT_WEB_SERVER %}
 <div class="card">
 <div class="mw-full w-600">
-<h2 class="card-title">Git Repository Access</h2>
+<h2 class="card-title">{{ _("Git Repository Access") }}</h2>
 
  <div class="form-inline">
     <label for="git-url" class="text-monospace">git clone</label>
@@ -133,9 +133,13 @@
   </div>
   <div class="form-text-plain">
       {% if has_permission('READ') %}
-      Your current permissions grant you pull {% if has_permission('UPLOAD') %} and push
-      {%- endif %} access. Use your email address as username and your password as password
-      when asked by your git client.
+      {% if has_permission('UPLOAD') %}
+      {% trans trimmed %}Your current permissions grant you pull and push access. Use your email address as username and your password as password
+      when asked by your git client.{% endtrans %}
+      {% else %}
+      {% trans trimmed %}Your current permissions grant you pull access. Use your email address as username and your password as password
+      when asked by your git client.{% endtrans %}
+      {% endif %}
       {% endif %}
     </div>
 </div>

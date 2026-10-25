@@ -8,6 +8,7 @@ from html import unescape
 from bs4 import BeautifulSoup
 from bs4.element import Comment, PreformattedString
 from markupsafe import Markup, escape
+from flask_babel import gettext as _
 from mistune.plugins.formatting import strikethrough as plugin_strikethrough
 from mistune.plugins.table import table as plugin_table, table_in_list
 from mistune.plugins.url import url as plugin_url
@@ -56,7 +57,7 @@ mistune.helpers.LINK_TITLE_RE = re.compile(  # pyright: ignore
 
 
 def _pre_copy_to_clipboard_tag():
-    return f"""<div class="copy-to-clipboard-outer"><div class="copy-to-clipboard-inner"><button class="btn alt-dm btn-xsm copy-to-clipboard" type="button"  onclick="otterwiki.copy_to_clipboard(this);"><i class="fa fa-copy" aria-hidden="true" alt="Copy to clipboard""></i></button></div><pre class="copy-to-clipboard code">"""
+    return f"""<div class="copy-to-clipboard-outer"><div class="copy-to-clipboard-inner"><button class="btn alt-dm btn-xsm copy-to-clipboard" type="button"  onclick="otterwiki.copy_to_clipboard(this);"><i class="fa fa-copy" aria-hidden="true" alt="{escape(_("Copy to clipboard"))}""></i></button></div><pre class="copy-to-clipboard code">"""
 
 
 class CodeHtmlFormatter(HtmlFormatter):

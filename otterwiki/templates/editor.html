@@ -77,20 +77,20 @@
 {#- disable page drop down #}
 {% endblock %}
 {% block navbar_editor %}
-<button onclick="otterwiki_editor.undo()" class="btn btn-editor btn-xs ml-10" title="Undo"><i class="fas fa-undo"></i></button>
-<button onclick="otterwiki_editor.redo()" class="btn btn-editor btn-xs" style="margin-left: 0.1rem;" title="Redo"><i class="fas fa-redo"></i></button>
+<button onclick="otterwiki_editor.undo()" class="btn btn-editor btn-xs ml-10" title="{{ _("Undo") }}"><i class="fas fa-undo"></i></button>
+<button onclick="otterwiki_editor.redo()" class="btn btn-editor btn-xs" style="margin-left: 0.1rem;" title="{{ _("Redo") }}"><i class="fas fa-redo"></i></button>
 {##}
-<button onclick="cmOpenSearch()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Search"><i class="fas fa-search"></i></button>
-<button onclick="cmOpenReplace()" class="btn btn-editor btn-xs mr-5 hidden-sm-and-down" title="Search and Replace"><i class="fas fa-search fa-flip-both"></i></button>
+<button onclick="cmOpenSearch()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="{{ _("Search") }}"><i class="fas fa-search"></i></button>
+<button onclick="cmOpenReplace()" class="btn btn-editor btn-xs mr-5 hidden-sm-and-down" title="{{ _("Search and Replace") }}"><i class="fas fa-search fa-flip-both"></i></button>
 {##}
-<button onclick="otterwiki_editor.bold()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="Bold"><i class="fa fa-bold"></i></button>
-<button onclick="otterwiki_editor.italic()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Italic"><i class="fa fa-italic"></i></button>
-<button onclick="otterwiki_editor.strikethrough()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Strikethrough"><i class="fa fa-strikethrough"></i></button>
-<button onclick="otterwiki_editor.header()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Header"><i class="fa fa-heading"></i></button>
-<button onclick="otterwiki_editor.quote()" class="btn btn-editor btn-xs hidden-sm-and-down" title="Block Quote"><i class="fa fa-quote-left"></i></button>
+<button onclick="otterwiki_editor.bold()" class="btn btn-editor btn-xs ml-5 hidden-sm-and-down" title="{{ _("Bold") }}"><i class="fa fa-bold"></i></button>
+<button onclick="otterwiki_editor.italic()" class="btn btn-editor btn-xs hidden-sm-and-down" title="{{ _("Italic") }}"><i class="fa fa-italic"></i></button>
+<button onclick="otterwiki_editor.strikethrough()" class="btn btn-editor btn-xs hidden-sm-and-down" title="{{ _("Strikethrough") }}"><i class="fa fa-strikethrough"></i></button>
+<button onclick="otterwiki_editor.header()" class="btn btn-editor btn-xs hidden-sm-and-down" title="{{ _("Header") }}"><i class="fa fa-heading"></i></button>
+<button onclick="otterwiki_editor.quote()" class="btn btn-editor btn-xs hidden-sm-and-down" title="{{ _("Block Quote") }}"><i class="fa fa-quote-left"></i></button>
 {##}
 <div class="dropdown">
-  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-list" title="List Menu">
+  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-list" title="{{ _("List Menu") }}">
     <i class="fas fa-list-ul"></i>
   </button>
   <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-list">
@@ -98,31 +98,31 @@
         <span class="dropdown-icon">
             <i class="fas fa-list-ul"></i>
         </span>
-        Unordered List
+        {{ _("Unordered List") }}
     </a>
     <a onclick="otterwiki_editor.ol()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-list-ul"></i>
         </span>
-        Ordered List
+        {{ _("Ordered List") }}
     </a>
     <a onclick="otterwiki_editor.cl()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-check-square"></i>
         </span>
-        Checklist
+        {{ _("Checklist") }}
     </a>
     <a onclick="otterwiki_editor.hr()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-ruler-horizontal"></i>
         </span>
-        Horizontal Rule
+        {{ _("Horizontal Rule") }}
     </a>
   </div>
 </div>
 {##}
 <div class="dropdown">
-  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-code" title="Code Menu">
+  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-code" title="{{ _("Code Menu") }}">
     <i class="fas fa-code"></i>
   </button>
   <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-code">
@@ -130,19 +130,19 @@
         <span class="dropdown-icon">
             <i class="fas fa-code"></i>
         </span>
-        Inline Code
+        {{ _("Inline Code") }}
     </a>
     <a onclick="otterwiki_editor.codeBlock()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-file-code"></i>
         </span>
-        Code Block
+        {{ _("Code Block") }}
     </a>
   </div>
 </div>
 {##}
 <div class="dropdown">
-  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-blocks" title="Block Menu">
+  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-blocks" title="{{ _("Block Menu") }}">
     <i class="fas fa-layer-group"></i>
   </button>
   <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-blocks">
@@ -150,37 +150,37 @@
         <span class="dropdown-icon">
             <i class="fas fa-eye-slash"></i>
         </span>
-        Spoiler Block
+        {{ _("Spoiler Block") }}
     </a>
     <a onclick="otterwiki_editor.expand()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-caret-square-down"></i>
         </span>
-        Folded Block
+        {{ _("Folded Block") }}
     </a>
     <a onclick="otterwiki_editor.panelNotice()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-info-circle"></i>
         </span>
-        Notice Panel
+        {{ _("Notice Panel") }}
     </a>
     <a onclick="otterwiki_editor.panelWarning()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-exclamation-circle"></i>
         </span>
-        Warning Panel
+        {{ _("Warning Panel") }}
     </a>
     <a onclick="otterwiki_editor.panelDanger()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-times-circle"></i>
         </span>
-        Danger Panel
+        {{ _("Danger Panel") }}
     </a>
   </div>
 </div>
 {##}
 <div class="dropdown">
-  <button class="btn btn-editor hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-alerts" title="Alert Menu">
+  <button class="btn btn-editor hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-alerts" title="{{ _("Alert Menu") }}">
     <i class="fas fa-bell"></i>
   </button>
   <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-alerts">
@@ -188,37 +188,37 @@
         <span class="dropdown-icon">
             <i class="fas fa-info-circle"></i>
         </span>
-        Note
+        {{ _("Note") }}
     </a>
     <a onclick="otterwiki_editor.alertTip()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-lightbulb"></i>
         </span>
-        Tip
+        {{ _("Tip") }}
     </a>
     <a onclick="otterwiki_editor.alertImportant()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-star"></i>
         </span>
-        Important
+        {{ _("Important") }}
     </a>
     <a onclick="otterwiki_editor.alertWarning()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-exclamation-circle"></i>
         </span>
-        Warning
+        {{ _("Warning") }}
     </a>
     <a onclick="otterwiki_editor.alertCaution()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-times-circle"></i>
         </span>
-        Caution
+        {{ _("Caution") }}
     </a>
   </div>
 </div>
 {##}
 <div class="dropdown">
-  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-references" title="References Menu">
+  <button class="btn btn-editor ml-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-references" title="{{ _("References Menu") }}">
     <i class="fas fa-link"></i>
   </button>
   <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-references">
@@ -226,19 +226,19 @@
         <span class="dropdown-icon">
             <i class="fas fa-link"></i>
         </span>
-        Link
+        {{ _("Link") }}
     </a>
     <a onclick="otterwiki_editor.footnote()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-asterisk"></i>
         </span>
-        Footnote
+        {{ _("Footnote") }}
     </a>
   </div>
 </div>
 {##}
 <div class="dropdown">
-  <button class="btn btn-editor hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-graphics" title="Graphics Menu">
+  <button class="btn btn-editor hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-graphics" title="{{ _("Graphics Menu") }}">
     <i class="fas fa-images"></i>
   </button>
   <div class="dropdown-menu dropdown-menu-right w-150" aria-labelledby="navbar-dropdown-toggle-graphics">
@@ -246,19 +246,19 @@
         <span class="dropdown-icon">
             <i class="fas fa-image"></i>
         </span>
-        Picture
+        {{ _("Picture") }}
     </a>
     <a onclick="otterwiki_editor.diagram()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-project-diagram"></i>
         </span>
-        Diagram
+        {{ _("Diagram") }}
     </a>
   </div>
 </div>
 {##}
 <div class="dropdown">
-  <button class="btn btn-editor ml-5 mr-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-table" title="Table Menu">
+  <button class="btn btn-editor ml-5 mr-5 hidden-sm-and-down" data-toggle="dropdown" type="button" id="navbar-dropdown-toggle-table" title="{{ _("Table Menu") }}">
     <i class="fas fa-table"></i>
   </button>
   <div class="dropdown-menu dropdown-menu-right w-200" aria-labelledby="navbar-dropdown-toggle-table">
@@ -266,75 +266,75 @@
         <span class="dropdown-icon">
             <i class="fas fa-table"></i>
         </span>
-        Add / Format Table
+        {{ _("Add / Format Table") }}
     </a>
     <a onclick="otterwiki_editor.table_add_row()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-plus-circle"></i>
         </span>
-        Add Row
+        {{ _("Add Row") }}
     </a>
     <a onclick="otterwiki_editor.table_remove_row()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-minus-circle"></i>
         </span>
-        Remove Row
+        {{ _("Remove Row") }}
     </a>
     <a onclick="otterwiki_editor.table_move_row_up()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-arrow-up"></i>
         </span>
-        Move Row up
+        {{ _("Move Row up") }}
     </a>
     <a onclick="otterwiki_editor.table_move_row_down()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-arrow-down"></i>
         </span>
-        Move Row down
+        {{ _("Move Row down") }}
     </a>
     <div class="dropdown-divider"></div>
     <a onclick="otterwiki_editor.table_add_column()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-plus-circle"></i>
         </span>
-        Add Column
+        {{ _("Add Column") }}
     </a>
     <a onclick="otterwiki_editor.table_remove_column()" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-minus-circle"></i>
         </span>
-        Remove Column
+        {{ _("Remove Column") }}
     </a>
     <a onclick="otterwiki_editor.table_move_column(-1)" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-arrow-left"></i>
         </span>
-        Move Column left
+        {{ _("Move Column left") }}
     </a>
     <a onclick="otterwiki_editor.table_move_column(1)" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-arrow-right"></i>
         </span>
-        Move Column right
+        {{ _("Move Column right") }}
     </a>
      <div class="dropdown-divider"></div>
     <a onclick="otterwiki_editor.table_align_col('left')" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-align-left"></i>
         </span>
-        Align left
+        {{ _("Align left") }}
     </a>
     <a onclick="otterwiki_editor.table_align_col('center')" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-align-center"></i>
         </span>
-        Align center
+        {{ _("Align center") }}
     </a>
     <a onclick="otterwiki_editor.table_align_col('right')" href="#" class="dropdown-item-with-icon">
         <span class="dropdown-icon">
             <i class="fas fa-align-right"></i>
         </span>
-        Align right
+        {{ _("Align right") }}
     </a>
   </div>
 </div>
@@ -346,18 +346,18 @@
 <div class="modal" id="modal-leave" tabindex="-1" role="dialog" aria-labelledby="modal-leave-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <a href="#" class="close" id="leave-close" role="button" aria-label="Close">
+      <a href="#" class="close" id="leave-close" role="button" aria-label="{{ _("Close") }}">
         <span aria-hidden="true">&times;</span>
       </a>
-      <h5 class="modal-title" id="modal-leave-title">Unsaved changes</h5>
+      <h5 class="modal-title" id="modal-leave-title">{{ _("Unsaved changes") }}</h5>
       <p>
-        You have unsaved changes to <strong>{{pagename}}</strong>. Keep them
-        as a draft to continue editing later, or discard the draft.
+        {% trans trimmed %}You have unsaved changes to <strong>{{pagename}}</strong>. Keep them
+        as a draft to continue editing later, or discard the draft.{% endtrans %}
       </p>
       <p id="leave-error" class="text-danger" style="display: none;"></p>
-      <button id="leave-keep-draft" class="btn btn-primary btn-block" type="button">Keep draft and leave</button>
-      <button id="leave-keep-editing" class="btn btn-block mt-10" type="button">Keep editing</button>
-      <button id="leave-discard" class="btn btn-danger btn-block mt-10" type="button">Discard changes</button>
+      <button id="leave-keep-draft" class="btn btn-primary btn-block" type="button">{{ _("Keep draft and leave") }}</button>
+      <button id="leave-keep-editing" class="btn btn-block mt-10" type="button">{{ _("Keep editing") }}</button>
+      <button id="leave-discard" class="btn btn-danger btn-block mt-10" type="button">{{ _("Discard changes") }}</button>
     </div>
   </div>
 </div>
@@ -365,10 +365,10 @@
 <div class="modal" id="modal-commit" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <a href="#" class="close" onclick="otterwiki.toggleModal('modal-commit')" role="button" aria-label="Close">
+      <a href="#" class="close" onclick="otterwiki.toggleModal('modal-commit')" role="button" aria-label="{{ _("Close") }}">
         <span aria-hidden="true">&times;</span>
       </a>
-      <h5 class="modal-title">Save {{pagename}}</h5>
+      <h5 class="modal-title">{{ _("Save %(pagename)s", pagename=pagename) }}</h5>
       <form id="saveform" action="{{ url_for('save', path=pagepath) }}" method="post" autocomplete="off">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input id="save_content" type="hidden" name="content" value="">
@@ -376,14 +376,14 @@
       <input id="save_cursor_ch" type="hidden" name="cursor_ch" value="" />
         <div class="form-group">
 {%if config["COMMIT_MESSAGE"] == "REQUIRED"%}
-            <label for="commit-message" class="required">Commit Message</label>
-            <input name="commit" id="commit-message" type="text"  class="form-control" placeholder="Your commit message here" required="required">
+            <label for="commit-message" class="required">{{ _("Commit Message") }}</label>
+            <input name="commit" id="commit-message" type="text"  class="form-control" placeholder="{{ _("Your commit message here") }}" required="required">
 {% else %}
-            <label for="commit-message">Commit Message</label>
-            <input name="commit" id="commit-message" type="text" class="form-control" value="{{ default_commit_message }}" placeholder="Your (optional) commit message here">
+            <label for="commit-message">{{ _("Commit Message") }}</label>
+            <input name="commit" id="commit-message" type="text" class="form-control" value="{{ default_commit_message }}" placeholder="{{ _("Your (optional) commit message here") }}">
 {% endif %}
         </div>
-        <input class="btn btn-primary btn-block" type="submit" value="Save">
+        <input class="btn btn-primary btn-block" type="submit" value="{{ _("Save") }}">
       </form>
     </div>
   </div>
@@ -401,11 +401,11 @@
 #}
 {% block extra_nav -%}
 <div id="extranav-attachments">
-<h5 class="sidebar-title"><a class="sidebar-title-link" href="{{ url_for('attachments', pagepath=pagepath ) }}">Attachments <i class="fa fa-paperclip"></i></a></h5>
+<h5 class="sidebar-title"><a class="sidebar-title-link" href="{{ url_for('attachments', pagepath=pagepath ) }}">{{ _("Attachments") }} <i class="fa fa-paperclip"></i></a></h5>
                     <div class="sidebar-divider" ></div>
                     <form class="ml-10">
                         <select class="form-control" id="attachment-filename" onchange="otterwiki_editor.update_attachment_preview(this);">
-                          <option value="" selected="selected" disabled="disabled">Select an attachment</option>
+                          <option value="" selected="selected" disabled="disabled">{{ _("Select an attachment") }}</option>
 {% for f in files %}
                           <option value="{{f.filename}}/--/{{f.url}}/--/{{f.thumbnail_url or ''}}">{{f.filename}}</option>
 {% endfor %}
@@ -413,40 +413,40 @@
                         <div id="extranav-preview" class="my-5"></div>
                         <div class="custom-radio mt-5 ml-5">
                           <input type="radio" name="attachment-type" id="attachment-link" value="link" checked="checked">
-                          <label for="attachment-link">as link</label>
+                          <label for="attachment-link">{{ _("as link") }}</label>
                         </div>
                         <div class="custom-radio mt-5 ml-5">
                           <input type="radio" name="attachment-type" id="attachment-image" value="image">
-                          <label for="attachment-image">as image</label>
+                          <label for="attachment-image">{{ _("as image") }}</label>
                         </div>
                         <div class="custom-radio mt-5 ml-5">
                           <input type="radio" name="attachment-type" id="attachment-thumbnail" value="thumbnail">
-                          <label for="attachment-thumbnail">as link with thumbnail</label>
+                          <label for="attachment-thumbnail">{{ _("as link with thumbnail") }}</label>
                         </div>
                         <div class="mt-5 ml-10" id="thumbnail-size-container" style="display: none;">
-                          <input type="text" id="thumbnail-size" class="form-control" placeholder="max size in px" pattern="[0-9]*" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                          <input type="text" id="thumbnail-size" class="form-control" placeholder="{{ _("max size in px") }}" pattern="[0-9]*" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
                         <div class="custom-checkbox mt-5 ml-5">
                           <input type="checkbox" id="attachment-absolute" value="checked">
-                          <label for="attachment-absolute">use absolute path</label>
+                          <label for="attachment-absolute">{{ _("use absolute path") }}</label>
                         </div>
-                        <button class="btn mt-5" type="button" onclick="otterwiki_editor.insert_attachment()" title="Copy into the editor" ><i class="fas fa-paste"></i></button>
+                        <button class="btn mt-5" type="button" onclick="otterwiki_editor.insert_attachment()" title="{{ _("Copy into the editor") }}" ><i class="fas fa-paste"></i></button>
                     </form>
 
 
-                    <p class="font-size-12 p-15 text-muted">Additional media can be added via the 'Attachments' of this page, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.</p>
+                    <p class="font-size-12 p-15 text-muted">{{ _("Additional media can be added via the 'Attachments' of this page, or, you can drag and drop a file into the web editor and it will be uploaded and embedded when the page is saved.") }}</p>
 
                     <h5 class="sidebar-title">WikiLink <i class="fa fa-link"></i></h5>
                     <div class="sidebar-divider" ></div>
                     <form class="ml-10">
                         <select class="form-control" id="wikilink">
-                          <option value="" selected="selected" disabled="disabled">Select a page to link</option>
+                          <option value="" selected="selected" disabled="disabled">{{ _("Select a page to link") }}</option>
 {% for p in pages %}
                           <option value="{{p[1]}}">{{p[1]}}</option>
 {% endfor %}
                         </select>
-                        <button class="btn mt-5" type="button" onclick="otterwiki_editor.insert_wikilink()" title="Copy into the editor" ><i class="fas fa-paste"></i></button>
-                        <button class="btn mt-5" type="button" onclick="otterwiki_editor.insert_wikilink(false)" title="Copy into the editor, use page name as link text" ><i class="fa fa-heading"></i></button>
+                        <button class="btn mt-5" type="button" onclick="otterwiki_editor.insert_wikilink()" title="{{ _("Copy into the editor") }}" ><i class="fas fa-paste"></i></button>
+                        <button class="btn mt-5" type="button" onclick="otterwiki_editor.insert_wikilink(false)" title="{{ _("Copy into the editor, use page name as link text") }}" ><i class="fa fa-heading"></i></button>
                     </form>
                     </div>
 {{ super() }}
@@ -465,11 +465,11 @@
 <div id="preview_block" tabindex="-1" style="display: none;"></div>
 </div>
 <div id="editor-bottom-panel" class="editor-bottom-panel" style="display:none;">
-    <a href="#" onclick="otterwiki.toggleMarkdownHelp()" class="btn btn-xsm"><i class="fab fa-markdown"></i> Markdown Syntax</a>
+    <a href="#" onclick="otterwiki.toggleMarkdownHelp()" class="btn btn-xsm"><i class="fab fa-markdown"></i> {{ _("Markdown Syntax") }}</a>
     <div id="editor-help-markdown" class="content card border rounded-top p-5" style="display: none;">
         <a href="{{ url_for("syntax") }}" class="btn btn-xsm" target="_blank">
             <i class="fas fa-expand-arrows-alt"></i>
-                    Full Syntax Guide
+                    {{ _("Full Syntax Guide") }}
         </a>
         <a href="#" onclick="otterwiki.toggleMarkdownHelp()" class="text-muted" style="float:right;">
             <i class="far fa-times-circle"></i>
@@ -484,22 +484,22 @@
     Navbar
 #}
 {% block navbar %}
-<a href="{{ url_for('view', path=pagepath) }}" class="btn btn-danger mr-5" role="button" title="Cancel"><i class="fas fa-window-close"></i></a>
+<a href="{{ url_for('view', path=pagepath) }}" class="btn btn-danger mr-5" role="button" title="{{ _("Cancel") }}"><i class="fas fa-window-close"></i></a>
 {%if config["COMMIT_MESSAGE"] == "DISABLED"%}
 <form id="saveform" action="{{ url_for('save', path=pagepath) }}" method="post" autocomplete="off">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <input id="save_content" type="hidden" name="content" value="">
 <input id="save_cursor_line" type="hidden" name="cursor_line" value="" />
 <input id="save_cursor_ch" type="hidden" name="cursor_ch" value="" />
-<button id="save-page-btn" class="btn btn-success mr-5" title="Save"><i class="fas fa-save"></i></button>
+<button id="save-page-btn" class="btn btn-success mr-5" title="{{ _("Save") }}"><i class="fas fa-save"></i></button>
 <input name="commit" type="hidden" value="">
 </form>
 {% else %}
-<button id="save-page-btn" class="btn btn-success mr-5" onclick="otterwiki.toggleModal('modal-commit')" title="Save"><i class="fas fa-save"></i></button>
+<button id="save-page-btn" class="btn btn-success mr-5" onclick="otterwiki.toggleModal('modal-commit')" title="{{ _("Save") }}"><i class="fas fa-save"></i></button>
 {% endif %}
-<button id="preview_btn" class="btn btn-primary mr-5" style="width: 1rem;" title="Preview"><i class="far fa-eye" ></i></button>
-<button id="editor_btn" class="btn btn-primary mr-5" style="width: 1rem; display:none;" title="Edit"><i class="fas fa-pencil-alt"></i></button>
-<button id="split_btn" class="btn hidden-md-and-down" style="width: 1rem;" title="Edit with live preview"><i class="fas fa-columns"></i></button>
+<button id="preview_btn" class="btn btn-primary mr-5" style="width: 1rem;" title="{{ _("Preview") }}"><i class="far fa-eye" ></i></button>
+<button id="editor_btn" class="btn btn-primary mr-5" style="width: 1rem; display:none;" title="{{ _("Edit") }}"><i class="fas fa-pencil-alt"></i></button>
+<button id="split_btn" class="btn hidden-md-and-down" style="width: 1rem;" title="{{ _("Edit with live preview") }}"><i class="fas fa-columns"></i></button>
 {% endblock %}
 {#
     Javascript
@@ -510,6 +510,39 @@
 {{ super() }}
 {# load the codemirror stuff #}
 <script src="{{ url_for("static", filename="js/inline-attachment.js") }}" type="text/javascript" charset="utf-8"></script>
+{#- the texts of the editor's own panels (search, go to line, folding):
+    the "editor" context keeps them apart from the wiki's strings, "$" stands
+    for a number -#}
+<script type="text/javascript">
+    window.otterwiki_cm_phrases = {{ {
+        "Find": pgettext("editor", "Find"),
+        "Replace": pgettext("editor", "Replace"),
+        "next": pgettext("editor", "next"),
+        "previous": pgettext("editor", "previous"),
+        "all": pgettext("editor", "all"),
+        "match case": pgettext("editor", "match case"),
+        "regexp": pgettext("editor", "regexp"),
+        "by word": pgettext("editor", "by word"),
+        "replace": pgettext("editor", "replace"),
+        "replace all": pgettext("editor", "replace all"),
+        "close": pgettext("editor", "close"),
+        "current match": pgettext("editor", "current match"),
+        "on line": pgettext("editor", "on line"),
+        "replaced match on line $": pgettext("editor", "replaced match on line $"),
+        "replaced $ matches": pgettext("editor", "replaced $ matches"),
+        "Go to line": pgettext("editor", "Go to line"),
+        "go": pgettext("editor", "go"),
+        "Folded lines": pgettext("editor", "Folded lines"),
+        "Unfolded lines": pgettext("editor", "Unfolded lines"),
+        "to": pgettext("editor", "to"),
+        "folded code": pgettext("editor", "folded code"),
+        "unfold": pgettext("editor", "unfold"),
+        "Fold line": pgettext("editor", "Fold line"),
+        "Unfold line": pgettext("editor", "Unfold line"),
+        "Control character": pgettext("editor", "Control character"),
+        "Selection deleted": pgettext("editor", "Selection deleted"),
+    }|tojson }};
+</script>
 <script src="{{ url_for("static", filename="js/cm6-bundle.min.js") | debug_unixtime }}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
     window.otterwikiEditorConfig = {
@@ -520,6 +553,8 @@
             uploadUrl: {{ url_for('inline_attachment', pagepath=pagepath) | tojson }},
             extraHeaders: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
             allowedTypes: ['*'],
+            progressText: {{ ("![" ~ _("Uploading file...") ~ "]()")|tojson }},
+            errorText: {{ _("Error uploading file")|tojson }},
             urlText: function(filename, result) {
                 var imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff'];
                 var isImage = false;
@@ -531,7 +566,7 @@
                 else { return "[" + displayName + "](" + filename + ")"; }
             },
             onFilenamePrompt: function(suggestedFilename, file) {
-                return prompt("Enter filename for the attachment:", suggestedFilename);
+                return prompt({{ _("Enter filename for the attachment:")|tojson }}, suggestedFilename);
             },
             onFileUploadResponse: function(xhr) {
                 var result = JSON.parse(xhr.responseText),
@@ -823,7 +858,7 @@
                 leave_editor();
             } else {
                 leave_modal_busy(false);
-                leave_modal_error('The draft could not be saved.');
+                leave_modal_error({{ _("The draft could not be saved.")|tojson }});
             }
         });
     };
@@ -853,7 +888,7 @@
             .catch(() => {
                 cm_saving = false;
                 leave_modal_busy(false);
-                leave_modal_error('The draft could not be discarded.');
+                leave_modal_error({{ _("The draft could not be discarded.")|tojson }});
             });
     };
     /*
@@ -880,7 +915,7 @@
         preview_btn.style.display = mode === 'edit' ? '' : 'none';
         // the live preview toggle is highlighted while it is on
         split_btn.classList.toggle('btn-primary', split);
-        split_btn.title = split ? 'Edit without live preview' : 'Edit with live preview';
+        split_btn.title = split ? {{ _("Edit without live preview")|tojson }} : {{ _("Edit with live preview")|tojson }};
         content_wrapper.classList.toggle('preview-background', mode === 'preview');
         preview_block.classList.toggle('preview-background', split);
         if (mode !== 'preview') {

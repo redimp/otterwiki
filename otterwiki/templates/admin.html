@@ -7,137 +7,137 @@
 <div class="mw-full">
 <form action="{{ url_for("admin") }}" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-<h2 class="card-title">Application Preferences</h2>
+<h2 class="card-title">{{ _("Application Preferences") }}</h2>
 {##}
   <div class="form-group">
-    <label for="site_name" class="required">Site Name</label>
+    <label for="site_name" class="required">{{ _("Site Name") }}</label>
     <input name="site_name" type="text" placeholder="An Otter Wiki" class="form-control" id="site_name" value="{{ config.SITE_NAME or "" }}">
     <div class="form-text">
-      The name of the site, displayed on the top left of the page and in the subject of all emails.
+      {{ _("The name of the site, displayed on the top left of the page and in the subject of all emails.") }}
     </div>
   </div>
 {##}
   <div class="form-group">
-    <label for="site_name">Server Name</label>
+    <label for="site_name">{{ _("Server Name") }}</label>
     <input name="server_name" type="text" placeholder="{{ url_for("index", _external=True).rpartition("//")[-1].partition(":")[0].partition("/")[0] }}" class="form-control" id="site_name" value="{{ config.SERVER_NAME or "" }}">
     <div class="form-text">
-      The name of the domain running the site. This is <em>optional</em> when running behind a well configured reverse proxy. Used for external URLs.
+      {% trans %}The name of the domain running the site. This is <em>optional</em> when running behind a well configured reverse proxy. Used for external URLs.{% endtrans %}
     </div>
   </div>
 {##}
   <div class="form-group">
-    <label for="site_description">Site Description</label>
-    <input name="site_description" type="text" placeholder="A minimalistic wiki powered by python, markdown and git." class="form-control" id="site_description" value="{{ config.SITE_DESCRIPTION or "" }}">
+    <label for="site_description">{{ _("Site Description") }}</label>
+    <input name="site_description" type="text" placeholder="{{ _("A minimalistic wiki powered by python, markdown and git.") }}" class="form-control" id="site_description" value="{{ config.SITE_DESCRIPTION or "" }}">
     <div class="form-text">
-      The default description used in <code>&lt;meta&gt;</code> tags.
+      {% trans %}The default description used in <code>&lt;meta&gt;</code> tags.{% endtrans %}
     </div>
   </div>
 {##}
   <div class="form-group">
-      <label for="site-logo">Site Logo</label>{# using site-logo here is not a typo, chrome complained about name/id mismatches #}
+      <label for="site-logo">{{ _("Site Logo") }}</label>{# using site-logo here is not a typo, chrome complained about name/id mismatches #}
     <input name="site_logo" type="text" placeholder="/static/img/otterhead.png" class="form-control" id="site-logo" value="{{ config.SITE_LOGO or "" }}">
     <div class="form-text">
-        Configure via an url to the image that is displayed in the navbar on top of every page.
-        This can be an attachment, e.g. <code>logo.png</code> attached to <code>Home</code> can be used as <code>/Home/a/logo.png</code>
+        {{ _("Configure via an url to the image that is displayed in the navbar on top of every page.") }}
+        {% trans %}This can be an attachment, e.g. <code>logo.png</code> attached to <code>Home</code> can be used as <code>/Home/a/logo.png</code>{% endtrans %}
     </div>
   </div>
 {##}
   <div class="form-group">
-      <label for="site-lang">Site Language</label>
+      <label for="site-lang">{{ _("Site Language") }}</label>
     <input name="site_lang" type="text" placeholder="en" class="form-control" id="site-lang" value="{{ config.SITE_LANG or "" }}">
     <div class="form-text">
-        Configures the <code>lang</code> attribute of the <code>&lt;html&gt;</code> lang used in the wiki. For example, <code>en</code> specifies English, but <code>en-GB</code> and <code>en-US</code> more precisely specify British English and American English, respectively.
-        It is also the language of the interface when a translation is available, English otherwise.
+        {% trans %}Configures the <code>lang</code> attribute of the <code>&lt;html&gt;</code> lang used in the wiki. For example, <code>en</code> specifies English, but <code>en-GB</code> and <code>en-US</code> more precisely specify British English and American English, respectively.{% endtrans %}
+        {{ _("It is also the language of the interface when a translation is available, English otherwise.") }}
     </div>
   </div>
 {##}
   <div class="form-group">
     <div class="custom-checkbox">
       <input {%if config.LANGUAGE_FROM_BROWSER %}checked{% endif %} type="checkbox" id="language_from_browser" name="language_from_browser" value="True">
-      <label for="language_from_browser">Show the interface in the language of the browser.</label>
+      <label for="language_from_browser">{{ _("Show the interface in the language of the browser.") }}</label>
     </div>
     <div class="form-text">
-        When a translation is available for the language the visitor's browser prefers, it is used instead of the Site Language.
+        {{ _("When a translation is available for the language the visitor's browser prefers, it is used instead of the Site Language.") }}
     </div>
   </div>
 {##}
   <div class="form-group">
     <div class="custom-checkbox">
       <input {%if config.LANGUAGE_MENU %}checked{% endif %} type="checkbox" id="language_menu" name="language_menu" value="True">
-      <label for="language_menu">Let visitors pick the language of the interface.</label>
+      <label for="language_menu">{{ _("Let visitors pick the language of the interface.") }}</label>
     </div>
     <div class="form-text">
-        Adds the available languages to the menu on top of every page. The choice is kept in a cookie and wins over the browser and the Site Language.
+        {{ _("Adds the available languages to the menu on top of every page. The choice is kept in a cookie and wins over the browser and the Site Language.") }}
     </div>
   </div>
 {##}
     <div class="form-group">
-        <label for="robots_txt">Robot Crawlers</label>
+        <label for="robots_txt">{{ _("Robot Crawlers") }}</label>
         <select class="form-control w-md-400" id="robots_txt" name="robots_txt">
-{% for mode in [("allow", "Allow"),("disallow","Disallow")] %}
+{% for mode in [("allow", _("Allow")),("disallow", _("Disallow"))] %}
             <option value="{{mode[0]}}"{%if config.ROBOTS_TXT == mode[0] %} selected="selected"{%endif%}>{{mode[1]}}</option>
 {% endfor %}
         </select>
         <div class="form-text">
-            Configure how the wiki indicates to visiting robots whether they are allowed to crawl the content.
+            {{ _("Configure how the wiki indicates to visiting robots whether they are allowed to crawl the content.") }}
         </div>
     </div>
 {##}
   <div class="form-group">
-    <label for="home_page">Custom Home Page</label>
-    <input name="home_page" type="text" placeholder="Leave empty for default (Home)" class="form-control" id="home_page" value="{{ config.HOME_PAGE or "" }}">
+    <label for="home_page">{{ _("Custom Home Page") }}</label>
+    <input name="home_page" type="text" placeholder="{{ _("Leave empty for default (Home)") }}" class="form-control" id="home_page" value="{{ config.HOME_PAGE or "" }}">
     <div class="form-text">
-      Configure which page is displayed when visiting the root URL (<code>/</code>).
+      {% trans %}Configure which page is displayed when visiting the root URL (<code>/</code>).{% endtrans %}
       <ul>
-        <li><strong>Empty</strong>: Use the default <code>Home</code> page</li>
-        <li><strong>Page path</strong>: Use a specific page from the repository (e.g. <code>Welcome</code> or <code>Docs/Index</code>)</li>
-        <li><strong>Special page</strong>: Redirect to a special page like <code>/-/index</code> or <code>/-/changelog</code></li>
+        <li>{% trans %}<strong>Empty</strong>: Use the default <code>Home</code> page{% endtrans %}</li>
+        <li>{% trans %}<strong>Page path</strong>: Use a specific page from the repository (e.g. <code>Welcome</code> or <code>Docs/Index</code>){% endtrans %}</li>
+        <li>{% trans %}<strong>Special page</strong>: Redirect to a special page like <code>/-/index</code> or <code>/-/changelog</code>{% endtrans %}</li>
       </ul>
-      <em>Note: Do not include the <code>.md</code> extension for regular pages.</em>
+      <em>{% trans %}Note: Do not include the <code>.md</code> extension for regular pages.{% endtrans %}</em>
     </div>
   </div>
 {##}
   <div class="form-group">
-    <label for="not_found_page">Custom 404 Page</label>
-    <input name="not_found_page" type="text" placeholder="Leave empty for the default message" class="form-control" id="not_found_page" value="{{ config.NOT_FOUND_PAGE or "" }}">
+    <label for="not_found_page">{{ _("Custom 404 Page") }}</label>
+    <input name="not_found_page" type="text" placeholder="{{ _("Leave empty for the default message") }}" class="form-control" id="not_found_page" value="{{ config.NOT_FOUND_PAGE or "" }}">
     <div class="form-text">
-      A wiki page (e.g. <code>Meta/NotFound</code>) whose content is displayed when a page does not exist.
-      The link to create the missing page is still shown below it.
-      <em>Note: Do not include the <code>.md</code> extension.</em>
+      {% trans %}A wiki page (e.g. <code>Meta/NotFound</code>) whose content is displayed when a page does not exist.{% endtrans %}
+      {{ _("The link to create the missing page is still shown below it.") }}
+      <em>{% trans %}Note: Do not include the <code>.md</code> extension.{% endtrans %}</em>
     </div>
   </div>
 {##}
   <div class="form-group">
-    <label for="site_icon">Site Icon (favicon)</label>
+    <label for="site_icon">{{ _("Site Icon (favicon)") }}</label>
     <input name="site_icon" type="text" placeholder="/static/img/otter-favicon.png" class="form-control" id="site_icon" value="{{ config.SITE_ICON or "" }}">
     <div class="form-text">
-        Configure via an url to the image that is displayed as favicon (tab icon, URL icon, bookmark icon).
-        This can be an attachment, e.g. <code>favicon-32x32.png</code> attached to <code>Home</code> can be used as <code>/Home/a/favicon-32x32.png</code>
+        {{ _("Configure via an url to the image that is displayed as favicon (tab icon, URL icon, bookmark icon).") }}
+        {% trans %}This can be an attachment, e.g. <code>favicon-32x32.png</code> attached to <code>Home</code> can be used as <code>/Home/a/favicon-32x32.png</code>{% endtrans %}
     </div>
   </div>
 {##}
   <div class="form-group">
     <div class="custom-checkbox">
       <input {%if config.HIDE_LOGO %}checked{% endif %} type="checkbox" id="hide_logo" name="hide_logo" value="True">
-      <label for="hide_logo">Hide the logo of An Otter Wiki in the sidebar.</label>
+      <label for="hide_logo">{{ _("Hide the logo of An Otter Wiki in the sidebar.") }}</label>
     </div>
     <div class="form-text">
-        An Otter Wiki logo will not be shown.
+        {{ _("An Otter Wiki logo will not be shown.") }}
     </div>
   </div>
 {##}
   <div class="form-group">
     <div class="custom-checkbox">
       <input {%if config.OPEN_LINKS_IN_NEW_TAB %}checked{% endif %} type="checkbox" id="open_links_in_new_tab" name="open_links_in_new_tab" value="True">
-      <label for="open_links_in_new_tab">Open external links in a new tab.</label>
+      <label for="open_links_in_new_tab">{{ _("Open external links in a new tab.") }}</label>
     </div>
     <div class="form-text">
-        External links open in new browser tab.
+        {{ _("External links open in new browser tab.") }}
     </div>
   </div>
 {##}
   <div class="mt-10">
-    <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
+    <input class="btn btn-primary" name="update_preferences" type="submit" value="{{ _("Save Preferences") }}">
   </div>
 </form>
 </div>

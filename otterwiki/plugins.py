@@ -299,6 +299,21 @@ class OtterWikiPluginSpec:
         """
 
     @hookspec
+    def translation_directories(self) -> str | list[str] | None:
+        """
+        Translations shipped by the plugin, e.g. a language pack.
+
+        Called once at startup, before the first request.
+
+        Returns:
+            The path of a folder holding `<lang>/LC_MESSAGES/messages.mo`
+            catalogs (the domain `messages`, made from
+            otterwiki/translations/messages.pot), a list of such paths,
+            or None. A message a catalog doesn't translate falls back to
+            the other installed catalogs, then to English.
+        """
+
+    @hookspec
     def page_renamed(
         self, old_pagepath, new_pagepath, author, message
     ) -> None:

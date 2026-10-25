@@ -90,6 +90,9 @@ function initEditor() {
       embeddingHighlighter,
       listDepthHighlighter,
       search({ top: false }),
+      // the search panel, go-to-line and folding texts, translated by the
+      // wiki (templates/snippets/js_translations.html)
+      EditorState.phrases.of(window.otterwiki_cm_phrases || {}),
       EditorView.lineWrapping,
       EditorState.tabSize.of(4),
       indentUnit.of('    '),

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import os
 import re
 
 import pytest
@@ -56,10 +57,10 @@ def test_browser_language(create_app, test_client):
     assert FRENCH in html
     # no catalog for the browser's languages: SITE_LANG
     create_app.config["SITE_LANG"] = "fr"
-    assert FRENCH in login_page(test_client, **{"Accept-Language": "de"})
+    assert FRENCH in login_page(test_client, **{"Accept-Language": "pt"})
     # English is available too, and preferred over French
     assert ENGLISH in login_page(
-        test_client, **{"Accept-Language": "de,en;q=0.8,fr;q=0.5"}
+        test_client, **{"Accept-Language": "pt,en;q=0.8,fr;q=0.5"}
     )
 
 
@@ -158,3 +159,76 @@ def test_language_menu_is_its_own_dropdown(create_app, test_client):
     # the languages are not in the main menu
     main_menu = html.split('id="navbar-dropdown-toggle-btn-1"')[1]
     assert "/-/language/" not in main_menu
+
+
+#
+# language packs
+#
+def test_translation_directories_hook(create_app):
+    # tests/conftest.py registers a plugin with a French catalog
+    import otterwiki.server
+
+    directories = otterwiki.server.translation_directories()
+    assert directories[0].endswith(os.path.join("otterwiki", "translations"))
+    assert any(
+        d.endswith(os.path.join("tests", "translations")) for d in directories
+    )
+    assert "fr" in otterwiki.server.available_locales()
+
+
+def test_translation_directories_ignores_missing_folder(create_app):
+    import otterwiki.server
+    from otterwiki.plugins import hookimpl, plugin_manager
+
+    class MissingFolder:
+        @hookimpl
+        def translation_directories(self):
+            return ["/nonexistent/translations"]
+
+    plugin = MissingFolder()
+    plugin_manager.register(plugin)
+    try:
+        directories = otterwiki.server.translation_directories()
+    finally:
+        plugin_manager.unregister(plugin)
+    assert "/nonexistent/translations" not in directories
+
+
+def test_plural_from_language_pack(create_app, req_ctx):
+    import datetime
+    import otterwiki.server
+
+    create_app.config["SITE_LANG"] = "fr"
+    from flask_babel import refresh
+
+    refresh()
+    assert (
+        otterwiki.server.format_duration(datetime.timedelta(weeks=2))
+        == "2 semaines"
+    )
+
+
+@pytest.mark.parametrize(
+    "language,expected",
+    [
+        ("fr", "fr"),
+        ("fr-FR", "fr"),
+        (" fr_CA ", "fr"),
+        ("zh-CN", "zh_Hans_CN"),
+        ("zh_CN", "zh_Hans_CN"),
+        ("zh", "zh_Hans_CN"),
+        ("zh-Hans", "zh_Hans_CN"),
+        ("zh-TW", None),  # traditional chinese is another language
+        ("en-GB", "en"),
+        ("pt", None),
+        ("xx", None),
+        ("*", None),
+        ("", None),
+        (None, None),
+    ],
+)
+def test_match_locale(create_app, language, expected):
+    from otterwiki.server import match_locale
+
+    available = ["en", "fr", "de", "zh_Hans_CN"]
+    assert match_locale(language, available) == expected

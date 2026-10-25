@@ -18,7 +18,7 @@ def sitemap():
     urlset.set('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9')
 
     # Get all markdown files from storage
-    files, _ = storage.list()
+    files, _dirs = storage.list()
     md_files = [f for f in files if f.endswith('.md')]
 
     # Add each wiki page to sitemap

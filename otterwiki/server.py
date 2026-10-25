@@ -8,8 +8,9 @@ import sys
 import logging
 
 from flask import Flask, has_request_context, request
-from babel import Locale
-from flask_babel import Babel
+from babel import Locale, UnknownLocaleError
+from flask_babel import Babel, ngettext
+from werkzeug.datastructures import LanguageAccept
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
@@ -325,12 +326,26 @@ LANGUAGE_COOKIE = "otterwiki_language"
 def match_locale(language, available):
     """
     The available locale for a language tag: `fr-FR` and `fr_FR` match
-    `fr_FR` if there is a catalog for it, `fr` otherwise.
+    `fr_FR` if there is a catalog for it, `fr` otherwise, and `zh-CN`
+    matches `zh_Hans_CN`, Babel adding the script the region implies.
     """
     language = (language or "").strip().replace("-", "_")
-    for candidate in [language, language.split("_")[0]]:
-        if candidate and candidate in available:
-            return candidate
+    if not language or language == "*":
+        return None
+    candidates = [language]
+    try:
+        candidates.append(str(Locale.parse(language)))
+    except (ValueError, UnknownLocaleError):
+        pass
+    for candidate in candidates:
+        found = LanguageAccept([(candidate, 1)]).best_match(available)
+        if found:
+            return found
+    # a catalog more precise than the tag: zh_Hans gets zh_Hans_CN
+    for candidate in candidates:
+        for locale in available:
+            if locale.startswith(candidate + "_"):
+                return locale
     return None
 
 
@@ -351,9 +366,11 @@ def get_locale():
             if picked:
                 return picked
         if app.config["LANGUAGE_FROM_BROWSER"]:
-            preferred = request.accept_languages.best_match(available)
-            if preferred:
-                return preferred
+            # the browser's languages, preferred first
+            for language, _quality in request.accept_languages:
+                preferred = match_locale(language, available)
+                if preferred:
+                    return preferred
     return match_locale(app.config.get("SITE_LANG"), available) or "en"
 
 
@@ -373,6 +390,28 @@ def language_choices():
     )
 
 
+def translation_directories():
+    """
+    The folders of the catalogs: the wiki's own, then the ones of the
+    installed plugins (language packs), which may complete or override it.
+    """
+    directories = [os.path.join(app.root_path, "translations")]
+    for result in plugin_manager.hook.translation_directories():
+        if not result:
+            continue
+        for directory in [result] if isinstance(result, str) else result:
+            if os.path.isdir(directory):
+                directories.append(directory)
+            else:
+                app.logger.warning(
+                    f"server: Ignored missing translations folder {directory}"
+                )
+    return directories
+
+
+app.config["BABEL_TRANSLATION_DIRECTORIES"] = ";".join(
+    translation_directories()
+)
 babel = Babel(app, locale_selector=get_locale)
 app.jinja_env.globals["get_locale"] = get_locale
 app.jinja_env.globals["language_choices"] = language_choices
@@ -429,6 +468,28 @@ def urlquote(s):
     return squote
 
 
+def format_duration(td: datetime.timedelta) -> str:
+    """
+    A duration in words, down to the second, e.g. "2 days 3 hours 1 min",
+    like otterwiki.util.strfdelta_round() but in the language of the
+    interface.
+    """
+    units = [
+        (604800, lambda n: ngettext("%(num)s week", "%(num)s weeks", n)),
+        (86400, lambda n: ngettext("%(num)s day", "%(num)s days", n)),
+        (3600, lambda n: ngettext("%(num)s hour", "%(num)s hours", n)),
+        (60, lambda n: ngettext("%(num)s min", "%(num)s mins", n)),
+        (1, lambda n: ngettext("%(num)s sec", "%(num)s secs", n)),
+    ]
+    parts = []
+    remainder = td.total_seconds()
+    for seconds, words in units:
+        count, remainder = divmod(remainder, seconds)
+        if int(count) > 0:
+            parts.append(words(int(count)))
+    return " ".join(parts)
+
+
 @app.template_filter("format_datetime")
 def format_datetime(value: datetime.datetime, format="medium") -> str:
     if type(value) is not datetime.datetime:
@@ -441,9 +502,7 @@ def format_datetime(value: datetime.datetime, format="medium") -> str:
             now = datetime.datetime.now()
         else:
             now = datetime.datetime.now(datetime.UTC)
-        td = now - value
-
-        return otterwiki.util.strfdelta_round(td, "second")
+        return format_duration(now - value)
     else:  # format == 'full':
         format = "%Y-%m-%d %H:%M:%S"
 

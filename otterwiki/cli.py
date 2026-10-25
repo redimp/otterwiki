@@ -16,6 +16,7 @@ import sys
 import click
 from datetime import datetime
 from flask import current_app, render_template
+from flask_babel import gettext
 from flask.cli import AppGroup
 
 from otterwiki.server import app, db
@@ -423,8 +424,10 @@ def user_password(
             sys.exit(1)
 
         token = serialize(user.email, salt="lost-password-email")
-        subject = "Password Recovery - {} - An Otter Wiki".format(
-            current_app.config["SITE_NAME"]
+        # rendered in SITE_LANG: there is no request to pick a language from
+        subject = gettext(
+            "Password Recovery - %(sitename)s - An Otter Wiki",
+            sitename=current_app.config["SITE_NAME"],
         )
         text_body = render_template(
             "recover_password.txt",

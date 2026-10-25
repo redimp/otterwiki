@@ -17,6 +17,7 @@ from otterwiki.server import app, mail, storage, Preferences, db, app_renderer
 from otterwiki.gitstorage import StorageError
 from urllib.parse import urlencode
 from flask import flash, session
+from flask_babel import gettext as _
 from flask import url_for as flask_url_for
 from threading import Thread
 from flask_mail import Message
@@ -423,7 +424,7 @@ def get_ftoc(filename, mtime=None):
     except StorageError:
         return []
     # parse file contents
-    _, ftoc, _ = app_renderer.markdown(content)
+    _toc, ftoc, _libs = app_renderer.markdown(content)
     update_ftoc_cache(filename, ftoc, mtime)
 
     return ftoc
@@ -489,17 +490,22 @@ def send_repository_error_notification(
             )
             return
 
-        subject = f"OtterWiki Repository Error - {operation_type} Failed"
+        # the operation_type ("Auto Push", ...) is an identifier and stays
+        # in English
+        subject = _(
+            "OtterWiki Repository Error - %(operation)s Failed",
+            operation=operation_type,
+        )
 
         # Create email body
         body_lines = [
-            f"A repository operation has failed in your OtterWiki instance.",
-            f"",
-            f"Operation: {operation_type}",
-            f"Remote URL: {remote_url}",
-            f"Error: {error_message}",
-            f"",
-            f"Please check your repository configuration and git output.",
+            _("A repository operation has failed in your OtterWiki instance."),
+            "",
+            _("Operation: %(operation)s", operation=operation_type),
+            _("Remote URL: %(url)s", url=remote_url),
+            _("Error: %(error)s", error=error_message),
+            "",
+            _("Please check your repository configuration and git output."),
         ]
 
         text_body = "\n".join(body_lines)
