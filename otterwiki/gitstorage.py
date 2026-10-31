@@ -90,8 +90,9 @@ class GitStorage(object):
         abspath = os.path.join(self.path, filename)
         root = os.path.realpath(self.path)
         resolved = os.path.realpath(abspath)
-        gitdir = os.path.join(root, ".git")
-        if os.path.commonpath([gitdir, resolved]) == gitdir or (
+        # lowercase, on a case-insensitive filesystem .GIT is .git
+        gitdir = os.path.join(root, ".git").lower()
+        if os.path.commonpath([gitdir, resolved.lower()]) == gitdir or (
             not self.allow_external_symlinks
             and os.path.commonpath([root, resolved]) != root
         ):

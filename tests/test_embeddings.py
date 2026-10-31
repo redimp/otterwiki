@@ -1105,6 +1105,81 @@ def test_attachment_rejects_path_traversal(create_app):
             Attachment("somepage", "../../secret.cfg")
 
 
+def _write_secret_in_gitdir(create_app):
+    """Create a file in .git, which is not reachable as an attachment."""
+    secret_content = "gitdir-secret-value-12345\n"
+    with open(
+        os.path.join(create_app.storage.path, ".git", "secret"), "w"
+    ) as f:
+        f.write(secret_content)
+
+
+@pytest.mark.parametrize(
+    "src", ["/.git/secret", "/.GIT/secret", "/subdir/../.git/secret"]
+)
+def test_datatable_csv_git_directory_blocked(create_app, src):
+    """An absolute src must not read files in the .git directory."""
+    _write_secret_in_gitdir(create_app)
+    create_app.storage.store(
+        "csvgit.md",
+        content=f"# Git\n{{{{datatable\n|src={src}\n|header=false\n}}}}\n",
+        author=("Test Author", "test@example.com"),
+        message="git page",
+    )
+    html = create_app.test_client().get("/Csvgit/view").data.decode()
+    assert "gitdir-secret-value-12345" not in html
+    assert "<tt>datatable</tt> Error" in html
+
+
+def test_datatable_csv_symlink_to_git_directory_blocked(create_app):
+    """A symlink, e.g. pushed via git, must not lead into .git either."""
+    _write_secret_in_gitdir(create_app)
+    create_app.storage.store(
+        "csvgitlink.md",
+        content="# Git\n{{datatable\n|src=link.csv\n|header=false\n}}\n",
+        author=("Test Author", "test@example.com"),
+        message="git link page",
+    )
+    attachment_dir = os.path.join(create_app.storage.path, "csvgitlink")
+    os.mkdir(attachment_dir)
+    os.symlink("../.git/secret", os.path.join(attachment_dir, "link.csv"))
+    html = create_app.test_client().get("/Csvgitlink/view").data.decode()
+    assert "gitdir-secret-value-12345" not in html
+    assert "not found" in html
+
+
+def test_imageframe_git_directory_blocked(create_app):
+    """ImageFrame must not reveal which files exist in the .git directory."""
+    create_app.storage.store(
+        "framegit.md",
+        content="# Git\n{{ImageFrame\n|src=/.git/config\n}}\n",
+        author=("Test Author", "test@example.com"),
+        message="git frame page",
+    )
+    html = create_app.test_client().get("/Framegit/view").data.decode()
+    assert "not found" in html
+    assert (
+        "<img"
+        not in html.split('<article class="page">')[1].split("</article>")[0]
+    )
+
+
+@pytest.mark.parametrize("retain_case", [False, True])
+def test_attachment_git_directory_does_not_exist(create_app, retain_case):
+    """No spelling of .git is an attachment, on any filesystem."""
+    from otterwiki.wiki import Attachment
+
+    previous = create_app.config["RETAIN_PAGE_NAME_CASE"]
+    create_app.config["RETAIN_PAGE_NAME_CASE"] = retain_case
+    try:
+        with create_app.app_context():
+            assert not Attachment(".git", "config").exists()
+            assert not Attachment(".GIT", "config").exists()
+            assert not Attachment("page", "../.GIT/config").exists()
+    finally:
+        create_app.config["RETAIN_PAGE_NAME_CASE"] = previous
+
+
 def test_attachmentlist(create_app):
     author = ("Test Author", "test@example.com")
     create_app.storage.store(

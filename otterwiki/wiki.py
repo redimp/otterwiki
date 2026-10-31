@@ -1703,7 +1703,8 @@ class Attachment:
             self._revision = None
 
     def exists(self):
-        return os.path.exists(self.abspath)
+        # storage.exists rejects unsafe paths, e.g. anything in .git
+        return storage.exists(self.filepath)
 
     def get_thumbnail_url(self):
         if self.mimetype is not None and self.mimetype.startswith("image"):
