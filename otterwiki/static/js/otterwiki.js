@@ -179,6 +179,25 @@ var otterwiki = {
 }
 
 var MathJax = {
+    loader: {
+        // Filter user-controlled TeX: \href{javascript:...} would otherwise
+        // turn into a link that runs a script on click.
+        load: ['ui/safe'],
+    },
+    startup: {
+        ready() {
+            // ui/safe checks the scheme of the raw url, but browsers drop
+            // leading control characters and tabs before they parse it.
+            // Clean the url first, so "\x01javascript:" can't get past.
+            const methods = MathJax._.ui.safe.SafeMethods.SafeMethods;
+            const filterURL = methods.filterURL;
+            methods.filterURL = (safe, url) => filterURL(
+                safe,
+                url.replace(/^[\x00-\x20]+|[\x00-\x20]+$|[\t\n\r]/g, ''),
+            );
+            MathJax.startup.defaultReady();
+        },
+    },
     tex: {
         inlineMath: [["\\(", "\\)"]],
         displayMath: [ ['\\[', '\\]'], ],
