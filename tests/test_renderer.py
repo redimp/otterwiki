@@ -755,6 +755,21 @@ c=d
     assert "\\[a^2+b^2=c^2\\]" in html
 
 
+def test_math_block_escapes_html():
+    md = """
+```math
+</div></article><script>alert(document.domain)</script>
+</div><img src=x onerror=alert(document.domain)>
+a &= b < c
+```
+"""
+    html, _, _ = render.markdown(md)
+    assert "<script" not in html
+    assert "<img" not in html
+    assert "&lt;script&gt;alert(document.domain)&lt;/script&gt;" in html
+    assert "\\[a &amp;= b &lt; c\\]" in html
+
+
 def test_math_code_inline():
     text = "`$a$`"
     html, _, _ = render.markdown(text)

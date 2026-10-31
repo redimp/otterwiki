@@ -546,7 +546,10 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             if hasattr(self, 'renderer'):
                 self.renderer.requires_mathjax = True
             html = "".join(
-                ["\\[{}\\]".format(line) for line in code.strip().splitlines()]
+                [
+                    "\\[{}\\]".format(mistune.escape(line, quote=False))
+                    for line in code.strip().splitlines()
+                ]
             )
         elif info == "mermaid":
             # mark that Mermaid is required
