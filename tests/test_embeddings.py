@@ -2205,6 +2205,37 @@ https://m.youtube.com/e/dQw4w9WgXcQ
     assert "dQw4w9WgXcQ" in iframe["src"]
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        'https://youtu.be/x"></iframe><svg onload="alert(1)">',
+        'https://youtu.be/x" onload="alert(1)',
+        'https://www.youtube.com/watch?v=x"></iframe><svg onload="alert(1)">',
+        'https://www.youtube.com/watch?v=x%22%3E%3C/iframe%3E'
+        '%3Csvg%20onload=alert(1)%3E',
+        'https://www.youtube.com/watch?v=x%22%20onload=%22alert(1)',
+        'https://www.youtube.com/embed/x" onload="alert(1)',
+        'https://www.youtube.com/e/x" onload="alert(1)',
+        'https://www.youtube-nocookie.com/embed/x" onload="alert(1)',
+    ],
+)
+def test_video_youtube_id_no_xss(url):
+    """A crafted YouTube video id must not break out of the iframe src
+    attribute and inject HTML or event handlers."""
+    html, _, _ = render.markdown(f"{{{{Video\n{url}\n}}}}\n")
+    _assert_no_event_handlers(html)
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup.find("svg") is None
+    assert soup.find("iframe") is None
+
+
+def test_video_youtube_id_trailing_newline():
+    """A decoded trailing newline must not pass the video id validation."""
+    md = "{{Video\nhttps://www.youtube.com/watch?v=abc%0A\n}}\n"
+    html, _, _ = render.markdown(md)
+    assert BeautifulSoup(html, "html.parser").find("iframe") is None
+
+
 def test_figure_basic():
     md = """
 {{Figure

@@ -688,16 +688,22 @@ https://www.youtube.com/watch?v=dQw4w9WgXcQ
         """Extract YouTube video ID from various URL formats, or return None."""
         parsed = urllib.parse.urlparse(url)
         host = re.sub(r'^(www|m)\.', '', parsed.netloc.lower())
+        yt_id = None
         if host == 'youtube.com' or host == 'youtube-nocookie.com':
             if parsed.path.startswith('/embed/') or parsed.path.startswith(
                 '/e/'
             ):
-                return parsed.path.split('/')[2]
-            qs = urllib.parse.parse_qs(parsed.query)
-            ids = qs.get('v', [])
-            return ids[0] if ids else None
-        if host == 'youtu.be':
-            return parsed.path.lstrip('/')
+                yt_id = parsed.path.split('/')[2]
+            else:
+                qs = urllib.parse.parse_qs(parsed.query)
+                ids = qs.get('v', [])
+                yt_id = ids[0] if ids else None
+        elif host == 'youtu.be':
+            yt_id = parsed.path.lstrip('/')
+        # the id is interpolated into an iframe src attribute; reject anything
+        # but a plain id so a crafted value cannot break out of the attribute
+        if yt_id and re.fullmatch(r'[A-Za-z0-9_-]+', yt_id):
+            return yt_id
         return None
 
     @hookimpl
