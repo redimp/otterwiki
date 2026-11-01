@@ -33,11 +33,20 @@ def _style_attr(styles):
     arbitrary markup or scripts. Escaped quotes are still interpreted as
     quotes inside a CSS value by the browser, so legitimate CSS keeps
     working.
+
+    The value gets the same check as a style attribute in raw html. The
+    joined value is checked, since a css comment can span two fragments.
+    If the check fails the attribute is dropped, the content stays.
     """
+    from otterwiki.renderer import is_dangerous_style
+
     styles = [s for s in styles if s]
     if not styles:
         return ""
-    return f' style="{mistune.escape(";".join(styles))}"'
+    value = ";".join(styles)
+    if is_dangerous_style(value):
+        return ""
+    return f' style="{mistune.escape(value)}"'
 
 
 # a bare renderer instance, only used for its safe_url() helper below

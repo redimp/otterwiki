@@ -184,6 +184,51 @@ Content
         assert "&quot;" in html
 
 
+@pytest.mark.parametrize("name", ["InfoBox", "ImageFrame", "Figure"])
+@pytest.mark.parametrize(
+    "options",
+    [
+        "|style=background-image:url(javascript:alert(1))",
+        "|style=behavior:url(x.htc)",
+        "|style=-moz-binding:url(x)",
+        "|style=width:expression(alert(1))",
+        "|style=width:expr/**/ession(alert(1))",
+        r"|style=background:url(\6a avascript:alert(1))",
+        "|width=expression(alert(1))",
+        # a css comment that spans the width and the style fragment
+        "|width=ex/*\n|style=*/pression(alert(1))",
+    ],
+)
+def test_embedding_dangerous_style_is_dropped(name, options):
+    html, _, _ = render.markdown(f"{{{{{name}\n{options}\nContent\n}}}}\n")
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup.find(style=True) is None
+    assert "Content" in soup.get_text()
+
+
+@pytest.mark.parametrize(
+    "name, options",
+    [
+        ("InfoBox", "|text-align=expression(alert(1))"),
+        ("ImageFrame", "|text-align=expression(alert(1))"),
+        ("Figure", "|height=expression(alert(1))"),
+    ],
+)
+def test_embedding_dangerous_style_in_layout_options(name, options):
+    html, _, _ = render.markdown(f"{{{{{name}\n{options}\nContent\n}}}}\n")
+    assert "expression" not in html
+
+
+@pytest.mark.parametrize("name", ["InfoBox", "ImageFrame", "Figure"])
+def test_embedding_harmless_style_is_kept(name):
+    md = (
+        f"{{{{{name}\n|style=background:url(/a.png);color:red\nContent\n}}}}\n"
+    )
+    html, _, _ = render.markdown(md)
+    tag = BeautifulSoup(html, "html.parser").find(style=True)
+    assert "background:url(/a.png);color:red" in tag["style"]
+
+
 def _assert_no_event_handlers(html):
     """Fail if any rendered tag carries an on* event-handler attribute."""
     soup = BeautifulSoup(html, "html.parser")
