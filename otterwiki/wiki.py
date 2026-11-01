@@ -1419,7 +1419,14 @@ class Page:
         if maximum:
             files = files[:maximum]
         # currently only attached files are handled
-        return [Attachment(self.pagepath, f) for f in files]
+        attachments = []
+        for f in files:
+            try:
+                attachments.append(Attachment(self.pagepath, f))
+            except StorageError as e:
+                # e.g. a symlink pointing outside the repository
+                app.logger.warning(f"Skipping attachment: {e}")
+        return attachments
 
     def _attachments_list(self):
         files = [

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
+import os
 import pytest
 import base64
 import pathlib
@@ -385,3 +386,35 @@ def test_attachment_active_content_unicode_filename(test_client):
     assert "filename*=UTF-8''" in disposition
     # the header must be encodable for the WSGI server
     disposition.encode("latin-1")
+
+
+@pytest.mark.parametrize("path", ["/Linkpage/view", "/Linkpage/attachments"])
+def test_external_symlink_is_skipped(create_app, tmp_path, path):
+    """A symlink to a path outside the repository, e.g. pushed via git, must
+    not break the views that list the attachments of a page."""
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "linkpage.md",
+        content="# Linkpage\n",
+        author=author,
+        message="add page",
+    )
+    create_app.storage.store(
+        "linkpage/real.txt",
+        content="real attachment\n",
+        author=author,
+        message="add attachment",
+    )
+    outside = tmp_path / "outside.csv"
+    outside.write_text("outside-content-12345\n")
+    os.symlink(
+        str(outside),
+        os.path.join(create_app.storage.path, "linkpage", "link.csv"),
+    )
+    response = create_app.test_client().get(path)
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert "link.csv" not in html
+    assert "outside-content-12345" not in html
+    if path.endswith("/attachments"):
+        assert "real.txt" in html
