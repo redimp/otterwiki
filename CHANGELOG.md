@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.26.2](https://github.com/redimp/otterwiki/releases/tag/v2.26.2) - 2026-11-01
+
+<small>[Compare with v2.26.1](https://github.com/redimp/otterwiki/compare/v2.26.1...v2.26.2)</small>
+
+### Security Fixes
+
+- Do not expose .git files as attachments
+  ([263cac4](https://github.com/redimp/otterwiki/commit/263cac4)).
+  Thanks to Zachariah Mithani (AploSec) for reaching out and reporting this
+  issue.
+- Escape the content of math code blocks
+  ([b2e91d2](https://github.com/redimp/otterwiki/commit/b2e91d2)).
+  Thanks to Zachariah Mithani (AploSec) for reaching out and reporting this
+  issue.
+- Block unsafe urls in MathJax links
+  ([28f9ae3](https://github.com/redimp/otterwiki/commit/28f9ae3)).
+
+### Bug Fixes
+
+- Use package discovery and SPDX license in pyproject
+  ([d8f065b](https://github.com/redimp/otterwiki/commit/d8f065b)).
+
 ## [v2.26.1](https://github.com/redimp/otterwiki/releases/tag/v2.26.1) - 2026-10-25
 
 <small>[Compare with v2.26.0](https://github.com/redimp/otterwiki/compare/v2.26.0...v2.26.1)</small>
