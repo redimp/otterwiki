@@ -2429,3 +2429,15 @@ def test_pageindex_embedding_style_list_is_escaped(create_app):
     assert pi_div is not None
     assert pi_div.find("img") is None
     assert "onerror=alert(3)" in pi_div.get_text()
+
+
+@pytest.mark.parametrize(
+    "separator", ["\x0b", "\x0c", "\x1c", "\x85", "\u2028", "\u2029"]
+)
+def test_embedding_option_key_with_line_separator(separator):
+    md = f"{{{{InfoBox\n|a{separator}b=value\ncontent\n}}}}\n"
+    html, _, _ = render.markdown(md)
+    assert "text-danger" not in html
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup.find("strong").get_text() == f"a{separator}b"
+    assert "value" in soup.find("tr", class_="infobox-key-value").get_text()

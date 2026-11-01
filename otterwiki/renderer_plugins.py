@@ -1075,15 +1075,18 @@ class mistunePluginEmbeddings:
         args: EmbeddingArgs,
         cursor: bool = False,
     ):
-        for argument in text.splitlines():
-            parts = argument.rsplit(":", maxsplit=1)
-            value = base64.b64decode(parts[-1].encode()).decode()
-            if len(parts) == 1:
-                args.args.append(value)
-            elif len(parts) == 2:
-                args.options[parts[0]] = value
-
         try:
+            # render_embedding_option ends every entry with \n. Do not use
+            # splitlines(): it also splits on characters like \x0b or \u2028,
+            # which are valid in an option key
+            for argument in text.split("\n")[:-1]:
+                parts = argument.rsplit(":", maxsplit=1)
+                value = base64.b64decode(parts[-1].encode()).decode()
+                if len(parts) == 1:
+                    args.args.append(value)
+                elif len(parts) == 2:
+                    args.options[parts[0]] = value
+
             output = call_hook(
                 "embedding_render",
                 embedding=embedding_name,
