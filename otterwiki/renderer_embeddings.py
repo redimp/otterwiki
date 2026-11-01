@@ -260,8 +260,14 @@ Options specific to CSV:
         attachment = Attachment(att_pagepath, att_filename)
         if not attachment.exists():
             raise ValueError(f'csv attachment "{src}" not found.')
-        with open(attachment.abspath, 'r', encoding='utf-8', newline='') as f:
-            content = f.read()
+        try:
+            with open(
+                attachment.abspath, 'r', encoding='utf-8', newline=''
+            ) as f:
+                content = f.read()
+        except OSError:
+            # the exception text contains the absolute path
+            raise ValueError(f'csv attachment "{src}" can not be read.')
 
         reader = csv.reader(
             io.StringIO(content), delimiter=delimiter, quotechar=quotechar

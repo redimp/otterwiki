@@ -1139,6 +1139,30 @@ def test_datatable_csv_path_traversal_absolute_blocked(create_app):
         os.remove(secret_path)
 
 
+@pytest.mark.parametrize("src", ["/csvdir/", "sub"])
+def test_datatable_csv_directory_src_hides_path(create_app, src):
+    """A src that is a directory must not show the repository path."""
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "csvdir.md",
+        content=f"# Directory\n{{{{datatable\n|src={src}\n}}}}\n",
+        author=author,
+        message="directory page",
+    )
+    create_app.storage.store(
+        "csvdir/sub/data.csv",
+        content="Name;Score\nAlice;42\n",
+        author=author,
+        message="add csv",
+    )
+    client = create_app.test_client()
+    response = client.get("/Csvdir/view")
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert "can not be read" in html
+    assert create_app.storage.path not in html
+
+
 def test_attachment_rejects_path_traversal(create_app):
     """The Attachment constructor guards against traversal for every caller,
     not just the DataTable embedding."""
