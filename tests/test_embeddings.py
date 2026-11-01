@@ -2236,6 +2236,30 @@ def test_video_youtube_id_trailing_newline():
     assert BeautifulSoup(html, "html.parser").find("iframe") is None
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "javascript&#58;alert(1)",
+        "javascript&#x3a;alert(1)",
+        "javascript&colon;alert(1)",
+        "data&colon;text/html,x",
+    ],
+)
+def test_video_src_entity_does_not_pass_url_filter(url):
+    """An html entity in place of the colon must not get a harmful protocol
+    past safe_url()."""
+    html, _, _ = render.markdown(f"{{{{Video\n|src={url}\n}}}}\n")
+    src = BeautifulSoup(html, "html.parser").find("source")["src"]
+    assert not src.startswith(("javascript:", "data:"))
+
+
+def test_video_src_keeps_query_string():
+    md = "{{Video\n|src=/video.mp4?a=1&b=2\n}}\n"
+    html, _, _ = render.markdown(md)
+    src = BeautifulSoup(html, "html.parser").find("source")["src"]
+    assert src == "/video.mp4?a=1&b=2"
+
+
 def test_figure_basic():
     md = """
 {{Figure

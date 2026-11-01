@@ -51,9 +51,11 @@ def _safe_attr_url(url):
     the value is escaped so a crafted value (e.g. an ImageFrame/Video
     ``|src=`` read from ``options_raw``) cannot break out of the attribute
     and inject event handlers. Mirrors OtterwikiMdRenderer's handling of
-    link and image URLs.
+    link URLs: escape_url leaves a bare '&' behind, so without the final
+    escape an entity like ``javascript&#58;`` would pass safe_url() and be
+    decoded to a harmful protocol later.
     """
-    return mistune.escape_url(_url_safety.safe_url(url))
+    return mistune.escape(mistune.escape_url(_url_safety.safe_url(url)))
 
 
 class DatatableEmbedding:
