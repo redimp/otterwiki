@@ -148,6 +148,53 @@ def test_include_cycle_detection(req_ctx):
     assert "cycle detected" in html
 
 
+def _includes(src, count):
+    return "\n\n".join([f"{{{{include|src={src}}}}}"] * count) + "\n"
+
+
+def test_include_limit_stops_fan_out(req_ctx):
+    from otterwiki.renderer_embeddings import IncludeEmbedding
+    from otterwiki.server import storage
+
+    # 6 includes per page and 8 levels would be 6**8 renders of the leaf
+    depth = IncludeEmbedding.MAX_DEPTH
+    for level in range(depth):
+        _store(storage, f"Fan{level}", _includes(f"/Fan{level + 1}", 6))
+    _store(storage, f"Fan{depth}", "leaftext\n")
+
+    html, _ = _render("Host", "{{include|src=/Fan0}}")
+    assert "maximum number of includes" in html
+    assert html.count("leaftext") <= IncludeEmbedding.MAX_INCLUDES
+
+
+def test_include_limit_counts_all_includes_of_a_page(req_ctx):
+    from otterwiki.renderer_embeddings import IncludeEmbedding
+    from otterwiki.server import storage
+
+    limit = IncludeEmbedding.MAX_INCLUDES
+    _store(storage, "Leaf", "leaftext\n")
+
+    html, _ = _render("Host", _includes("/Leaf", limit))
+    assert html.count("leaftext") == limit
+    assert "maximum number of includes" not in html
+
+    html, _ = _render("Host", _includes("/Leaf", limit + 1))
+    assert html.count("leaftext") == limit
+    assert html.count("maximum number of includes") == 1
+
+
+def test_include_limit_is_per_render(req_ctx):
+    from otterwiki.renderer_embeddings import IncludeEmbedding
+    from otterwiki.server import storage
+
+    limit = IncludeEmbedding.MAX_INCLUDES
+    _store(storage, "Leaf", "leaftext\n")
+
+    for _ in range(3):
+        html, _ = _render("Host", _includes("/Leaf", limit))
+        assert "maximum number of includes" not in html
+
+
 def test_include_does_not_clobber_host_toc(req_ctx):
     from otterwiki.server import storage
 

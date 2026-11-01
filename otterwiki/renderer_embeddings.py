@@ -1413,6 +1413,9 @@ class IncludeEmbedding:
 
     #: hard limit that stops runaway recursion even without a direct cycle
     MAX_DEPTH = 8
+    #: hard limit on the includes of one render. MAX_DEPTH alone allows
+    #: exponential fan-out: n includes per page expand to n**MAX_DEPTH renders
+    MAX_INCLUDES = 100
 
     def __init__(self):
         # per-thread stack of "pagepath#section" keys currently being included,
@@ -1463,9 +1466,10 @@ Options:
 - Combining a stateful embedding such as `DataTable` with an `include` on the
   same page may leave the page's own DataTable uninitialised. Put such
   embeddings on separate pages.
-- Includes are limited to a nesting depth of 8, and include cycles (a page
-  including itself, directly or indirectly) are detected and reported instead
-  of being expanded.
+- Includes are limited to a nesting depth of 8 and to 100 includes per
+  rendered page, nested includes count too. Include cycles (a page including
+  itself, directly or indirectly) are detected and reported instead of being
+  expanded.
 
 </div>
 </div>
@@ -1475,6 +1479,14 @@ Options:
     def page_render_context(self, page, preview: bool):
         self.page = page
         self.preview = preview
+
+    @hookimpl
+    def renderer_markdown_preprocess(self, md: str) -> str:
+        # the nested render of an included page has a non-empty stack, so it
+        # uses up the limit of the render that started it
+        if not self._stack:
+            self._local.count = 0
+        return md
 
     @property
     def _stack(self) -> "list[str]":
@@ -1529,6 +1541,14 @@ Options:
         src = args.options_raw.get("src")
         if not src:
             raise ValueError("include: |src= is required.")
+
+        self._local.count = getattr(self._local, "count", 0) + 1
+        if self._local.count > self.MAX_INCLUDES:
+            raise ValueError(
+                f"include: maximum number of includes ({self.MAX_INCLUDES})"
+                " exceeded."
+            )
+
         section = args.options_raw.get("section")
         include_children = _include_flag(args, "children", True)
         include_heading = _include_flag(args, "heading", True)
