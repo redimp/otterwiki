@@ -19,7 +19,7 @@ BRANCH_TAG := $(shell git rev-parse --abbrev-ref HEAD | sed 's/[^a-zA-Z0-9_.-]/-
 
 all: run
 
-.PHONY: clean coverage run debug cli shell sdist docker-build docker-test frontend
+.PHONY: clean coverage run debug cli shell sdist docker-build docker-test frontend translations-extract
 ARGS ?=
 
 clean:
@@ -74,6 +74,11 @@ settings.cfg:
 	@echo " settings.cfg.skeleton"
 	@echo ""
 	@false
+
+translations-extract: venv
+	venv/bin/pybabel extract -F babel.cfg -k _l --sort-by-file \
+		--project="An Otter Wiki" --msgid-bugs-address="https://github.com/redimp/otterwiki/issues" \
+		-o otterwiki/translations/messages.pot otterwiki
 
 frontend:
 	cd frontend && npm install --include=dev && node esbuild.config.mjs

@@ -12,7 +12,7 @@
 {{ custom_404_html|safe }}
 </article>
 {% else %}
-<h2>404 Page not found</h2>
+<h2>{{ _("404 Page not found") }}</h2>
 {% endif %}
-<p>Page "{{pagename}}" not found. Do you want to <a href="{{ url_for("edit", path=pagepath) }}">create</a> it?</p>
+<p>{% trans url=url_for("edit", path=pagepath) %}Page "{{ pagename }}" not found. Do you want to <a href="{{ url }}">create</a> it?{% endtrans %}</p>
 {% endblock %}

@@ -4,19 +4,19 @@
 <div class="card mx-auto mx-lg-20" id="user_mangement">
 <form action="{{ url_for("admin_user_management") }}" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-<h2 class="card-title">User Management</h2>
+<h2 class="card-title">{{ _("User Management") }}</h2>
 <div class="table-responsive table-striped">
   <table class="table compact">
     <thead>
       <tr>
         <th>&nbsp;</th>
-        <th>eMail</th>
-        <th>Name</th>
-        <th><span class="hidden-md-and-down">Approved</span><span class="hidden-lg-and-up">Ap-<br/>proved</span></th>
-        <th>Read</th>
-        <th>Write</th>
-        <th>Upload</th>
-        <th>Admin</th>
+        <th>{{ _("eMail") }}</th>
+        <th>{{ _("Name") }}</th>
+        <th><span class="hidden-md-and-down">{{ _("Approved") }}</span><span class="hidden-lg-and-up">{#- Translators: "Approved" hyphenated for narrow screens -#}{% trans %}Ap-<br/>proved{% endtrans %}</span></th>
+        <th>{{ _("Read") }}</th>
+        <th>{{ _("Write") }}</th>
+        <th>{{ _("Upload") }}</th>
+        <th>{{ _("Admin") }}</th>
       </tr>
     </thead>
     <tbody>
@@ -76,15 +76,15 @@
   </table>
   </div>
   <div class="mt-10">
-      <em>Privileges granted per user</em> add <em>to the general permissions. For example, if in general
+      {% trans trimmed %}<em>Privileges granted per user</em> add <em>to the general permissions. For example, if in general
           only users with the <strong>Admin</strong> flag are allowed to upload attachments, the
           <tt>user@example.org</tt> can be allowed to <strong>Upload</strong> without being flagged as Admin.
-      </em>
+      </em>{% endtrans %}
   </div>
   <div class="mt-10">
-    <input class="btn btn-primary" name="update_permissions" type="submit" value="Update Privileges" {% if not
+    <input class="btn btn-primary" name="update_permissions" type="submit" value="{{ _("Update Privileges") }}" {% if not
       auth_supported_features['editing'] %}disabled{% endif %}>
-    {% if auth_supported_features['editing'] %}&nbsp;<a href="{{ url_for("user", uid="") }}" class="btn">Add User</a>{% endif %}
+    {% if auth_supported_features['editing'] %}&nbsp;<a href="{{ url_for("user", uid="") }}" class="btn">{{ _("Add User") }}</a>{% endif %}
   </div>
 </form>
 </div>

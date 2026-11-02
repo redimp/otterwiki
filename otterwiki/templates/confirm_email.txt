@@ -1,11 +1,11 @@
-Hello {{name}},
+{% trans %}Hello {{name}},{% endtrans %}
 
-Someone, perhaps you, registered this email address ({{email}}) for an account
-at {{sitename}} (An Otter Wiki).
+{% trans %}Someone, perhaps you, registered this email address ({{email}}) for an account
+at {{sitename}} (An Otter Wiki).{% endtrans %}
 
-If you wish to proceed with this request, please confirm your email
-address here: {{url}}
+{% trans %}If you wish to proceed with this request, please confirm your email
+address here: {{url}}{% endtrans %}
 
-If you did not make this request, you can safely ignore this email.
+{% trans %}If you did not make this request, you can safely ignore this email.{% endtrans %}
 
-Cheers!
+{% trans %}Cheers!{% endtrans %}

@@ -6,6 +6,8 @@ import tempfile
 import stat
 from threading import Thread, Lock
 
+from flask_babel import gettext as _
+
 
 def sanitize_ssh_key(private_key):
     """
@@ -128,7 +130,7 @@ class RepositoryManager:
         Returns (success, output) tuple.
         """
         if not remote_url:
-            return False, "No remote URL provided"
+            return False, _("No remote URL provided")
 
         with self.git_push_pull_Lock:
             key_path, original_ssh_command, original_ssh_auth_sock = (
@@ -142,7 +144,7 @@ class RepositoryManager:
                     current_branch = self.storage.repo.active_branch.name
                 except TypeError:
                     # if there is no current branch we should probably just stop
-                    return False, "No active branch found"
+                    return False, _("No active branch found")
 
                 action_type = "Force push" if force else "Push"
                 app.logger.info(
@@ -162,7 +164,13 @@ class RepositoryManager:
                     app.logger.info(
                         f"[RepositoryManager] {action_type} result: {result}"
                     )
-                return True, result or f"{action_type} completed successfully"
+                if not result:
+                    result = (
+                        _("Force push completed successfully")
+                        if force
+                        else _("Push completed successfully")
+                    )
+                return True, result
 
             except Exception as e:
                 try:
@@ -185,7 +193,7 @@ class RepositoryManager:
         Returns (success, output) tuple.
         """
         if not remote_url:
-            return False, "No remote URL provided"
+            return False, _("No remote URL provided")
 
         with self.git_push_pull_Lock:
             key_path, original_ssh_command, original_ssh_auth_sock = (
@@ -199,7 +207,7 @@ class RepositoryManager:
                     current_branch = self.storage.repo.active_branch.name
                 except TypeError:
                     # if there is no current branch we should probably just stop
-                    return False, "No active branch found"
+                    return False, _("No active branch found")
 
                 app.logger.info(
                     f"[RepositoryManager] Pulling from remote: {remote_url}"
@@ -212,7 +220,7 @@ class RepositoryManager:
 
                 self.storage.notify_repository_changed_from_external()
 
-                return True, result or "Pull completed successfully"
+                return True, result or _("Pull completed successfully")
 
             except Exception as e:
                 try:
@@ -236,7 +244,7 @@ class RepositoryManager:
         Returns (success, output) tuple.
         """
         if not remote_url:
-            return False, "No remote URL provided"
+            return False, _("No remote URL provided")
 
         with self.git_push_pull_Lock:
             key_path, original_ssh_command, original_ssh_auth_sock = (
@@ -250,7 +258,7 @@ class RepositoryManager:
                     current_branch = self.storage.repo.active_branch.name
                 except TypeError:
                     # if there is no current branch we should probably just stop
-                    return False, "No active branch found"
+                    return False, _("No active branch found")
 
                 app.logger.info(
                     f"[RepositoryManager] Fetching from remote for hard reset: {remote_url}"
@@ -277,7 +285,7 @@ class RepositoryManager:
 
                 return (
                     True,
-                    reset_result or "Hard reset completed successfully",
+                    reset_result or _("Hard reset completed successfully"),
                 )
 
             except Exception as e:

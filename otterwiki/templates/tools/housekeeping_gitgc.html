@@ -1,13 +1,13 @@
 <form hx-post="{{ url_for("housekeeping") }}" hx-target="this" hx-indicator="#gitgc_indicator" hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>
 <input type="hidden" name="task" value="gitgc">
-<p>Every change made via the wiki is stored as a loose object in the git repository. Over time many loose objects can slow down saving pages. Git Garbage Collection packs them and removes unreachable objects by running <code>git gc</code>.</p>
+<p>{% trans %}Every change made via the wiki is stored as a loose object in the git repository. Over time many loose objects can slow down saving pages. Git Garbage Collection packs them and removes unreachable objects by running <code>git gc</code>.{% endtrans %}</p>
 {% if error %}
-<p class="text-danger">Git Garbage Collection failed: {{ error }}</p>
+<p class="text-danger">{{ _("Git Garbage Collection failed: %(error)s", error=error) }}</p>
 {% elif summary %}
-<p>{{ summary }} <span class="text-muted">Finished in {{ duration }}.</span></p>
+<p>{{ summary }} <span class="text-muted">{{ _("Finished in %(duration)s.", duration=duration) }}</span></p>
 {% endif %}
 <div class="mt-10">
-    <input class="btn btn-primary" type="submit" name="run" value="Run Git Garbage Collection"/>
+    <input class="btn btn-primary" type="submit" name="run" value="{{ _("Run Git Garbage Collection") }}"/>
     <span id="gitgc_indicator" class="htmx-indicator"><i class="fas fa-spinner fa-spin"></i></span>
 </div>
 </form>

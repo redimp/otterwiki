@@ -1,0 +1,23 @@
+# A tiny French catalog for the tests: the real ones are language packs,
+# installed as plugins (see docs/DEVELOPMENT.md, Translations).
+msgid ""
+msgstr ""
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Lost your password?"
+msgstr "Mot de passe oublié ?"
+
+msgid "Search"
+msgstr "Rechercher"
+
+msgid "Language"
+msgstr "Langue"
+
+msgid "%(num)s week"
+msgid_plural "%(num)s weeks"
+msgstr[0] "%(num)s semaine"
+msgstr[1] "%(num)s semaines"

@@ -17,56 +17,63 @@
 {% set temp = namespace(ownold=false, ownnew=false, others=false) %}
     <div class="invalid-feedback">
 {% if olddrafts %}
-        There are drafts saved for <strong>{{pagename}}</strong>:
+        {% trans %}There are drafts saved for <strong>{{ pagename }}</strong>:{% endtrans %}
       <ul class="mt-10">
 {% for draft in olddrafts -%}
 <li>
 {%if current_user.email == draft.author_email%}
-    Your draft
 {% set temp.ownold = True %}
+    {% trans date=draft.datetime|format_datetime, delta=draft.datetime|format_datetime("deltanow") %}Your draft last updated on <span title="{{ delta }} ago">{{ date }}</span>{% endtrans %}
 {%else%}
-    {{draft.author_email}}'s draft
 {% set temp.others = True %}
-{%endif%}
- last updated on <span title="{{draft.datetime|format_datetime("deltanow")}} ago">{{draft.datetime|format_datetime}}</span></li>
+    {% trans author=draft.author_email, date=draft.datetime|format_datetime, delta=draft.datetime|format_datetime("deltanow") %}{{ author }}'s draft last updated on <span title="{{ delta }} ago">{{ date }}</span>{% endtrans %}
+{%endif%}</li>
 {% endfor -%}
       </ul>
 {%endif%}
 {% if newdrafts %}
-        There are drafts saved for <strong>{{new_pagename}}</strong>:
+        {% trans %}There are drafts saved for <strong>{{ new_pagename }}</strong>:{% endtrans %}
       <ul class="mt-10">
 {% for draft in newdrafts -%}
 <li>
 {%if current_user.email == draft.author_email%}
-    Your draft
 {% set temp.ownnew = True %}
+    {% trans date=draft.datetime|format_datetime, delta=draft.datetime|format_datetime("deltanow") %}Your draft last updated on <span title="{{ delta }} ago">{{ date }}</span>{% endtrans %}
 {%else%}
-    {{draft.author_email}}'s draft
 {% set temp.others = True %}
-{%endif%}
- last updated on <span title="{{draft.datetime|format_datetime("deltanow")}} ago">{{draft.datetime|format_datetime}}</span></li>
+    {% trans author=draft.author_email, date=draft.datetime|format_datetime, delta=draft.datetime|format_datetime("deltanow") %}{{ author }}'s draft last updated on <span title="{{ delta }} ago">{{ date }}</span>{% endtrans %}
+{%endif%}</li>
 {% endfor -%}
       </ul>
 {%endif%}
       {% if temp.ownnew or temp.ownold %}
-      You can review and edit or discard your draft{%if temp.ownold and temp.ownnew %}s {%endif%}
-      {%if temp.ownold%} for <strong>{{pagepath}}</strong> <a class="hyperlink-underline text-danger" href="{{ url_for("edit", path=pagepath) }}">here</a>{%endif%}
-      {%- if temp.ownold and temp.ownnew %} and {%endif%}
-      {%- if temp.ownnew%} <strong>{{new_pagename}}</strong> <a class="hyperlink-underline text-danger" href="{{ url_for("edit", path=new_pagename) }}">here</a>{%endif%}.
+      {% if temp.ownold and temp.ownnew %}
+      {% trans trimmed old_url=url_for("edit", path=pagepath), new_url=url_for("edit", path=new_pagename) %}
+      You can review and edit or discard your drafts for <strong>{{ pagepath }}</strong> <a class="hyperlink-underline text-danger" href="{{ old_url }}">here</a> and <strong>{{ new_pagename }}</strong> <a class="hyperlink-underline text-danger" href="{{ new_url }}">here</a>.
+      {% endtrans %}
+      {% elif temp.ownold %}
+      {% trans trimmed url=url_for("edit", path=pagepath) %}
+      You can review and edit or discard your draft for <strong>{{ pagepath }}</strong> <a class="hyperlink-underline text-danger" href="{{ url }}">here</a>.
+      {% endtrans %}
+      {% else %}
+      {% trans trimmed url=url_for("edit", path=new_pagename) %}
+      You can review and edit or discard your draft for <strong>{{ new_pagename }}</strong> <a class="hyperlink-underline text-danger" href="{{ url }}">here</a>.
+      {% endtrans %}
+      {% endif %}
       {% endif %}
       {% if temp.others %}
-      You can not review, edit or discard the drafts of other users. They will persist for the current pagename.
+      {{ _("You can not review, edit or discard the drafts of other users. They will persist for the current pagename.") }}
       {% endif %}
     </div>
 {% endif %}
 <form action="{{ url_for("rename", path=pagepath) }}" method="POST" class="form-inline">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="form-group">
-    <label for="new_pagename" class="required w-150">New name</label>
+    <label for="new_pagename" class="required w-150">{{ _("New name") }}</label>
     <input type="text" class="form-control" name="new_pagename" id="new_pagename" value="{{new_pagename if new_pagename else pagename}}" placeholder="{{pagename}}" autofocus="" onfocus="this.setSelectionRange(this.value.length,this.value.length);">
   </div>
   <div class="form-group">
-    <label for="update_backlinks" class="w-150">Update backlinks</label>
+    <label for="update_backlinks" class="w-150">{{ _("Update backlinks") }}</label>
     <div class="form-check">
       <input
         type="checkbox"
@@ -75,18 +82,18 @@
         id="update_backlinks"
         value="1">
       <label class="form-check-label" for="update_backlinks">
-        Update links pointing to this page
+        {{ _("Update links pointing to this page") }}
       </label>
     </div>
   </div>
   <div class="form-group">
-    <label for="message" class="w-150">Commit message</label>
+    <label for="message" class="w-150">{{ _("Commit message") }}</label>
     <input type="text" class="form-control" name="message" id="message" placeholder="Renamed {{pagename}} to {{new_pagename if new_pagename else "..."}}" value="{{ message if message }}">
   </div>
   {% if pagename_prefixes and pagename_prefixes|length > 0  %}
   <div class="form-group mb-5">
     <div class="w-100 mr-10">
-    Move page in subdirectory:
+    {{ _("Move page in subdirectory:") }}
     </div>
     <div style="position: relative; -ms-flex: 1 1 0%; flex: 1 1 0%; min-width: 0;">
     {% for prefix in pagename_prefixes %}
@@ -97,10 +104,10 @@
   {% endif %}
   <div class="form-group">
     <div class="form-text text-wrap">
-        Hint: Avoid abbreviations. Try to limit your name to three simple words or fewer.
+        {{ _("Hint: Avoid abbreviations. Try to limit your name to three simple words or fewer.") }}
     </div>
   </div>
-  <input class="btn btn-primary" type="submit" value="Rename">
-  <a href="{{ url_for("view", path=pagepath) }}" class="btn" role="button">Cancel</a>
+  <input class="btn btn-primary" type="submit" value="{{ _("Rename") }}">
+  <a href="{{ url_for("view", path=pagepath) }}" class="btn" role="button">{{ _("Cancel") }}</a>
 </form>
 {% endblock %}

@@ -13,6 +13,7 @@ from flask import (
 )
 
 import textwrap
+from flask_babel import gettext as _, ngettext
 from typing import List, Tuple, Iterable
 
 from otterwiki.auth import has_permission, current_user
@@ -25,6 +26,7 @@ from otterwiki.helper import (
     get_pagename,
     get_pagename_for_title,
     upsert_pagecrumbs,
+    filter_page_list,
 )
 from otterwiki.server import app, storage
 from otterwiki.sidebar import SidebarMenu, SidebarPageIndex
@@ -82,14 +84,15 @@ class PageIndex:
 
         t_start = timer()
         # get all files in the storage
-        files, _ = storage.list(p=self.path)
+        files, _dirs = storage.list(p=self.path)
         app.logger.debug(
             f"PageIndex({self.path}) storage.list() files took {timer() - t_start:.3f} seconds."
         )
         # restart timer
         t_start = timer()
-        # filter .md files
+        # filter .md files, then let the plugins filter the pages
         md_files = [f for f in files if f.endswith(".md")]
+        md_files = filter_page_list(md_files, "pageindex", base=self.path)
         for fn in md_files:
             f = os.path.join(self.path or "", fn)
             page_depth = len(split_path(f)) - 1
@@ -197,12 +200,12 @@ class PageIndex:
         """
         pages = [p[0] for p in self.pages()]
 
-        if len(self.toc) == 1:
-            description = f"{len(pages)} entry: "
-        else:
-            description = f"{len(pages)} entries: "
-
-        description += ", ".join([x.strip("/") for x in pages])
+        description = ngettext(
+            "%(num)s entry: %(pages)s",
+            "%(num)s entries: %(pages)s",
+            len(pages),
+            pages=", ".join([x.strip("/") for x in pages]),
+        )
 
         description = textwrap.shorten(
             description,
@@ -221,9 +224,9 @@ class PageIndex:
 
         # build the title and description used in the meta og tags ...
         if self.path is None or self.path.rstrip("/") == "":
-            title = "Page Index"
+            title = _("Page Index")
         else:
-            title = f"Page Index - {self.pagename}"
+            title = _("Page Index - %(pagename)s", pagename=self.pagename)
 
         upsert_pagecrumbs(get_pagename(self.path or "/", full=True))
         return render_template(

@@ -2,11 +2,11 @@
 <input type="hidden" name="task" value="emptypages">
 {% if stats and pages %}
 <div class="mb-20">
-<p> To keep your wiki clean, please review the following {{pages|length}} potentially empty page{{pages|length|pluralize("s")}}.
-{{stats.pages}} page{{stats.pages|pluralize("s")}} were checked in {{stats.duration}}.
+<p> {{ ngettext("To keep your wiki clean, please review the following %(num)s potentially empty page.", "To keep your wiki clean, please review the following %(num)s potentially empty pages.", pages|length) }}
+{{ ngettext("%(num)s page were checked in %(duration)s.", "%(num)s pages were checked in %(duration)s.", stats.pages, duration=stats.duration) }}
 </p>
-<input class="btn btn-primary" type="submit" name="refresh" value="Refresh"/>
-<input class="btn btn-danger" type="submit" name="clean" value="Delete selected pages"/>
+<input class="btn btn-primary" type="submit" name="refresh" value="{{ _("Refresh") }}"/>
+<input class="btn btn-danger" type="submit" name="clean" value="{{ _("Delete selected pages") }}"/>
 <span id="emptypages_indicator" class="htmx-indicator"><i class="fas fa-spinner fa-spin"></i></span>
 </div>
 <div class="table-responsive table-striped">
@@ -19,8 +19,8 @@
                   <label for="checkbox-b-all" onclick="otterwiki.toggle_invert_by_name('delete_empty_page');"></label>
                 </div>
             </td>
-            <td style="width:1px;"><strong>Page</strong></td>
-            <td><strong>Analysis</strong></td>
+            <td style="width:1px;"><strong>{{ _("Page") }}</strong></td>
+            <td><strong>{{ _("Analysis") }}</strong></td>
             <td style="width:1px;text-align:right;">&nbsp;</td>
         </tr>
     </thead>
@@ -50,12 +50,12 @@
 </div>
 {% else %}
 {% if stats %}
-<p>No empty pages found. Checked {{stats.pages}} page{{stats.pages|pluralize("s")}} in {{stats.duration}}.</p>
+<p>{{ ngettext("No empty pages found. Checked %(num)s page in %(duration)s.", "No empty pages found. Checked %(num)s pages in %(duration)s.", stats.pages, duration=stats.duration) }}</p>
 {% else %}
-<p>To find potentially empty pages, start an analysis.</p>
+<p>{{ _("To find potentially empty pages, start an analysis.") }}</p>
 {% endif %}
 <div>
-    <input class="btn btn-primary" type="submit" name="refresh" value="Analyse pages"/>
+    <input class="btn btn-primary" type="submit" name="refresh" value="{{ _("Analyse pages") }}"/>
     <span id="emptypages_indicator" class="htmx-indicator"><i class="fas fa-spinner fa-spin"></i></span>
 </div>
 {% endif %}

@@ -4,12 +4,12 @@
                         <span class="dropdown-icon">
                             <i class="far fa-edit"></i>
                         </span>
-                        Rename
+                        {{ _("Rename") }}
                     </a>
                     <a href="{{ url_for('delete', path=pagepath) }}" class="dropdown-item-with-icon">
                         <span class="dropdown-icon">
                             <i class="far fa-trash-alt"></i>
                         </span>
-                        Delete
+                        {{ _("Delete") }}
                     </a>
 {%- endif %}

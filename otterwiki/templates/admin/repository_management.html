@@ -6,14 +6,14 @@
 <div class="mw-full">
     <form action="{{ url_for("admin_repository_management") }}" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-<h2 class="card-title">Repository Management</h2>
+<h2 class="card-title">{{ _("Repository Management") }}</h2>
 {##}
     <div class="form-group">
       <div class="custom-checkbox">
         <input {%if config.GIT_WEB_SERVER %}checked=checked{% endif %} type="checkbox" id="git_web_server" name="git_web_server" value="True">
-        <label for="git_web_server">Enable Git Web server <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
+        <label for="git_web_server">{% trans %}Enable Git Web server <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.{% endtrans %}</label>
         <div class="mt-5">
-            Enable this to allow users with the permission to READ to clone and pull the wiki content via git and users with UPLOAD/Attachment management permissions to push content. When enabled the URL <code>{{url_for("dotgit", _external=True)}}</code> will be displayed in the users settings.
+            {% trans url=url_for("dotgit", _external=True) %}Enable this to allow users with the permission to READ to clone and pull the wiki content via git and users with UPLOAD/Attachment management permissions to push content. When enabled the URL <code>{{url}}</code> will be displayed in the users settings.{% endtrans %}
         </div>
       </div>
     </div>
@@ -21,36 +21,36 @@
     <div class="form-group">
       <div class="custom-checkbox">
         <input {%if config.GIT_REMOTE_PUSH_ENABLED %}checked=checked{% endif %} type="checkbox" id="git_remote_push_enabled" name="git_remote_push_enabled" value="True">
-        <label for="git_remote_push_enabled">Enable pushing to SSH remote <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
+        <label for="git_remote_push_enabled">{% trans %}Enable pushing to SSH remote <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.{% endtrans %}</label>
         <div class="mt-5">
-            Enable this to automatically push all changes to a remote git repository via SSH on every wiki content change.
+            {{ _("Enable this to automatically push all changes to a remote git repository via SSH on every wiki content change.") }}
         </div>
       </div>
 
       {# push configuration parameters #}
       <div class="ml-20" id="git_remote_push_params" style="display: none;">
           <div class="form-group mt-10">
-              <label for="git_remote_push_url" class="required">SSH Remote URL</label>
+              <label for="git_remote_push_url" class="required">{{ _("SSH Remote URL") }}</label>
               <input name="git_remote_push_url" type="text" placeholder="git@github.com:username/repo.git" class="form-control" id="git_remote_push_url" value="{{ config.GIT_REMOTE_PUSH_URL or "" }}">
               <div class="form-text">
-                  The SSH remote URL to push to. Supported formats:
+                  {{ _("The SSH remote URL to push to. Supported formats:") }}
                   <ul>
                       <li><code>ssh://[user@]host.xz[:port]/path/to/repo.git</code></li>
                       <li><code>git://host.xz[:port]/path/to/repo.git</code></li>
-                      <li><code>git@github.com:username/repo.git</code> (for GitHub)</li>
+                      <li>{% trans %}<code>git@github.com:username/repo.git</code> (for GitHub){% endtrans %}</li>
                   </ul>
               </div>
           </div>
 
           <div class="form-group">
-              <label for="git_remote_push_private_key">SSH Private Key (Optional)</label>
+              <label for="git_remote_push_private_key">{{ _("SSH Private Key (Optional)") }}</label>
               <textarea name="git_remote_push_private_key" class="form-control" id="git_remote_push_private_key" rows="10" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----
 ...
 -----END OPENSSH PRIVATE KEY-----">{% if config.GIT_REMOTE_PUSH_PRIVATE_KEY %}**********{% endif %}</textarea>
               <div class="form-text">
-                  Optional SSH private key for authentication. Leave empty if the server doesn't require authentication or it's being handled externally.
-                  The key will be stored internally and never displayed after saving.
-                  However, for security purposes <strong>it's highly recommended to create a key specifically to access the defined remote</strong> and nothing else.
+                  {{ _("Optional SSH private key for authentication. Leave empty if the server doesn't require authentication or it's being handled externally.") }}
+                  {{ _("The key will be stored internally and never displayed after saving.") }}
+                  {% trans %}However, for security purposes <strong>it's highly recommended to create a key specifically to access the defined remote</strong> and nothing else.{% endtrans %}
               </div>
           </div>
       </div>
@@ -59,36 +59,36 @@
     <div class="form-group">
       <div class="custom-checkbox">
         <input {%if config.GIT_REMOTE_PULL_ENABLED %}checked=checked{% endif %} type="checkbox" id="git_remote_pull_enabled" name="git_remote_pull_enabled" value="True">
-        <label for="git_remote_pull_enabled">Enable pulling from SSH remote <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.</label>
+        <label for="git_remote_pull_enabled">{% trans %}Enable pulling from SSH remote <span class="text-secondary-dm bg-secondary-lm">(Experimental Feature)</span>.{% endtrans %}</label>
         <div class="mt-5">
-            Enable this to automatically pull changes from a remote git repository via SSH by triggering a webhook URL.
+            {{ _("Enable this to automatically pull changes from a remote git repository via SSH by triggering a webhook URL.") }}
         </div>
       </div>
 
       {# pull configuration parameters #}
       <div class="ml-20" id="git_remote_pull_params" style="display: none;">
           <div class="form-group mt-10">
-              <label for="git_remote_pull_url" class="required">SSH Remote URL</label>
+              <label for="git_remote_pull_url" class="required">{{ _("SSH Remote URL") }}</label>
               <input name="git_remote_pull_url" type="text" placeholder="git@github.com:username/repo.git" class="form-control" id="git_remote_pull_url" value="{{ config.GIT_REMOTE_PULL_URL or "" }}">
               <div class="form-text">
-                  The SSH remote URL to pull from. Supported formats:
+                  {{ _("The SSH remote URL to pull from. Supported formats:") }}
                   <ul>
                       <li><code>ssh://[user@]host.xz[:port]/path/to/repo.git</code></li>
                       <li><code>git://host.xz[:port]/path/to/repo.git</code></li>
-                      <li><code>git@github.com:username/repo.git</code> (for GitHub)</li>
+                      <li>{% trans %}<code>git@github.com:username/repo.git</code> (for GitHub){% endtrans %}</li>
                   </ul>
               </div>
           </div>
 
           <div class="form-group">
-              <label for="git_remote_pull_private_key">SSH Private Key (Optional)</label>
+              <label for="git_remote_pull_private_key">{{ _("SSH Private Key (Optional)") }}</label>
               <textarea name="git_remote_pull_private_key" class="form-control" id="git_remote_pull_private_key" rows="10" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----
 ...
 -----END OPENSSH PRIVATE KEY-----">{% if config.GIT_REMOTE_PULL_PRIVATE_KEY %}**********{% endif %}</textarea>
               <div class="form-text">
-                  Optional SSH private key for authentication. Leave empty if the server doesn't require authentication or it's being handled externally.
-                  The key will be stored internally and never displayed after saving.
-                  However, for security purposes <strong>it's highly recommended to create a key specifically to access the defined remote</strong> and nothing else.
+                  {{ _("Optional SSH private key for authentication. Leave empty if the server doesn't require authentication or it's being handled externally.") }}
+                  {{ _("The key will be stored internally and never displayed after saving.") }}
+                  {% trans %}However, for security purposes <strong>it's highly recommended to create a key specifically to access the defined remote</strong> and nothing else.{% endtrans %}
               </div>
           </div>
 
@@ -96,37 +96,37 @@
           <div class="form-group">
               <div class="alert alert-secondary" role="alert">
                   <i class="fas fa-exclamation-triangle"></i>
-                  Your webhook URL uses a legacy hash that can be derived from the remote URL.
-                  Check the box below and save preferences to generate a secure webhook URL.
-                  <strong>Note:</strong> the webhook URL will change and any existing webhook configurations will need to be updated.
+                  {{ _("Your webhook URL uses a legacy hash that can be derived from the remote URL.") }}
+                  {{ _("Check the box below and save preferences to generate a secure webhook URL.") }}
+                  {% trans %}<strong>Note:</strong> the webhook URL will change and any existing webhook configurations will need to be updated.{% endtrans %}
               </div>
               <div class="custom-checkbox">
                   <input type="checkbox" id="git_remote_pull_regenerate_webhook" name="git_remote_pull_regenerate_webhook" value="True">
-                  <label for="git_remote_pull_regenerate_webhook">Regenerate secure webhook URL</label>
+                  <label for="git_remote_pull_regenerate_webhook">{{ _("Regenerate secure webhook URL") }}</label>
               </div>
           </div>
           {% endif %}
 
           <div class="form-group" id="webhook_url_group">
-              <label for="git_remote_pull_webhook_url">Pull webhook URL</label>
+              <label for="git_remote_pull_webhook_url">{{ _("Pull webhook URL") }}</label>
               <div class="input-group">
                   <input type="text" class="form-control" id="git_remote_pull_webhook_url" readonly value="{{ webhook_url }}">
                   <div class="input-group-append">
-                      <button class="btn btn-outline-secondary" type="button" id="copy_webhook_url" title="Copy webhook URL">
+                      <button class="btn btn-outline-secondary" type="button" id="copy_webhook_url" title="{{ _("Copy webhook URL") }}">
                           <i class="fas fa-copy"></i>
                       </button>
                   </div>
               </div>
               <div class="form-text">
-                  Use this URL to trigger pulls from external services (e.g., GitHub webhooks).
+                  {{ _("Use this URL to trigger pulls from external services (e.g., GitHub webhooks).") }}
               </div>
           </div>
 
           <div class="form-group" id="webhook_url_save_note" style="display: none;">
-              <label>Pull webhook URL</label>
+              <label>{{ _("Pull webhook URL") }}</label>
               <div class="alert alert-secondary" role="alert">
                   <i class="fas fa-info-circle"></i>
-                  The remote URL has been changed. <strong>Save preferences</strong> to generate the new webhook URL.
+                  {% trans %}The remote URL has been changed. <strong>Save preferences</strong> to generate the new webhook URL.{% endtrans %}
               </div>
           </div>
       </div>
@@ -134,19 +134,19 @@
 {##}
   <div class="mt-10 d-flex justify-content-between align-items-center">
     <div>
-      <input class="btn btn-primary" name="update_preferences" type="submit" value="Save Preferences">
+      <input class="btn btn-primary" name="update_preferences" type="submit" value="{{ _("Save Preferences") }}">
     </div>
 
     {# action buttons #}
     {% if config.GIT_REMOTE_PUSH_ENABLED or config.GIT_REMOTE_PULL_ENABLED %}
     <div>
       {% if config.GIT_REMOTE_PUSH_ENABLED %}
-      <input class="btn mr-5" name="git_push" type="submit" value="Push">
-      <input class="btn mr-5" name="git_force_push" type="submit" value="Force Push" onclick="return confirm('Are you sure you want to do a force push? This will overwrite the remote tree and this action is usually irreversible.')">
+      <input class="btn mr-5" name="git_push" type="submit" value="{{ _("Push") }}">
+      <input class="btn mr-5" name="git_force_push" type="submit" value="{{ _("Force Push") }}" onclick='return confirm({{ _("Are you sure you want to do a force push? This will overwrite the remote tree and this action is usually irreversible.")|tojson }})'>
       {% endif %}
       {% if config.GIT_REMOTE_PULL_ENABLED %}
-      <input class="btn" name="git_pull" type="submit" value="Pull">
-      <input class="btn" name="git_reset_remote" type="submit" value="Reset to Remote" onclick="return confirm('Are you sure you want to reset to the remote? This will overwrite your local changes and this action is usually irreversible.')">
+      <input class="btn" name="git_pull" type="submit" value="{{ _("Pull") }}">
+      <input class="btn" name="git_reset_remote" type="submit" value="{{ _("Reset to Remote") }}" onclick='return confirm({{ _("Are you sure you want to reset to the remote? This will overwrite your local changes and this action is usually irreversible.")|tojson }})'>
       {% endif %}
     </div>
     {% endif %}
@@ -158,7 +158,8 @@
 <div class="mt-20" id="git_action_results">
   <div class="card">
     <div class="card-body">
-      <h5 class="card-title">{{ git_action_result.action|title }} Results</h5>
+      {% set git_action_titles = {"push": _("Push Results"), "force push": _("Force Push Results"), "pull": _("Pull Results"), "reset to remote": _("Reset To Remote Results")} %}
+      <h5 class="card-title">{{ git_action_titles.get(git_action_result.action) or git_action_result.action|title + " Results" }}</h5>
       <pre class="{% if git_action_result.success %}bg-success{% else %}bg-danger{% endif %} text-light p-10" style="white-space: pre-wrap; font-family: monospace;">{{ git_action_result.output }}</pre>
     </div>
   </div>

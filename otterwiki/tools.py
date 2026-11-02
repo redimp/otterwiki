@@ -12,6 +12,8 @@ from flask import (
 
 from timeit import default_timer as timer
 
+from flask_babel import gettext as _, ngettext
+
 from otterwiki.gitstorage import StorageError, StorageNotFound
 from otterwiki.server import app, db, storage
 from otterwiki.models import Drafts
@@ -26,7 +28,6 @@ from otterwiki.helper import (
 
 from otterwiki.util import (
     empty,
-    plural,
 )
 
 
@@ -61,7 +62,7 @@ def housekeeping_form():
             drafts.append(d)
     return render_template(
         "tools/housekeeping.html",
-        title="Housekeeping",
+        title=_("Housekeeping"),
         drafts=drafts,
     )
 
@@ -80,7 +81,13 @@ def handle_housekeeping_drafts(form):
                 db.session.delete(draft)
                 deleted += 1
         if deleted > 0:
-            toast(f"Deleted {deleted} draft(s).")
+            toast(
+                ngettext(
+                    "Deleted %(num)s draft.",
+                    "Deleted %(num)s drafts.",
+                    deleted,
+                )
+            )
             db.session.commit()
     return redirect(url_for("housekeeping"))
 
@@ -133,17 +140,17 @@ def handle_housekeeping_emptypages(form):
         except StorageError:
             continue
         if len(content) < 1:
-            pages[pagename] = "Page is empty"
+            pages[pagename] = _("Page is empty")
             continue
         # check for header only
         if re.match(r"^# ([^ \r\n]+)$", content):
             if pagename == "Imageresize":
                 print(f"{content=}")
-            pages[pagename] = "Header only"
+            pages[pagename] = _("Header only")
             continue
         lines = content.count("\n") + 1
         if lines < 3:
-            pages[pagename] = "Less than three lines"
+            pages[pagename] = _("Less than three lines")
             continue
     duration = timer() - t_start
     app.logger.debug(
@@ -372,16 +379,40 @@ def handle_housekeeping_gitgc(form):
     duplicates = int(before["prune-packable"])
     remaining = int(after["count"])
 
-    summary = (
-        f"Packed {plural(packed, 'loose object')} ({before['size']})"
-        if packed
-        else "No loose objects to pack"
+    # one msgid per sentence: the counts are rendered with ngettext first
+    objects = ngettext("%(num)s loose object", "%(num)s loose objects", packed)
+    removed = ngettext("%(num)s duplicate", "%(num)s duplicates", duplicates)
+    if packed and duplicates:
+        summary = _(
+            "Packed %(objects)s (%(size)s), removed %(duplicates)s.",
+            objects=objects,
+            size=before['size'],
+            duplicates=removed,
+        )
+    elif packed:
+        summary = _(
+            "Packed %(objects)s (%(size)s).",
+            objects=objects,
+            size=before['size'],
+        )
+    elif duplicates:
+        summary = _(
+            "No loose objects to pack, removed %(duplicates)s.",
+            duplicates=removed,
+        )
+    else:
+        summary = _("No loose objects to pack.")
+    summary += " " + _(
+        "Pack size %(before)s → %(after)s.",
+        before=before['size-pack'],
+        after=after['size-pack'],
     )
-    if duplicates:
-        summary += f", removed {plural(duplicates, 'duplicate')}"
-    summary += f". Pack size {before['size-pack']} → {after['size-pack']}."
     if remaining:
-        summary += f" {plural(remaining, 'loose object')} kept."
+        summary += " " + ngettext(
+            "%(num)s loose object kept.",
+            "%(num)s loose objects kept.",
+            remaining,
+        )
 
     return render_template(
         "tools/housekeeping_gitgc.html",
@@ -400,5 +431,5 @@ def handle_housekeeping(form):
     if form.get("task", None) == "gitgc":
         return handle_housekeeping_gitgc(form)
     # unkown task: display the form
-    toast("Unkown task", "error")
+    toast(_("Unknown task"), "error")
     return redirect(url_for("housekeeping"))

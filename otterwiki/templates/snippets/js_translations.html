@@ -1,0 +1,12 @@
+{#- vim: set et ts=8 sts=4 sw=4 ai: -#}
+{#- translations of the strings shown by the static javascript files, which
+    can not call gettext: the english text is the key, see otterwiki_t() -#}
+<script type="text/javascript">
+    window.otterwiki_i18n = {{ {
+        "Show the full line": _("Show the full line"),
+        "Shorten the line": _("Shorten the line"),
+    }|tojson }};
+    window.otterwiki_t = function (s) {
+        return (window.otterwiki_i18n && window.otterwiki_i18n[s]) || s;
+    };
+</script>

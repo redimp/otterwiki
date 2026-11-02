@@ -5,62 +5,62 @@
 <div class="mw-full">
 <form action="{{ url_for("admin_mail_preferences") }}" method="POST" autocomplete="off">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-<h3 class="card-title">Mail Preferences</h3>
+<h3 class="card-title">{{ _("Mail Preferences") }}</h3>
 {##}
   <div class="form-group">
-    <label for="mail_sender" class="required">Mail Sender</label>
+    <label for="mail_sender" class="required">{{ _("Mail Sender") }}</label>
     <input name="mail_sender" type="text" class="form-control" id="mail_sender" value="{{ config.MAIL_DEFAULT_SENDER}}">
     {# <div class="form-text"> ...  </div> #}
   </div>
 {##}
   <div class="form-group">
-    <label for="mail_server" class="required">Mail Server</label>
+    <label for="mail_server" class="required">{{ _("Mail Server") }}</label>
     <input name="mail_server" type="text" class="form-control" id="mail_server" value="{{ config.MAIL_SERVER}}">
     {# <div class="form-text"> ...  </div> #}
   </div>
 {##}
   <div class="form-group">
-    <label for="mail_port">Mail Server Port</label>
+    <label for="mail_port">{{ _("Mail Server Port") }}</label>
     <input name="mail_port" type="text" class="form-control" placeholder="25" id="mail_port" value="{{ config.MAIL_PORT }}">
     {# <div class="form-text"> ...  </div> #}
   </div>
 {##}
   <div class="form-group">
-    <label for="mail_username">Mail Username</label>
+    <label for="mail_username">{{ _("Mail Username") }}</label>
     <input name="mail_username" type="text" class="form-control" autocomplete="off" id="mail_username" value="{{ config.MAIL_USERNAME or "" }}">
     {# <div class="form-text"> ...  </div> #}
   </div>
 {##}
   <div class="form-group">
-    <label for="mail_password">Mail Password</label>
+    <label for="mail_password">{{ _("Mail Password") }}</label>
     <input name="mail_password" type="password" class="form-control" autocomplete="off" id="mail_password" placeholder="{{ config.MAIL_PASSWORD| default("", true) | length * "·" }}" value="">
     {# <div class="form-text"> ...  </div> #}
   </div>
 {##}
   <div class="form-group">
-      <label for="mail_security" class="required">Mail Security</label>
+      <label for="mail_security" class="required">{{ _("Mail Security") }}</label>
       <select class="form-control" id="mail_security" name="mail_security">
-        <option value="">Not encrypted</option>
+        <option value="">{{ _("Not encrypted") }}</option>
         <option {% if config["MAIL_USE_TLS"] -%} selected="selected" {%- endif %} value="tls">TLS</option>
         <option {% if config["MAIL_USE_SSL"] -%} selected="selected" {%- endif %} value="ssl">SSL</option>
     </select>
   </div>
 {##}
   <div class="mt-10">
-    <input class="btn btn-primary" name="update_mail_preferences" type="submit" value="Save Mail Preferences">
+    <input class="btn btn-primary" name="update_mail_preferences" type="submit" value="{{ _("Save Mail Preferences") }}">
   </div>
 {##}
 <hr class="my-15"/>
-<h3 class="card-title">Test Mail Preferences</h3>
+<h3 class="card-title">{{ _("Test Mail Preferences") }}</h3>
 {##}
   <div class="form-group">
-    <label for="mail_recipient" class="required">Test Recipient</label>
+    <label for="mail_recipient" class="required">{{ _("Test Recipient") }}</label>
     <input name="mail_recipient" type="text" class="form-control" id="mail_recipient" placeholder="{{ current_user.email }}">
     {# <div class="form-text"> ...  </div> #}
   </div>
 {##}
   <div class="mt-10">
-    <input class="btn" name="test_mail_preferences" type="submit" value="Send Test Mail">
+    <input class="btn" name="test_mail_preferences" type="submit" value="{{ _("Send Test Mail") }}">
   </div>
 </form>
 </div>
