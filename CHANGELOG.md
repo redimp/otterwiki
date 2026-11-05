@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.26.3](https://github.com/redimp/otterwiki/releases/tag/v2.26.3) - 2026-11-05
+
+<small>[Compare with v2.26.2](https://github.com/redimp/otterwiki/compare/v2.26.2...v2.26.3)</small>
+
+### Security Fixes
+
+- Validate YouTube video id in Video embedding
+  ([0f5de69](https://github.com/redimp/otterwiki/commit/0f5de69)).
+  Thanks to @nrbxyz for reaching out and reporting this issue.
+
+### Bug Fixes
+
+- Do not crash on line separators in embedding option keys
+  ([f5d1059](https://github.com/redimp/otterwiki/commit/f5d1059)).
+- Block html entity bypass of the url filter in embeddings
+  ([3986670](https://github.com/redimp/otterwiki/commit/3986670)).
+- Apply the dangerous style check to embedding styles
+  ([3af9836](https://github.com/redimp/otterwiki/commit/3af9836)).
+- Limit the number of includes per render
+  ([ac1230d](https://github.com/redimp/otterwiki/commit/ac1230d)).
+- Do not show the repository path in datatable errors
+  ([c9e7978](https://github.com/redimp/otterwiki/commit/c9e7978)).
+- Skip attachments that resolve outside the repository
+  ([d48236b](https://github.com/redimp/otterwiki/commit/d48236b)).
+
 ## [v2.26.2](https://github.com/redimp/otterwiki/releases/tag/v2.26.2) - 2026-11-01
 
 <small>[Compare with v2.26.1](https://github.com/redimp/otterwiki/compare/v2.26.1...v2.26.2)</small>
