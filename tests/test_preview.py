@@ -61,7 +61,7 @@ Test
 """
 
 
-def test_preview(create_app, req_ctx):
+def test_preview(create_app, req_ctx, anonymous_write_access):
     from otterwiki.wiki import Page
 
     p = Page("test")
@@ -69,7 +69,7 @@ def test_preview(create_app, req_ctx):
     assert render.htmlcursor in data['preview_content']
 
 
-def test_preview_all(create_app, req_ctx):
+def test_preview_all(create_app, req_ctx, anonymous_write_access):
     whitespace = re.compile(r"\s+")
     markdown_arr = markdown_example.splitlines()
     html_example, _, _ = render.markdown(markdown_example)
@@ -111,7 +111,7 @@ def test_preview_all(create_app, req_ctx):
             assert str(element) in preview_html
 
 
-def test_preview_list_bug(create_app, req_ctx):
+def test_preview_list_bug(create_app, req_ctx, anonymous_write_access):
     from otterwiki.wiki import Page
 
     p = Page("test")
@@ -125,7 +125,7 @@ def test_preview_list_bug(create_app, req_ctx):
     assert "<li>drei" in data['preview_content']
 
 
-def test_preview_italic_bug(create_app, req_ctx):
+def test_preview_italic_bug(create_app, req_ctx, anonymous_write_access):
     from otterwiki.wiki import Page
 
     p = Page("test")
@@ -140,7 +140,9 @@ _A paragraph_"""
     assert "A paragraph" == text
 
 
-def test_preview_cursor_in_codeblock(create_app, req_ctx):
+def test_preview_cursor_in_codeblock(
+    create_app, req_ctx, anonymous_write_access
+):
     from otterwiki.wiki import Page
 
     p = Page("test")
@@ -160,7 +162,7 @@ def test_preview_cursor_in_codeblock(create_app, req_ctx):
     assert "code in block  " == text
 
 
-def test_preview_cursor_in_abbr(create_app, req_ctx):
+def test_preview_cursor_in_abbr(create_app, req_ctx, anonymous_write_access):
     from otterwiki.wiki import Page
 
     p = Page("test")
