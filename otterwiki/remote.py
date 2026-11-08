@@ -48,6 +48,13 @@ class GitHttpServer:
             user = check_credentials(auth.username, auth.password)
             if not user or not has_permission(permission, user):
                 abort(403)
+            # enforce the email confirmation like the web login does
+            if (
+                app.config["EMAIL_NEEDS_CONFIRMATION"]
+                and not user.is_admin
+                and not user.email_confirmed
+            ):
+                abort(403)
 
     def advertise_refs(self, service: str):
         self.check_if_enabled()

@@ -185,6 +185,7 @@ def test_git_pack_auth_user(app_with_user):
         allow_upload=False,  # pyright: ignore
         is_approved=True,  # pyright: ignore
         is_admin=False,  # pyright: ignore
+        email_confirmed=True,  # pyright: ignore
     )
     db.session.add(user)
     db.session.commit()
@@ -276,3 +277,75 @@ def test_git_push_symlink_outside_repository(
     )
     assert rv.status_code == 403
     assert secret.read() == "secret\n"
+
+
+def test_git_auth_email_not_confirmed(app_with_user):
+    from otterwiki.auth import SimpleAuth, generate_password_hash, db
+    from datetime import datetime
+
+    app_with_user.config["GIT_WEB_SERVER"] = True
+    app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = True
+    app_with_user.config["READ_ACCESS"] = "REGISTERED"
+    app_with_user.config["WRITE_ACCESS"] = "REGISTERED"
+    app_with_user.config["ATTACHMENT_ACCESS"] = "REGISTERED"
+    # create a user with an unconfirmed email address
+    user = SimpleAuth.User(
+        name="Unconfirmed User",  # pyright: ignore
+        email="unconfirmed@user.org",  # pyright: ignore
+        password_hash=generate_password_hash(
+            "password1234", method="scrypt"
+        ),  # pyright: ignore
+        first_seen=datetime.now(),  # pyright: ignore
+        last_seen=datetime.now(),  # pyright: ignore
+        is_approved=True,  # pyright: ignore
+        is_admin=False,  # pyright: ignore
+        email_confirmed=False,  # pyright: ignore
+    )
+    db.session.add(user)
+    db.session.commit()
+
+    test_client = app_with_user.test_client()
+    user_credentials = b64encode(b"unconfirmed@user.org:password1234").decode(
+        'utf-8'
+    )
+
+    for service in ["git-upload-pack", "git-receive-pack"]:
+        rv = test_client.get(
+            f"/.git/info/refs?service={service}",
+            headers={"Authorization": f"Basic {user_credentials}"},
+        )
+        assert rv.status_code == 403
+    rv = test_client.post(
+        "/.git/git-receive-pack",
+        headers={"Authorization": f"Basic {user_credentials}"},
+    )
+    assert rv.status_code == 403
+
+    # confirm the email address
+    user.email_confirmed = True
+    db.session.add(user)
+    db.session.commit()
+
+    for service in ["git-upload-pack", "git-receive-pack"]:
+        rv = test_client.get(
+            f"/.git/info/refs?service={service}",
+            headers={"Authorization": f"Basic {user_credentials}"},
+        )
+        assert rv.status_code == 200
+
+    # without the confirmation requirement the user has access
+    user.email_confirmed = False
+    db.session.add(user)
+    db.session.commit()
+    app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = False
+    rv = test_client.get(
+        "/.git/info/refs?service=git-upload-pack",
+        headers={"Authorization": f"Basic {user_credentials}"},
+    )
+    assert rv.status_code == 200
+
+    app_with_user.config["GIT_WEB_SERVER"] = False
+    app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = True
+    app_with_user.config["READ_ACCESS"] = "ANONYMOUS"
+    app_with_user.config["WRITE_ACCESS"] = "ANONYMOUS"
+    app_with_user.config["ATTACHMENT_ACCESS"] = "ANONYMOUS"
