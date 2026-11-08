@@ -7,6 +7,7 @@ import base64
 import pathlib
 from io import BytesIO
 from flask import url_for
+from otterwiki.gitstorage import StorageError
 
 
 @pytest.fixture
@@ -418,3 +419,31 @@ def test_external_symlink_is_skipped(create_app, tmp_path, path):
     assert "outside-content-12345" not in html
     if path.endswith("/attachments"):
         assert "real.txt" in html
+
+
+@pytest.mark.parametrize("filename", ["pwned.txt", "config"])
+def test_upload_into_symlinked_git_directory(create_app, filename):
+    """A page attachment directory symlinked to .git, e.g. pushed via git,
+    must not allow an upload to write into .git."""
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "evilpage.md",
+        content="# Evilpage\n",
+        author=author,
+        message="add page",
+    )
+    gitdir = os.path.join(create_app.storage.path, ".git")
+    with open(os.path.join(gitdir, "config")) as f:
+        config = f.read()
+    os.symlink(".git", os.path.join(create_app.storage.path, "evilpage"))
+    client = create_app.test_client()
+    data = {"file": (BytesIO(b"pwned"), filename)}
+    with pytest.raises(StorageError):
+        client.post(
+            "/Evilpage/attachments",
+            content_type="multipart/form-data",
+            data=data,
+        )
+    assert not os.path.exists(os.path.join(gitdir, "pwned.txt"))
+    with open(os.path.join(gitdir, "config")) as f:
+        assert f.read() == config

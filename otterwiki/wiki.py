@@ -1476,6 +1476,9 @@ class Page:
                     upload.filename
                 )
             attachment = Attachment(self.pagepath, fn)
+            # reject a path resolving into .git, e.g. via a symlinked
+            # attachment directory pushed via git
+            storage._abspath(attachment.filepath)
             # make sure the directory exists
             os.makedirs(attachment.absdirectory, mode=0o775, exist_ok=True)
             upload.save(attachment.abspath)
