@@ -77,10 +77,17 @@ def _rewrite_inner(inner, old_key, new_pagepath, linktitle_style):
         return None
 
     # resolve the link target to its on-disk filename and compare.
-    if get_filename(page) != old_key:
+    old_dir = old_key[:-3] + "/"
+    target = get_filename(page)
+    if target == old_key:
+        new_page = new_pagepath
+    elif target.startswith(old_dir):
+        # a subpage moved along with its parent
+        new_page = new_pagepath.rstrip("/") + "/" + page[len(old_dir) :]
+    else:
         return None
 
-    new_link = ("/" if leading_slash else "") + new_pagepath
+    new_link = ("/" if leading_slash else "") + new_page
     if hsep:
         new_link += "#" + anchor
 
