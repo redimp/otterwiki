@@ -513,3 +513,21 @@ def test_repository_changed_hook_not_fired_when_rename_rolls_back(
     assert len(hook_recorder.repository_changed_calls) == changes_before
     assert len(hook_recorder.saved) == saved_before
     assert hook_recorder.renamed == []
+
+
+def test_rename_updates_wikilinks_to_subpages(test_client):
+    """Subpages move with their parent, so WikiLinks to them must follow."""
+    storage = test_client.application.storage
+    save_shortcut(test_client, "Section", "# Section\n", "created parent")
+    save_shortcut(test_client, "Section/Child", "# Child\n", "created child")
+    save_shortcut(
+        test_client,
+        "SubLinker",
+        "# SubLinker\n\n[[Section/Child]] and [[Child page|Section/Child]]\n",
+        "created linker",
+    )
+    rename_shortcut(test_client, "Section", "Moved")
+
+    content = storage.load("sublinker.md")
+    assert "[[Moved/Child]]" in content
+    assert "[[Child page|Moved/Child]]" in content
