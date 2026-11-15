@@ -10,11 +10,12 @@ from flask import Flask
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+from jinja2 import ChoiceLoader
 
 import otterwiki.gitstorage
 import otterwiki.util
 from otterwiki import __version__, fatal_error
-from otterwiki.plugins import plugin_manager
+from otterwiki.plugins import plugin_manager, PluginTemplateLoader
 from otterwiki.renderer import OtterwikiRenderer
 
 app = Flask(__name__)
@@ -310,6 +311,10 @@ for plugin, dist in plugininfo:
 # setup plugins
 plugin_manager.hook.setup(
     app=app, storage=storage, db=db  # pyright: ignore never unbound
+)
+# search the templates shipped with plugins after the core templates
+app.jinja_env.loader = ChoiceLoader(
+    [app.jinja_env.loader, PluginTemplateLoader()]  # pyright: ignore
 )
 
 
