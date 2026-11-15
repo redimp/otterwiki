@@ -527,8 +527,10 @@
                     if (filename.toLowerCase().endsWith(imageExtensions[i])) { isImage = true; break; }
                 }
                 var displayName = filename.replace(/^\.\//, '');
-                if (isImage) { return "![" + displayName + "](" + filename + ")"; }
-                else { return "[" + displayName + "](" + filename + ")"; }
+                // encode the link target, including parentheses which would break the markdown link
+                var url = "./" + encodeURIComponent(displayName).replace(/\(/g, '%28').replace(/\)/g, '%29');
+                if (isImage) { return "![" + displayName + "](" + url + ")"; }
+                else { return "[" + displayName + "](" + url + ")"; }
             },
             onFilenamePrompt: function(suggestedFilename, file) {
                 return prompt("Enter filename for the attachment:", suggestedFilename);
