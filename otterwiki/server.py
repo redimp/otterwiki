@@ -425,12 +425,35 @@ def plugin_sidebar_right_inject(page=None):
     return ''.join(result for result in results if result)
 
 
+def plugin_navbar_inject(page=None):
+    """Template function to inject HTML into the navbar via plugins."""
+    results = plugin_manager.hook.template_html_navbar_inject(page=page)
+    return ''.join(result for result in results if result)
+
+
+def plugin_navbar_dropdown_inject(page=None):
+    """Template function to inject HTML into the navbar dropdown via plugins."""
+    results = plugin_manager.hook.template_html_navbar_dropdown_inject(
+        page=page
+    )
+    return ''.join(result for result in results if result)
+
+
+def plugin_admin_menu_inject():
+    """Template function to inject HTML into the admin menu via plugins."""
+    results = plugin_manager.hook.template_html_admin_menu_inject()
+    return ''.join(result for result in results if result)
+
+
 app.jinja_env.globals.update(
     load_custom_html=load_custom_html,
     plugin_html_head_inject=plugin_html_head_inject,
     plugin_html_body_inject=plugin_html_body_inject,
     plugin_sidebar_left_inject=plugin_sidebar_left_inject,
     plugin_sidebar_right_inject=plugin_sidebar_right_inject,
+    plugin_navbar_inject=plugin_navbar_inject,
+    plugin_navbar_dropdown_inject=plugin_navbar_dropdown_inject,
+    plugin_admin_menu_inject=plugin_admin_menu_inject,
 )
 
 # initialize git via http

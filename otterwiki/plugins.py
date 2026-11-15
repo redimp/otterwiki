@@ -190,6 +190,46 @@ class OtterWikiPluginSpec:
         """
 
     @hookspec
+    def template_html_navbar_inject(self, page) -> str | None:
+        """
+        This hook allows plugins to inject HTML content into the navbar.
+        The content will be added after the search field and before the
+        dropdown menu button.
+
+        Args:
+            page: The current page path (optional, may be None)
+
+        Returns:
+            HTML string to inject into the navbar, or None
+        """
+
+    @hookspec
+    def template_html_navbar_dropdown_inject(self, page) -> str | None:
+        """
+        This hook allows plugins to inject HTML content into the dropdown
+        menu of the navbar. The content will be added at the top of the
+        dropdown menu.
+
+        Args:
+            page: The current page path (optional, may be None)
+
+        Returns:
+            HTML string to inject into the navbar dropdown menu, or None
+        """
+
+    @hookspec
+    def template_html_admin_menu_inject(self) -> str | None:
+        """
+        This hook allows plugins to inject HTML content into the admin
+        section of the settings sidebar, e.g. links to pages served via
+        the url_admin_request hook. The content will be appended to the
+        existing admin menu entries.
+
+        Returns:
+            HTML string to inject into the admin menu, or None
+        """
+
+    @hookspec
     def renderer_process_link(
         self, link_html, link_url, link_text, link_title, page
     ) -> str | None:
