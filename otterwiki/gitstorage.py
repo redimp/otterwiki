@@ -85,8 +85,15 @@ class GitStorage(object):
         writing arbitrary files the wiki process has access to. A path
         resolving into .git is always rejected, since writing e.g.
         .git/config allows code execution. Paths outside the repository
-        can be allowed via allow_external_symlinks.
+        can be allowed via allow_external_symlinks. A nested .git, e.g. an
+        attachment named .git, is rejected too, since git would treat its
+        directory as a separate repository.
         """
+        # lowercase, on a case-insensitive filesystem .GIT is .git
+        if ".git" in filename.lower().replace("\\", "/").split("/"):
+            raise StorageUnsafePath(
+                "{} contains a .git path component.".format(filename)
+            )
         abspath = os.path.join(self.path, filename)
         root = os.path.realpath(self.path)
         resolved = os.path.realpath(abspath)

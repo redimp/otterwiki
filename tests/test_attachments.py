@@ -447,3 +447,53 @@ def test_upload_into_symlinked_git_directory(create_app, filename):
     assert not os.path.exists(os.path.join(gitdir, "pwned.txt"))
     with open(os.path.join(gitdir, "config")) as f:
         assert f.read() == config
+
+
+@pytest.mark.parametrize("filename", [".git", ".GIT"])
+def test_upload_attachment_named_git(create_app, filename):
+    """An attachment named .git must not be written, git would treat the
+    attachment directory as a nested repository."""
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "nestedgit.md",
+        content="# Nestedgit\n",
+        author=author,
+        message="add page",
+    )
+    client = create_app.test_client()
+    data = {"file": (BytesIO(b"gitdir: /tmp/evil\n"), filename)}
+    with pytest.raises(StorageError):
+        client.post(
+            "/Nestedgit/attachments",
+            content_type="multipart/form-data",
+            data=data,
+        )
+    attachment_dir = os.path.join(create_app.storage.path, "nestedgit")
+    assert not os.path.exists(os.path.join(attachment_dir, ".git"))
+    assert not os.path.exists(os.path.join(attachment_dir, filename))
+
+
+def test_rename_attachment_to_git(create_app):
+    """An attachment must not be renamed to .git."""
+    author = ("Test Author", "test@example.com")
+    create_app.storage.store(
+        "nestedgit.md",
+        content="# Nestedgit\n",
+        author=author,
+        message="add page",
+    )
+    create_app.storage.store(
+        "nestedgit/test.txt",
+        content="gitdir: /tmp/evil\n",
+        author=author,
+        message="add attachment",
+    )
+    client = create_app.test_client()
+    client.post(
+        "/Nestedgit/attachment/test.txt",
+        data={"new_filename": ".git", "message": ""},
+        follow_redirects=True,
+    )
+    attachment_dir = os.path.join(create_app.storage.path, "nestedgit")
+    assert not os.path.exists(os.path.join(attachment_dir, ".git"))
+    assert os.path.exists(os.path.join(attachment_dir, "test.txt"))
