@@ -1,0 +1,44 @@
+{# vim: set et ts=8 sts=4 sw=4 ai ft=jinja.html: #}
+{% extends "settings.html" %}
+{% block content %}
+<div class="card m-auto m-lg-20">
+<div class="mw-full">
+<form action="{{ url_for("plugin_url_admin_request", name="userinfo", extra="settings") }}" method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<h2 class="card-title">User Info</h2>
+<div class="form-group">
+    <label for="userinfo_display">Display in the navbar</label>
+    <select class="form-control w-md-400" id="userinfo_display" name="display">
+{%- for value, label in display_options %}
+        <option value="{{ value }}"{% if settings.display == value %} selected="selected"{% endif %}>{{ label }}</option>
+{%- endfor %}
+    </select>
+</div>
+<div class="form-group">
+    <div class="custom-checkbox">
+        <input type="checkbox" id="userinfo_show_admin" name="show_admin" value="True"{% if settings.show_admin %} checked="checked"{% endif %}>
+        <label for="userinfo_show_admin">Mark admin users with <i class="fas fa-user-shield"></i></label>
+    </div>
+</div>
+<div class="form-group">
+    <div class="custom-checkbox">
+        <input type="checkbox" id="userinfo_gravatar" name="gravatar" value="True"{% if settings.gravatar %} checked="checked"{% endif %}>
+        <label for="userinfo_gravatar">Display the <a href="https://gravatar.com" target="_blank">Gravatar</a> icon</label>
+    </div>
+    <div class="form-text">
+        The browser of the user loads the icon from gravatar.com. The request contains a hash of the email address of the user.
+    </div>
+</div>
+<div class="form-group">
+    <label for="userinfo_gravatar_default">Gravatar icon for email addresses without a Gravatar</label>
+    <select class="form-control w-md-400" id="userinfo_gravatar_default" name="gravatar_default">
+{%- for value, label in gravatar_default_options %}
+        <option value="{{ value }}"{% if settings.gravatar_default == value %} selected="selected"{% endif %}>{{ label }}</option>
+{%- endfor %}
+    </select>
+</div>
+<input class="btn btn-primary" type="submit" value="Save Preferences">
+</form>
+</div>
+</div>
+{% endblock %}

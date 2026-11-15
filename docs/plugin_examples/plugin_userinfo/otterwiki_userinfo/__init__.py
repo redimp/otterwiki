@@ -19,16 +19,19 @@ This plugin demonstrates:
 1. template_html_navbar_inject() - Add content to the navbar
 2. template_html_navbar_dropdown_inject() - Add content to the dropdown menu
 3. template_html_admin_menu_inject() - Add a link to the admin menu
-4. url_admin_request() - Serve an admin page
-5. static_css() - Add css used by the plugin
-6. info() and help() - Describe the plugin
+4. url_admin_request() - Serve an admin page, rendered from the
+   template templates/userinfo/settings.html shipped with the plugin
+5. template_folders() - Make the templates of the plugin available
+6. static_css() - Add css used by the plugin
+7. info() and help() - Describe the plugin
 """
 
 import hashlib
+import os
 import re
 import urllib.parse
 
-from flask import g, redirect, render_template_string, url_for
+from flask import g, redirect, render_template, url_for
 from flask_login import current_user
 from markupsafe import escape
 
@@ -59,51 +62,6 @@ DEFAULT_SETTINGS = {
     "gravatar_default": "mp",
 }
 
-ADMIN_TEMPLATE = """
-{% extends "settings.html" %}
-{% block content %}
-<div class="card m-auto m-lg-20">
-<div class="mw-full">
-<form action="{{ url_for("plugin_url_admin_request", name="userinfo", extra="settings") }}" method="POST">
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-<h2 class="card-title">User Info</h2>
-<div class="form-group">
-    <label for="userinfo_display">Display in the navbar</label>
-    <select class="form-control w-md-400" id="userinfo_display" name="display">
-{%- for value, label in display_options %}
-        <option value="{{ value }}"{% if settings.display == value %} selected="selected"{% endif %}>{{ label }}</option>
-{%- endfor %}
-    </select>
-</div>
-<div class="form-group">
-    <div class="custom-checkbox">
-        <input type="checkbox" id="userinfo_show_admin" name="show_admin" value="True"{% if settings.show_admin %} checked="checked"{% endif %}>
-        <label for="userinfo_show_admin">Mark admin users with <i class="fas fa-user-shield"></i></label>
-    </div>
-</div>
-<div class="form-group">
-    <div class="custom-checkbox">
-        <input type="checkbox" id="userinfo_gravatar" name="gravatar" value="True"{% if settings.gravatar %} checked="checked"{% endif %}>
-        <label for="userinfo_gravatar">Display the <a href="https://gravatar.com" target="_blank">Gravatar</a> icon</label>
-    </div>
-    <div class="form-text">
-        The browser of the user loads the icon from gravatar.com. The request contains a hash of the email address of the user.    </div>
-</div>
-<div class="form-group">
-    <label for="userinfo_gravatar_default">Gravatar icon for email addresses without a Gravatar</label>
-    <select class="form-control w-md-400" id="userinfo_gravatar_default" name="gravatar_default">
-{%- for value, label in gravatar_default_options %}
-        <option value="{{ value }}"{% if settings.gravatar_default == value %} selected="selected"{% endif %}>{{ label }}</option>
-{%- endfor %}
-    </select>
-</div>
-<input class="btn btn-primary" type="submit" value="Save Preferences">
-</form>
-</div>
-</div>
-{% endblock %}
-"""
-
 HELP = """
 Displays the logged-in user in the navbar. Depending on the configuration
 the name, the email address, the initial or the initials of the user is
@@ -123,6 +81,11 @@ class UserInfo:
         """Initialize the plugin with the core objects."""
         self.app = app
         self.db = db
+
+    @hookimpl
+    def template_folders(self):
+        """The templates shipped with the plugin."""
+        return [os.path.join(os.path.dirname(__file__), "templates")]
 
     def get_settings(self):
         """
@@ -296,8 +259,8 @@ class UserInfo:
                     extra="settings",
                 )
             )
-        return render_template_string(
-            ADMIN_TEMPLATE,
+        return render_template(
+            "userinfo/settings.html",
             title="User Info",
             settings=self.get_settings(),
             display_options=DISPLAY_OPTIONS,
