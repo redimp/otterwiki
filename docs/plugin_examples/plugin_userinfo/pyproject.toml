@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "otterwiki_userinfo"
+description = "Example plugin that displays the logged-in user in the navbar."
+version = "0.1.0"
+authors = [
+    { name = "Ralph Thesen", email = "mail@redimp.de" }
+]
+
+[project.entry-points.otterwiki]
+userinfo = "otterwiki_userinfo"
