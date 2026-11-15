@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- insertion marker -->
 
+## [v2.27.0](https://github.com/redimp/otterwiki/releases/tag/v2.27.0) - 2026-11-15
+
+<small>[Compare with v2.26.3](https://github.com/redimp/otterwiki/compare/v2.26.3...v2.27.0)</small>
+
+### Security Fixes
+
+- Reject attachment uploads that resolve into .git
+  ([08046c1](https://github.com/redimp/otterwiki/commit/08046c1)).
+  Thanks to @mega-wave-inc for reaching out and reporting this issue.
+- Require a confirmed email for git http access
+  ([99c8ee9](https://github.com/redimp/otterwiki/commit/99c8ee9)).
+  Thanks to @mega-wave-inc for reaching out and reporting this issue.
+- Reject nested .git path components
+  ([0086b3b](https://github.com/redimp/otterwiki/commit/0086b3b)).
+
+### Plugins
+
+- Add navbar and admin menu plugin hooks
+  ([e9d077f](https://github.com/redimp/otterwiki/commit/e9d077f)).
+- Add template_folders plugin hook
+  ([4dbc987](https://github.com/redimp/otterwiki/commit/4dbc987)).
+- Add the userinfo example plugin in docs/plugin_examples/plugin_userinfo,
+  it shows the logged-in user in the navbar, see #574
+  ([5e94ce6](https://github.com/redimp/otterwiki/commit/5e94ce6),
+  [7ba386c](https://github.com/redimp/otterwiki/commit/7ba386c)).
+
+### Bug Fixes
+
+- Encode filename in inline attachment links
+  ([36569f6](https://github.com/redimp/otterwiki/commit/36569f6)).
+
 ## [v2.26.3](https://github.com/redimp/otterwiki/releases/tag/v2.26.3) - 2026-11-05
 
 <small>[Compare with v2.26.2](https://github.com/redimp/otterwiki/compare/v2.26.2...v2.26.3)</small>
