@@ -258,3 +258,26 @@ Some text.
     assert alert
     assert "Some text." not in alert.text
     assert alert.find("a", {"href": "https://otterwiki.com"})
+
+
+def test_preview_cursor_codeblock_with_language(create_app, req_ctx):
+    from otterwiki.util import cursormagicword
+    from otterwiki.wiki import Page
+
+    p = Page("test")
+    # the cursor magic word must not show up in the preview, when the
+    # cursor is placed on a code block with a language (issue #607)
+    content = """# Broken code syntax - cursor magic word
+
+```css
+a.sample {
+    color: black;
+}
+```
+"""
+    for cursor_line in range(len(content.splitlines()) + 1):
+        data = p.preview(content=content, cursor_line=cursor_line)
+        assert data and data['preview_content']
+        html = str(data['preview_content'])
+        assert cursormagicword not in html
+        assert html.count(render.htmlcursor.strip()) == 1

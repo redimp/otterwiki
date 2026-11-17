@@ -562,9 +562,7 @@ class OtterwikiMdRenderer(mistune.HTMLRenderer):
             )
             return html
         else:
-            html = prefix + pygments_render(
-                code, info, linenumbers=linenumbers
-            )
+            html = pygments_render(code, info, linenumbers=linenumbers)
         html = showmagicword(cursorline, html)
         return prefix + html
 
