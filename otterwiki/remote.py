@@ -56,6 +56,12 @@ class GitHttpServer:
             ):
                 abort(403)
 
+    def check_content_type(self, service):
+        # git clients send this content type, a cross-site html form
+        # can not send it, this protects against csrf
+        if request.content_type != f"application/x-git-{service}-pack-request":
+            abort(415)
+
     def advertise_refs(self, service: str):
         self.check_if_enabled()
         if service not in ["git-upload-pack", "git-receive-pack"]:
@@ -91,11 +97,13 @@ class GitHttpServer:
     def git_upload_pack(self, stream):
         self.check_if_enabled()
         self.check_permission("READ")
+        self.check_content_type("upload")
         return self.git_pack("upload", stream)
 
     def git_receive_pack(self, stream):
         self.check_if_enabled()
         self.check_permission("UPLOAD")
+        self.check_content_type("receive")
         result = self.git_pack("receive", stream)
 
         try:
