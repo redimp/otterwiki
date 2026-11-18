@@ -766,6 +766,79 @@ def test_register_and_confirm(app_with_user, test_client, req_ctx):
         assert "You logged in successfully." in html
 
 
+def test_register_and_confirm_notify_admins(
+    app_with_user, test_client, req_ctx
+):
+    app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = True
+    app_with_user.config["NOTIFY_ADMINS_ON_REGISTER"] = True
+    # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
+    app_with_user.test_mail.state.suppress = True
+    # record outbox
+    with app_with_user.test_mail.record_messages() as outbox:
+        email = "mail3@example.org"
+        password = "1234567890"
+        rv = test_client.post(
+            "/-/register",
+            data={
+                "email": email,
+                "name": "Example User",
+                "password1": password,
+                "password2": password,
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        # only the confirmation mail, no admin notification yet
+        assert len(outbox) == 1
+        assert "confirm" in outbox[0].subject.lower()
+        token = re.findall("confirm_email/(.*)", outbox[0].body)[0]
+        # confirm the email address
+        rv = test_client.get(
+            "/-/confirm_email/{}".format(token),
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        # exactly one admin notification
+        assert len(outbox) == 2
+        assert "New Account Registration" in outbox[1].subject
+        assert "mail@example.org" in outbox[1].recipients
+        assert email in outbox[1].body
+        # confirming again must not notify the admins again
+        rv = test_client.get(
+            "/-/confirm_email/{}".format(token),
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        assert len(outbox) == 2
+
+
+def test_register_notify_admins(app_with_user, test_client, req_ctx):
+    app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = False
+    app_with_user.config["NOTIFY_ADMINS_ON_REGISTER"] = True
+    # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
+    app_with_user.test_mail.state.suppress = True
+    # record outbox
+    with app_with_user.test_mail.record_messages() as outbox:
+        email = "mail3@example.org"
+        password = "1234567890"
+        rv = test_client.post(
+            "/-/register",
+            data={
+                "email": email,
+                "name": "Example User",
+                "password1": password,
+                "password2": password,
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        # exactly one admin notification
+        assert len(outbox) == 1
+        assert "New Account Registration" in outbox[0].subject
+        assert "mail@example.org" in outbox[0].recipients
+        assert email in outbox[0].body
+
+
 def test_register_errors(app_with_user, test_client, req_ctx):
     # test invalid mail
     rv = test_client.post(

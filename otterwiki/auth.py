@@ -408,11 +408,8 @@ class SimpleAuth:
         if user is None:
             toast("Invalid user or token.", "error")
             return redirect(url_for("login"))
-        # mark user as confirmed
+        # mark user as confirmed, notifies the admins
         self.user_confirmed_email(email)
-        # notify admins
-        if app.config['NOTIFY_ADMINS_ON_REGISTER']:
-            self.activated_user_notify_admins(user.name, email)
         # log activation
         app.logger.info(
             "auth: New user activated: {} <{}>".format(user.name, user.email)
