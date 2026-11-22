@@ -70,7 +70,7 @@ that can be configured during installation.
 | `tolerations`                     | Toleration labels for pod assignment                 | `[]`                                        |
 | `podAnnotations`                  | Pod annotations                                      | `{}`                                        |
 | `podLabelsAdditional`             | Specify additional labels to add to the pods (selector labels can not be overwritten) | `{}`                                        |
-| `podContainerPort`                | Port exposed by the container                        | `80`                                        |
+| `podContainerPort`                | Port the container listens on (slim image: `8080`)   | value of `service.port`                     |
 
 
 The parameters can be specified using `--set key=value[,key=value]` as argument to `helm install`, e.g. for setting up An Otter Wiki with ingress:

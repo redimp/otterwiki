@@ -39,7 +39,9 @@ podLabelsAdditional: {}
 podSecurityContext: {}
   # fsGroup: 2000
 
-podContainerPort: 80 # 8080 if using the -slim image variant
+## Port the container listens on. Defaults to service.port if not set.
+## The default image listens on 80 and 8080, the -slim image only on 8080.
+podContainerPort: ""
 
 resources: {}
   # limits:
