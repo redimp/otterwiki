@@ -24,6 +24,7 @@ from otterwiki.helper import (
     get_ftoc,
     get_pagename,
     get_pagename_for_title,
+    get_pagepath_for_url,
     upsert_pagecrumbs,
 )
 from otterwiki.server import app, storage
@@ -149,9 +150,8 @@ class PageIndex:
                             header[3],  # title without formatting
                             url_for(
                                 "view",
-                                path=get_pagename(
+                                path=get_pagepath_for_url(
                                     f,
-                                    full=True,
                                     header=pagename,
                                 ),
                                 _anchor=header[4],
@@ -179,7 +179,7 @@ class PageIndex:
                     title=displayname,
                     url=url_for(
                         "view",
-                        path=get_pagename(f, full=True, header=pagename),
+                        path=get_pagepath_for_url(f, header=pagename),
                     ),
                     toc=pagetoc,
                     has_children=has_children,

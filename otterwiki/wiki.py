@@ -46,7 +46,9 @@ from otterwiki.helper import (
     get_pagename,
     get_pagename_for_title,
     get_pagename_prefixes,
+    get_pagepath_for_url,
     patchset2urlmap,
+    resolve_dotted_pagepath,
     toast,
     update_ftoc_cache,
     upsert_pagecrumbs,
@@ -375,7 +377,11 @@ class Page:
     ):
 
         if pagepath is not None:
-            self.pagepath = sanitize_pagename(pagepath, handle_md=True)
+            # a pagepath ending with .md can reach an existing file with
+            # dots in its name, see #612
+            self.pagepath = resolve_dotted_pagepath(
+                pagepath
+            ) or sanitize_pagename(pagepath, handle_md=True)
             self.pagename = get_pagename(pagepath)
         elif pagename is not None:
             self.pagename = sanitize_pagename(pagename, handle_md=True)
@@ -2104,7 +2110,7 @@ class Search:
                 fnmatch,
                 n,
                 fn,
-                get_pagename(fn, full=True),
+                get_pagepath_for_url(fn),
                 # key[4] is rendered with |safe, so escape the pagename
                 str(html_escape(get_pagename(fn, full=True))),
             ]
@@ -2316,13 +2322,15 @@ class AutoRoute:
         else:
             self.pagepath = ""
 
-        # glue together storage path
+        # glue together storage path, the attachment directory of a page
+        # reached via the .md suffix has no .md suffix, see #612
+        directory = self.pagepath
+        if directory.lower().endswith(".md"):
+            directory = directory[:-3]
         if app.config["RETAIN_PAGE_NAME_CASE"]:
-            self.storage_path = join_path([self.pagepath, self.filename])
+            self.storage_path = join_path([directory, self.filename])
         else:
-            self.storage_path = join_path(
-                [self.pagepath.lower(), self.filename]
-            )
+            self.storage_path = join_path([directory.lower(), self.filename])
 
     def __repr__(self):
         return f"<AutoRoute path: {self.path} pagepath: {self.pagepath}, storagepath: {self.storage_path} {storage.exists(self.storage_path)}, filename: {self.filename}>"

@@ -12,6 +12,7 @@ lightweight as utils.
 import os
 import re
 import json
+import unicodedata
 from collections import namedtuple
 from otterwiki.server import app, mail, storage, Preferences, db, app_renderer
 from otterwiki.gitstorage import StorageError
@@ -29,6 +30,8 @@ from otterwiki.util import (
     ttl_lru_cache,
     sha256sum,
     get_header,
+    sanitize_pagename,
+    sanitize_dotted_pagepath,
 )
 from otterwiki.models import Cache
 
@@ -164,7 +167,7 @@ def auto_url(filename, revision=None, _external=False):
             get_pagename(filename, full=True),
             url_for(
                 "view",
-                path=get_pagename(filename, full=True),
+                path=get_pagepath_for_url(filename),
                 revision=revision,
                 _external=_external,
             ),
@@ -199,6 +202,60 @@ def get_filename(pagepath):
         return "{}.md".format(p)
 
     return p
+
+
+def _same_filename(a, b):
+    '''Compare two filenames, like the lookup of a page does.'''
+    if not app.config["RETAIN_PAGE_NAME_CASE"]:
+        a, b = a.lower(), b.lower()
+    # sanitize_pagename() normalizes NFKC, so compare normalized
+    return unicodedata.normalize("NFKC", a) == unicodedata.normalize("NFKC", b)
+
+
+def is_page_filename(filename):
+    '''Return True if filename is a page that its plain URL can reach.
+
+    Pages added via git can have names that sanitize_pagename() changes,
+    e.g. version1.2.md. The plain URL of such a file resolves to a
+    different file (version12.md).
+    '''
+    if not filename.endswith(".md"):
+        return False
+    return _same_filename(
+        filename,
+        get_filename(sanitize_pagename(filename[:-3], handle_md=True)),
+    )
+
+
+def resolve_dotted_pagepath(pagepath):
+    '''Return the pagepath, including the .md suffix, if pagepath ends with
+    .md and names an existing file with dots in its name. Else None.
+
+    This allows to reach e.g. docs/version1.2.md via /docs/version1.2.md,
+    while /docs/version1.2 still resolves to docs/version12.md.
+    '''
+    dotted = sanitize_dotted_pagepath(pagepath)
+    # without a dot in the name the plain pagepath reaches the file
+    if dotted is None or "." not in dotted[:-3]:
+        return None
+    if not storage.exists(get_filename(dotted)):
+        return None
+    return dotted
+
+
+def get_pagepath_for_url(filename, header=None):
+    '''Return the path used in the URL of the page stored in filename.
+
+    If the plain URL can not reach the file, but the URL with the .md
+    suffix can, the .md suffix is added.
+    '''
+    pagepath = get_pagename(filename, full=True, header=header)
+    if is_page_filename(filename):
+        return pagepath
+    dotted = sanitize_dotted_pagepath(filename)
+    if dotted is not None and _same_filename(filename, dotted):
+        return pagepath + ".md"
+    return pagepath
 
 
 def get_attachment_directoryname(filename):

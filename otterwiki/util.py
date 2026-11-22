@@ -87,7 +87,9 @@ def clean_slashes(value):
     return value
 
 
-def sanitize_pagename(value, allow_unicode=True, handle_md=False):
+def sanitize_pagename(
+    value, allow_unicode=True, handle_md=False, keep_dots=False
+):
     value = str(value)
     if allow_unicode:
         value = unicodedata.normalize("NFKC", value)
@@ -100,7 +102,10 @@ def sanitize_pagename(value, allow_unicode=True, handle_md=False):
     if handle_md:
         value = re.sub(r"\.md$", "", value)
     # remove slashes, question marks ...
-    value = re.sub(r"[?|$|.|!|#|\\]", r"", value)
+    if keep_dots:
+        value = re.sub(r"[?|$!#\\]", r"", value)
+    else:
+        value = re.sub(r"[?|$|.|!|#|\\]", r"", value)
 
     # remove leading -/
     value = value.lstrip("-/")
@@ -110,6 +115,22 @@ def sanitize_pagename(value, allow_unicode=True, handle_md=False):
     # remove trailing slash and double slashes
     value = clean_slashes(value)
 
+    return value
+
+
+def sanitize_dotted_pagepath(value):
+    """Sanitize a pagepath that ends with .md, but keep the dots.
+
+    This is used to reach files with dots in the name, that were added
+    via git, e.g. docs/version1.2.md. Returns None if the result does not
+    end with .md, or if a path segment starts with a dot (e.g. ., .. or
+    .git).
+    """
+    value = sanitize_pagename(value, keep_dots=True)
+    if not value.endswith(".md"):
+        return None
+    if any(part.startswith(".") for part in value.split("/")):
+        return None
     return value
 
 

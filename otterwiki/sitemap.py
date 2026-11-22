@@ -6,7 +6,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring, indent
 from flask import make_response, abort
 from otterwiki.server import app, storage
 from otterwiki.auth import has_permission
-from otterwiki.helper import url_for, get_pagename, get_filename
+from otterwiki.helper import url_for, get_filename, get_pagepath_for_url
 
 
 def sitemap():
@@ -26,7 +26,7 @@ def sitemap():
         try:
             metadata = storage.metadata(filename)
             url_elem = SubElement(urlset, 'url')
-            pagepath = get_pagename(filename, full=True)
+            pagepath = get_pagepath_for_url(filename)
 
             # handle configured home page as / in URL generation
             home_page = app.config.get("HOME_PAGE", "")

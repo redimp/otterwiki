@@ -20,6 +20,7 @@ from otterwiki.helper import (
     url_for,
     get_pagename,
     get_pagename_for_title,
+    get_pagepath_for_url,
 )
 
 
@@ -270,6 +271,7 @@ class SidebarPageIndex:
         parts: list[str],
         header: str | None = None,
         is_directory_symlink: bool = False,
+        url_path: str | None = None,
     ):
         """
         Add new nodes based of 'prefix' and 'parts' into the given position in the 'tree'
@@ -299,6 +301,9 @@ class SidebarPageIndex:
             tree[parts[0]] = new_entry
         if len(parts) == 1 and is_directory_symlink:
             tree[parts[0]].is_directory_symlink = True
+        if len(parts) == 1 and url_path is not None:
+            # the page might need the .md suffix in the url, see #612
+            tree[parts[0]].path = url_path
         if len(parts) > 1:
             self.add_node(
                 tree[parts[0]].children,
@@ -306,6 +311,7 @@ class SidebarPageIndex:
                 parts[1:],
                 header,
                 is_directory_symlink,
+                url_path,
             )
 
     def load(self, path: str):
@@ -365,8 +371,13 @@ class SidebarPageIndex:
 
         for entry in entries:
             header = None
+            url_path = None
             if entry.endswith(".md"):
                 header = self.read_header(entry)
+                url_path = get_pagepath_for_url(entry, header=header)
+                # only pages with dots in the name need a special url_path
+                if not url_path.endswith(".md"):
+                    url_path = None
                 entry = entry[:-3]
             self.filenames_and_header.append((entry, header))
             parts = split_path(entry)
@@ -376,6 +387,7 @@ class SidebarPageIndex:
                 parts,
                 header,
                 is_directory_symlink=entry in directory_symlinks,
+                url_path=url_path,
             )
         app.logger.debug(
             f"SidebarPageIndex.load({path}) reading entries, adding nodes took {timer() - t_start:.3f} seconds."
