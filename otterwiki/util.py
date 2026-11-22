@@ -123,11 +123,12 @@ def sanitize_dotted_pagepath(value):
 
     This is used to reach files with dots in the name, that were added
     via git, e.g. docs/version1.2.md. Returns None if the result does not
-    end with .md, or if a path segment starts with a dot (e.g. ., .. or
-    .git).
+    end with .md, if the name without .md has no dot (the plain pagepath
+    reaches such a file), or if a path segment starts with a dot (e.g. .,
+    .. or .git).
     """
     value = sanitize_pagename(value, keep_dots=True)
-    if not value.endswith(".md"):
+    if not value.endswith(".md") or "." not in value[:-3]:
         return None
     if any(part.startswith(".") for part in value.split("/")):
         return None

@@ -145,3 +145,8 @@ def test_dotted_page_retain_case(create_app, test_client):
         assert 'href="/Docs/Version12"' in html
     finally:
         create_app.config["RETAIN_PAGE_NAME_CASE"] = False
+
+
+def test_sanitize_dotted_pagepath_without_dot():
+    # without a dot in the name the plain pagepath reaches the file
+    assert sanitize_dotted_pagepath("docs/version12.md") is None

@@ -2325,7 +2325,7 @@ class AutoRoute:
         # glue together storage path, the attachment directory of a page
         # reached via the .md suffix has no .md suffix, see #612
         directory = self.pagepath
-        if directory.lower().endswith(".md"):
+        if directory.endswith(".md"):
             directory = directory[:-3]
         if app.config["RETAIN_PAGE_NAME_CASE"]:
             self.storage_path = join_path([directory, self.filename])
