@@ -150,3 +150,87 @@ def test_dotted_page_retain_case(create_app, test_client):
 def test_sanitize_dotted_pagepath_without_dot():
     # without a dot in the name the plain pagepath reaches the file
     assert sanitize_dotted_pagepath("docs/version12.md") is None
+
+
+def test_housekeeping_empty_dotted_page(app_with_user, admin_client):
+    storage = app_with_user.storage
+    storage.store("docs/version12.md", "# Version12\n\nAAA", author=AUTHOR)
+    storage.store("docs/version1.2.md", "", author=AUTHOR)
+
+    html = admin_client.post(
+        "/-/housekeeping", data={"task": "emptypages"}
+    ).data.decode()
+    assert 'value="Docs/Version1.2.md"' in html
+    assert 'href="/Docs/Version1.2.md"' in html
+
+    # deleting the empty page must not delete docs/version12.md
+    rv = admin_client.post(
+        "/-/housekeeping",
+        data={
+            "task": "emptypages",
+            "clean": "1",
+            "delete_empty_page": ["Docs/Version1.2.md"],
+        },
+        follow_redirects=True,
+    )
+    assert rv.status_code == 200
+    assert not storage.exists("docs/version1.2.md")
+    assert storage.exists("docs/version12.md")
+
+
+def test_housekeeping_broken_wikilinks_dotted_page(
+    app_with_user, admin_client
+):
+    storage = app_with_user.storage
+    storage.store(
+        "docs/version1.2.md",
+        "# Version1.2\n\n[[MissingPage]]",
+        author=AUTHOR,
+    )
+    html = admin_client.post(
+        "/-/housekeeping", data={"task": "brokenwikilinks"}
+    ).data.decode()
+    assert 'href="/Docs/Version1.2.md"' in html
+
+
+def test_rename_backlinks_hook_dotted_page(create_app, test_client):
+    import sys
+    from otterwiki.plugins import hookimpl
+
+    class Recorder:
+        def __init__(self):
+            self.saved = []
+
+        @hookimpl
+        def page_saved(self, pagepath, content, author, message):
+            self.saved.append(pagepath)
+
+    storage = create_app.storage
+    storage.store("target.md", "# Target\n", author=AUTHOR)
+    storage.store(
+        "docs/version1.2.md", "# Version1.2\n\n[[Target]]\n", author=AUTHOR
+    )
+    plugin_manager = sys.modules["otterwiki.plugins"].plugin_manager
+    recorder = Recorder()
+    plugin_manager.register(recorder)
+    try:
+        rv = test_client.post(
+            "/Target/rename",
+            data={
+                "new_pagename": "Renamed",
+                "message": "",
+                "update_backlinks": "1",
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+    finally:
+        plugin_manager.unregister(recorder)
+    assert "[[Renamed]]" in storage.load("docs/version1.2.md")
+    assert recorder.saved == ["Docs/Version1.2.md"]
+
+
+def test_commit_view_dotted_page(dotted, test_client):
+    revision = dotted.storage.log("docs/version1.2.md")[0]["revision"]
+    html = test_client.get(f"/-/commit/{revision}").data.decode()
+    assert 'href="/Docs/Version1.2.md" aria-current="page"' in html

@@ -261,7 +261,7 @@ class Changelog:
         url_map = patchset2urlmap(patchset, revision)
         if len(url_map) == 1:
             filename = list(url_map.keys())[0]
-            pagepath = get_pagepath(get_pagename(filename, full=True))
+            pagepath = get_pagepath_for_url(filename)
 
         menutree = SidebarPageIndex(pagepath)
 
@@ -1294,7 +1294,7 @@ class Page:
         # value Page.save() passes.
         for filename, content in pages_updated.items():
             plugin_manager.hook.page_saved(
-                pagepath=get_pagename(filename, full=True),
+                pagepath=get_pagepath_for_url(filename),
                 content=content,
                 author=author,
                 message=message,

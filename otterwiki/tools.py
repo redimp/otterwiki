@@ -21,7 +21,7 @@ from otterwiki.helper import (
     url_for,
     toast,
     get_filename,
-    get_pagename,
+    get_pagepath_for_url,
 )
 
 from otterwiki.util import (
@@ -127,7 +127,7 @@ def handle_housekeeping_emptypages(form):
             # file has attachments
             pass  # continue
         # read file
-        pagename = get_pagename(filename, full=True)
+        pagename = get_pagepath_for_url(filename)
         try:
             content = storage.load(filename, size=512).strip()
         except StorageError:
@@ -227,7 +227,7 @@ def handle_housekeeping_brokenwikilinks(form):
             content = storage.load(filename)
         except StorageError:
             continue
-        current_pagename = get_pagename(filename, full=True)
+        current_pagename = get_pagepath_for_url(filename)
 
         # Strip fenced code blocks (e.g. mermaid diagrams) and then
         # inline code spans so their contents are never mistaken for
