@@ -812,6 +812,57 @@ def test_register_and_confirm_notify_admins(
         assert len(outbox) == 2
 
 
+def test_request_confirmation_link_no_email_enumeration(
+    app_with_user, test_client
+):
+    app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = True
+    # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
+    app_with_user.test_mail.state.suppress = True
+    with app_with_user.test_mail.record_messages() as outbox:
+        responses = {}
+        # unknown email and already confirmed email
+        for email in ["nobody@example.org", "another@user.org"]:
+            rv = test_client.get(f"/-/request_confirmation_link/{email}")
+            assert rv.status_code == 302
+            assert rv.headers["Location"].endswith("/-/login")
+            rv = test_client.get("/-/login")
+            responses[email] = rv.data.decode()
+        # no mail has been sent
+        assert len(outbox) == 0
+        # the responses do not differ
+        assert responses["nobody@example.org"] == responses["another@user.org"]
+        assert "nobody@example.org" not in responses["nobody@example.org"]
+
+
+def test_request_confirmation_link_unconfirmed(
+    app_with_user, test_client, req_ctx
+):
+    app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = True
+    # workaround since MAIL_SUPPRESS_SEND doesn't work as expected
+    app_with_user.test_mail.state.suppress = True
+    with app_with_user.test_mail.record_messages() as outbox:
+        email = "mail3@example.org"
+        password = "1234567890"
+        rv = test_client.post(
+            "/-/register",
+            data={
+                "email": email,
+                "name": "Example User",
+                "password1": password,
+                "password2": password,
+            },
+            follow_redirects=True,
+        )
+        assert rv.status_code == 200
+        assert len(outbox) == 1
+        # request a new confirmation link
+        rv = test_client.get(f"/-/request_confirmation_link/{email}")
+        assert rv.status_code == 302
+        assert len(outbox) == 2
+        assert "/-/confirm_email/" in outbox[1].body
+        assert email in outbox[1].recipients
+
+
 def test_register_notify_admins(app_with_user, test_client, req_ctx):
     app_with_user.config["EMAIL_NEEDS_CONFIRMATION"] = False
     app_with_user.config["NOTIFY_ADMINS_ON_REGISTER"] = True

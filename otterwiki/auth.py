@@ -226,7 +226,12 @@ class SimpleAuth:
             app.logger.warning(
                 f"request of confirmation for non existing email: {email}"
             )
-            abort(404)
+            return False
+        if user.email_confirmed:
+            app.logger.warning(
+                f"request of confirmation for confirmed email: {email}"
+            )
+            return False
         token = serialize(email, salt="confirm-email")
         # generate mail
         subject = "Request confirmation - {} - An Otter Wiki".format(
@@ -241,15 +246,14 @@ class SimpleAuth:
         )
         # send mail
         send_mail(subject=subject, recipients=[email], text_body=text_body)
-        # notify user
-        toast(
-            "A request for confirmation has been sent to {}. Please check your mailbox.".format(
-                email
-            )
-        )
+        return True
 
     def handle_request_confirmation(self, email):
         self.request_confirmation(email)
+        # do not leak whether email is registered
+        toast(
+            "If this email is registered and not confirmed, a confirmation link has been sent. Please check your mailbox."
+        )
         return redirect(url_for("login"))
 
     def create_user(self, email, name, password=None):
@@ -303,7 +307,12 @@ class SimpleAuth:
             "auth: New user registered: {} <{}>".format(name, email)
         )
         if app.config["EMAIL_NEEDS_CONFIRMATION"] and not is_admin:
-            self.request_confirmation(email)
+            if self.request_confirmation(email):
+                toast(
+                    "A request for confirmation has been sent to {}. Please check your mailbox.".format(
+                        email
+                    )
+                )
         else:
             # notify user
             if user.is_approved:
