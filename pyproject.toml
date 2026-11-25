@@ -19,7 +19,7 @@ dependencies = [
     "Jinja2==3.1.6",
     "gitpython==3.2.1",
     "cython==3.0.11",
-    "mistune==3.3.3",
+    "mistune==3.3.4",
     "pygments==2.20.0",
     "Pillow==13.0.0",
     "PyYAML==6.0.2",
