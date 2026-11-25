@@ -129,6 +129,12 @@ div.page > div.highlight {
     white-space: pre;
 }
 
+/* inline code: preserve spaces, but allow wrapping (#615) */
+.page :not(pre) > code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
 code,
 pre,
 .code {
