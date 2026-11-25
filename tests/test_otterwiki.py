@@ -4,6 +4,7 @@
 import os
 import pathlib
 import re
+import time
 from io import BytesIO
 from flask import url_for
 import bs4
@@ -1175,6 +1176,25 @@ def test_search(test_client):
     )
     assert "Search matched 4 pages" in rv.data.decode()
     assert rv.status_code == 200
+
+
+def test_search_regex_timeout(test_client, monkeypatch):
+    import otterwiki.wiki
+
+    monkeypatch.setattr(otterwiki.wiki, "_REGEX_TIMEOUT", 0.5)
+    # lines that make (a|aa)+$ backtrack catastrophically
+    content = "\n".join(["a" * 35 + "!"] * 4)
+    for i in range(4):
+        save_shortcut(test_client, f"ReDoS {i}", content, "redos")
+    t_start = time.time()
+    rv = test_client.post(
+        "/-/search", data={"query": "(a|aa)+$", "is_regexp": "y"}
+    )
+    duration = time.time() - t_start
+    assert rv.status_code == 200
+    assert "Search regex timed out" in rv.data.decode()
+    # the search stops after the first timeout, 16 timeouts take 8 seconds
+    assert duration < 3
 
 
 @pytest.mark.parametrize("retain_case", [True, False])

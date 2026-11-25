@@ -2031,10 +2031,13 @@ class Search:
 
         t_start = timer()
         for fn in md_files:
+            # stop after a timeout, so that the timeouts do not add up
+            if _regex_timed_out:
+                break
             # check if pagename matches
             try:
                 mi = self.rei.search(get_pagename(fn), timeout=_REGEX_TIMEOUT)
-            except regex.TimeoutError:
+            except TimeoutError:
                 app.logger.warning(f"Search regex timed out on pagename: {fn}")
                 _regex_timed_out = True
                 mi = None
@@ -2055,10 +2058,10 @@ class Search:
             for i, line in enumerate(haystack.splitlines()):
                 try:
                     m = self.re.search(line, timeout=_REGEX_TIMEOUT)
-                except regex.TimeoutError:
+                except TimeoutError:
                     app.logger.warning(f"Search regex timed out on file: {fn}")
                     _regex_timed_out = True
-                    m = None
+                    break
                 if m:
                     if fn not in fn_result:
                         fn_result[fn] = [False]
@@ -2093,7 +2096,7 @@ class Search:
                         n += len(
                             self.rei.findall(line, timeout=_REGEX_TIMEOUT)
                         )
-                    except regex.TimeoutError:
+                    except TimeoutError:
                         app.logger.warning(
                             "Search regex timed out on findall (rei)"
                         )
@@ -2101,7 +2104,7 @@ class Search:
                 else:
                     try:
                         n += len(self.re.findall(line, timeout=_REGEX_TIMEOUT))
-                    except regex.TimeoutError:
+                    except TimeoutError:
                         app.logger.warning(
                             "Search regex timed out on findall (re)"
                         )
@@ -2124,7 +2127,7 @@ class Search:
                         cast(str, key[4]),
                         timeout=_REGEX_TIMEOUT,
                     )
-                except regex.TimeoutError:
+                except TimeoutError:
                     app.logger.warning("Search regex timed out on rei.sub")
                     _regex_timed_out = True
             front, end = [], []
@@ -2156,7 +2159,7 @@ class Search:
                             l,
                             timeout=_REGEX_TIMEOUT,
                         )
-                    except regex.TimeoutError:
+                    except TimeoutError:
                         app.logger.warning("Search regex timed out on re.sub")
                         _regex_timed_out = True
                         summary[i] = l
