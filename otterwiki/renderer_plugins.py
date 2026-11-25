@@ -849,7 +849,7 @@ class mistunePluginFrontmatter:
     #   the document (re.M makes ^ match at every line start, causing false
     #   matches on any --- ... --- separator mid-document)
     # - Use (?s:...) to embed DOTALL so . matches newlines
-    _FRONTMATTER_SCANNER_PATTERN = r'\A---\n(?s:(.*?))\n---'
+    _FRONTMATTER_SCANNER_PATTERN = r'\A---\n(?s:(.*?))\n---[ \t]*(?:\n|\Z)'
 
     def parse_frontmatter(self, block, m, state):
         m2 = self.FRONTMATTER_PATTERN.match(m.group(0))
