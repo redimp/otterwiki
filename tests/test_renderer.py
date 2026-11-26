@@ -1423,6 +1423,16 @@ date: 2025-04-06 11:05:01
     assert "tag: test" in pre.text  # pyright:ignore
 
 
+def test_frontmatter_does_not_add_empty_paragraph():
+    md = """---
+title: Title from frontmatter
+---
+# Heading
+"""
+    html, _, _ = render.markdown(md)
+    assert "<p></p>" not in html
+
+
 def test_library_requirements_mermaid():
     md = """
 ```mermaid
