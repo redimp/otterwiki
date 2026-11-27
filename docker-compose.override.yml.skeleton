@@ -26,8 +26,8 @@ services:
       - SITE_DESCRIPTION=Otter Wiki Development
       # Permissions allow everything (for development)
       - READ_ACCESS=ANONYMOUS
-      - WRITE_ACCESS=ANONYMOUS
-      - ATTACHMENT_ACCESS=ANONYMOUS
+      - WRITE_ACCESS=APPROVED
+      - ATTACHMENT_ACCESS=APPROVED
       - AUTO_APPROVAL=True
       - NOTIFY_ADMINS_ON_REGISTER=False
       - EMAIL_NEEDS_CONFIRMATION=False
