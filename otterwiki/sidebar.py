@@ -15,6 +15,7 @@ from otterwiki.util import (
     split_path,
     join_path,
     empty,
+    natural_sort_key,
 )
 from otterwiki.helper import (
     url_for,
@@ -220,6 +221,16 @@ class SidebarPageIndex:
         ) -> tuple[bool, str]:
             return (len(key[1].children) == 0, key[0])
 
+        def sort_by_natural(
+            key: tuple[str, SidebarPageIndexEntry],
+        ) -> tuple[tuple[int | str, ...], str]:
+            return natural_sort_key(key[0])
+
+        def sort_by_natural_directories(
+            key: tuple[str, SidebarPageIndexEntry],
+        ) -> tuple[bool, tuple[tuple[int | str, ...], str]]:
+            return (len(key[1].children) == 0, natural_sort_key(key[0]))
+
         # filter entries
         if self.mode in ["DIRECTORIES_ONLY"]:
             entries = [
@@ -244,6 +255,11 @@ class SidebarPageIndex:
                 sort_key = sort_by_lower_directories
             else:
                 sort_key = sort_by_ignore_case_directories
+        if app.config["SIDEBAR_MENUTREE_NATURAL_SORT"]:
+            if self.mode in ["DIRECTORIES_GROUPED"]:
+                sort_key = sort_by_natural_directories
+            else:
+                sort_key = sort_by_natural
 
         entries.sort(key=sort_key)
 

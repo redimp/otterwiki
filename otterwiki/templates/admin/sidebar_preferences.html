@@ -84,6 +84,13 @@ Shortcuts not listed in the sidebar are available via the <span class="btn btn-s
         </select>
     </div>
 {##}
+    <div class="form-group">
+      <div class="custom-checkbox">
+        <input {%if config.SIDEBAR_MENUTREE_NATURAL_SORT %}checked{% endif %} type="checkbox" id="menutree_natural_sort" name="sidebar_menutree_natural_sort" value="True">
+        <label for="menutree_natural_sort">Natural Sort (case insensitive, numbers in order: 1, 2, 10). Also applies to page indexes.</label>
+      </div>
+    </div>
+{##}
 {%if config.RETAIN_PAGE_NAME_CASE %}
     <div class="form-group">
       <div class="custom-checkbox">

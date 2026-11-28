@@ -42,3 +42,39 @@ def test_pageindex_with_invalid_utf8(create_app, req_ctx):
     # the broken page should still appear (by filename-derived name),
     # it just won't have a parsed TOC
     assert "BrokenPage" in titles
+
+
+def test_pageindex_natural_sort(create_app, req_ctx):
+    from otterwiki.pageindex import PageIndex
+
+    storage = create_app.storage
+    for n in [1, 2, 9, 10, 11]:
+        storage.store(
+            f"stages/stage {n}.md",
+            f"# Stage {n}\n\nContent.",
+            author=("Test", "test@example.org"),
+        )
+
+    def titles():
+        return [title for title, _, _ in PageIndex("stages").pages()]
+
+    create_app.config["SIDEBAR_MENUTREE_NATURAL_SORT"] = False
+    assert titles() == [
+        "Stage 1",
+        "Stage 10",
+        "Stage 11",
+        "Stage 2",
+        "Stage 9",
+    ]
+
+    create_app.config["SIDEBAR_MENUTREE_NATURAL_SORT"] = True
+    try:
+        assert titles() == [
+            "Stage 1",
+            "Stage 2",
+            "Stage 9",
+            "Stage 10",
+            "Stage 11",
+        ]
+    finally:
+        create_app.config["SIDEBAR_MENUTREE_NATURAL_SORT"] = False

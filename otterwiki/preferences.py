@@ -181,6 +181,7 @@ def handle_sidebar_preferences(form):
     )
     for checkbox in [
         "sidebar_menutree_ignore_case",
+        "sidebar_menutree_natural_sort",
     ]:
         _update_preference(checkbox.upper(), form.get(checkbox, "False"))
     # commit changes to the database

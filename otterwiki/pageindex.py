@@ -32,6 +32,7 @@ from otterwiki.sidebar import SidebarMenu, SidebarPageIndex
 from otterwiki.util import (
     get_page_directoryname,
     join_path,
+    natural_path_key,
     split_path,
 )
 
@@ -91,6 +92,8 @@ class PageIndex:
         t_start = timer()
         # filter .md files
         md_files = [f for f in files if f.endswith(".md")]
+        if app.config["SIDEBAR_MENUTREE_NATURAL_SORT"]:
+            md_files.sort(key=natural_path_key)
         for fn in md_files:
             f = os.path.join(self.path or "", fn)
             page_depth = len(split_path(f)) - 1
