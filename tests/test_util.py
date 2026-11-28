@@ -431,3 +431,93 @@ def test_diff_words():
         is None
     )
     assert diff_words("", "") is None
+
+
+def test_natural_sort_key():
+    from otterwiki.util import natural_sort_key
+
+    expected = [
+        "Page 0",
+        "Page 1",
+        "Page 1.1",
+        "Page    1.2",
+        "Page 01.10",
+        "Page 1.10.1",
+        "Page 1.11a",
+        "Page  2",
+        "Page 2.1",
+        "Page\t\t2_2",
+        "Page 2.10_0",
+        "Page 2.10_1",
+        "Page 2_11_",
+        "Page\t3",
+        "Page 04",
+        "Page 10",
+    ]
+    assert sorted(reversed(expected), key=natural_sort_key) == expected
+    assert (
+        sorted(
+            expected[::3] + expected[1::3] + expected[2::3],
+            key=natural_sort_key,
+        )
+        == expected
+    )
+
+    assert natural_sort_key("Page 9") < natural_sort_key("Page 10")
+    # case is ignored
+    assert sorted(["b", "A", "a10", "a2"], key=natural_sort_key) == [
+        "A",
+        "a2",
+        "a10",
+        "b",
+    ]
+    # whitespace runs compare like a single space (only the tie-breaker differs)
+    assert (
+        natural_sort_key("Page\t3")[0]
+        == natural_sort_key("Page   3")[0]
+        == natural_sort_key("page 3")[0]
+    )
+    # "_" and "." are treated the same
+    assert natural_sort_key("a_1")[0] == natural_sort_key("a.1")[0]
+
+
+def test_natural_path_key():
+    from otterwiki.util import natural_path_key
+
+    paths = [
+        "Stage 10.md",
+        "Stage 1/Sub 10.md",
+        "Stage 2.md",
+        "Stage 1.md",
+        "Stage 1/Sub 2.md",
+    ]
+    assert sorted(paths, key=natural_path_key) == [
+        "Stage 1.md",
+        "Stage 1/Sub 2.md",
+        "Stage 1/Sub 10.md",
+        "Stage 2.md",
+        "Stage 10.md",
+    ]
+
+
+def test_natural_sort_key_number_before_its_subnumbers():
+    from otterwiki.util import natural_sort_key
+
+    expected = [
+        "Stage 1: Test",
+        "Stage 2: Test",
+        "Stage 2_5_: Test",
+        "Stage 2.6: Test",
+        "Stage 3: Test",
+        "Stage 10: Test",
+    ]
+    assert sorted(reversed(expected), key=natural_sort_key) == expected
+    # anything after a number sorts before a "." or "_" joining it to the next
+    assert sorted(["Page 1.1", "Page 1a", "Page 1"], key=natural_sort_key) == [
+        "Page 1",
+        "Page 1a",
+        "Page 1.1",
+    ]
+    # a "." that doesn't join two numbers is ordinary text
+    assert natural_sort_key("v1.") < natural_sort_key("v1.2")
+    assert natural_sort_key("v1.a") < natural_sort_key("v1.2")

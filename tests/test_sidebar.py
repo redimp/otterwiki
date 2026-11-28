@@ -536,3 +536,54 @@ def test_sidebar_menutree_lists_internal_directory_symlink_as_leaf(
         path="/", mode="DIRECTORIES_ONLY"
     ).query()
     assert "folder" not in directories_only["shortcuts"].children
+
+
+def test_sidebar_menutree_natural_sort(create_app, req_ctx):
+    from otterwiki.sidebar import SidebarPageIndex
+
+    storage = create_app.storage
+    create_app.config["SIDEBAR_MENUTREE_FOCUS"] = "OFF"
+    for name in [
+        "stage 1.md",
+        "stage 2.md",
+        "stage 10.md",
+        "Alpha 3.md",
+        "zeta/page.md",
+        "stage 9/page 10.md",
+        "stage 9/page 2.md",
+    ]:
+        storage.store(name, "content", author=("Test", "test@example.org"))
+
+    try:
+        create_app.config["SIDEBAR_MENUTREE_NATURAL_SORT"] = False
+        tree = SidebarPageIndex(path="/", mode="SORTED").query()
+        assert list(tree.keys()).index("stage 10") < list(tree.keys()).index(
+            "stage 2"
+        )
+
+        create_app.config["SIDEBAR_MENUTREE_NATURAL_SORT"] = True
+        tree = SidebarPageIndex(path="/", mode="SORTED").query()
+        # case insensitive, numeric, directories not preferred
+        assert list(tree.keys()) == [
+            "Alpha 3",
+            "home",
+            "stage 1",
+            "stage 2",
+            "stage 9",
+            "stage 10",
+            "zeta",
+        ]
+        assert list(tree["stage 9"].children.keys()) == ["page 2", "page 10"]
+
+        tree = SidebarPageIndex(path="/", mode="DIRECTORIES_GROUPED").query()
+        assert list(tree.keys()) == [
+            "stage 9",
+            "zeta",
+            "Alpha 3",
+            "home",
+            "stage 1",
+            "stage 2",
+            "stage 10",
+        ]
+    finally:
+        create_app.config["SIDEBAR_MENUTREE_NATURAL_SORT"] = False

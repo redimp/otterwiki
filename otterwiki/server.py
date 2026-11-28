@@ -64,6 +64,7 @@ app.config.update(
     MINIFY_HTML=True,
     SIDEBAR_MENUTREE_MODE="SORTED",
     SIDEBAR_MENUTREE_IGNORE_CASE=False,
+    SIDEBAR_MENUTREE_NATURAL_SORT=False,
     SIDEBAR_MENUTREE_MAXDEPTH="",
     SIDEBAR_MENUTREE_FOCUS="SUBTREE",  # OFF
     SIDEBAR_CUSTOM_MENU="",
@@ -254,6 +255,7 @@ def update_app_config():
                 "NOTIFY_USER_ON_APPROVAL",
                 "RETAIN_PAGE_NAME_CASE",
                 "SIDEBAR_MENUTREE_IGNORE_CASE",
+                "SIDEBAR_MENUTREE_NATURAL_SORT",
                 "GIT_WEB_SERVER",
                 "GIT_REMOTE_PUSH_ENABLED",
                 "GIT_REMOTE_PULL_ENABLED",

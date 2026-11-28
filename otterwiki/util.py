@@ -21,6 +21,10 @@ from unidiff import PatchSet
 # the cursor magic word which is ignored by the rendering
 cursormagicword = "CuRsoRm4g1cW0Rd"
 
+# Regular expressions used for natural sorting.
+_NATURAL_SORT_WHITESPACE = re.compile(r"\s+")
+_NATURAL_SORT_DIGITS = re.compile(r"(\d+)")
+
 
 def ttl_lru_cache(ttl: int = 60, maxsize: int = 128):
     """
@@ -165,6 +169,44 @@ def split_path(path: str) -> List[str]:
     if head == os.path.dirname(head):
         return [tail]
     return split_path(head) + [tail]
+
+
+def natural_sort_key(s: str) -> tuple[tuple[int | tuple[int, str], ...], str]:
+    """The key for a case insensitive alphanumeric natural sort.
+
+    Runs of digits are compared as integers, runs of whitespace count as
+    a single space and '_' is treated the same as '.'.
+    A '.' joining two numbers sorts after anything else that can follow a
+    number, so "Stage 8: Text" sorts before "Stage 8.5" and "Stage 8_5".
+    The original string is used as tie-breaker so the order remains deterministic.
+    """
+    normalized = _NATURAL_SORT_WHITESPACE.sub(" ", s.casefold()).replace(
+        "_", "."
+    )
+    _: list[str] = _NATURAL_SORT_DIGITS.split(normalized)
+    # re.split with a capturing group puts the text at even and the digits
+    # at odd indexes, so ints and (rank, text) tuples always line up.
+    last = len(_) - 1
+    chunks = tuple(
+        (
+            int(chunk)
+            if i % 2
+            else (1 if chunk == "." and 0 < i < last else 0, chunk)
+        )
+        for i, chunk in enumerate(_)
+    )
+    return (chunks, s)
+
+
+def natural_path_key(
+    path: str,
+) -> tuple[tuple[tuple[int | tuple[int, str], ...], str], ...]:
+    """The key for sorting file paths naturally, component by component.
+
+    A trailing ".md" is ignored, so a page sorts directly before its subpages.
+    """
+    path = path[:-3] if path.endswith(".md") else path
+    return tuple(natural_sort_key(part) for part in split_path(path))
 
 
 def titleSs(s):

@@ -396,6 +396,26 @@ def test_sidebar_preferences(app_with_user, admin_client):
     )
     assert app_with_user.config['SIDEBAR_MENUTREE_MODE'] == "SORTED"
     assert app_with_user.config['SIDEBAR_MENUTREE_MAXDEPTH'] == "42"
+    assert app_with_user.config['SIDEBAR_MENUTREE_NATURAL_SORT'] is False
+    # enable natural sort
+    rv = admin_client.post(
+        "/-/admin/sidebar_preferences",
+        data={
+            "sidebar_menutree_mode": "SORTED",
+            "sidebar_menutree_natural_sort": "True",
+        },
+        follow_redirects=True,
+    )
+    assert app_with_user.config['SIDEBAR_MENUTREE_NATURAL_SORT'] is True
+    # disable natural sort
+    rv = admin_client.post(
+        "/-/admin/sidebar_preferences",
+        data={
+            "sidebar_menutree_mode": "SORTED",
+        },
+        follow_redirects=True,
+    )
+    assert app_with_user.config['SIDEBAR_MENUTREE_NATURAL_SORT'] is False
 
 
 def test_user_edit(app_with_user, admin_client):
