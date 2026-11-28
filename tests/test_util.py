@@ -498,3 +498,26 @@ def test_natural_path_key():
         "Stage 2.md",
         "Stage 10.md",
     ]
+
+
+def test_natural_sort_key_number_before_its_subnumbers():
+    from otterwiki.util import natural_sort_key
+
+    expected = [
+        "Stage 1: Test",
+        "Stage 2: Test",
+        "Stage 2_5_: Test",
+        "Stage 2.6: Test",
+        "Stage 3: Test",
+        "Stage 10: Test",
+    ]
+    assert sorted(reversed(expected), key=natural_sort_key) == expected
+    # anything after a number sorts before a "." or "_" joining it to the next
+    assert sorted(["Page 1.1", "Page 1a", "Page 1"], key=natural_sort_key) == [
+        "Page 1",
+        "Page 1a",
+        "Page 1.1",
+    ]
+    # a "." that doesn't join two numbers is ordinary text
+    assert natural_sort_key("v1.") < natural_sort_key("v1.2")
+    assert natural_sort_key("v1.a") < natural_sort_key("v1.2")

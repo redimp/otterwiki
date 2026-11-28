@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # vim: set et ts=8 sts=4 sw=4 ai:
 
-from typing import Any
 import datetime
 import difflib
 import mimetypes
@@ -172,24 +171,36 @@ def split_path(path: str) -> List[str]:
     return split_path(head) + [tail]
 
 
-def natural_sort_key(s: str) -> tuple[tuple[int | str, ...], str]:
+def natural_sort_key(s: str) -> tuple[tuple[int | tuple[int, str], ...], str]:
     """The key for a case insensitive alphanumeric natural sort.
 
     Runs of digits are compared as integers, runs of whitespace count as
-    a single space and "_" is treated the same as ".".
+    a single space and '_' is treated the same as '.'.
+    A '.' joining two numbers sorts after anything else that can follow a
+    number, so "Stage 8: Text" sorts before "Stage 8.5" and "Stage 8_5".
     The original string is used as tie-breaker so the order remains deterministic.
     """
     normalized = _NATURAL_SORT_WHITESPACE.sub(" ", s.casefold()).replace(
         "_", "."
     )
     _: list[str] = _NATURAL_SORT_DIGITS.split(normalized)
-    chunks: tuple[int | str, ...] = tuple(
-        int(chunk) if i % 2 else chunk for i, chunk in enumerate(_)
+    # re.split with a capturing group puts the text at even and the digits
+    # at odd indexes, so ints and (rank, text) tuples always line up.
+    last = len(_) - 1
+    chunks = tuple(
+        (
+            int(chunk)
+            if i % 2
+            else (1 if chunk == "." and 0 < i < last else 0, chunk)
+        )
+        for i, chunk in enumerate(_)
     )
     return (chunks, s)
 
 
-def natural_path_key(path: str) -> tuple[tuple[tuple[int | str, ...], str], ...]:
+def natural_path_key(
+    path: str,
+) -> tuple[tuple[tuple[int | tuple[int, str], ...], str], ...]:
     """The key for sorting file paths naturally, component by component.
 
     A trailing ".md" is ignored, so a page sorts directly before its subpages.
